@@ -10,5 +10,6 @@ resource "aws_instance" "hello-world" {
     tags = {
         Name = "HelloWorld"
         owner = "haruharumolly"
+        test = "test"
     }
 }
