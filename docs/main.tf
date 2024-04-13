@@ -9,6 +9,7 @@ resource "aws_instance" "hello-world" {
 
   tags = {
     Name = "HelloWorld"
+    Project = "${local.project}"
   }
 
 # 1行コメントサンプル
@@ -17,6 +18,7 @@ resource "aws_instance" "hello-world" {
 複数行コメントサンプル
 複数行コメントサンプル
 */
+
   user_data = <<EOF
 #!/bin/bash
 amazon-linux-extras install -y nginx1.12
