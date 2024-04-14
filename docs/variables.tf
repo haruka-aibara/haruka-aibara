@@ -79,3 +79,7 @@ variable "allowed_ips" {
 variable "instance_description" {
   type = string
 }
+
+# tfvarsテスト
+variable "tfvars_test" {
+}

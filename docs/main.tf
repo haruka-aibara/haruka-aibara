@@ -13,6 +13,7 @@ resource "aws_instance" "hello-world" {
     Name        = "${var.instance_name}"
     Project     = "${local.project}"
     Description = "${var.instance_description}"
+    tfvars_var = "${var.tfvars_test}"
   }
 
   # 1行コメントサンプル
