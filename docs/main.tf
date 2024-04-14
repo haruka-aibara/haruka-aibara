@@ -1,8 +1,10 @@
+# プロバイダー
 provider "aws" {
   profile = "default"
   region  = "ap-northeast-1"
 }
 
+# サンプルインスタンス
 resource "aws_instance" "hello-world" {
   ami           = "ami-031134f7a79b6e424"
   instance_type = "t2.micro"
@@ -11,6 +13,7 @@ resource "aws_instance" "hello-world" {
     Name = "${var.instance_name}"
     Project = "${local.project}"
   }
+
 
 # 1行コメントサンプル
 
