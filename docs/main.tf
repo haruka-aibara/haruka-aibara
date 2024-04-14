@@ -6,32 +6,16 @@ provider "aws" {
 
 # サンプルインスタンス
 resource "aws_instance" "hello-world" {
-  ami           = "ami-031134f7a79b6e424"
+  ami           = "ami-0992fc94ca0f1415a"
   instance_type = "t2.micro"
 
   tags = {
-    Name        = "${var.instance_name}"
-    Project     = "${local.project}"
-    Description = "${var.instance_description}"
-    tfvars_var = "${var.tfvars_test}"
+    Name = "HelloWorld"
   }
-
-  # 1行コメントサンプル
-
-  /*
-複数行コメントサンプル
-複数行コメントサンプル
-*/
 
   user_data = <<EOF
 #!/bin/bash
 amazon-linux-extras install -y nginx1.12
 systemctl start ngnix
 EOF
-}
-
-# ouputテスト
-output "public_ip" {
-  value = aws_instance.hello-world.public_ip
-  description = "the public ip address of the ec2 instance"
 }
