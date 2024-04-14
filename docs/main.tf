@@ -10,8 +10,9 @@ resource "aws_instance" "hello-world" {
   instance_type = "t2.micro"
 
   tags = {
-    Name    = "${var.instance_name}"
-    Project = "${local.project}"
+    Name        = "${var.instance_name}"
+    Project     = "${local.project}"
+    Description = "${var.instance_description}"
   }
 
 

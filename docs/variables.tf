@@ -74,3 +74,8 @@ variable "allowed_ips" {
   type    = set(string)
   default = ["192.168.0.1", "192.168.0.2", "192.168.0.3"]
 }
+
+# 環境変数テスト（外部でexport TF_VAR_I
+variable "instance_description" {
+  type = string
+}
