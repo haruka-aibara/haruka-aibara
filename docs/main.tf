@@ -8,7 +8,7 @@ resource "aws_instance" "hello-world" {
   instance_type = "t2.micro"
 
   tags = {
-    Name = "HelloWorld"
+    Name = "${var.instance_name}"
     Project = "${local.project}"
   }
 
