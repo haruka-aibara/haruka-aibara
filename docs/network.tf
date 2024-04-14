@@ -25,7 +25,7 @@ resource "aws_subnet" "public_subnet_1a" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name    = "${var.project}-${var.environment}-vpc"
+    Name    = "${var.project}-${var.environment}-public-subnet-1a"
     Project = var.project
     Env     = var.environment
     Type    = "public"
@@ -39,7 +39,7 @@ resource "aws_subnet" "public_subnet_1c" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name    = "${var.project}-${var.environment}-vpc"
+    Name    = "${var.project}-${var.environment}-public-subnet-1c"
     Project = var.project
     Env     = var.environment
     Type    = "public"
@@ -53,7 +53,7 @@ resource "aws_subnet" "private_subnet_1a" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name    = "${var.project}-${var.environment}-vpc"
+    Name    = "${var.project}-${var.environment}-private-subnet-1a"
     Project = var.project
     Env     = var.environment
     Type    = "private"
@@ -67,7 +67,7 @@ resource "aws_subnet" "private_subnet_1c" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name    = "${var.project}-${var.environment}-vpc"
+    Name    = "${var.project}-${var.environment}-private-subnet-1c"
     Project = var.project
     Env     = var.environment
     Type    = "private"
