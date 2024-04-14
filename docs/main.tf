@@ -15,7 +15,6 @@ resource "aws_instance" "hello-world" {
     Description = "${var.instance_description}"
   }
 
-
   # 1行コメントサンプル
 
   /*
@@ -28,4 +27,10 @@ resource "aws_instance" "hello-world" {
 amazon-linux-extras install -y nginx1.12
 systemctl start ngnix
 EOF
+}
+
+# ouputテスト
+output "public_ip" {
+  value = aws_instance.hello-world.public_ip
+  description = "the public ip address of the ec2 instance"
 }
