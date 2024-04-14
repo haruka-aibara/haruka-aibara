@@ -14,3 +14,62 @@ resource "aws_vpc" "vpc" {
     Env     = var.environment
   }
 }
+
+# ------------------------
+# Subnet
+# ------------------------
+resource "aws_subnet" "public_subnet_1a" {
+  vpc_id                  = aws_vpc.vpc.id
+  availability_zone       = "ap-northeast-1a"
+  cidr_block              = "192.168.1.0/24"
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name    = "${var.project}-${var.environment}-vpc"
+    Project = var.project
+    Env     = var.environment
+    Type    = "public"
+  }
+}
+
+resource "aws_subnet" "public_subnet_1c" {
+  vpc_id                  = aws_vpc.vpc.id
+  availability_zone       = "ap-northeast-1c"
+  cidr_block              = "192.168.2.0/24"
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name    = "${var.project}-${var.environment}-vpc"
+    Project = var.project
+    Env     = var.environment
+    Type    = "public"
+  }
+}
+
+resource "aws_subnet" "private_subnet_1a" {
+  vpc_id                  = aws_vpc.vpc.id
+  availability_zone       = "ap-northeast-1a"
+  cidr_block              = "192.168.3.0/24"
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name    = "${var.project}-${var.environment}-vpc"
+    Project = var.project
+    Env     = var.environment
+    Type    = "private"
+  }
+}
+
+resource "aws_subnet" "private_subnet_1c" {
+  vpc_id                  = aws_vpc.vpc.id
+  availability_zone       = "ap-northeast-1c"
+  cidr_block              = "192.168.4.0/24"
+  map_public_ip_on_launch = false
+
+  tags = {
+    Name    = "${var.project}-${var.environment}-vpc"
+    Project = var.project
+    Env     = var.environment
+    Type    = "private"
+  }
+}
