@@ -1,4 +1,4 @@
 locals {
-    project = "terraform-test"
-    env = "dev"
+  project = "terraform-test"
+  env     = "dev"
 }
