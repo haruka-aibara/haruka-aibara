@@ -7,11 +7,11 @@ resource "aws_db_parameter_group" "mysql_standalone_parametergroup" {
 
   parameter {
     name  = "character_set_database"
-    value = "utf8bm4"
+    value = "utf8mb4"
   }
 
   parameter {
     name  = "character_set_server"
-    value = "utf8bm4"
+    value = "utf8mb4"
   }
 }
