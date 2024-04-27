@@ -33,8 +33,3 @@ resource "aws_instance" "app_server" {
     Type    = "app"
   }
 }
-
-resource "aws_instance" "test" {
-  ami           = "ami-04e0b6d6cfa432943"
-  instance_type = "t2.micro"
-}
