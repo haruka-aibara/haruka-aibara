@@ -9,20 +9,26 @@
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 1158)">
 <title>G</title>
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-1158 1153,-1158 1153,4 -4,4"/>
-<!-- data.aws_prefix_list.s3_pl -->
+<!-- data.aws_ami.app -->
 <g id="node1" class="node">
+<title>data.aws_ami.app</title>
+<polygon fill="none" stroke="black" points="1088.5,-190 946.5,-190 946.5,-154 1088.5,-154 1088.5,-190"/>
+<text text-anchor="middle" x="1017.5" y="-168.3" font-family="sans-serif" font-size="14.00">data.aws_ami.app</text>
+</g>
+<!-- data.aws_prefix_list.s3_pl -->
+<g id="node2" class="node">
 <title>data.aws_prefix_list.s3_pl</title>
 <polygon fill="none" stroke="black" points="351.5,-533 158.5,-533 158.5,-497 351.5,-497 351.5,-533"/>
 <text text-anchor="middle" x="255" y="-511.3" font-family="sans-serif" font-size="14.00">data.aws_prefix_list.s3_pl</text>
 </g>
 <!-- aws_db_instance.mysql_standalone -->
-<g id="node2" class="node">
+<g id="node3" class="node">
 <title>aws_db_instance.mysql_standalone</title>
 <polygon fill="none" stroke="black" points="1149,-244 886,-244 886,-208 1149,-208 1149,-244"/>
 <text text-anchor="middle" x="1017.5" y="-222.3" font-family="sans-serif" font-size="14.00">aws_db_instance.mysql_standalone</text>
 </g>
 <!-- aws_db_option_group.mysql_standalone_optiongroup -->
-<g id="node3" class="node">
+<g id="node4" class="node">
 <title>aws_db_option_group.mysql_standalone_optiongroup</title>
 <polygon fill="none" stroke="black" points="821,-36 435,-36 435,0 821,0 821,-36"/>
 <text text-anchor="middle" x="628" y="-14.3" font-family="sans-serif" font-size="14.00">aws_db_option_group.mysql_standalone_optiongroup</text>
@@ -30,11 +36,11 @@
 <!-- aws_db_instance.mysql_standalone&#45;&gt;aws_db_option_group.mysql_standalone_optiongroup -->
 <g id="edge1" class="edge">
 <title>aws_db_instance.mysql_standalone&#45;&gt;aws_db_option_group.mysql_standalone_optiongroup</title>
-<path fill="none" stroke="black" d="M1006.14,-208C983.38,-170.33 925.02,-83.52 850,-45 843.82,-41.83 837.42,-38.97 830.86,-36.39"/>
-<polygon fill="black" stroke="black" points="831.73,-32.98 821.14,-32.82 829.31,-39.55 831.73,-32.98"/>
+<path fill="none" stroke="black" d="M897,-207.9C893.09,-205.26 889.4,-202.31 886,-199 835.66,-149.94 902.31,-91.95 850,-45 843.88,-39.51 837.25,-34.74 830.24,-30.62"/>
+<polygon fill="black" stroke="black" points="831.63,-27.4 821.17,-25.74 828.32,-33.56 831.63,-27.4"/>
 </g>
 <!-- aws_db_parameter_group.mysql_standalone_parametergroup -->
-<g id="node4" class="node">
+<g id="node5" class="node">
 <title>aws_db_parameter_group.mysql_standalone_parametergroup</title>
 <polygon fill="none" stroke="black" points="850,-560 406,-560 406,-524 850,-524 850,-560"/>
 <text text-anchor="middle" x="628" y="-538.3" font-family="sans-serif" font-size="14.00">aws_db_parameter_group.mysql_standalone_parametergroup</text>
@@ -46,7 +52,7 @@
 <polygon fill="black" stroke="black" points="841.76,-516.01 834.7,-523.91 845.15,-522.14 841.76,-516.01"/>
 </g>
 <!-- aws_db_subnet_group.mysql_standalone_subnetgroup -->
-<g id="node5" class="node">
+<g id="node6" class="node">
 <title>aws_db_subnet_group.mysql_standalone_subnetgroup</title>
 <polygon fill="none" stroke="black" points="825.5,-668 430.5,-668 430.5,-632 825.5,-632 825.5,-668"/>
 <text text-anchor="middle" x="628" y="-646.3" font-family="sans-serif" font-size="14.00">aws_db_subnet_group.mysql_standalone_subnetgroup</text>
@@ -58,7 +64,7 @@
 <polygon fill="black" stroke="black" points="832.76,-630.1 825.53,-637.84 836.01,-636.3 832.76,-630.1"/>
 </g>
 <!-- aws_security_group.db_sg -->
-<g id="node15" class="node">
+<g id="node16" class="node">
 <title>aws_security_group.db_sg</title>
 <polygon fill="none" stroke="black" points="354.5,-398 155.5,-398 155.5,-362 354.5,-362 354.5,-398"/>
 <text text-anchor="middle" x="255" y="-376.3" font-family="sans-serif" font-size="14.00">aws_security_group.db_sg</text>
@@ -70,7 +76,7 @@
 <polygon fill="black" stroke="black" points="294.27,-353.66 287.63,-361.92 297.97,-359.6 294.27,-353.66"/>
 </g>
 <!-- random_string.db_password -->
-<g id="node35" class="node">
+<g id="node36" class="node">
 <title>random_string.db_password</title>
 <polygon fill="none" stroke="black" points="734.5,-198 521.5,-198 521.5,-162 734.5,-162 734.5,-198"/>
 <text text-anchor="middle" x="628" y="-176.3" font-family="sans-serif" font-size="14.00">random_string.db_password</text>
@@ -82,7 +88,7 @@
 <polygon fill="black" stroke="black" points="745,-190.25 734.66,-192.54 744.18,-197.2 745,-190.25"/>
 </g>
 <!-- aws_subnet.private_subnet_1a -->
-<g id="node30" class="node">
+<g id="node31" class="node">
 <title>aws_subnet.private_subnet_1a</title>
 <polygon fill="none" stroke="black" points="370,-695 140,-695 140,-659 370,-659 370,-695"/>
 <text text-anchor="middle" x="255" y="-673.3" font-family="sans-serif" font-size="14.00">aws_subnet.private_subnet_1a</text>
@@ -94,7 +100,7 @@
 <polygon fill="black" stroke="black" points="380.17,-664.45 370.45,-668.67 380.68,-671.44 380.17,-664.45"/>
 </g>
 <!-- aws_subnet.private_subnet_1c -->
-<g id="node31" class="node">
+<g id="node32" class="node">
 <title>aws_subnet.private_subnet_1c</title>
 <polygon fill="none" stroke="black" points="370,-641 140,-641 140,-605 370,-605 370,-641"/>
 <text text-anchor="middle" x="255" y="-619.3" font-family="sans-serif" font-size="14.00">aws_subnet.private_subnet_1c</text>
@@ -106,13 +112,13 @@
 <polygon fill="black" stroke="black" points="380.68,-628.56 370.45,-631.33 380.17,-635.55 380.68,-628.56"/>
 </g>
 <!-- aws_internet_gateway.igw -->
-<g id="node6" class="node">
+<g id="node7" class="node">
 <title>aws_internet_gateway.igw</title>
 <polygon fill="none" stroke="black" points="353,-965 157,-965 157,-929 353,-929 353,-965"/>
 <text text-anchor="middle" x="255" y="-943.3" font-family="sans-serif" font-size="14.00">aws_internet_gateway.igw</text>
 </g>
 <!-- aws_vpc.vpc -->
-<g id="node34" class="node">
+<g id="node35" class="node">
 <title>aws_vpc.vpc</title>
 <polygon fill="none" stroke="black" points="104,-749 0,-749 0,-713 104,-713 104,-749"/>
 <text text-anchor="middle" x="52" y="-727.3" font-family="sans-serif" font-size="14.00">aws_vpc.vpc</text>
@@ -124,7 +130,7 @@
 <polygon fill="black" stroke="black" points="61.29,-758.14 55.9,-749.02 54.43,-759.51 61.29,-758.14"/>
 </g>
 <!-- aws_route.public_rt_igw -->
-<g id="node7" class="node">
+<g id="node8" class="node">
 <title>aws_route.public_rt_igw</title>
 <polygon fill="none" stroke="black" points="719,-938 537,-938 537,-902 719,-902 719,-938"/>
 <text text-anchor="middle" x="628" y="-916.3" font-family="sans-serif" font-size="14.00">aws_route.public_rt_igw</text>
@@ -136,7 +142,7 @@
 <polygon fill="black" stroke="black" points="362.92,-935.71 353.2,-939.93 363.43,-942.69 362.92,-935.71"/>
 </g>
 <!-- aws_route_table.public_rt -->
-<g id="node9" class="node">
+<g id="node10" class="node">
 <title>aws_route_table.public_rt</title>
 <polygon fill="none" stroke="black" points="351,-857 159,-857 159,-821 351,-821 351,-857"/>
 <text text-anchor="middle" x="255" y="-835.3" font-family="sans-serif" font-size="14.00">aws_route_table.public_rt</text>
@@ -148,7 +154,7 @@
 <polygon fill="black" stroke="black" points="357.98,-857.14 347.38,-857.06 355.62,-863.73 357.98,-857.14"/>
 </g>
 <!-- aws_route_table.private_rt -->
-<g id="node8" class="node">
+<g id="node9" class="node">
 <title>aws_route_table.private_rt</title>
 <polygon fill="none" stroke="black" points="354.5,-749 155.5,-749 155.5,-713 354.5,-713 354.5,-749"/>
 <text text-anchor="middle" x="255" y="-727.3" font-family="sans-serif" font-size="14.00">aws_route_table.private_rt</text>
@@ -166,7 +172,7 @@
 <polygon fill="black" stroke="black" points="76.57,-754.25 67.36,-749.02 71.3,-758.86 76.57,-754.25"/>
 </g>
 <!-- aws_route_table_association.private_rt_1a -->
-<g id="node10" class="node">
+<g id="node11" class="node">
 <title>aws_route_table_association.private_rt_1a</title>
 <polygon fill="none" stroke="black" points="781.5,-776 474.5,-776 474.5,-740 781.5,-740 781.5,-776"/>
 <text text-anchor="middle" x="628" y="-754.3" font-family="sans-serif" font-size="14.00">aws_route_table_association.private_rt_1a</text>
@@ -184,7 +190,7 @@
 <polygon fill="black" stroke="black" points="357.98,-695.14 347.38,-695.06 355.62,-701.73 357.98,-695.14"/>
 </g>
 <!-- aws_route_table_association.private_rt_1c -->
-<g id="node11" class="node">
+<g id="node12" class="node">
 <title>aws_route_table_association.private_rt_1c</title>
 <polygon fill="none" stroke="black" points="781,-722 475,-722 475,-686 781,-686 781,-722"/>
 <text text-anchor="middle" x="628" y="-700.3" font-family="sans-serif" font-size="14.00">aws_route_table_association.private_rt_1c</text>
@@ -202,7 +208,7 @@
 <polygon fill="black" stroke="black" points="357.98,-641.14 347.38,-641.06 355.62,-647.73 357.98,-641.14"/>
 </g>
 <!-- aws_route_table_association.public_rt_1a -->
-<g id="node12" class="node">
+<g id="node13" class="node">
 <title>aws_route_table_association.public_rt_1a</title>
 <polygon fill="none" stroke="black" points="778,-884 478,-884 478,-848 778,-848 778,-884"/>
 <text text-anchor="middle" x="628" y="-862.3" font-family="sans-serif" font-size="14.00">aws_route_table_association.public_rt_1a</text>
@@ -214,7 +220,7 @@
 <polygon fill="black" stroke="black" points="361.28,-843.15 351.05,-845.92 360.77,-850.13 361.28,-843.15"/>
 </g>
 <!-- aws_subnet.public_subnet_1a -->
-<g id="node32" class="node">
+<g id="node33" class="node">
 <title>aws_subnet.public_subnet_1a</title>
 <polygon fill="none" stroke="black" points="367,-911 143,-911 143,-875 367,-875 367,-911"/>
 <text text-anchor="middle" x="255" y="-889.3" font-family="sans-serif" font-size="14.00">aws_subnet.public_subnet_1a</text>
@@ -226,7 +232,7 @@
 <polygon fill="black" stroke="black" points="376.94,-880.69 367.22,-884.91 377.44,-887.67 376.94,-880.69"/>
 </g>
 <!-- aws_route_table_association.public_rt_1c -->
-<g id="node13" class="node">
+<g id="node14" class="node">
 <title>aws_route_table_association.public_rt_1c</title>
 <polygon fill="none" stroke="black" points="777.5,-830 478.5,-830 478.5,-794 777.5,-794 777.5,-830"/>
 <text text-anchor="middle" x="628" y="-808.3" font-family="sans-serif" font-size="14.00">aws_route_table_association.public_rt_1c</text>
@@ -238,7 +244,7 @@
 <polygon fill="black" stroke="black" points="360.91,-827.86 351.19,-832.07 361.42,-834.84 360.91,-827.86"/>
 </g>
 <!-- aws_subnet.public_subnet_1c -->
-<g id="node33" class="node">
+<g id="node34" class="node">
 <title>aws_subnet.public_subnet_1c</title>
 <polygon fill="none" stroke="black" points="366.5,-803 143.5,-803 143.5,-767 366.5,-767 366.5,-803"/>
 <text text-anchor="middle" x="255" y="-781.3" font-family="sans-serif" font-size="14.00">aws_subnet.public_subnet_1c</text>
@@ -250,7 +256,7 @@
 <polygon fill="black" stroke="black" points="376.75,-790.28 366.52,-793.04 376.24,-797.26 376.75,-790.28"/>
 </g>
 <!-- aws_security_group.app_sg -->
-<g id="node14" class="node">
+<g id="node15" class="node">
 <title>aws_security_group.app_sg</title>
 <polygon fill="none" stroke="black" points="358.5,-452 151.5,-452 151.5,-416 358.5,-416 358.5,-452"/>
 <text text-anchor="middle" x="255" y="-430.3" font-family="sans-serif" font-size="14.00">aws_security_group.app_sg</text>
@@ -268,7 +274,7 @@
 <polygon fill="black" stroke="black" points="53.34,-702.56 55.4,-712.95 60.27,-703.54 53.34,-702.56"/>
 </g>
 <!-- aws_security_group.opmng_sg -->
-<g id="node16" class="node">
+<g id="node17" class="node">
 <title>aws_security_group.opmng_sg</title>
 <polygon fill="none" stroke="black" points="370,-1046 140,-1046 140,-1010 370,-1010 370,-1046"/>
 <text text-anchor="middle" x="255" y="-1024.3" font-family="sans-serif" font-size="14.00">aws_security_group.opmng_sg</text>
@@ -280,7 +286,7 @@
 <polygon fill="black" stroke="black" points="59.53,-758.74 54.79,-749.27 52.58,-759.63 59.53,-758.74"/>
 </g>
 <!-- aws_security_group.web_sg -->
-<g id="node17" class="node">
+<g id="node18" class="node">
 <title>aws_security_group.web_sg</title>
 <polygon fill="none" stroke="black" points="359.5,-290 150.5,-290 150.5,-254 359.5,-254 359.5,-290"/>
 <text text-anchor="middle" x="255" y="-268.3" font-family="sans-serif" font-size="14.00">aws_security_group.web_sg</text>
@@ -292,7 +298,7 @@
 <polygon fill="black" stroke="black" points="49.39,-702.65 52.79,-712.68 56.39,-702.71 49.39,-702.65"/>
 </g>
 <!-- aws_security_group_rule.app_in_tcp3000 -->
-<g id="node18" class="node">
+<g id="node19" class="node">
 <title>aws_security_group_rule.app_in_tcp3000</title>
 <polygon fill="none" stroke="black" points="779,-344 477,-344 477,-308 779,-308 779,-344"/>
 <text text-anchor="middle" x="628" y="-322.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.app_in_tcp3000</text>
@@ -310,7 +316,7 @@
 <polygon fill="black" stroke="black" points="361.94,-288.29 351.49,-290.02 360.74,-295.18 361.94,-288.29"/>
 </g>
 <!-- aws_security_group_rule.app_out_http -->
-<g id="node19" class="node">
+<g id="node20" class="node">
 <title>aws_security_group_rule.app_out_http</title>
 <polygon fill="none" stroke="black" points="769,-614 487,-614 487,-578 769,-578 769,-614"/>
 <text text-anchor="middle" x="628" y="-592.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.app_out_http</text>
@@ -328,7 +334,7 @@
 <polygon fill="black" stroke="black" points="324.33,-452.91 313.78,-452.01 321.46,-459.3 324.33,-452.91"/>
 </g>
 <!-- aws_security_group_rule.app_out_https -->
-<g id="node20" class="node">
+<g id="node21" class="node">
 <title>aws_security_group_rule.app_out_https</title>
 <polygon fill="none" stroke="black" points="773,-506 483,-506 483,-470 773,-470 773,-506"/>
 <text text-anchor="middle" x="628" y="-484.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.app_out_https</text>
@@ -346,7 +352,7 @@
 <polygon fill="black" stroke="black" points="361.94,-450.29 351.49,-452.02 360.74,-457.18 361.94,-450.29"/>
 </g>
 <!-- aws_security_group_rule.app_out_tcp3306 -->
-<g id="node21" class="node">
+<g id="node22" class="node">
 <title>aws_security_group_rule.app_out_tcp3306</title>
 <polygon fill="none" stroke="black" points="783.5,-452 472.5,-452 472.5,-416 783.5,-416 783.5,-452"/>
 <text text-anchor="middle" x="628" y="-430.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.app_out_tcp3306</text>
@@ -364,7 +370,7 @@
 <polygon fill="black" stroke="black" points="361.94,-396.29 351.49,-398.02 360.74,-403.18 361.94,-396.29"/>
 </g>
 <!-- aws_security_group_rule.db_in_tcp3306 -->
-<g id="node22" class="node">
+<g id="node23" class="node">
 <title>aws_security_group_rule.db_in_tcp3306</title>
 <polygon fill="none" stroke="black" points="774.5,-398 481.5,-398 481.5,-362 774.5,-362 774.5,-398"/>
 <text text-anchor="middle" x="628" y="-376.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.db_in_tcp3306</text>
@@ -382,7 +388,7 @@
 <polygon fill="black" stroke="black" points="364.55,-376.5 354.55,-380 364.55,-383.5 364.55,-376.5"/>
 </g>
 <!-- aws_security_group_rule.opmng_in_ssh -->
-<g id="node23" class="node">
+<g id="node24" class="node">
 <title>aws_security_group_rule.opmng_in_ssh</title>
 <polygon fill="none" stroke="black" points="773,-1046 483,-1046 483,-1010 773,-1010 773,-1046"/>
 <text text-anchor="middle" x="628" y="-1024.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.opmng_in_ssh</text>
@@ -394,7 +400,7 @@
 <polygon fill="black" stroke="black" points="380.13,-1024.5 370.13,-1028 380.13,-1031.5 380.13,-1024.5"/>
 </g>
 <!-- aws_security_group_rule.opmng_in_tcp3000 -->
-<g id="node24" class="node">
+<g id="node25" class="node">
 <title>aws_security_group_rule.opmng_in_tcp3000</title>
 <polygon fill="none" stroke="black" points="790,-992 466,-992 466,-956 790,-956 790,-992"/>
 <text text-anchor="middle" x="628" y="-970.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.opmng_in_tcp3000</text>
@@ -406,7 +412,7 @@
 <polygon fill="black" stroke="black" points="360.74,-1004.82 351.49,-1009.98 361.94,-1011.71 360.74,-1004.82"/>
 </g>
 <!-- aws_security_group_rule.opmng_out_http -->
-<g id="node25" class="node">
+<g id="node26" class="node">
 <title>aws_security_group_rule.opmng_out_http</title>
 <polygon fill="none" stroke="black" points="780.5,-1154 475.5,-1154 475.5,-1118 780.5,-1118 780.5,-1154"/>
 <text text-anchor="middle" x="628" y="-1132.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.opmng_out_http</text>
@@ -418,7 +424,7 @@
 <polygon fill="black" stroke="black" points="292.57,-1048.66 282.27,-1046.16 288.76,-1054.53 292.57,-1048.66"/>
 </g>
 <!-- aws_security_group_rule.opmng_out_https -->
-<g id="node26" class="node">
+<g id="node27" class="node">
 <title>aws_security_group_rule.opmng_out_https</title>
 <polygon fill="none" stroke="black" points="784,-1100 472,-1100 472,-1064 784,-1064 784,-1100"/>
 <text text-anchor="middle" x="628" y="-1078.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.opmng_out_https</text>
@@ -430,7 +436,7 @@
 <polygon fill="black" stroke="black" points="361.94,-1044.29 351.49,-1046.02 360.74,-1051.18 361.94,-1044.29"/>
 </g>
 <!-- aws_security_group_rule.web_in_http -->
-<g id="node27" class="node">
+<g id="node28" class="node">
 <title>aws_security_group_rule.web_in_http</title>
 <polygon fill="none" stroke="black" points="765.5,-144 490.5,-144 490.5,-108 765.5,-108 765.5,-144"/>
 <text text-anchor="middle" x="628" y="-122.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.web_in_http</text>
@@ -442,7 +448,7 @@
 <polygon fill="black" stroke="black" points="276.76,-244.13 272.36,-253.77 281.81,-248.97 276.76,-244.13"/>
 </g>
 <!-- aws_security_group_rule.web_in_https -->
-<g id="node28" class="node">
+<g id="node29" class="node">
 <title>aws_security_group_rule.web_in_https</title>
 <polygon fill="none" stroke="black" points="769,-90 487,-90 487,-54 769,-54 769,-90"/>
 <text text-anchor="middle" x="628" y="-68.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.web_in_https</text>
@@ -454,7 +460,7 @@
 <polygon fill="black" stroke="black" points="267.43,-243.56 265.52,-253.98 273.52,-247.02 267.43,-243.56"/>
 </g>
 <!-- aws_security_group_rule.web_out_tcp3000 -->
-<g id="node29" class="node">
+<g id="node30" class="node">
 <title>aws_security_group_rule.web_out_tcp3000</title>
 <polygon fill="none" stroke="black" points="785,-290 471,-290 471,-254 785,-254 785,-290"/>
 <text text-anchor="middle" x="628" y="-268.3" font-family="sans-serif" font-size="14.00">aws_security_group_rule.web_out_tcp3000</text>
