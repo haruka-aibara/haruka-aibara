@@ -48,6 +48,7 @@ resource "aws_ssm_parameter" "password" {
 # ------------------------
 # EC2 Instance
 # ------------------------
+/*
 resource "aws_instance" "app_server" {
   ami                         = data.aws_ami.app.id
   instance_type               = "t2.micro"
@@ -66,4 +67,41 @@ resource "aws_instance" "app_server" {
     Env     = var.environment
     Type    = "app"
   }
+}
+*/
+
+# ------------------------
+# launch template
+# ------------------------
+resource "aws_launch_template" "app_lt" {
+  update_default_version = true
+
+  name = "${var.project}-${var.environment}-app-lt"
+
+  image_id = data.aws_ami.app.id
+
+  key_name = aws_key_pair.keypair.key_name
+
+  tag_specifications {
+    resource_type = "instance"
+    tags = {
+      Name    = "${var.project}-${var.environment}-app-ec2"
+      Project = var.project
+      Env     = var.environment
+      Type    = "app"
+    }
+  }
+  network_interfaces {
+    associate_public_ip_address = true
+    security_groups = [
+      aws_security_group.app_sg.id,
+      aws_security_group.opmng_sg.id
+    ]
+    delete_on_termination = true
+  }
+  iam_instance_profile {
+    name = aws_iam_instance_profile.app_ec2_profile.name
+  }
+
+  user_data = filebase64("./src/initialize.sh")
 }

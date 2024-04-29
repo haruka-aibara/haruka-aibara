@@ -8,6 +8,12 @@ data "aws_ami" "app" {
 
   filter {
     name   = "name"
+    values = ["tastylog-app-ami"]
+  }
+
+  /*
+  filter {
+    name   = "name"
     values = ["al2023-ami-*-kernel-6.1-x86_64"]
   }
 
@@ -20,4 +26,5 @@ data "aws_ami" "app" {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+  */
 }
