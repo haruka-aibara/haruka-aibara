@@ -9,13 +9,19 @@ terraform {
       version = "~> 3.0"
     }
   }
+  backend "s3" {
+    bucket  = "tastylog-tfstate-bucket-haruharumolly"
+    key     = "tastylog-user.tfstate"
+    region  = "ap-northeast-1"
+    profile = "default"
+  }
 }
 
 # ---------------------------------------------
 # Provider
 # ---------------------------------------------
 provider "aws" {
-  profile = "terraform"
+  profile = "default"
   region  = "ap-northeast-1"
 }
 
