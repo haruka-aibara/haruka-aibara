@@ -36,7 +36,7 @@ data "aws_iam_policy_document" "ec2_rebootable" {
 resource "aws_iam_policy" "iam_change_own_password" {
   name        = "${var.project}-${var.environment}-iam-change_own_password-iam-policy"
   description = "IAM Change Own password policy"
-  policy      = data.aws_iam_policy_document.ec2_rebootable.json
+  policy      = data.aws_iam_policy_document.iam_change_own_password.json
 }
 
 data "aws_iam_policy_document" "iam_change_own_password" {
