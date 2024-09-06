@@ -15,3 +15,15 @@ docker run -p 8080:8080 docker-hello-world
 ```
 
 Visit `http://localhost:8080` in your browser to see the "Hello, Docker World!" message.
+
+## Run .sh
+
+```
+chmod +x build_and_run.sh
+```
+
+then 
+
+```
+./build_and_run.sh
+```
