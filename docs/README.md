@@ -27,3 +27,11 @@ then
 ```
 ./build_and_run.sh
 ```
+
+## After completing these steps..
+you should see a simple web page displaying:
+"Hello, Docker World!"
+
+like this ->
+
+![image](https://github.com/user-attachments/assets/5a872f9d-9940-439d-a6f6-b7f58b4e4e8b)
