@@ -1,4 +1,3 @@
-# EC2インスタンスの作成
 resource "aws_instance" "hello_world" {
   ami           = var.ami_id
   instance_type = var.instance_type
@@ -7,6 +6,13 @@ resource "aws_instance" "hello_world" {
   iam_instance_profile = aws_iam_instance_profile.ssm_instance_profile.name
 
   vpc_security_group_ids = [aws_security_group.hello_world.id]
+
+  user_data = <<-EOF
+              #!/bin/bash
+              yum update -y
+              yum install -y aws-cli
+              amazon-linux-extras install ansible2 -y
+              EOF
 
   tags = {
     Name = var.project_name

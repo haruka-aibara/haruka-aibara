@@ -17,9 +17,10 @@ mainSteps:
     inputs:
       runCommand:
         - "cd /tmp"
-        - "aws s3 cp s3://${var.s3_bucket_name}/ansible.cfg ."
-        - "aws s3 cp s3://${var.s3_bucket_name}/inventory ."
-        - "aws s3 cp s3://${var.s3_bucket_name}/playbooks/{{ playbook }} ."
-        - "ansible-playbook {{ playbook }}"
+        - "export PATH=$PATH:/usr/local/bin"
+        - "/usr/local/bin/aws s3 cp s3://${aws_s3_bucket.ansible_files.id}/ansible.cfg ."
+        - "/usr/local/bin/aws s3 cp s3://${aws_s3_bucket.ansible_files.id}/inventory/aws_ec2.yml inventory/"
+        - "/usr/local/bin/aws s3 cp s3://${aws_s3_bucket.ansible_files.id}/playbooks/{{ playbook }} ."
+        - "/usr/local/bin/ansible-playbook {{ playbook }}"
 DOC
 }
