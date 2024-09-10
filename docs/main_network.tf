@@ -129,17 +129,6 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   private_dns_enabled = true
 }
 
-resource "aws_vpc_endpoint" "ec2messages" {
-  vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.${var.region}.ec2messages"
-  vpc_endpoint_type = "Interface"
-
-  security_group_ids = [aws_security_group.vpc_endpoint.id]
-  subnet_ids         = [aws_subnet.private.id]
-
-  private_dns_enabled = true
-}
-
 # VPCエンドポイント用のセキュリティグループ
 resource "aws_security_group" "vpc_endpoint" {
   name        = "${var.project_name}-vpc-endpoint-sg"
