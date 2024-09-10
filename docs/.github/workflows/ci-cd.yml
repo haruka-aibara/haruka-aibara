@@ -16,13 +16,6 @@ jobs:
     - uses: actions/checkout@v2
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
-    - name: Debug Information
-      run: |
-        pwd
-        ls -l
-        find . -name "*.tf"
-        cat -v main.tf  # main.tfの内容を確認
-        terraform version
     - name: Terraform Init
       run: terraform init
     - name: Terraform Plan
