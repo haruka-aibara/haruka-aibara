@@ -1,0 +1,21 @@
+---
+- name: Deploy Hello World
+  hosts: aws_ec2
+  become: yes
+
+  tasks:
+    - name: Install Apache
+      yum:
+        name: httpd
+        state: present
+
+    - name: Start Apache
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: Create Hello World page
+      copy:
+        content: "<html><body><h1>Hello, Secure World!</h1></body></html>"
+        dest: /var/www/html/index.html
