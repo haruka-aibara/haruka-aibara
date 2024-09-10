@@ -1,25 +1,23 @@
-# aws-secure-hello-world/main.tf
-
-provider "aws" {
-  region = "ap-northeast-1" # Tokyo region
-}
-
+# EC2インスタンスの作成
 resource "aws_instance" "hello_world" {
-  ami           = "ami-0d52744d6551d851e" # Amazon Linux 2 AMI ID for Tokyo region
-  instance_type = "t3.micro"
+  ami           = var.ami_id
+  instance_type = var.instance_type
+  subnet_id     = aws_subnet.private[0].id
 
   iam_instance_profile = aws_iam_instance_profile.ssm_instance_profile.name
 
   vpc_security_group_ids = [aws_security_group.hello_world.id]
 
   tags = {
-    Name = "HelloWorld-SSM"
+    Name = var.project_name
   }
 }
 
+# セキュリティグループの更新
 resource "aws_security_group" "hello_world" {
-  name        = "hello_world_sg"
-  description = "Security group for Hello World app with SSM access"
+  name        = "${var.project_name}-sg"
+  description = "Security group for ${var.project_name} with SSM access"
+  vpc_id      = aws_vpc.main.id
 
   egress {
     from_port   = 0
@@ -29,9 +27,10 @@ resource "aws_security_group" "hello_world" {
   }
 
   tags = {
-    Name = "HelloWorld-SSM-SG"
+    Name = "${var.project_name}-SG"
   }
 }
+
 
 resource "aws_iam_role" "ssm_role" {
   name = "SSMInstanceRole"
@@ -50,6 +49,28 @@ resource "aws_iam_role" "ssm_role" {
   })
 }
 
+resource "aws_iam_role_policy" "s3_access" {
+  name = "S3AccessPolicy"
+  role = aws_iam_role.ssm_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.ansible_files.arn,
+          "${aws_s3_bucket.ansible_files.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "ssm_policy" {
   role       = aws_iam_role.ssm_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
@@ -58,9 +79,4 @@ resource "aws_iam_role_policy_attachment" "ssm_policy" {
 resource "aws_iam_instance_profile" "ssm_instance_profile" {
   name = "SSMInstanceProfile"
   role = aws_iam_role.ssm_role.name
-}
-
-output "instance_id" {
-  value       = aws_instance.hello_world.id
-  description = "ID of the EC2 instance"
 }

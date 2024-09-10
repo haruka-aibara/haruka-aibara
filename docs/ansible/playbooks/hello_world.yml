@@ -1,21 +1,17 @@
 ---
-- name: Deploy Hello World
-  hosts: aws_ec2
+- name: Hello World Playbook
+  hosts: all
   become: yes
-
   tasks:
-    - name: Install Apache
-      yum:
-        name: httpd
-        state: present
-
-    - name: Start Apache
-      service:
-        name: httpd
-        state: started
-        enabled: yes
-
-    - name: Create Hello World page
+    - name: Create a file with "Hello, World!" content
       copy:
-        content: "<html><body><h1>Hello, Secure World!</h1></body></html>"
-        dest: /var/www/html/index.html
+        content: "Hello, World!"
+        dest: /tmp/hello_world.txt
+
+    - name: Display file contents
+      command: cat /tmp/hello_world.txt
+      register: hello_world_content
+
+    - name: Show the content
+      debug:
+        var: hello_world_content.stdout

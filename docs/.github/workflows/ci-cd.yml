@@ -27,16 +27,3 @@ jobs:
       run: terraform init
     - name: Terraform Plan
       run: terraform plan
-
-  ansible:
-    needs: terraform
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Setup Ansible
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ansible
-    - name: Run Ansible Playbook
-      run: ansible-playbook -i ansible/inventory/aws_ec2.yml ansible/playbooks/hello_world.yml
-    # ... (追加のステップ)
