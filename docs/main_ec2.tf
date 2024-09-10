@@ -1,7 +1,7 @@
 resource "aws_instance" "hello_world" {
   ami           = var.ami_id
   instance_type = var.instance_type
-  subnet_id     = aws_subnet.private[0].id
+  subnet_id     = aws_subnet.private.id
 
   iam_instance_profile = aws_iam_instance_profile.ssm_instance_profile.name
 
@@ -9,9 +9,9 @@ resource "aws_instance" "hello_world" {
 
   user_data = <<-EOF
               #!/bin/bash
-              yum update -y
-              yum install -y aws-cli
-              amazon-linux-extras install ansible2 -y
+              apt update -y
+              apt install -y awscli
+              apt install -y ansible
               EOF
 
   tags = {

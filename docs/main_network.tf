@@ -11,14 +11,99 @@ resource "aws_vpc" "main" {
 
 # プライベートサブネットの作成
 resource "aws_subnet" "private" {
-  count             = 2
   vpc_id            = aws_vpc.main.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, 0)
+  availability_zone = data.aws_availability_zones.available.names[0]
 
   tags = {
-    Name = "${var.project_name}-private-subnet-${count.index + 1}"
+    Name = "${var.project_name}-private-subnet-1"
   }
+}
+
+#パブリックサブネットを作成
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = cidrsubnet(var.vpc_cidr, 8, 1)
+  availability_zone       = data.aws_availability_zones.available.names[1]
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.project_name}-private-subnet-2"
+  }
+}
+
+#インターネットゲートウェイを作成
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.project_name}-igw-001"
+  }
+}
+
+#パブリックルートテーブルの作成
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.project_name}-public-rtb-001"
+  }
+}
+
+# インターネットゲートウェイへのルートを設定
+resource "aws_route" "public" {
+  route_table_id         = aws_route_table.public.id
+  gateway_id             = aws_internet_gateway.igw.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+# ルートテーブルとサブネットの関連付け
+resource "aws_route_table_association" "public" {
+  subnet_id      = aws_subnet.public.id
+  route_table_id = aws_route_table.public.id
+}
+
+# NATゲートウェイの作成
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.public.id
+
+  tags = {
+    Name = "${var.project_name}-nat-001"
+  }
+
+  depends_on = [aws_internet_gateway.igw]
+}
+
+# NATゲートウェイ用のElastic IPの作成
+resource "aws_eip" "nat" {
+  vpc = true
+
+  tags = {
+    Name = "${var.project_name}-nat-eip-001"
+  }
+}
+
+# プライベートルートテーブルの作成
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "${var.project_name}-private-rt"
+  }
+}
+
+# NATゲートウェイへのルートを設定
+resource "aws_route" "private_nat_gateway" {
+  route_table_id         = aws_route_table.private.id
+  nat_gateway_id         = aws_nat_gateway.nat.id
+  destination_cidr_block = "0.0.0.0/0"
+}
+
+# プライベートルートテーブルとプライベートサブネットの関連付け
+resource "aws_route_table_association" "private" {
+  subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.private.id
 }
 
 # VPCエンドポイントの作成
@@ -28,7 +113,7 @@ resource "aws_vpc_endpoint" "ssm" {
   vpc_endpoint_type = "Interface"
 
   security_group_ids = [aws_security_group.vpc_endpoint.id]
-  subnet_ids         = aws_subnet.private[*].id
+  subnet_ids         = [aws_subnet.private.id]
 
   private_dns_enabled = true
 }
@@ -39,7 +124,7 @@ resource "aws_vpc_endpoint" "ssmmessages" {
   vpc_endpoint_type = "Interface"
 
   security_group_ids = [aws_security_group.vpc_endpoint.id]
-  subnet_ids         = aws_subnet.private[*].id
+  subnet_ids         = [aws_subnet.private.id]
 
   private_dns_enabled = true
 }
@@ -50,11 +135,10 @@ resource "aws_vpc_endpoint" "ec2messages" {
   vpc_endpoint_type = "Interface"
 
   security_group_ids = [aws_security_group.vpc_endpoint.id]
-  subnet_ids         = aws_subnet.private[*].id
+  subnet_ids         = [aws_subnet.private.id]
 
   private_dns_enabled = true
 }
-
 
 # VPCエンドポイント用のセキュリティグループ
 resource "aws_security_group" "vpc_endpoint" {
@@ -80,18 +164,4 @@ resource "aws_vpc_endpoint" "s3" {
   service_name      = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_route_table.private.id]
-}
-
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "${var.project_name}-private-rt"
-  }
-}
-
-resource "aws_route_table_association" "private" {
-  count          = 2
-  subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private.id
 }
