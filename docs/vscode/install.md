@@ -15,7 +15,9 @@ sudo apt-get install wget ca-certificates
 4. Ctrl + Shift + P キーを同時押しする。
 
 5. 上部に表示されるコマンドパレットに「WSL」と入力し、「WSL: Connect to WSL」をクリックする。
+
 ![image](https://github.com/user-attachments/assets/0a50892e-a755-4ef9-9705-f45dcad71eab)
 
-6. 画面左下に WSL: ubuntu と表示されていれば完了です。
+7. 画面左下に WSL: ubuntu と表示されていれば完了です。
+
 ![image](https://github.com/user-attachments/assets/49f529bf-ac14-42ac-9b68-3789c277ce49)
