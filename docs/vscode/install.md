@@ -2,9 +2,10 @@
 
 
 1. Remote Development インストール
+
 https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack
 
-2. Linux ディストリビューションを更新する
+3. Linux ディストリビューションを更新する
 ```
 sudo apt-get update
 sudo apt-get install wget ca-certificates
