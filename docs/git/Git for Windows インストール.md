@@ -26,7 +26,7 @@ https://learn.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-git#git-credential-m
    
 ![image](https://github.com/user-attachments/assets/bded7007-0d50-4e83-87b4-aa1f98f69298)
 
-8. デフォルト設定のまま「Next」をクリックする。
+8. デフォルトブランチ名を「main」に設定し「Next」をクリックする。
    
 ![image](https://github.com/user-attachments/assets/67cb6c0c-7da0-4605-8ff3-e294a28da98b)
 
