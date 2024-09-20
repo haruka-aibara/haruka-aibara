@@ -24,6 +24,8 @@ $ lsb_release -cs
 jammy ← この値をコピー
 ```
 
+２行目の main の前にコピーした値を入れる
+
 ```
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
 https://apt.releases.hashicorp.com jammy main" | \
