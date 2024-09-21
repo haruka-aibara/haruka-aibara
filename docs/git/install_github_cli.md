@@ -1,8 +1,12 @@
-
+## 参考記事
 
 https://docs.github.com/ja/github-cli/github-cli/quickstart
 
 https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+
+## インストールとログイン手順
+
+1. 以下のコマンドを入力する。
 
 ```
 (type -p wget >/dev/null || (sudo apt update && sudo apt-get install wget -y)) \
@@ -14,14 +18,20 @@ https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 	&& sudo apt install gh -y
 ```
 
+2. 以下のコマンドを入力する。
+
 ```
 sudo apt update
 sudo apt install gh
 ```
 
+3. 以下のコマンドを入力する。
+
 ```
 gh auth login
 ```
+
+4. 該当する選択肢を矢印キーで選び Enter キーを押下し進めます。以下はブラウザを開き認証を行う例です。
 
 ```
 ? What account do you want to log into? GitHub.com
@@ -31,8 +41,6 @@ gh auth login
 ! First copy your one-time code: XXXX-XXXX
 Press Enter to open github.com in your browser... 
 ✓ Authentication complete.
-- gh config set -h github.com git_protocol https
-✓ Configured git protocol
-! Authentication credentials saved in plain text
+~~~~~~~~~~~~~~~~~~
 ✓ Logged in as haruka-aibara
 ```
