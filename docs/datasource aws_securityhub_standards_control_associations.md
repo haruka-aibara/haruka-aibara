@@ -1,60 +1,101 @@
 この記事は生成AIで作成されているので正確な情報は公式ドキュメントなどを参照してください。
 
-# AWS Security Hub Standards Control Associations データソース
+# AWS Security Hub Standards Control Associationsデータソースの活用法
 
 ## 疑問
-AWS Security Hub の Standards Control Associations データソースの詳細な機能と使用方法について
+AWS Security HubのStandards Control Associationsデータソースの使い方と高度な活用例を教えてください。
 
 ## 回答
 
-この記事はLevel 300です。AWS Security Hubに精通している上級者向けです。
+この記事はLevel 200です。AWS Security Hubの基本的な知識を持つ中級者向けです。
 
-`aws_securityhub_standards_control_associations` は、AWS Security Hub の特定のセキュリティコントロールに関連する標準（スタンダード）の関連付け情報を取得するためのデータソースです。このデータソースを使用することで、特定のセキュリティコントロールがどの標準に関連付けられているか、そしてその詳細情報をTerraform内で利用できます。
+AWS Security HubのStandards Control Associationsデータソースは、セキュリティ管理とコンプライアンスの自動化に役立つ強力なツールです。このデータソースを使用することで、Security Hubの標準コントロールに関する詳細情報を取得し、セキュリティ態勢の管理を効率化できます。
 
-### 1. 基本的な使用方法
+### 基本的な使い方
+
+#### 1. セキュリティコントロールの状態確認
+
+特定のセキュリティコントロールの状態を簡単に確認できます。
 
 ```hcl
-resource "aws_securityhub_account" "test" {}
-
-data "aws_securityhub_standards_control_associations" "test" {
+data "aws_securityhub_standards_control_associations" "iam_1" {
   security_control_id = "IAM.1"
+}
 
-  depends_on = [aws_securityhub_account.test]
+output "iam_1_status" {
+  value = data.aws_securityhub_standards_control_associations.iam_1.standards_control_associations[0].association_status
 }
 ```
 
-このコードは、"IAM.1" というIDを持つセキュリティコントロールに関連する全ての標準の情報を取得します。
+このコードは、IAM.1コントロールの現在の状態を出力します。
 
-### 2. 主要な引数
+#### 2. コンプライアンス要件の把握
 
-- `security_control_id` (必須): セキュリティコントロールの識別子。これは `SecurityControlId`、`SecurityControlArn`、またはその両方の組み合わせで指定できます。
+特定のコントロールに関連するコンプライアンス要件を確認できます。
 
-### 3. 取得できる属性
+```hcl
+data "aws_securityhub_standards_control_associations" "ec2_1" {
+  security_control_id = "EC2.1"
+}
 
-データソースは `standards_control_associations` という属性を返します。これは各標準におけるセキュリティコントロールの状態や詳細情報のリストです。
+output "ec2_1_requirements" {
+  value = data.aws_securityhub_standards_control_associations.ec2_1.standards_control_associations[0].related_requirements
+}
+```
 
-### 4. `standards_control_associations` の詳細属性
+このコードは、EC2.1コントロールに関連するコンプライアンス要件をリストアップします。
 
-- `association_status`: 特定の標準におけるコントロールの有効化状態
-- `related_requirements`: 標準に関連するコンプライアンスフレームワークの基本要件リスト
-- `security_control_arn`: セキュリティコントロールのARN
-- `security_control_id`: セキュリティコントロールのID
-- `standards_arn`: 標準のARN
-- `standards_control_description`: 標準の説明
-- `standards_control_title`: 標準のタイトル
-- `updated_at`: 特定の標準におけるコントロールの有効化状態が最後に更新された時間
-- `updated_reason`: 特定の標準におけるコントロールの有効化状態が更新された理由
+### 高度な活用例
 
-### 5. 高度な活用方法
+#### 1. セキュリティスコアボードの作成
 
-- **複数の標準across比較**: 同じセキュリティコントロールが異なる標準でどのように扱われているかを比較分析できます。
-- **コンプライアンスレポートの自動生成**: 特定のセキュリティコントロールに関連する全ての標準とその状態を自動的にレポート化できます。
-- **カスタムダッシュボード作成**: 重要なセキュリティコントロールの状態を可視化するダッシュボードをTerraformで構築できます。
+複数のコントロールの状態を集約して、カスタムセキュリティスコアボードを作成できます。
 
-### 6. 注意点と考慮事項
+```hcl
+locals {
+  control_ids = ["IAM.1", "EC2.1", "S3.1"]
+}
 
-- このデータソースを使用する前に、AWS Security Hubアカウントがアクティブである必要があります（例に示されている `aws_securityhub_account` リソースの使用）。
-- セキュリティコントロールIDは AWS Security Hub に固有のものなので、使用前に正確なIDを確認することが重要です。
-- 大規模な環境や多数の標準が有効化されている場合、データの取得に時間がかかる可能性があります。適切なタイムアウト設定を考慮してください。
+data "aws_securityhub_standards_control_associations" "controls" {
+  count = length(local.control_ids)
+  security_control_id = local.control_ids[count.index]
+}
 
-このデータソースを効果的に活用することで、組織のセキュリティポスチャを Terraform を通じて詳細に把握し、継続的なセキュリティ管理とコンプライアンスモニタリングを自動化することができます。
+output "security_scoreboard" {
+  value = {
+    for idx, control in data.aws_securityhub_standards_control_associations.controls : 
+    local.control_ids[idx] => control.standards_control_associations[0].association_status
+  }
+}
+```
+
+このコードは、指定した複数のコントロールの状態をマップ形式で出力します。
+
+#### 2. コンプライアンスレポートの自動生成
+
+特定の標準に関連するすべてのコントロールの状態を集約し、コンプライアンスレポートを自動生成できます。
+
+```hcl
+data "aws_securityhub_standards_control_associations" "all_controls" {
+  security_control_id = "*"
+}
+
+locals {
+  cis_controls = [
+    for control in data.aws_securityhub_standards_control_associations.all_controls.standards_control_associations : control
+    if strcontains(control.standards_arn, "cis-aws-foundations-benchmark")
+  ]
+}
+
+output "cis_compliance_report" {
+  value = {
+    total_controls = length(local.cis_controls)
+    enabled_controls = length([for control in local.cis_controls : control if control.association_status == "ENABLED"])
+    disabled_controls = length([for control in local.cis_controls : control if control.association_status == "DISABLED"])
+  }
+}
+```
+
+このコードは、CIS AWS Foundations Benchmarkに関連するすべてのコントロールの状態を分析し、簡単なコンプライアンスレポートを生成します。
+
+これらの例は、AWS Security HubのStandards Control Associationsデータソースを活用して、セキュリティ管理とコンプライアンスプロセスを自動化し、効率化する方法を示しています。実際の環境に適用する際は、組織の特定のニーズと要件に合わせてカスタマイズすることをお勧めします。
