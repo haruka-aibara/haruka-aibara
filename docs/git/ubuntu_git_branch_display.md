@@ -1,9 +1,6 @@
+## 参考記事
 
-## GitHub.com 公式のブランチ名表示用 .sh
-
-https://github.com/git/git/tree/v2.31.1/contrib/completion
-
-## 設定手順
+https://qiita.com/m-tmatma/items/d9ceba9118d5f6c1be83
 
 
 1. .bashrc に以下の記述を追加する。
