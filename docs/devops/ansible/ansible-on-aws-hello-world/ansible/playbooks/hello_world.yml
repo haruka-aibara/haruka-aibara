@@ -1,0 +1,17 @@
+---
+- name: Hello World Playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Create a file with "Hello, World!" content
+      copy:
+        content: "Hello, World!"
+        dest: /tmp/hello_world.txt
+
+    - name: Display file contents
+      command: cat /tmp/hello_world.txt
+      register: hello_world_content
+
+    - name: Show the content
+      debug:
+        var: hello_world_content.stdout
