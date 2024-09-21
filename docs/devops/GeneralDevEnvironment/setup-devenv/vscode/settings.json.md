@@ -3,4 +3,5 @@
   },
   "markdown.copyFiles.overwriteBehavior": "uniqueFilename",
   "markdown.editor.drop.copyIntoWorkspace": "always",
-  "markdown.editor.filePaste.copyIntoWorkspace": "always"
+  "markdown.editor.filePaste.copyIntoWorkspace": "always",
+  "files.insertFinalNewline": true
