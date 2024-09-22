@@ -33,4 +33,10 @@ html の内容を以下の通り修正
     });
   }
 </script>
-```html
+```
+
+## 対象サービスの aws アイコンが存在するか確認
+
+以下のように検索できます（SNSで検索した場合の例）
+
+https://icones.js.org/collection/logos?s=aws-sns
