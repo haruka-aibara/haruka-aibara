@@ -10,3 +10,7 @@ https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one
 Markdown Preview Enhanced
 
 https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-enhanced
+
+Markdown Preview Mermaid Support
+
+https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid
