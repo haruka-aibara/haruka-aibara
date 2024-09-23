@@ -14,3 +14,6 @@ https://marketplace.visualstudio.com/items?itemName=shd101wyy.markdown-preview-e
 Markdown Preview Mermaid Support
 
 https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid
+
+Python
+https://marketplace.visualstudio.com/items?itemName=ms-python.python
