@@ -17,3 +17,6 @@ https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid
 
 Python
 https://marketplace.visualstudio.com/items?itemName=ms-python.python
+
+Ruff
+https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff

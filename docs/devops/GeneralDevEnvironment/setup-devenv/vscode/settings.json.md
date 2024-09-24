@@ -28,3 +28,30 @@ https://marketplace.visualstudio.com/items?itemName=hashicorp.terraform#formatti
   "editor.formatOnSaveMode": "file"
 }
 ```
+
+## Ruff 用
+https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
+```
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "ruff.lineLength": 120,
+    "ruff.lint.ignore": [
+        "F401"
+    ],
+    "ruff.lint.preview": true,
+    "ruff.lint.select": [
+        "C",
+        "E",
+        "F",
+        "W",
+        "I"
+    ],
+    "ruff.logFile": "~/logs/ruff.log",
+    "ruff.logLevel": "debug",
+    "ruff.nativeServer": "on",
+```
