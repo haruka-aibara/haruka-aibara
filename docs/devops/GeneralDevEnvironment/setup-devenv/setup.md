@@ -204,7 +204,7 @@ tenv tf install latest-stable
 tenvのterraformにPATHを通すため .bashrc に以下を追記
 ```bash
 # tenv
-export PATH=$(tenv update-path)
+export PATH=$PATH:$(tenv update-path)
 ```
 
 ```bash
