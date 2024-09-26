@@ -201,9 +201,14 @@ sudo snap install tenv
 tenv tf install latest-stable
 ```
 
-tenvのterraformにPATHを通す
+tenvのterraformにPATHを通すため .bashrc に以下を追記
 ```bash
+# tenv
 export PATH=$(tenv update-path)
+```
+
+```bash
+source .bashrc
 ```
 
 ## Git 関連設定
