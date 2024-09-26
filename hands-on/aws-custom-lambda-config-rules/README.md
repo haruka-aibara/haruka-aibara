@@ -1,0 +1,1 @@
+# aws-custom-lambda-config-rules
