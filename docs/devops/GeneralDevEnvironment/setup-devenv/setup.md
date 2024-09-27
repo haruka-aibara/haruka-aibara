@@ -152,6 +152,11 @@ https://icones.js.org/collection/logos?s=aws-sns
 sudo apt install unzip
 ```
 
+## 圧縮関連 インストール
+```
+sudo apt-get install zip gzip tar
+```
+
 ## AWS CLI インストールと初期設定
 https://docs.aws.amazon.com/ja_jp/cli/latest/userguide/getting-started-install.html
 
