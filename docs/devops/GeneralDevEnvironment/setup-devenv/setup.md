@@ -152,6 +152,11 @@ https://icones.js.org/collection/logos?s=aws-sns
 sudo apt install unzip
 ```
 
+## jq インストール
+```bash
+sudo apt install jq
+```
+
 ## 圧縮関連 インストール
 ```
 sudo apt-get install zip gzip tar
