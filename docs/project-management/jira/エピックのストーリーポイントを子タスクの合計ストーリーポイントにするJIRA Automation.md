@@ -52,8 +52,46 @@ https://community.atlassian.com/t5/Automation-questions/How-sum-up-story-point-e
 14. ルール/関連する課題を分割する
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-33.png>)
 
-15. 
+15. 関連課題のタイプ - 親
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-34.png>)
+
+16. 次へ
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-35.png>)
+
+17. その場合、アクションを追加する
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-36.png>)
+
+18. 課題の編集
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-37.png>)
+
+19. その他オプション - 「このルールはメールを～」のチェックを外し、追加フィールドを下記の JSON を入力する
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-38.png>)
+
+```json
+{
+  "fields": {
+   "Story point estimate": {{lookupIssues.Story point estimate.sum|0}}
+  }
+}
+```
+
+20. 次へ
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-39.png>)
+
+21. ルールをオンにする
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-40.png>)
+
+22. 任意のルール名を入力する（ここでは「見積自動更新」としました。）
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-41.png>)
+
+23. ルールをオンにしたら完了です。
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-42.png>)
+
+
+後はエピックの Story point estimate に子タスクの合計ストーリーポイントが表示されます。
+
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-43.png>)
+
 
 ## 備忘のため、過去の失敗した履歴を下記に残しておきます。
 
