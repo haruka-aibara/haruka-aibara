@@ -44,16 +44,16 @@ https://community.atlassian.com/t5/Automation-questions/How-sum-up-story-point-e
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-30.png>)
 
 12. 次へ
-![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image.png>)
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-31.png>)
 
 13. FOR EACH: ブランチを追加
-![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-1.png>)
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-32.png>)
 
 14. ルール/関連する課題を分割する
-![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-2.png>)
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-33.png>)
 
 15. 
-![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-3.png>)
+![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-34.png>)
 
 ## 備忘のため、過去の失敗した履歴を下記に残しておきます。
 
