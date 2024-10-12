@@ -6,8 +6,9 @@ resource "aws_sns_topic" "this" {
 }
 
 resource "aws_sns_topic_policy" "this" {
-  arn    = aws_sns_topic.this.arn
-  policy = data.aws_iam_policy_document.sns_topic_policy.json
+  provider = aws.us-east-1
+  arn      = aws_sns_topic.this.arn
+  policy   = data.aws_iam_policy_document.sns_topic_policy.json
 }
 
 data "aws_iam_policy_document" "sns_topic_policy" {
