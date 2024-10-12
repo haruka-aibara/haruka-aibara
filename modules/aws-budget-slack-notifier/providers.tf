@@ -11,3 +11,9 @@ provider "aws" {
     }
   }
 }
+
+# AWSプロバイダーの設定（バージニア北部）
+provider "aws" {
+  alias  = "us-east-1"
+  region = "us-east-1"
+}
