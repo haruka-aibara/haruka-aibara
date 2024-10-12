@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "notify_slack" {
     effect = "Allow"
     condition {
       test     = "StringEquals"
-      variable = "AWS:SourceOwner"
+      variable = "AWS:SourceAccount"
       values = [
         data.aws_caller_identity.current.account_id,
       ]
