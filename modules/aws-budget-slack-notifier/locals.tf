@@ -4,4 +4,12 @@ locals {
   budgets_limit_ammout = 1 #USD
   slack_channel_id     = var.slack_channel_id
   slack_workspace_id   = var.slack_workspace_id
+
+  default_tags = {
+    Owner       = "haruka-aibara"
+    Terraform   = true
+    Environment = var.env
+    Project     = local.project_name
+    Repository  = local.git_repository_name
+  }
 }

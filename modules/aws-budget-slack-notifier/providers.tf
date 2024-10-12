@@ -2,13 +2,7 @@
 provider "aws" {
   region = "ap-northeast-1"
   default_tags {
-    tags = {
-      Owner       = "haruka-aibara"
-      Terraform   = true
-      Environment = var.env
-      Project     = local.project_name
-      Repository  = local.git_repository_name
-    }
+    tags = local.default_tags
   }
 }
 
@@ -16,4 +10,7 @@ provider "aws" {
 provider "aws" {
   alias  = "us-east-1"
   region = "us-east-1"
+  default_tags {
+    tags = local.default_tags
+  }
 }
