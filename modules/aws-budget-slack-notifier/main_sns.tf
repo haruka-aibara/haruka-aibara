@@ -1,48 +1,37 @@
 # AWS Budgets がグローバルサービス（us-east-1）のため、SNSトピックも us-east-1 に作成する必要あり
 
-resource "aws_sns_topic" "this" {
+resource "aws_sns_topic" "slack_alert" {
   provider = aws.us-east-1
   name     = "${local.project_name}_topic"
 }
 
-resource "aws_sns_topic_policy" "this" {
+resource "aws_sns_topic_policy" "slack_alert" {
   provider = aws.us-east-1
-  arn      = aws_sns_topic.this.arn
-  policy   = data.aws_iam_policy_document.sns_topic_policy.json
+  arn      = aws_sns_topic.slack_alert.arn
+  policy   = data.aws_iam_policy_document.slack_alert.json
 }
 
-data "aws_iam_policy_document" "sns_topic_policy" {
+data "aws_iam_policy_document" "slack_alert" {
   statement {
+    sid = "slack_alert"
     actions = [
-      "SNS:Subscribe",
-      "SNS:SetTopicAttributes",
-      "SNS:RemovePermission",
-      "SNS:Receive",
       "SNS:Publish",
-      "SNS:ListSubscriptionsByTopic",
-      "SNS:GetTopicAttributes",
-      "SNS:DeleteTopic",
-      "SNS:AddPermission",
     ]
-
+    effect = "Allow"
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceOwner"
-
       values = [
         data.aws_caller_identity.current.account_id,
       ]
     }
-
-    effect = "Allow"
-
     principals {
-      type        = "AWS"
-      identifiers = ["*"]
+      type        = "Service"
+      identifiers = ["budgets.amazonaws.com"]
     }
-
     resources = [
-      aws_sns_topic.this.arn,
+      aws_sns_topic.slack_alert.arn,
     ]
   }
 }
+
