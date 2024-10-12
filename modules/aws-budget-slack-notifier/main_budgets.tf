@@ -10,6 +10,6 @@ resource "aws_budgets_budget" "all_daily" {
     comparison_operator       = "GREATER_THAN"
     threshold                 = 1
     threshold_type            = "ABSOLUTE_VALUE"
-    subscriber_sns_topic_arns = [aws_sns_topic.notify_slack]
+    subscriber_sns_topic_arns = [aws_sns_topic.notify_slack.arn]
   }
 }
