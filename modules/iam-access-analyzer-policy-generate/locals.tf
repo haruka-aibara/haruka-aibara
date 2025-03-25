@@ -9,4 +9,6 @@ locals {
     Project     = local.project_name
     Repository  = local.git_repository_name
   }
+
+  trail_bucket_name = "tf-test-trail-haruka-aibara-2025-03-25"
 }

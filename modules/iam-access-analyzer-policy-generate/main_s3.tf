@@ -9,7 +9,7 @@ resource "aws_cloudtrail" "example" {
 }
 
 resource "aws_s3_bucket" "example" {
-  bucket        = "tf-test-trail-haruka-aibara-2025-03-25"
+  bucket        = local.trail_bucket_name
   force_destroy = true
 }
 

@@ -20,8 +20,8 @@ data "aws_iam_policy_document" "iam_access_analyzer_service_role_permission" {
     ]
     effect = "Allow"
     resources = [
-      "arn:aws:s3:::tf-test-trail-haruka-aibara-2025-03-25",
-      "arn:aws:s3:::tf-test-trail-haruka-aibara-2025-03-25/*"
+      "arn:aws:s3:::${local.trail_bucket_name}",
+      "arn:aws:s3:::${local.trail_bucket_name}/*"
     ]
   }
 
