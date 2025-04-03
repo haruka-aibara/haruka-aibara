@@ -3,29 +3,11 @@ now：
  - Python
    - https://www.udemy.com/course/python-beginner
 
-not now：
- - Go
- - Ruby
- - Rust
- - JavaScript / Node.js
-   - https://www.udemy.com/course/javascript-essence
-
 ### 2. Operating System
 now：
  - Linux
    - Ubuntu / Debian
      - https://www.udemy.com/course/unscared_linux
-
-
-not now：
- - Windows
- - Linux
-   - SUSE Linux
-   - RHEL / Derivatives
- - Unix
-   - FreeBSD
-   - OpenBSD
-   - NetBSD
 
 ### 3. Terminal Knowledge
 now：
@@ -34,36 +16,31 @@ now：
      - https://www.youtube.com/watch?v=tK9Oc6AEnR4
  - Editors
    - Vim
+     - https://www.youtube.com/watch?v=RZ4p-saaQkc
    - Nano
+     - https://www.youtube.com/watch?v=DLeATFgGM-A
    - Emacs
+     - https://www.youtube.com/watch?v=48JlgiBpw_I
  - Process Monitoring
+   - https://www.youtube.com/watch?v=n9nZ1ellaV0
  - Performance Monitoring
  - Networking Tools
  - Text Manipulation
 
-not now：
- - Scripting
-   - PowerShell
-
 ### 4. Version Control Systems
  - now：
    - Git
+     - https://www.udemy.com/course/unscared_git
 
 ### 5. VCS Hosting
  - now：
    - GitHub
-
- - not now：
-   - GitLab
-   - Bitbucket
+     - https://www.udemy.com/course/unscared_git
 
 ### 6. Containers
  - now：
    - Docker
      - https://www.udemy.com/course/ok-docker
-
- - not now：
-   - LXC
 
 ### 7. What is and how to setup X?
  - now：
@@ -75,12 +52,6 @@ not now：
    - Web Server
      - Nginx
 
- - not now：
-   - Caddy
-   - Tomcat
-   - Apache
-   - IIS
-
 ### 8. Networking & Protocols
  - now：
    - DNS
@@ -89,133 +60,68 @@ not now：
    - SSL / TLS
    - SSH
 
- - not now：
-   - FTP / SFTP
-   - OSI Model
-   - Email Protocols
-     - White / Grey Listing
-     - SMTP
-     - DMARC
-     - IMAP
-     - SRF
-     - POP3S
-     - Domain Keys
-
 ### 9. Cloud Providers
  - now：
    - AWS
      - Certified xx
   
- - not now：
-   - Azure
-   - Google Cloud
-   - Digital Ocean
-   - Alibaba Cloud
-   - Hetzner
-   - Contabo
-   - Heroku
-
 ### 10. Serverless
  - now：
    - AWS Lambda
- - not now：
-   - Cloudflare
-   - Azure Functions
-   - Vercel
-   - Netlify
-   - GCP Functions
 
 ### 11. Provisioning
  - now：
    - Terraform
      - https://www.udemy.com/course/iac-with-terraform
- - not now：
-   - AWS CDK
-   - CloudFormation
-   - Pulumi
 
 ### 12. Configuration Management
  - now：
    - Ansible
- - not now：
-   - Chef
-   - Puppet
+     - https://www.udemy.com/course/aws-ansibleinfrastructure-as-code
 
 ### 13. CI/CD Tools
  - now：
    - GitHub Actions
- - not now：
-   - TeamCity
-   - Jenkins
-   - Travis CI
-   - Circle CI
-   - GitLab CI
-   - Drone
+     - https://www.udemy.com/course/github-actions-the-complete-guide
 
 ### 14. Secret Management
  - now：
    - Vault
- - not now：
-   - Sealed Secrets
-   - SOPs
-   - Cloud Specific Tools
+     - ？ https://www.udemy.com/course/hashicorp-vault
 
 ### 15. Infrastructure Monitoring
  - now：
    - Prometheus
+     - https://www.udemy.com/course/awsgrafanaprometheus/
    - Grafana
+     - https://www.udemy.com/course/awsgrafanaprometheus/
    - Datadog
- - not now：
-   - Zabbix
 
 ### 16. Logs Management
  - now：
    - Splunk
-   - Loki
- - not now：
-   - Papertrail
-   - Elastic Stack
-   - Graylog
+   - Loki（Grafana Loki）
 
 ### 17. Container Orchestration
  - now：
    - Kubernetes
      - https://www.udemy.com/course/aws-eks-kubernetes-docker-devops-best-practices-2020/
    - EKS（AWS）
- - not now：
-   - GKE（Google Cloud）
-   - AKS（Azure）
-   - AWS ECS / Fargate
-   - Docker Swarm
 
 ### 18. Application Monitoring
  - now：
    - Datadog
    - Prometheus
- - not now：
-   - Jaeger
-   - New Relic
-   - OpenTelemetry
 
 ### 19. Artifact Management
- - not now：
-   - Artifactory
-   - Nexus
-   - Cloud Smith
 
 ### 20. GitOps
  - now：
    - ArgoCD
- - not now：
-   - FluxCD
 
 ### 21. Service Mesh
  - now：
    - Envoy
- - not now：
-   - Istio
-   - Consul
-   - Linkerd
 
 ### 22. Cloud Design Patterns
  - now：
