@@ -35,15 +35,16 @@ cat
 
 ### ローカル変数とグローバル変数の衝突
 
-以下のコードはエラーになります（コメントアウトされています）：
+以下のコードはエラーになります：
 
 ```python
-# これはエラーが出るためコメントアウトしています
-# def f():
-#     print(animal)  # この時点ではanimalはまだローカル変数として認識されていない
-#     animal = "dog"  # ここでanimalがローカル変数として定義される
-#     print('after', animal)
-# f()
+animal = 'cat'
+# これはエラーが出ます
+def f():
+    print(animal)  # この時点ではanimalはまだローカル変数として認識されていない
+    animal = "dog"  # ここでanimalがローカル変数として定義される
+    print('after', animal)
+f()
 ```
 
 **解説:**
