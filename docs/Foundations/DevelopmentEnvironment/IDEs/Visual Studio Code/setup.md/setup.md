@@ -391,3 +391,6 @@ export QT_DEBUG_PLUGINS=1
 
 これで、VSCode のターミナルで「anaconda-navigator」と入力すると
 anaconda-navigator が起動します。
+
+### Mypy Type Checker
+https://marketplace.visualstudio.com/items/?itemName=ms-python.mypy-type-checker
