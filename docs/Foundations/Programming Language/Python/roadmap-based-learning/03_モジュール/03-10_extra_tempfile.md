@@ -1,4 +1,4 @@
-# Python tempfileモジュール
+# tempfile
 
 ## 概要と重要性
 tempfileモジュールは、一時的なファイルやディレクトリを安全に作成・管理するためのPythonの標準ライブラリです。
