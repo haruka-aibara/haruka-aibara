@@ -1,4 +1,4 @@
-# Python subprocessモジュール
+# subprocess
 
 ## 概要
 subprocessモジュールはPythonから外部コマンドを実行するための強力なツールで、OSコマンドをより安全かつ柔軟に扱うことができます。
