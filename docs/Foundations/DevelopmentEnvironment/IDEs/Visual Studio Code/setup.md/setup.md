@@ -394,3 +394,6 @@ anaconda-navigator が起動します。
 
 ### Mypy Type Checker
 https://marketplace.visualstudio.com/items/?itemName=ms-python.mypy-type-checker
+
+### Rainbow CSV
+https://marketplace.visualstudio.com/items/?itemName=mechatroner.rainbow-csv
