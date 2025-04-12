@@ -70,6 +70,9 @@ test_simple.py::test_string PASSED
 
 ```python
 # calculation.py
+import os
+
+
 class Cal():
     def add_num_and_double(self, x, y):
         """
