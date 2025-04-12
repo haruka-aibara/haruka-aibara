@@ -6,3 +6,6 @@ test
 calculation.py
 test_calculation.py
 __pycache__
+.coverage
+conftest.py
+test.csv
