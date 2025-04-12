@@ -10,3 +10,4 @@ __pycache__
 conftest.py
 test.csv
 tox_test
+my_project
