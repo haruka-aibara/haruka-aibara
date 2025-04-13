@@ -397,3 +397,6 @@ https://marketplace.visualstudio.com/items/?itemName=ms-python.mypy-type-checker
 
 ### Rainbow CSV
 https://marketplace.visualstudio.com/items/?itemName=mechatroner.rainbow-csv
+
+### pip
+sudo apt install python3-pip
