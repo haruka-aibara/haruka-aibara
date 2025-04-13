@@ -11,3 +11,4 @@ conftest.py
 test.csv
 tox_test
 my_project
+.pytest_cache
