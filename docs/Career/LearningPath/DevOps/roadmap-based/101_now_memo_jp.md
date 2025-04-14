@@ -26,7 +26,7 @@
 - 後続のツール（Docker、Kubernetes等）はLinux環境での使用が前提
 - インフラの自動化を理解するための基礎知識となる
 
-**教材**: https://www.udemy.com/course/unscared_linux
+**教材**: 
 
 ## 3. ターミナル知識
 ### Bash、エディタ、モニタリングツール
@@ -55,7 +55,7 @@
 - チーム開発の標準ツール
 - Infrastructure as Code（IaC）の管理に必須
 
-**教材**: https://www.udemy.com/course/unscared_git
+**教材**: 
 
 ## 5. VCSホスティング
 ### GitHub
@@ -67,7 +67,7 @@
 - Pull Requestベースの開発フローを学べる
 - コードレビュープロセスを理解できる
 
-**教材**: https://www.udemy.com/course/unscared_git
+**教材**: 
 
 ## 6. コンテナ
 ### Docker
