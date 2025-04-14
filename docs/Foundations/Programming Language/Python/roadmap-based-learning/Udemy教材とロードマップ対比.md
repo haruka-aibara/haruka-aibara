@@ -29,11 +29,11 @@
    - [x] 10-01_プログラミングパラダイム.md ★ないので自作
  - [x] 11_コンテキストマネージャー
  - [ ] 12_フレームワークを学ぶ
-   - [ ] 12-01_Plotly Dash.md ない
-   - [ ] 12-02_gevent.md　ない
-   - [ ] 12-03_aiohttp.md ない
-   - [ ] 12-04_Pyramid.md ない
-   - [ ] 12-05_Tornado.md ない
+   - [x] 12-01_Plotly Dash.md ない
+   - [x] 12-02_gevent.md　ない
+   - [x] 12-03_aiohttp.md ない
+   - [x] 12-04_Pyramid.md ない
+   - [x] 12-05_Tornado.md ない
    - [ ] 12-06_Sonic.md ない
    - [ ] 12-07_同期型.md
    - [ ] 12-08_非同期型.md　ある
