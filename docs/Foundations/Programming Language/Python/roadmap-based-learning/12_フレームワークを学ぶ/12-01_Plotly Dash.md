@@ -48,7 +48,7 @@ app.layout = html.Div([
 
 # アプリケーションの実行
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
 ```
 
 このコードを実行すると、ローカルのウェブサーバーが起動し、ブラウザで `http://127.0.0.1:8050/` にアクセスすることでアプリケーションが表示されます。
@@ -117,7 +117,7 @@ def update_graph(selected_graph_type):
 
 # アプリケーションの実行
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
 ```
 
 このコードを実行すると、ドロップダウンメニューでグラフの種類を選択できるインタラクティブなアプリケーションが表示されます。
@@ -215,7 +215,7 @@ def update_data(n_clicks, fruit_name, sales_count):
 
 # アプリケーションの実行
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
 ```
 
 このコードを実行すると、データを入力して追加できるフォームを持つアプリケーションが表示されます。
@@ -323,7 +323,7 @@ app.layout = html.Div([
 
 # アプリケーションの実行
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run(debug=True)
 ```
 
 このコードを実行すると、複数のグラフを含む総合的なダッシュボードが表示されます。
