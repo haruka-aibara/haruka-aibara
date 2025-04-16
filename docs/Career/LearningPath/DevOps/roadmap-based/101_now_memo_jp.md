@@ -16,6 +16,9 @@
 
 **教材**: https://www.udemy.com/course/python-beginner
 
+こちらにまとめてます
+https://github.com/haruka-aibara/tech-learnings/tree/main/Foundations/Programming%20Language/Python/Roadmap-Based-Learning
+
 ## 2. オペレーティングシステム
 ### Linux (Ubuntu/Debian)
 **概要**: オープンソースのOS。多くのサーバー環境で使用されており、DevOpsの基盤となるシステム。
@@ -27,6 +30,10 @@
 - インフラの自動化を理解するための基礎知識となる
 
 **教材**: 
+https://roadmap.sh/linux　の各リンクが良さそうです
+
+こちらにまとめてます
+https://github.com/haruka-aibara/tech-learnings/tree/main/Foundations/Operating%20System/Linux/Roadmap-Based-Learning
 
 ## 3. ターミナル知識
 ### Bash、エディタ、モニタリングツール
@@ -45,6 +52,9 @@
 - Emacs: https://www.youtube.com/watch?v=48JlgiBpw_I
 - プロセスモニタリング: https://www.youtube.com/watch?v=n9nZ1ellaV0
 
+こちらにまとめてます
+未作成
+
 ## 4. バージョン管理システム
 ### Git
 **概要**: 分散型バージョン管理システム。コードの変更履歴を追跡し、複数人での開発を可能にする。
@@ -56,6 +66,7 @@
 - Infrastructure as Code（IaC）の管理に必須
 
 **教材**: 
+Udemy にはあまりしっくりくる教材見つからず
 
 ## 5. VCSホスティング
 ### GitHub
@@ -68,6 +79,10 @@
 - コードレビュープロセスを理解できる
 
 **教材**: 
+Udemy にはあまりしっくりくる教材見つからず
+
+こちらにまとめてます
+https://github.com/haruka-aibara/tech-learnings/tree/main/Version%20Control%20Systems/Git%20and%20GitHub/Roadmap-Based-Learning
 
 ## 6. コンテナ
 ### Docker
@@ -81,6 +96,9 @@
 
 **教材**: https://www.udemy.com/course/ok-docker
 
+こちらにまとめてます
+https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Containers/Docker/Roadmap-Based-Learning
+
 ## 7. プロキシ・サーバー設定
 ### Nginx、プロキシ、ロードバランサーなど
 **概要**: ネットワークトラフィックの制御、ルーティング、負荷分散などを行うコンポーネント。
@@ -90,6 +108,12 @@
 - セキュリティ対策の重要な部分
 - スケーラブルなシステム設計の基本
 - マイクロサービスアーキテクチャでの通信制御に必要
+
+**教材**: 
+
+
+こちらにまとめてます
+未作成
 
 ## 8. ネットワークとプロトコル
 ### DNS、HTTP(S)、SSL/TLS、SSH
