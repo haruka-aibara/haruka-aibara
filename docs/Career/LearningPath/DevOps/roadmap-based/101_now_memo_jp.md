@@ -83,7 +83,7 @@ Udemy にはあまりしっくりくる教材見つからず
 **教材**: 
 Udemy にはあまりしっくりくる教材見つからず
 
-こちらにまとめてます
+こちらにまとめてます（4. バージョン管理システム と同じ）
 https://github.com/haruka-aibara/tech-learnings/tree/main/Version%20Control%20Systems/Git%20and%20GitHub/Roadmap-Based-Learning
 
 ## 6. コンテナ
