@@ -53,7 +53,7 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Foundations/Operating%
 - プロセスモニタリング: https://www.youtube.com/watch?v=n9nZ1ellaV0
 
 こちらにまとめてます
-未作成
+未作成　roadmap.sh なし
 
 ## 4. バージョン管理システム
 ### Git
@@ -113,7 +113,7 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 
 
 こちらにまとめてます
-未作成
+未作成　roadmap.sh なし
 
 ## 8. ネットワークとプロトコル
 ### DNS、HTTP(S)、SSL/TLS、SSH
@@ -157,6 +157,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 
 **教材**: https://www.udemy.com/course/iac-with-terraform
 
+こちらにまとめてます
+https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/IaC/Terraform/Roadmap-Based-Learning
+
 ## 12. 構成管理
 ### Ansible
 **概要**: サーバー構成管理ツール。YAMLベースの宣言型言語でサーバーの状態を定義し自動化する。
@@ -168,6 +171,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - 多数のサーバーの一貫した管理を実現
 
 **教材**: https://www.udemy.com/course/aws-ansibleinfrastructure-as-code
+
+こちらにまとめてます
+未作成　roadmap.sh なし
 
 ## 13. CI/CDツール
 ### GitHub Actions
@@ -181,6 +187,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 
 **教材**: https://www.udemy.com/course/github-actions-the-complete-guide
 
+こちらにまとめてます
+https://github.com/haruka-aibara/tech-learnings/tree/main/Version%20Control%20Systems/Git%20and%20GitHub/Roadmap-Based-Learning/07_GitHub%E3%83%AF%E3%83%BC%E3%82%AF%E3%83%95%E3%83%AD%E3%83%BC/07-02_GitHub%20Actions
+
 ## 14. シークレット管理
 ### Vault
 **概要**: HashiCorpのセキュリティツール。パスワード、API鍵などの機密情報を安全に保存・アクセス管理する。
@@ -192,6 +201,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - 動的シークレット生成などの高度な機能
 
 **教材**: https://www.udemy.com/course/hashicorp-vault
+
+こちらにまとめてます
+未作成　roadmap.sh なし
 
 ## 15. インフラストラクチャモニタリング
 ### Prometheus、Grafana、Datadog
@@ -205,6 +217,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 
 **教材**: https://www.udemy.com/course/awsgrafanaprometheus/
 
+こちらにまとめてます
+未作成　roadmap.sh なし
+
 ## 16. ログ管理
 ### Splunk、Grafana Loki
 **概要**: 分散システムからのログデータを集約、検索、分析するためのプラットフォーム。
@@ -214,6 +229,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - システム動作の可視化と理解に役立つ
 - セキュリティインシデントの検出に不可欠
 - コンプライアンス要件を満たすために必要
+
+こちらにまとめてます
+未作成　roadmap.sh なし
 
 ## 17. コンテナオーケストレーション
 ### Kubernetes、EKS
@@ -227,6 +245,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 
 **教材**: https://www.udemy.com/course/aws-eks-kubernetes-docker-devops-best-practices-2020/
 
+こちらにまとめてます
+https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Containers/Orchestration/Kubernetes/Roadmap-Based-Learning
+
 ## 18. アプリケーションモニタリング
 ### Datadog、Prometheus
 **概要**: アプリケーションのパフォーマンス監視、トレーシング、ユーザーエクスペリエンス分析ツール。
@@ -236,6 +257,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - エンドユーザー体験の理解と最適化
 - マイクロサービス間の依存関係と通信の可視化
 - ビジネスメトリクスとの関連付け
+
+こちらにまとめてます
+未作成　roadmap.sh なし
 
 ## 20. GitOps
 ### ArgoCD
@@ -247,6 +271,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - 変更の追跡と監査が容易
 - 自動修復と同期機能による運用負荷軽減
 
+こちらにまとめてます
+未作成　roadmap.sh なし
+
 ## 21. サービスメッシュ
 ### Envoy
 **概要**: マイクロサービス間の通信を制御・監視するプロキシ。トラフィック管理、セキュリティ、可観測性を提供。
@@ -257,6 +284,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - 高度なトラフィック制御と安全性の確保
 - サービスメッシュの基盤技術として広く採用
 
+こちらにまとめてます
+未作成　roadmap.sh なし
+
 ## 22. クラウドデザインパターン
 ### 可用性、データ管理、設計と実装、管理とモニタリング
 **概要**: クラウドネイティブアプリケーション設計のための標準的なアーキテクチャパターン集。
@@ -266,3 +296,6 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - 共通の問題に対する検証済みの解決策
 - ベストプラクティスの体系的理解
 - クラウドの利点を最大限に活用するための知識
+
+こちらにまとめてます
+未作成　roadmap.sh なし
