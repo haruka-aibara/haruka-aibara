@@ -400,3 +400,10 @@ https://marketplace.visualstudio.com/items/?itemName=mechatroner.rainbow-csv
 
 ### pip
 sudo apt install python3-pip
+
+### ansible language suppor
+https://marketplace.visualstudio.com/items/?itemName=redhat.ansible
+
+### ansible
+sudo apt install ansible
+sudo apt install ansible-lint

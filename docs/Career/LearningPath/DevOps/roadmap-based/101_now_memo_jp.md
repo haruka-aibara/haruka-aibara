@@ -127,6 +127,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - トラブルシューティングに必要な知識
 - クラウドサービスの設定に関わる基本概念
 
+こちらにまとめてます
+未作成　roadmap.sh なし
+
 ## 9. クラウドプロバイダー
 ### AWS
 **概要**: Amazon Web Services。クラウドコンピューティングサービスの最大手。様々なインフラとプラットフォームサービスを提供。
@@ -137,6 +140,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - スケーラブルなシステム設計を学べる
 - 多様なマネージドサービスを活用したDevOpsプラクティスを実践できる
 
+こちらにまとめてます
+未作成　roadmap.sh なし
+
 ## 10. サーバーレス
 ### AWS Lambda
 **概要**: イベント駆動型のコンピューティングサービス。サーバー管理なしでコードを実行できる。
@@ -146,6 +152,9 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/Contain
 - マイクロサービス実装の効率的な方法
 - インフラ管理の負担を減らしながら自動化を実現できる
 - コスト効率の高いシステム設計を学べる
+
+こちらにまとめてます
+未作成　roadmap.sh なし
 
 ## 11. プロビジョニング
 ### Terraform
