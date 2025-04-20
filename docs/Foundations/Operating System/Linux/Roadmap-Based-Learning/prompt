@@ -1,4 +1,4 @@
-【Linux講座】メモリとディスク使用状況のMarkdownファイルを作成してください。
+【Linux講座】プロセスフォークのMarkdownファイルを作成してください。
 以下の構成で作成してほしいです：
 1. トピックの概要と重要性の説明（1行程度）
 2. 主要概念の理論的説明（1行程度）
@@ -16,13 +16,29 @@
 対象読者レベル：初心者/中級者
 必ず含めてほしい具体的な内容：
 
-Evaluating Available Memory
-When running several applications in a Linux environment, constant tracking of system health is crucial for smooth operations. Evaluating available memory as part of a server review is a common practice for system administrators. This involves using various command-line tools provided by Linux, such as free, vmstat, and top. These can assist in monitoring memory usage and performance metrics, ensuring systems are not overloaded, and adequate resources are available for important applications.
+Process Forking in Process Management
+Process forking is a fundamental concept under process management in Linux systems. The term refers to the mechanism where a running process (parent process) can generate a copy of itself (child process), enabling concurrent execution of both processes. This is facilitated by the 'fork' system call. It is a prominent aspect in understanding the creation and control of processes in a Linux environment.
 
-The free command, for instance, gives a summary of the overall memory usage including total used and free memory, swap memory and buffer/cache memory. Here's an example:
+The child process created by fork is a nearly perfect copy of the parent process with exception to just a few values including the process ID and parent process ID. Any changes made in the child process does not affect the parent process, and vice versa.
 
-$ free -h
-              total        used        free      shared  buff/cache   available
-Mem:           15Gi       10Gi       256Mi       690Mi       5.3Gi       4.2Gi
-Swap:         8.0Gi       1.3Gi       6.7Gi
-In this output, the '-h' option is used to present the results in a human-readable format. Understanding the state of memory usage in your Linux server can help maintain optimal server performance and troubleshoot any potential issues.
+Here's a basic code snippet of proc forking in C:
+
+#include<sys/types.h>
+#include<unistd.h>
+#include<stdio.h>
+
+int main()
+{
+    pid_t child_pid;
+
+    // Try creating a child process
+    child_pid = fork();
+
+    // If a child is successfully created
+    if(child_pid >= 0)
+    printf("Child created with PID: %d\n", child_pid);
+    else
+    printf("Fork failed\n");
+    return 0;
+}
+In this snippet, fork() is used to created a new child process. If the process creation is successful, fork() returns the process ID of the child process. If unsuccessful, it returns a negative value.
