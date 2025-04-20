@@ -153,6 +153,3 @@ uvx --from pyre-check pyre --source-directory "project_dir" check
 ### Settings
 これを検索し、off -> strict に変更 pylance を動作させる
 python.analysis.typeCheckingMode
-
-### Pyre
-
