@@ -143,3 +143,7 @@ sudo apt install pipx
 uv tool install pycodestyle
 uv tool install flake8
 uv tool install pylint
+
+### Settings
+これを検索し、off -> strict に変更 pylance を動作させる
+python.analysis.typeCheckingMode
