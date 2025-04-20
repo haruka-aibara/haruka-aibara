@@ -56,9 +56,6 @@ https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
 uv インストール
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-```bash
 source $HOME/.cargo/env
 ```
 
