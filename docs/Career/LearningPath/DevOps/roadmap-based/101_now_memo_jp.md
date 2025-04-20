@@ -184,7 +184,7 @@ https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/IaC/Ter
 **教材**: https://www.udemy.com/course/aws-ansibleinfrastructure-as-code
 
 こちらにまとめてます
-未作成　roadmap.sh なし
+https://github.com/haruka-aibara/tech-learnings/tree/main/Infrastructure/ConfigManagement/Ansible/Roadmap-Based-Learning
 
 ## 13. CI/CDツール
 ### GitHub Actions
