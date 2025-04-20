@@ -1,10 +1,22 @@
-### 追加の拡張機能をインストール
+### VScode 拡張機能をインストール
 
- - Python
+1. **Python拡張機能**
+   - Pythonコードの基本的な開発支援機能
+   - コード補完、デバッグ、構文ハイライト等の基本機能を提供
+   - Python開発には必須の拡張機能
    - https://marketplace.visualstudio.com/items?itemName=ms-python.python
 
- - Ruff
+2. **Ruff**
+   - 高速なPythonのリンター（コード分析ツール）
+   - コーディングスタイルやバグの可能性をチェック
+   - コードの品質維持を支援
    - https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff
+
+3. **Mypy Type Checker**
+   - Pythonの型ヒントをチェックする機能
+   - 型関連のバグを事前に発見
+   - コードの信頼性向上に役立つ
+   - https://marketplace.visualstudio.com/items/?itemName=ms-python.mypy-type-checker
 
 ### Settings.json を編集する
 
@@ -35,9 +47,10 @@ https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
     "ruff.nativeServer": "on",
 ```
 
-### Python 関連設定
-https://docs.astral.sh/uv/getting-started/installation/
+### WSL2 (ubuntu) 設定
 
+1. uv 設定
+https://docs.astral.sh/uv/getting-started/installation/
 https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
 
 uv インストール
@@ -51,7 +64,7 @@ source $HOME/.cargo/env
 
 ruff 有効化
 ```bash
-uv tool install ruf
+uv tool install ruff
 uv tool update-shell
 ```
 
@@ -61,6 +74,7 @@ https://www.anaconda.com/download/success から最新の 64-bit Installer
 
 2025-03-30 時点の最新
 
+```bash
 wget https://repo.anaconda.com/archive/Anaconda3-2024.10-1-Linux-x86_64.sh
 
 bash Anaconda3-2024.10-1-Linux-x86_64.sh
@@ -72,8 +86,10 @@ conda config --set auto_activate_base false
 eval "$(/home/haruka_aibara/anaconda3/bin/conda shell.bash hook)" 
 
 conda install anaconda-navigator
+```
 
 ### 必要なライブラリのインストール（apt-get）
+```bash
 sudo apt-get update
 sudo apt-get install \
     libpci3 \
@@ -101,20 +117,21 @@ sudo apt-get install \
     libxcb-render-util0 \
     libxcb-xkb1 \
     '^libxcb.*-dev'
+```
 
 ### Conda関連のインストール
+```bash
 conda install -c anaconda qt qtpy
 conda install -c conda-forge qt
+```
 
 ### デバッグ用の環境変数設定（必要な場合のみ）
+```bash
 export QT_DEBUG_PLUGINS=1
+```
 
 これで、VSCode のターミナルで「anaconda-navigator」と入力すると
 anaconda-navigator が起動します。
-
-
-### Mypy Type Checker
-https://marketplace.visualstudio.com/items/?itemName=ms-python.mypy-type-checker
 
 ### pip
 sudo apt install python3-pip
