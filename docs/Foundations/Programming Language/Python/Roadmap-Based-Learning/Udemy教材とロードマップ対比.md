@@ -51,7 +51,7 @@
    - [ ] 14-02_virtualenv.md -> PyCharm 上での使う場合の説明のみあり
    - [ ] 14-03_pyenv.md　ない
  - [ ] 15_静的型付け
-   - [ ] 15-01_typing.md　ない
+   - [x] 15-01_typing.md　★ないので自作
    - [ ] 15-02_mypy.md　ない
    - [ ] 15-03_pyright.md　ない
    - [ ] 15-04_pyre.md　ない

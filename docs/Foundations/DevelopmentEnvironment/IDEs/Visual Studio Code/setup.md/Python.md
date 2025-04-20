@@ -18,6 +18,9 @@
    - コードの信頼性向上に役立つ
    - https://marketplace.visualstudio.com/items/?itemName=ms-python.mypy-type-checker
 
+4. **Pylint**
+   - https://marketplace.visualstudio.com/items/?itemName=ms-python.pylint
+
 ### Settings.json を編集する
 
 #### Ruff 用
@@ -132,3 +135,11 @@ anaconda-navigator が起動します。
 
 ### pip
 sudo apt install python3-pip
+
+### pipx
+sudo apt install pipx
+
+### コードスタイル
+uv tool install pycodestyle
+uv tool install flake8
+uv tool install pylint
