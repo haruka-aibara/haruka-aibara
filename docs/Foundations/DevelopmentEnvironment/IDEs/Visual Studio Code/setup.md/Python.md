@@ -144,6 +144,15 @@ uv tool install pycodestyle
 uv tool install flake8
 uv tool install pylint
 
+### 静的型付け
+uv tool install pyre-check
+
+使い方は以下のようなコマンドでプロジェクトのディレクトリ単位でチェック
+uvx --from pyre-check pyre --source-directory "project_dir" check
+
 ### Settings
 これを検索し、off -> strict に変更 pylance を動作させる
 python.analysis.typeCheckingMode
+
+### Pyre
+
