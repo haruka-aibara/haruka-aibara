@@ -36,9 +36,11 @@
 
 ### Settings.json
 
-#### Ruff 用
+1. Ruff 用
+
 https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
-```
+
+```json
     "[python]": {
         "editor.codeActionsOnSave": {
             "source.fixAll": "explicit",
@@ -63,9 +65,9 @@ https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
     "ruff.nativeServer": "on",
 ```
 
-#### Pylance
+2. Pylance
 以下を検索し、off -> strict に変更 pylance を動作させる
-python.analysis.typeCheckingMode
+`python.analysis.typeCheckingMode`
 
 ***
 
