@@ -21,9 +21,15 @@
    - https://marketplace.visualstudio.com/items/?itemName=ms-python.mypy-type-checker
 
 4. **Pylint**
+   - より包括的なPythonコード解析ツール
+   - コーディング規約違反やエラーを詳細に検出
+   - カスタマイズ性が高く、チーム開発に最適
    - https://marketplace.visualstudio.com/items/?itemName=ms-python.pylint
 
 5. **autoDocstring - Python Docstring Generator**
+   - Pythonの関数やクラスのドキュメント文字列を自動生成
+   - 複数のドキュメント形式（Google、NumPy、Sphinxなど）をサポート
+   - コード文書化の効率を大幅に向上
    - https://marketplace.visualstudio.com/items/?itemName=njpwerner.autodocstring
 
 ***
