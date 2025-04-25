@@ -21,6 +21,9 @@
 4. **Pylint**
    - https://marketplace.visualstudio.com/items/?itemName=ms-python.pylint
 
+5. **autoDocstring - Python Docstring Generator**
+   - https://marketplace.visualstudio.com/items/?itemName=njpwerner.autodocstring
+
 ### Settings.json を編集する
 
 #### Ruff 用
@@ -50,6 +53,10 @@ https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
     "ruff.nativeServer": "on",
 ```
 
+#### Pylance
+以下を検索し、off -> strict に変更 pylance を動作させる
+python.analysis.typeCheckingMode
+
 ### WSL2 (ubuntu) 設定
 
 1. uv 設定
@@ -62,14 +69,33 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.cargo/env
 ```
 
-ruff 有効化
-```bash
-uv tool install ruff
-uv tool update-shell
-```
+#### pip
+sudo apt install python3-pip
+
+#### pipx
+sudo apt install pipx
+
+#### コードスタイル
+uv tool install pycodestyle
+uv tool install flake8
+uv tool install pylint
+
+#### 静的型付け
+uv tool install pyre-check
+
+使い方は以下のようなコマンドでプロジェクトのディレクトリ単位でチェック
+uvx --from pyre-check pyre --source-directory "project_dir" check
+
+#### テスト
+uv tool install pytest
+
+uvx pytest test_xxx.py -v
+
 
 ## Linux 版 Anaconda インストール
+
 https://www.anaconda.com/download/success から最新の 64-bit Installer
+
 参考：https://www.salesanalytics.co.jp/datascience/datascience141/#LinuxAnaconda
 
 2025-03-30 時点の最新
@@ -133,28 +159,6 @@ export QT_DEBUG_PLUGINS=1
 これで、VSCode のターミナルで「anaconda-navigator」と入力すると
 anaconda-navigator が起動します。
 
-### pip
-sudo apt install python3-pip
-
-### pipx
-sudo apt install pipx
-
-### コードスタイル
-uv tool install pycodestyle
-uv tool install flake8
-uv tool install pylint
-
-### 静的型付け
-uv tool install pyre-check
-
-使い方は以下のようなコマンドでプロジェクトのディレクトリ単位でチェック
-uvx --from pyre-check pyre --source-directory "project_dir" check
-
-### Settings
-これを検索し、off -> strict に変更 pylance を動作させる
-python.analysis.typeCheckingMode
-
-### テスト
-uv tool install pytest
-
-uvx pytest test_xxx.py -v
+### その他
+Numba
+Pydantic
