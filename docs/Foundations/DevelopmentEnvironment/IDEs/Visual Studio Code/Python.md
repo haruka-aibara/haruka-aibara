@@ -1,3 +1,5 @@
+***
+
 ### VScode 拡張機能をインストール
 
 1. **Python拡張機能**
@@ -24,7 +26,9 @@
 5. **autoDocstring - Python Docstring Generator**
    - https://marketplace.visualstudio.com/items/?itemName=njpwerner.autodocstring
 
-### Settings.json を編集する
+***
+
+### Settings.json
 
 #### Ruff 用
 https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
@@ -57,6 +61,8 @@ https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
 以下を検索し、off -> strict に変更 pylance を動作させる
 python.analysis.typeCheckingMode
 
+***
+
 ### WSL2 (ubuntu) 設定
 
 1. uv 設定
@@ -69,28 +75,33 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.cargo/env
 ```
 
-#### pip
+2. ツール等
+```bash
+# pip
 sudo apt install python3-pip
 
-#### pipx
+# pipx
 sudo apt install pipx
 
-#### コードスタイル
+# コードスタイル
 uv tool install pycodestyle
 uv tool install flake8
 uv tool install pylint
 
-#### 静的型付け
+# 静的型付け
+# 使い方は以下のようなコマンドでプロジェクトのディレクトリ単位でチェック
+# uvx --from pyre-check pyre --source-directory "project_dir" check
 uv tool install pyre-check
 
-使い方は以下のようなコマンドでプロジェクトのディレクトリ単位でチェック
-uvx --from pyre-check pyre --source-directory "project_dir" check
-
-#### テスト
+# テスト
+# 使い方
+# uvx pytest test_xxx.py -v
 uv tool install pytest
+```
 
-uvx pytest test_xxx.py -v
+***
 
+以下は任意
 
 ## Linux 版 Anaconda インストール
 
