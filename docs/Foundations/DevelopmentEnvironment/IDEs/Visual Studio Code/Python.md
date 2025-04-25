@@ -73,11 +73,13 @@ pylance を動作させるため、`python.analysis.typeCheckingMode` で検索�
 ### WSL2 (ubuntu) 設定
 
 1. uv 設定
+
 https://docs.astral.sh/uv/getting-started/installation/
+
 https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
 
-uv インストール
 ```bash
+# uv インストール
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.cargo/env
 ```
