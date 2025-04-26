@@ -37,3 +37,6 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 ```
 
 ### Verify that the installation is successful by running the hello-world image:
+
+### 拡張機能
+https://marketplace.visualstudio.com/items/?itemName=ms-azuretools.vscode-docker
