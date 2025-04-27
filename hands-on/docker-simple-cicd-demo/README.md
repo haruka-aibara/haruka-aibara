@@ -27,6 +27,13 @@ The system architecture consists of:
 ├── web/                          # React frontend
 │   ├── src/                      # TypeScript source code
 │   └── Dockerfile                # Web container definition
+├── main_ecr.tf                   # ECR repository definitions
+├── main_ecs.tf                   # ECS cluster and service definitions
+├── main_iam.tf                   # IAM roles and policies
+├── main_vpc.tf                   # VPC and networking
+├── main_sg.tf                    # Security groups
+├── providers.tf                  # AWS provider configuration
+├── outputs.tf                    # Terraform output values
 └── docker-compose.yml            # Local development environment
 ```
 
@@ -35,15 +42,16 @@ The system architecture consists of:
 ### Frontend (React)
 
 - Built with React and TypeScript
-- Communicates with the backend API 
+- Communicates with the backend API
 - Containerized with nginx for production
+- Environment variables for API endpoint configuration
 
 ### Backend (Spring Boot)
 
 - Java-based REST API with Spring Boot
 - Implements CORS configuration for cross-domain requests
 - Simple "Hello World" endpoint for demonstration
-- Includes health check endpoint
+- Includes health check endpoint for container orchestration
 
 ### CI/CD Pipeline
 
@@ -64,17 +72,19 @@ The CI/CD pipeline is implemented using GitHub Actions and consists of three job
 3. **Deploy**
    - Updates the ECS task definition with new image IDs
    - Deploys the application to AWS ECS Fargate
+   - Waits for service stability
 
 ### AWS Configuration
 
 The application is deployed to AWS ECS Fargate with the following configuration:
 
-- Two containers in a single task definition
+- Two containers in a single task definition (web and api)
 - Network mode: awsvpc
 - Memory: 1GB
 - CPU: 0.25 vCPU
-- Container dependencies to ensure proper startup sequence
+- Container dependencies to ensure the API starts before the web container
 - Health checks for the API container
+- Task execution role for pulling ECR images
 
 ## Development Environment
 
@@ -113,6 +123,7 @@ The project includes configuration for VS Code Development Containers:
 - ECS Service named `simple-cicd-service`
 - ECR repositories for both containers
 - IAM roles for task execution
+- VPC with public subnets and security groups
 
 ### GitHub Secrets
 
@@ -128,8 +139,9 @@ The following secrets need to be configured in GitHub:
 1. Push changes to the `main` branch
 2. GitHub Actions workflow will be triggered
 3. Containers are built, tested, and pushed to ECR
-4. ECS task definition is updated
+4. ECS task definition is updated with new image IDs
 5. New deployment is initiated
+6. Service stability is verified
 
 ## Testing
 
@@ -150,3 +162,42 @@ The web application includes React Testing Library tests that can be run with:
 cd web
 npm test
 ```
+
+## Infrastructure as Code
+
+The project includes Terraform configurations to provision the required AWS resources:
+
+1. VPC with public subnets
+2. Security groups
+3. ECS cluster and service
+4. ECR repositories
+5. IAM roles and policies
+
+To apply the Terraform configuration:
+
+```bash
+terraform init
+terraform apply
+```
+
+## Container Architecture
+
+The application uses a multi-container architecture:
+
+1. **Web Container**:
+   - NGINX serving the React application
+   - Configured to proxy API requests to the API container
+   - Production-optimized build
+
+2. **API Container**:
+   - Spring Boot application
+   - Exposes REST endpoints
+   - Health check for container orchestration
+   - Configured with different environment profiles
+
+## Environment Configuration
+
+- Development environment uses Docker Compose
+- Production environment uses AWS ECS Fargate
+- API configuration managed through Spring profiles
+- Web configuration managed through environment variables
