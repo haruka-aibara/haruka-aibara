@@ -1,4 +1,4 @@
-.# Dockerfile からイメージを作成
+# Dockerfile からイメージを作成
 
 ## 概要
 
