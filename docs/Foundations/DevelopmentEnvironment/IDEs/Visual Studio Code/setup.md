@@ -37,5 +37,5 @@ https://marketplace.visualstudio.com/items/?itemName=mechatroner.rainbow-csv
 
 ## もろもろインストール
 ```bash
-sudo apt install unzip jq zip gzip tar htop
+sudo apt install unzip jq zip gzip tar htop tree
 ```
