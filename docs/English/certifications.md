@@ -10,9 +10,7 @@ AI でパーソナライズされ、自分がギリギリ理解出来ていな�
 
 TOEIC LR試験は最も有名な英語能力テストの一つですが、その名称が示す通り、Listening（聞く）とReading（読む）の能力のみを評価
 
-このテストではSpeaking（話す）とWriting（書く）の能力は全く評価されないので、
-
-これらの能力を測定・向上させたい場合は、TOEIC Speaking & Writing Tests（TOEIC SW）を別途受験するか、英検などを受けたほうがよさそう
+このテストではSpeaking（話す）とWriting（書く）の能力は全く評価されないので、これらの能力を測定・向上させたい場合は、TOEIC Speaking & Writing Tests（TOEIC SW）を別途受験するか、英検などを受けたほうがよさそう
 
 TOEIC LRだけで感じるメリットは、IT関連の技術文書やReddit、Stack Overflowなどのウェブサイトを原文のまま理解できるようになり抵抗が一切ないことや、プログラミングの際の変数名に対する言語的な感覚が若干ついた気がするくらい
 
