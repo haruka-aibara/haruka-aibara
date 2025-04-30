@@ -27,7 +27,7 @@ fi
 ```
 
 2. 以下のコマンドを入力する。
-```
+```bash
 source .bashrc
 ```
 
@@ -35,7 +35,7 @@ git 最新化
 
 https://git-scm.com/download/linux
 
-```
+```bash
 sudo add-apt-repository ppa:git-core/ppa
 sudo apt update; sudo apt install git
 ```
