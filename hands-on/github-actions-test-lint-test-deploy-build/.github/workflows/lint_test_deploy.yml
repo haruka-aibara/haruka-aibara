@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: install dependencies
-        run: echo "install dependencies"
+        run: npx eslint --init
       - name: lint
         run: eslint --ext .jsx --fix src
       - name: test
