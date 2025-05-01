@@ -1,0 +1,93 @@
+{
+    "name": "Development Environment",
+    "build": {
+      "dockerfile": "Dockerfile"
+    },
+    
+    // Configure container-specific settings
+    "settings": {
+      "terminal.integrated.defaultProfile.linux": "bash",
+      "files.insertFinalNewline": true,
+      "[python]": {
+        "editor.codeActionsOnSave": {
+          "source.fixAll": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff"
+      },
+      "ruff.lineLength": 120,
+      "ruff.lint.ignore": ["F401"],
+      "ruff.lint.preview": true,
+      "ruff.lint.select": ["C", "E", "F", "W", "I"],
+      "ruff.logFile": "~/logs/ruff.log",
+      "ruff.logLevel": "debug",
+      "ruff.nativeServer": "on",
+      "python.analysis.typeCheckingMode": "strict",
+      "markdown.copyFiles.destination": {
+        "**/*.md": "assets/${documentBaseName}/"
+      },
+      "markdown.copyFiles.overwriteBehavior": "uniqueFilename",
+      "markdown.editor.drop.copyIntoWorkspace": "always",
+      "markdown.editor.filePaste.copyIntoWorkspace": "always",
+      "[terraform]": {
+        "editor.defaultFormatter": "hashicorp.terraform",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+      },
+      "[terraform-vars]": {
+        "editor.defaultFormatter": "hashicorp.terraform",
+        "editor.formatOnSave": true,
+        "editor.formatOnSaveMode": "file"
+      }
+    },
+    
+    // Add the extensions you want installed
+    "extensions": [
+      // General
+      "ms-vscode-remote.vscode-remote-extensionpack",
+      "mechatroner.rainbow-csv",
+      
+      // Python
+      "ms-python.python",
+      "charliermarsh.ruff",
+      "ms-python.mypy-type-checker",
+      "ms-python.pylint",
+      "njpwerner.autodocstring",
+      
+      // Markdown
+      "yzhang.markdown-all-in-one",
+      "shd101wyy.markdown-preview-enhanced",
+      "bierner.markdown-mermaid",
+      
+      // Docker
+      "ms-azuretools.vscode-docker",
+      
+      // Terraform
+      "HashiCorp.terraform",
+      
+      // Ansible
+      "redhat.ansible"
+    ],
+    
+    // Features to install
+    "features": {
+      "ghcr.io/devcontainers/features/aws-cli:1": {},
+      "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+      "ghcr.io/devcontainers/features/git:1": {},
+      "ghcr.io/devcontainers/features/github-cli:1": {},
+      "ghcr.io/devcontainers/features/python:1": {
+        "version": "3.11"
+      },
+      "ghcr.io/devcontainers/features/node:1": {},
+      "ghcr.io/devcontainers/features/terraform:1": {}
+    },
+    
+    // Configure post-create commands
+    "postCreateCommand": "bash ./.devcontainer/post-create.sh",
+    
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // "forwardPorts": [],
+    
+    // Additional options
+    "remoteUser": "vscode"
+  }
