@@ -1,0 +1,15 @@
+name: lint test deploy
+on: push
+jobs:
+  lint-test-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: install dependencies
+        run: echo "install dependencies"
+      - name: lint
+        run: eslint --ext .jsx --fix src
+      - name: test
+        run: vitest run
+      - name: build
+        run: vite build
+
