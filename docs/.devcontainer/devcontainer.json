@@ -15,7 +15,40 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "hashicorp.terraform"
+        // HashiCorp Terraform
+        "hashicorp.terraform",
+        // Docker
+        "ms-azuretools.vscode-docker",
+        // Docker DX (Developer Experience)
+        "docker.docker",
+        // Ansible
+        "redhat.ansible",
+        // AWS Toolkit
+        "amazonwebservices.aws-toolkit-vscode",
+        // Markdown All in One
+        "yzhang.markdown-all-in-one",
+        // Markdown Preview Enhanced
+        "shd101wyy.markdown-preview-enhanced",
+        // Markdown Preview Mermaid Support
+        "bierner.markdown-mermaid",
+        // autoDocstring - Python Docstring Generator
+        "njpwerner.autodocstring",
+        // Mypy Type Checker
+        "ms-python.mypy-type-checker",
+        // Pylance
+        "ms-python.vscode-pylance",
+        // Pylint
+        "ms-python.pylint",
+        // Python
+        "ms-python.python",
+        // Python Debugger
+        "ms-python.debugpy",
+        // Rainbow CSV
+        "mechatroner.rainbow-csv",
+        // Ruff
+        "charliermarsh.ruff",
+        // YAML
+        "redhat.vscode-yaml"
       ]
     }
   },
