@@ -1,30 +1,39 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
 # Install my favorite common tools
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-    unzip jq zip gzip tar htop tree ca-certificates curl wget \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get -y install --no-install-recommends \
+#     unzip jq zip gzip tar htop tree ca-certificates curl wget \
+#     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install Python tools
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-    python3-pip pipx \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get -y install --no-install-recommends \
+#     python3-pip pipx \
+#     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install Ansible
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-    ansible ansible-lint \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get -y install --no-install-recommends \
+#     ansible ansible-lint \
+#     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js and npm (supplementing the feature)
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends npm \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get -y install --no-install-recommends npm \
+#     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+# Install curl for downloading uv
+RUN apt-get update && apt-get install -y curl
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Make uv available in PATH
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Verify installation
+RUN uv --version
 
 # Add required libraries for Anaconda (optional)
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
