@@ -14,8 +14,8 @@ jobs:
         run: npm install eslint --save-dev
       - name: lint
         run: npm run lint
-      # - name: test
-      #   run: vitest run
-      # - name: build
-      #   run: vite build
+      - name: test
+        run: npm run test
+      - name: build
+        run: npm run build
 
