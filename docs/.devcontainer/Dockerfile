@@ -30,10 +30,13 @@ RUN apt-get update && apt-get install -y curl
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Make uv available in PATH
-ENV PATH="/root/.cargo/bin:${PATH}"
+RUN source $HOME/.local/bin/env
+
+# Make uv available in PATH
+# ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Verify installation
-RUN uv --version
+# RUN uv --version
 
 # Add required libraries for Anaconda (optional)
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
