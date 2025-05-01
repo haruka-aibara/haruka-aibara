@@ -30,7 +30,9 @@ RUN apt-get update && apt-get install -y curl
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Make uv available in PATH
-ENV PATH=$HOME/.local/bin:$PATH
+ENV PATH=/home/vscode/.local/bin:$PATH
+
+# ENV PATH=$HOME/.local/bin:$PATH
 # RUN bash -c "source $HOME/.local/bin/env"
 
 # Make uv available in PATH
