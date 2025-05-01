@@ -1,0 +1,8 @@
+name: output event details on issues
+on: issues
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: echo "${{ ToJSON( issues ) }}"
