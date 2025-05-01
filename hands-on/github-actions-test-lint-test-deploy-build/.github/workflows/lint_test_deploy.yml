@@ -1,7 +1,7 @@
 name: lint test deploy
 on: push
 jobs:
-  lint-test-deploy:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Get code
@@ -10,12 +10,29 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - name: install eslint
-        run: npm install eslint --save-dev
       - name: lint
         run: npm run lint
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - name: test
         run: npm run test
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - name: build
         run: npm run build
-
