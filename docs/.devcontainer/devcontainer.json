@@ -3,17 +3,22 @@
   "build": {
     "dockerfile": "Dockerfile"
   },
-
   // Configure post-create commands
   "postCreateCommand": "bash ./.devcontainer/post-create.sh",
-
   // Pass GitHub secrets as environment variables
   "remoteEnv": {
     "AWS_REGION": "${localEnv:AWS_REGION}",
     "AWS_ACCOUNT_ID": "${localEnv:AWS_ACCOUNT_ID}",
     "AWS_ROLE_NAME": "${localEnv:AWS_ROLE_NAME}"
   },
-
+  // Add VS Code extensions
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "hashicorp.terraform"
+      ]
+    }
+  },
   // Additional options
   "remoteUser": "vscode"
 }
