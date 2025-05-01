@@ -4,6 +4,12 @@ jobs:
   lint-test-deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - name: install dependencies
         run: npx eslint --init
       - name: lint
