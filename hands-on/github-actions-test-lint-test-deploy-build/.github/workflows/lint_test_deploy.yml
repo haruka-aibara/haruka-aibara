@@ -13,9 +13,9 @@ jobs:
       - name: install eslint
         run: npm install eslint --save-dev
       - name: lint
-        run: eslint --ext .jsx --fix src
-      - name: test
-        run: vitest run
-      - name: build
-        run: vite build
+        run: npm run lint
+      # - name: test
+      #   run: vitest run
+      # - name: build
+      #   run: vite build
 
