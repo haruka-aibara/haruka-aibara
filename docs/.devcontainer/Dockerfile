@@ -27,7 +27,8 @@ FROM mcr.microsoft.com/devcontainers/base:ubuntu
 RUN apt-get update && apt-get install -y curl
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+# RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN su vscode -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
 
 # Make uv available in PATH
 ENV PATH=/home/vscode/.local/bin:$PATH
