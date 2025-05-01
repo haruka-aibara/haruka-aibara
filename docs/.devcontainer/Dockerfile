@@ -30,7 +30,8 @@ RUN apt-get update && apt-get install -y curl
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Make uv available in PATH
-RUN source $HOME/.local/bin/env
+ENV PATH=$HOME/.local/bin:$PATH
+# RUN bash -c "source $HOME/.local/bin/env"
 
 # Make uv available in PATH
 # ENV PATH="/root/.cargo/bin:${PATH}"
