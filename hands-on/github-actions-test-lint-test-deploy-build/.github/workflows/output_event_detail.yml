@@ -1,8 +1,8 @@
 name: output event details on issues
 on: issues
 jobs:
-  lint:
+  output-event-details:
     runs-on: ubuntu-latest
     steps:
       - name: Get code
-        run : echo "${{ ToJSON( github ) }}"
+        run : echo "${{ ToJSON( github.event.issue ) }}"
