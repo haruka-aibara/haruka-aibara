@@ -29,5 +29,13 @@ RUN su vscode -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
 # Make uv available in PATH
 ENV PATH=/home/vscode/.local/bin:$PATH
 
+# ======================================================================
+# Install AWS CLI
+# ======================================================================
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install \
+    && rm -rf aws awscliv2.zip
+
 # Create directories
 RUN mkdir -p /home/vscode/logs
