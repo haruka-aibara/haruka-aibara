@@ -11,7 +11,7 @@ jobs:
         with:
           node-version: 18
       - name: install eslint
-        run: npm install --save-dev eslint
+        run: npm install eslint
       - name: lint
         run: eslint --ext .jsx --fix src
       - name: test
