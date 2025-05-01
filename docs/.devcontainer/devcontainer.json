@@ -17,8 +17,8 @@
       "extensions": [
         // HashiCorp Terraform
         "hashicorp.terraform",
-        // Docker
-        "ms-azuretools.vscode-docker",
+        // Container Tools
+        "ms-azuretools.vscode-containers",
         // Docker DX (Developer Experience)
         "docker.docker",
         // Ansible
