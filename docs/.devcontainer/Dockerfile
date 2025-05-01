@@ -1,6 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
+# ======================================================================
 # Install essential utility packages
+# ======================================================================
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     # list installing packages
@@ -16,6 +18,16 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     ca-certificates \
     # cleanup
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
+# ======================================================================
+# Install uv - Python package and project manager
+# ======================================================================
+# Note: Direct curl installation doesn't work in this context
+# Must use "su vscode" to execute as the vscode user
+RUN su vscode -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
+
+# Make uv available in PATH
+ENV PATH=/home/vscode/.local/bin:$PATH
 
 # Install Python tools
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
@@ -33,19 +45,6 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends npm \
 #     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
-
-# ======================================================================
-# uv - Python package and project manager
-# ======================================================================
-# Install uv for default user(vscode)
-# Note: Direct curl installation doesn't work in this context
-# Must use "su vscode" to execute as the vscode user
-RUN su vscode -c "curl -LsSf https://astral.sh/uv/install.sh | sh"
-
-# Make uv available in PATH
-ENV PATH=/home/vscode/.local/bin:$PATH
-
-
 
 # Add required libraries for Anaconda (optional)
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
