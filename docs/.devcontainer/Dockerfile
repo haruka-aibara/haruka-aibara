@@ -1,6 +1,6 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu
 
-# Install common tools
+# Install my favorite common tools
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install --no-install-recommends \
     unzip jq zip gzip tar htop tree ca-certificates curl wget \
@@ -27,15 +27,15 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Add required libraries for Anaconda (optional)
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-    && apt-get -y install --no-install-recommends \
-    libpci3 libgl1-mesa-glx libegl1-mesa libxrandr2 libxss1 \
-    libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 libsm6 \
-    libxext6 libxrender-dev libx11-xcb-dev libglu1-mesa-dev \
-    libxkbcommon-dev libxkbcommon-x11-dev libxcb-xinerama0 \
-    libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
-    libxcb-render-util0 libxcb-xkb1 \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+#     && apt-get -y install --no-install-recommends \
+#     libpci3 libgl1-mesa-glx libegl1-mesa libxrandr2 libxss1 \
+#     libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6 libsm6 \
+#     libxext6 libxrender-dev libx11-xcb-dev libglu1-mesa-dev \
+#     libxkbcommon-dev libxkbcommon-x11-dev libxcb-xinerama0 \
+#     libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+#     libxcb-render-util0 libxcb-xkb1 \
+#     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # Create directories
 RUN mkdir -p /home/vscode/logs

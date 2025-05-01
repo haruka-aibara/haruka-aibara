@@ -5,7 +5,7 @@
     },
     
     // Configure container-specific settings
-    "settings": {
+    "customizations/vscode/settings": {
       "terminal.integrated.defaultProfile.linux": "bash",
       "files.insertFinalNewline": true,
       "[python]": {
@@ -44,8 +44,7 @@
     // Add the extensions you want installed
     "extensions": [
       // General
-      "ms-vscode-remote.vscode-remote-extensionpack",
-      "mechatroner.rainbow-csv",
+      // "mechatroner.rainbow-csv",
       
       // Python
       "ms-python.python",
@@ -66,7 +65,7 @@
       "HashiCorp.terraform",
       
       // Ansible
-      "redhat.ansible"
+      // "redhat.ansible"
     ],
     
     // Features to install
