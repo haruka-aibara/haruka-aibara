@@ -89,13 +89,3 @@ sudo usermod -aG docker $USER
 ```
 
 ***
-
-## Install devcontainer cli
-
-https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers
-
-
-command palette
-
-Remote-Containers: Install devcontainer CLI
-
