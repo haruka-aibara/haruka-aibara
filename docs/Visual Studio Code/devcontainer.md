@@ -89,3 +89,11 @@ sudo usermod -aG docker $USER
 ```
 
 ***
+
+### Add user to docker Groups
+
+Clone respository in container volume
+
+use this container image
+
+`ghcr.io/haruka-aibara/devcontainer-templates/haruka-aibara-dev-env:latest`
