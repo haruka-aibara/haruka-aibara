@@ -90,7 +90,24 @@ sudo usermod -aG docker $USER
 
 ***
 
-### Add user to docker Groups
+### WSL2 Setup Prerequisites
+
+Before using this DevContainer template, ensure:
+
+1. WSL2 is installed and configured with Ubuntu
+2. Your AWS credentials are set up in your WSL2 Ubuntu home directory:
+   ```
+   ~/.aws/credentials
+   ~/.aws/config
+   ```
+3. Your Git configuration is set up in your WSL2 Ubuntu home directory:
+   ```
+   ~/.gitconfig
+   ```
+
+These files will be mounted into the container (read-only) to enable authentication with AWS services and maintain consistent Git commit identity.
+
+### Clone repository in container volume
 
 Clone respository in container volume
 
