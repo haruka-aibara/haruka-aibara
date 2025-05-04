@@ -1,0 +1,81 @@
+{
+  "name": "Development Environment",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  // Configure post-create commands
+  "postCreateCommand": "bash ./.devcontainer/post-create.sh",
+  // Mount AWS credentials and Git configuration from host machine in read-only mode for secure access within container
+  "mounts": [
+    "source=${localEnv:HOME}/.aws,target=/home/vscode/.aws,type=bind,readonly",
+    "source=${localEnv:HOME}/.gitconfig,target=/home/vscode/.gitconfig,type=bind,readonly",
+  ],
+  // Set the user for VS Code and its sub-processes (terminals, tasks, debugging)
+  // This should match the USER directive in the Dockerfile
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      // Add useful extensions
+      "extensions": [
+        // HashiCorp Terraform
+        "hashicorp.terraform",
+        // Docker DX (Developer Experience)
+        "docker.docker",
+        // Docker
+        "ms-azuretools.vscode-docker",
+        // Ansible
+        "redhat.ansible",
+        // AWS Toolkit
+        "amazonwebservices.aws-toolkit-vscode",
+        // Markdown All in One
+        "yzhang.markdown-all-in-one",
+        // Markdown Preview Enhanced
+        "shd101wyy.markdown-preview-enhanced",
+        // Markdown Preview Mermaid Support
+        "bierner.markdown-mermaid",
+        // autoDocstring - Python Docstring Generator
+        "njpwerner.autodocstring",
+        // Mypy Type Checker
+        "ms-python.mypy-type-checker",
+        // Pylance
+        "ms-python.vscode-pylance",
+        // Pylint
+        "ms-python.pylint",
+        // Python
+        "ms-python.python",
+        // Python Debugger
+        "ms-python.debugpy",
+        // Rainbow CSV
+        "mechatroner.rainbow-csv",
+        // Ruff
+        "charliermarsh.ruff",
+        // YAML
+        "redhat.vscode-yaml",
+        // Additional useful extensions
+        "github.copilot",
+        "eamodio.gitlens",
+        "ms-vscode-remote.remote-containers"
+      ],
+      // Configure workspace settings
+      "settings": {
+        // Existing settings...
+        "files.insertFinalNewline": true,
+        "git.autofetch": true,
+        "git.enableSmartCommit": true,
+        "git.confirmSync": false,
+        // Security-related settings
+        "security.workspace.trust.enabled": true,
+        "security.workspace.trust.untrustedFiles": "open",
+        "terminal.integrated.allowChords": false,
+        "remote.extensionKind": {
+          "ms-azuretools.vscode-docker": [
+            "workspace"
+          ]
+        }
+      }
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  }
+}
