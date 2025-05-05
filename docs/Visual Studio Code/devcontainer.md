@@ -109,6 +109,10 @@ These files will be mounted into the container (read-only) to enable authenticat
 
 ### Clone repository in container volume
 
+change user settings
+
+"dev.containers.executeInWSL": true
+
 Clone respository in container volume
 
 use this container image
