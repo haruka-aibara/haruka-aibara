@@ -113,6 +113,12 @@ change user settings
 
 "dev.containers.executeInWSL": true
 
+change the theme (Preferences: Color Theme) from Cursor Dark to Dark (Visual Studio).
+
+cuz YAML syntax highlight not working correctly when `Cursor Dark`
+
+https://forum.cursor.com/t/yaml-syntax-highlighting-not-working/58659
+ 
 Clone respository in container volume
 
 use this container image
