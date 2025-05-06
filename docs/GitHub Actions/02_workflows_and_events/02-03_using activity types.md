@@ -1,5 +1,7 @@
 # GitHub Actions の activity types について
 
+> 詳細は[公式ドキュメント: Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)を参照してください。
+
 GitHub Actions の activity types は、特定のイベントが発生した際にワークフローをトリガーする条件を細かく制御するための重要な機能です。
 
 ## 概要

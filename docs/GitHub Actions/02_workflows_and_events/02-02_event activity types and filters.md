@@ -1,5 +1,7 @@
 # GitHub Actions のイベントアクティビティタイプとフィルター
 
+> 詳細は[公式ドキュメント: Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)を参照してください。
+
 GitHub Actionsのワークフローをより細かく制御するために、イベントのアクティビティタイプとフィルターを使用することで、特定の条件下でのみワークフローを実行することができます。
 
 ## イベントアクティビティタイプとは
