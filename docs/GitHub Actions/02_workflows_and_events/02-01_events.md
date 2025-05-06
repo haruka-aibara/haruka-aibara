@@ -1,5 +1,29 @@
 # GitHub Actionsのイベント
 
+```mermaid
+graph TD
+    A[GitHub Actions イベント] --> B[リポジトリイベント]
+    A --> C[スケジュールイベント]
+    A --> D[手動実行イベント]
+    A --> E[外部イベント]
+
+    B --> B1[push]
+    B --> B2[pull_request]
+    B --> B3[issues]
+    B --> B4[release]
+
+    C --> C1[schedule]
+
+    D --> D1[workflow_dispatch]
+    D --> D2[repository_dispatch]
+
+    E --> E1[external]
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B,C,D,E fill:#bbf,stroke:#333,stroke-width:2px
+    style B1,B2,B3,B4,C1,D1,D2,E1 fill:#ddf,stroke:#333,stroke-width:1px
+```
+
 > 詳細は[公式ドキュメント: Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)を参照してください。
 
 GitHub Actionsでは、ワークフローを実行するきっかけとなる様々なイベントを設定することができます。これらのイベントを理解することで、自動化のタイミングを適切に制御できます。

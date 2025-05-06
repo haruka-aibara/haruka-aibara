@@ -1,5 +1,28 @@
 # ワークフローのキャンセルとスキップ
 
+```mermaid
+graph TD
+    A[ワークフロー制御] --> B[キャンセル]
+    A --> C[スキップ]
+    
+    B --> B1[concurrency]
+    B --> B2[手動キャンセル]
+    
+    C --> C1[skip ci]
+    C --> C2[if条件]
+    
+    B1 --> D1[自動キャンセル]
+    B2 --> D1
+    
+    C1 --> D2[実行スキップ]
+    C2 --> D2
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B,C fill:#bbf,stroke:#333,stroke-width:2px
+    style B1,B2,C1,C2 fill:#ddf,stroke:#333,stroke-width:1px
+    style D1,D2 fill:#fdd,stroke:#333,stroke-width:1px
+```
+
 GitHub Actionsのワークフローを効率的に管理するための重要な機能である、ワークフローのキャンセルとスキップについて説明します。
 
 ## 概要

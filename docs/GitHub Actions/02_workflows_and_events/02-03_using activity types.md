@@ -1,5 +1,23 @@
 # GitHub Actions の activity types について
 
+```mermaid
+graph TD
+    A[Pull Request] --> B[Activity Types]
+    
+    B --> B1[opened]
+    B --> B2[synchronize]
+    B --> B3[reopened]
+    
+    B1 --> C1[新しいPR作成]
+    B2 --> C2[新しいコミット]
+    B3 --> C3[PR再オープン]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style B1,B2,B3 fill:#ddf,stroke:#333,stroke-width:1px
+    style C1,C2,C3 fill:#eff,stroke:#333,stroke-width:1px
+```
+
 > 詳細は[公式ドキュメント: Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)を参照してください。
 
 GitHub Actions の activity types は、特定のイベントが発生した際にワークフローをトリガーする条件を細かく制御するための重要な機能です。
