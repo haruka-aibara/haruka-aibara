@@ -2,22 +2,22 @@
 
 ```mermaid
 graph TD
-    A[Event Filters] --> B[branches]
-    A --> C[paths]
-    A --> D[tags]
+    a[Event Filters] --> b[branches]
+    a --> c[paths]
+    a --> d[tags]
     
-    B --> B1[main]
-    B --> B2[releases/**]
+    b --> b1[main]
+    b --> b2[releases/**]
     
-    C --> C1[src/**]
-    C --> C2[tests/**]
+    c --> c1[src/**]
+    c --> c2[tests/**]
     
-    D --> D1[v1.*]
-    D --> D2[release-*]
+    d --> d1[v1.*]
+    d --> d2[release-*]
     
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B,C,D fill:#bbf,stroke:#333,stroke-width:2px
-    style B1,B2,C1,C2,D1,D2 fill:#ddf,stroke:#333,stroke-width:1px
+    style a fill:#2d333b,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style b,c,d fill:#347d39,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style b1,b2,c1,c2,d1,d2 fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
 ```
 
 > 詳細は[公式ドキュメント: Filter pattern cheat sheet](https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#filter-pattern-cheat-sheet)を参照してください。

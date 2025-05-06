@@ -2,21 +2,21 @@
 
 ```mermaid
 graph TD
-    A[Forkからのワークフロー] --> B[承認が必要]
+    a[Forkからのワークフロー] --> b[承認が必要]
     
-    B --> B1[Pull Request]
-    B --> B2[ブランチ]
+    b --> c[Pull Request]
+    b --> d[ブランチ]
     
-    B1 --> C1[管理者の承認]
-    B2 --> C1
+    c --> e[管理者の承認]
+    d --> e
     
-    C1 --> D[ワークフロー実行]
+    e --> f[ワークフロー実行]
     
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#bbf,stroke:#333,stroke-width:2px
-    style B1,B2 fill:#ddf,stroke:#333,stroke-width:1px
-    style C1 fill:#fdd,stroke:#333,stroke-width:1px
-    style D fill:#dfd,stroke:#333,stroke-width:1px
+    style a fill:#2d333b,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style b fill:#347d39,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style c,d fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
+    style e fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
+    style f fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
 ```
 
 > 詳細は[公式ドキュメント: Approving workflow runs from public forks](https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/approving-workflow-runs-from-public-forks)を参照してください。

@@ -2,29 +2,29 @@
 
 ```mermaid
 graph TD
-    A[イベント] --> B[アクティビティタイプ]
-    A --> C[フィルター]
+    a[イベント] --> b[アクティビティタイプ]
+    a --> c[フィルター]
     
-    B --> B1[プルリクエスト]
-    B --> B2[イシュー]
+    b --> d[プルリクエスト]
+    b --> e[イシュー]
     
-    B1 --> B1a[opened]
-    B1 --> B1b[synchronize]
-    B1 --> B1c[reopened]
-    B1 --> B1d[closed]
+    d --> d1[opened]
+    d --> d2[synchronize]
+    d --> d3[reopened]
+    d --> d4[closed]
     
-    B2 --> B2a[opened]
-    B2 --> B2b[edited]
-    B2 --> B2c[deleted]
+    e --> e1[opened]
+    e --> e2[edited]
+    e --> e3[deleted]
     
-    C --> C1[branches]
-    C --> C2[paths]
-    C --> C3[tags]
+    c --> c1[branches]
+    c --> c2[paths]
+    c --> c3[tags]
     
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B,C fill:#bbf,stroke:#333,stroke-width:2px
-    style B1,B2,C1,C2,C3 fill:#ddf,stroke:#333,stroke-width:1px
-    style B1a,B1b,B1c,B1d,B2a,B2b,B2c fill:#eff,stroke:#333,stroke-width:1px
+    style a fill:#2d333b,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style b,c fill:#347d39,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style d,e,c1,c2,c3 fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
+    style d1,d2,d3,d4,e1,e2,e3 fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
 ```
 
 > 詳細は[公式ドキュメント: Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)を参照してください。

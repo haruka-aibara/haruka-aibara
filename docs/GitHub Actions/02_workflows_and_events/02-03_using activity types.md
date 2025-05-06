@@ -2,20 +2,20 @@
 
 ```mermaid
 graph TD
-    A[Pull Request] --> B[Activity Types]
+    a[Pull Request] --> b[Activity Types]
     
-    B --> B1[opened]
-    B --> B2[synchronize]
-    B --> B3[reopened]
+    b --> c1[opened]
+    b --> c2[synchronize]
+    b --> c3[reopened]
     
-    B1 --> C1[新しいPR作成]
-    B2 --> C2[新しいコミット]
-    B3 --> C3[PR再オープン]
+    c1 --> d1[新しいPR作成]
+    c2 --> d2[新しいコミット]
+    c3 --> d3[PR再オープン]
     
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#bbf,stroke:#333,stroke-width:2px
-    style B1,B2,B3 fill:#ddf,stroke:#333,stroke-width:1px
-    style C1,C2,C3 fill:#eff,stroke:#333,stroke-width:1px
+    style a fill:#2d333b,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style b fill:#347d39,stroke:#768390,stroke-width:2px,color:#cdd9e5
+    style c1,c2,c3 fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
+    style d1,d2,d3 fill:#347d39,stroke:#768390,stroke-width:1px,color:#cdd9e5
 ```
 
 > 詳細は[公式ドキュメント: Events that trigger workflows](https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows)を参照してください。
