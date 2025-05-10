@@ -20,16 +20,24 @@ GitHub Actionsのワークフロー実行時間を短縮するために、依存
 ## 基本的な使用方法
 
 ```yaml
-- name: Cache dependencies
+- name: Cache npm dependencies
   uses: actions/cache@v3
   with:
-    path: |
-      ~/.npm
-      node_modules
-    key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+    path: ~/.npm
+    key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
     restore-keys: |
-      ${{ runner.os }}-node-
+      ${{ runner.os }}-npm-
 ```
+
+## キャッシュの動作について
+
+GitHub Actionsのキャッシュは、ワークフローの実行間で自動的に共有されます。例えば：
+
+1. 最初のワークフロー実行時に`npm install`を実行すると、`~/.npm`ディレクトリにパッケージのキャッシュが保存されます
+2. 次のワークフロー実行時には、同じキャッシュキーが存在する場合、キャッシュから`~/.npm`が復元されます
+3. これにより、毎回npmパッケージをダウンロードする必要がなくなり、ワークフローの実行時間が大幅に短縮されます
+
+この仕組みにより、同じリポジトリの異なるワークフロー実行間で、依存関係のダウンロード時間を節約することができます。
 
 ## 公式ドキュメント
 
