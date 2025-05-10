@@ -1,5 +1,5 @@
 # =========================================
-# Profile and Documentation
+# for personal use only
 # =========================================
 
 # Personal Profile Repository
@@ -12,16 +12,6 @@ module "haruka-aibara" {
   topics = ["profile"]
 }
 
-# All-Round Learning Repository
-module "all-round-learning" {
-  source = "./modules/repository"
-
-  repository_name = "all-round-learning"
-  description     = "A repository for documenting everything I learn"
-
-  topics = ["learning", "documentation"]
-}
-
 # Private
 module "private" {
   source = "./modules/repository"
@@ -32,7 +22,21 @@ module "private" {
 }
 
 # =========================================
-# Slack AI Integration Projects
+# My Learning Repositories
+# =========================================
+
+# All-Round Learning Repository
+module "all-round-learning" {
+  source = "./modules/repository"
+
+  repository_name = "all-round-learning"
+  description     = "A repository for documenting everything I learn"
+
+  topics = ["learning", "documentation"]
+}
+
+# =========================================
+# My Slack AI Integration Projects
 # =========================================
 
 # DevelopersIO Article Summarizer with Slack Notifications
@@ -66,28 +70,8 @@ module "bedrock-slack-ai-agent" {
 }
 
 # =========================================
-# AWS Infrastructure Projects
+# My AWS Projects
 # =========================================
-
-# HCP Vault Deployment
-module "deploy-hcp-vault-dedicated-with-terraform" {
-  source = "./modules/repository"
-
-  repository_name = "deploy-hcp-vault-dedicated-with-terraform"
-  description     = "Deploy HashiCorp Cloud Platform (HCP) Vault Dedicated cluster using Terraform"
-
-  topics = ["terraform", "vault", "hcp", "hashicorp"]
-}
-
-# AWS Config Custom Rules
-module "aws-custom-lambda-config-rules" {
-  source = "./modules/repository"
-
-  repository_name = "aws-custom-lambda-config-rules"
-  description     = "Customize AWS Config Rules using Lambda"
-
-  topics = ["terraform", "aws", "lambda", "config"]
-}
 
 # AWS Budget Slack Notifications
 module "terraform-aws-budget-slack-notifier" {
@@ -109,6 +93,20 @@ module "aws-cost-allocation-tags" {
   topics = ["terraform", "aws", "cost", "tags"]
 }
 
+# =========================================
+# My AWS Learning Repositories
+# =========================================
+
+# AWS Config Custom Rules
+module "aws-custom-lambda-config-rules" {
+  source = "./modules/repository"
+
+  repository_name = "aws-custom-lambda-config-rules"
+  description     = "Customize AWS Config Rules using Lambda"
+
+  topics = ["terraform", "aws", "lambda", "config"]
+}
+
 # IAM Policy Analysis
 module "iam-access-analyzer-policy-generate" {
   source = "./modules/repository"
@@ -120,18 +118,22 @@ module "iam-access-analyzer-policy-generate" {
 }
 
 # =========================================
-# Development Environment & DevOps
+# My HCP Vault Learning Repositories
 # =========================================
 
-# Docker CI/CD sample Example
-module "docker-simple-cicd-demo" {
+# HCP Vault Deployment
+module "deploy-hcp-vault-dedicated-with-terraform" {
   source = "./modules/repository"
 
-  repository_name = "docker-simple-cicd-demo"
-  description     = "Simple CI/CD demo using Docker"
+  repository_name = "deploy-hcp-vault-dedicated-with-terraform"
+  description     = "Deploy HashiCorp Cloud Platform (HCP) Vault Dedicated cluster using Terraform"
 
-  topics = ["docker", "cicd", "devops"]
+  topics = ["terraform", "vault", "hcp", "hashicorp"]
 }
+
+# =========================================
+# My Development Environment Repositories   
+# =========================================
 
 # VS Code DevContainer Templates
 module "devcontainer-templates" {
@@ -144,7 +146,21 @@ module "devcontainer-templates" {
 }
 
 # =========================================
-# GitHub Actions Learning Projects
+# My Docker Learning Repositories
+# =========================================
+
+# Docker CI/CD sample Example
+module "docker-simple-cicd-demo" {
+  source = "./modules/repository"
+
+  repository_name = "docker-simple-cicd-demo"
+  description     = "Simple CI/CD demo using Docker"
+
+  topics = ["docker", "cicd", "devops"]
+}
+
+# =========================================
+# My GitHub Actions Learning Repositories
 # =========================================
 
 # Basic GitHub Actions Testing
