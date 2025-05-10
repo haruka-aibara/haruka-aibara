@@ -19,6 +19,7 @@ module "private" {
   repository_name = "private"
   description     = "private"
   visibility      = "private"
+  has_wiki        = false
 }
 
 # =========================================
@@ -211,4 +212,14 @@ module "github-actions-test-react-demo" {
   description     = "GitHub Actions React demo"
 
   topics = ["github-actions", "react", "ci", "cd"]
+}
+
+# GitHub Actions Environment Variables
+module "github-actions-test-env-vars" {
+  source = "./modules/repository"
+
+  repository_name = "github-actions-test-env-vars"
+  description     = "Testing GitHub Actions environment variables and secrets"
+
+  topics = ["github-actions", "ci", "cd", "environment-variables", "secrets"]
 }
