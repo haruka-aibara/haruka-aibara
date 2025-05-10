@@ -22,6 +22,15 @@ module "all-round-learning" {
   topics = ["learning", "documentation"]
 }
 
+# Private
+module "private" {
+  source = "./modules/repository"
+
+  repository_name = "private"
+  description     = "private"
+  visibility      = "private"
+}
+
 # =========================================
 # Slack AI Integration Projects
 # =========================================

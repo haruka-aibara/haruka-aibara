@@ -82,3 +82,8 @@ import {
   to = module.haruka-aibara.github_repository.this
   id = "haruka-aibara"
 }
+
+import {
+  to = module.private.github_repository.this
+  id = "private"
+}
