@@ -185,10 +185,10 @@ module "github-actions-test-jobs-artifacts-outputs" {
 }
 
 # GitHub Actions Events
-module "github-actions-events-deep-dive" {
+module "github-actions-test-events-deep-dive" {
   source = "./modules/repository"
 
-  repository_name = "github-actions-events-deep-dive"
+  repository_name = "github-actions-test-events-deep-dive"
   description     = "Deep dive into GitHub Actions events"
 
   topics = ["github-actions", "ci", "cd", "events"]
@@ -222,4 +222,14 @@ module "github-actions-test-env-vars" {
   description     = "Testing GitHub Actions environment variables and secrets"
 
   topics = ["github-actions", "ci", "cd", "environment-variables", "secrets"]
+}
+
+# GitHub Actions Workflow Controls
+module "github-actions-test-workflow-controls" {
+  source = "./modules/repository"
+
+  repository_name = "github-actions-test-workflow-controls"
+  description     = "Testing GitHub Actions workflow controls including conditional jobs and steps"
+
+  topics = ["github-actions", "ci", "cd", "workflow", "conditional-jobs", "conditional-steps"]
 }

@@ -64,8 +64,8 @@ import {
 }
 
 import {
-  to = module.github-actions-events-deep-dive.github_repository.this
-  id = "github-actions-events-deep-dive"
+  to = module.github-actions-test-events-deep-dive.github_repository.this
+  id = "github-actions-test-events-deep-dive"
 }
 
 import {
