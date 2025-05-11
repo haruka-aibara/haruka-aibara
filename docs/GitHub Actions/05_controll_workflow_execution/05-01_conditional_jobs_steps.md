@@ -4,6 +4,25 @@ GitHub Actions のワークフローにおいて、特定の条件に基づい�
 
 条件分岐（Conditional Execution）を使用することで、特定のジョブやステップの実行結果に応じて、必要なジョブやステップのみを実行することができます。
 
+```mermaid
+graph TD
+    subgraph "ジョブレベルの条件分岐"
+        A[Build Job] --> B[Test Job]
+        B --> C{Success?}
+        C -->|Yes| D[Deploy Job]
+        C -->|No| E[Notify Job]
+    end
+
+    subgraph "ステップレベルの条件分岐"
+        F[Unit Tests] --> G{Success?}
+        G -->|No| H[Integration Tests]
+        G -->|Yes| I[Next Step]
+        F --> J[Unit Tests with continue-on-error]
+        J --> K[Integration Tests after failure]
+        J --> L[Send Notification]
+    end
+```
+
 ## 特に重視するポイント
 
 - 条件式は `if` キーワードを使用して記述します
