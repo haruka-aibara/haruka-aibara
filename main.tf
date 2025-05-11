@@ -233,3 +233,13 @@ module "github-actions-test-workflow-controls" {
 
   topics = ["github-actions", "ci", "cd", "workflow", "conditional-jobs", "conditional-steps"]
 }
+
+# GitHub Actions Container Jobs
+module "github-actions-test-container-jobs" {
+  source = "./modules/repository"
+
+  repository_name = "github-actions-test-container-jobs"
+  description     = "Testing GitHub Actions jobs running in containers"
+
+  topics = ["github-actions", "ci", "cd", "containers", "docker"]
+}
