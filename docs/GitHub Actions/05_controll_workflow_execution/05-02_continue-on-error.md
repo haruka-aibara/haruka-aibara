@@ -20,7 +20,7 @@ jobs:
 ```
 
 ### ステップレベルでの設定
-```diff-yaml
+```diff yaml
 jobs:
   job1:
     steps:
