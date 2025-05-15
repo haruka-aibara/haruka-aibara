@@ -243,3 +243,13 @@ module "github-actions-test-container-jobs" {
 
   topics = ["github-actions", "ci", "cd", "containers", "docker"]
 }
+
+# GitHub Actions Custom Actions
+module "github-actions-test-custom-actions" {
+  source = "./modules/repository"
+
+  repository_name = "github-actions-test-custom-actions"
+  description     = "Testing GitHub Actions custom actions development and usage"
+
+  topics = ["github-actions", "ci", "cd", "custom-actions", "reusable-workflows"]
+}
