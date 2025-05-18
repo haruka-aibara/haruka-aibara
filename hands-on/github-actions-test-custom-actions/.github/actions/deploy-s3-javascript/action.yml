@@ -11,7 +11,9 @@ inputs:
   dist-folder:
     description: 'The folder to deploy to the S3 bucket'
     required: true
-    default: 'dist'
+outputs:
+  website-url:
+    description: 'The URL of the deployed website'
 runs:
   using: 'node16'
   main: 'main.js'

@@ -72,3 +72,6 @@ jobs:
           bucket: gha-custom-action-hosting-cyj2r0uj
           bucket-region: ap-northeast-1
           dist-folder: ./dist
+      - name: Output information
+        run: |
+          echo "Live URL: ${{ steps.deploy.outputs.website-url }}"

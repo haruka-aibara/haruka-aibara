@@ -14,6 +14,10 @@ function run() {
 
     // 3) notify success
     core.notice(`Successfully deployed to ${s3Uri}`);
+
+    // 4) return the website URL
+    const websiteUrl = `https://${bucket}.s3.${bucketRegion}.amazonaws.com`;
+    core.setOutput('website-url', websiteUrl);
 }
 
 run();
