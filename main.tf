@@ -253,3 +253,13 @@ module "github-actions-test-custom-actions" {
 
   topics = ["github-actions", "ci", "cd", "custom-actions", "reusable-workflows"]
 }
+
+# GitHub Actions Security
+module "github-actions-test-security" {
+  source = "./modules/repository"
+
+  repository_name = "github-actions-test-security"
+  description     = "Testing GitHub Actions security features, permissions, and best practices"
+
+  topics = ["github-actions", "ci", "cd", "security", "permissions", "best-practices"]
+}
