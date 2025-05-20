@@ -25,7 +25,7 @@ Legend:
 ## 02_Operating Systems
 | Technology/Tool       | Understanding | Recommendation | Reference Links |
 |-----------------------|---------------|----------------|-----------------|
-| Linux (Ubuntu/Debian) | 1             | Required 🟣    |                 |
+| Linux (Ubuntu/Debian) | 2             | Required 🟣    |                 |
 | SUSE Linux            |               | Alternative 🟢 |                 |
 | RHEL / Derivatives    |               | Required 🟣    |                 |
 | Windows               | 2             | Alternative 🟢 |                 |
@@ -49,13 +49,13 @@ Legend:
 ## 04_Version Control Systems
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| Git             | 1             | Required 🟣    |                 |
+| Git             | 2             | Required 🟣    |                 |
 
 ## 05_VCS Hosting
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| GitHub          | 1             | Required 🟣    |                 |
-| GitLab          | 1             | Alternative 🟢 |                 |
+| GitHub          | 2             | Required 🟣    |                 |
+| GitLab          | 2             | Alternative 🟢 |                 |
 | Bitbucket       |               | Alternative 🟢 |                 |
 
 ## 06_Containers
@@ -112,7 +112,7 @@ Legend:
 ## 10_Serverless
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| AWS Lambda      | 1             | Required 🟣    |                 |
+| AWS Lambda      | 2             | Required 🟣    |                 |
 | Cloudflare      |               | Required 🟣    |                 |
 | Azure Functions |               | Alternative 🟢 |                 |
 | Vercel          |               | Alternative 🟢 |                 |
