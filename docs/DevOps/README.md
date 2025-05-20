@@ -3,34 +3,33 @@
 This skill map is based on [roadmap.sh/devops](https://roadmap.sh/devops).
 
 Understanding Level:
-- 1: Heard of it
-- 2: Understand basic concepts
-- 3: Can use in practice
-- 4: Can teach others
-- 5: Expert
+- 1: Understand basic concepts
+- 2: Can use in practice
+- 3: Can teach others
+- 4: Expert
 
 Legend:
 - Required = Personal Recommendation / Opinion (🟣)
 - Alternative = Alternative Option (🟢)
 - Optional = Order not strict / learn anytime (⚪️)
 
-## 01_Programming Languages
+## 01_Learn a Programming Language
 | Technology/Tool      | Understanding | Recommendation | Reference Links                              |
 |----------------------|---------------|----------------|----------------------------------------------|
-| Python               | 3             | Required 🟣    | https://www.udemy.com/course/python-beginner |
-| Go                   | 1             | Required 🟣    |                                              |
-| Ruby                 | 1             | Alternative 🟢 |                                              |
-| Rust                 | 1             | Alternative 🟢 |                                              |
-| JavaScript / Node.js | 1             | Alternative 🟢 |                                              |
+| Python               | 2             | Required 🟣    | https://www.udemy.com/course/python-beginner |
+| Go                   |               | Required 🟣    |                                              |
+| Ruby                 |               | Alternative 🟢 |                                              |
+| Rust                 |               | Alternative 🟢 |                                              |
+| JavaScript / Node.js |               | Alternative 🟢 |                                              |
 
 ## 02_Operating Systems
 | Technology/Tool       | Understanding | Recommendation | Reference Links |
 |-----------------------|---------------|----------------|-----------------|
 | Linux (Ubuntu/Debian) |               | Required 🟣    |                 |
 | SUSE Linux            |               | Alternative 🟢 |                 |
-| RHEL / Derivatives    |               | Alternative 🟢 |                 |
+| RHEL / Derivatives    |               | Required 🟣    |                 |
 | Windows               |               | Alternative 🟢 |                 |
-| FreeBSD               |               | Alternative 🟢 |                 |
+| FreeBSD               |               | Required 🟣    |                 |
 | OpenBSD               |               | Alternative 🟢 |                 |
 | NetBSD                |               | Alternative 🟢 |                 |
 
@@ -38,10 +37,10 @@ Legend:
 | Technology/Tool        | Understanding | Recommendation | Reference Links |
 |------------------------|---------------|----------------|-----------------|
 | Bash                   |               | Required 🟣    |                 |
-| PowerShell             |               | Alternative 🟢 |                 |
+| PowerShell             | 2             | Alternative 🟢 |                 |
 | Vim                    |               | Required 🟣    |                 |
-| Nano                   |               | Alternative 🟢 |                 |
-| Emacs                  |               | Alternative 🟢 |                 |
+| Nano                   |               | Required 🟣    |                 |
+| Emacs                  |               | Required 🟣    |                 |
 | Process Monitoring     |               | Required 🟣    |                 |
 | Performance Monitoring |               | Required 🟣    |                 |
 | Networking Tools       |               | Required 🟣    |                 |
@@ -124,14 +123,14 @@ Legend:
 ## 12_Configuration Management
 | Technology/Tool | Understanding | Recommendation | Reference Links                                                 |
 |-----------------|---------------|----------------|-----------------------------------------------------------------|
-| Ansible         | 2             | Required 🟣    | https://www.udemy.com/course/aws-ansibleinfrastructure-as-code/ |
+| Ansible         | 1             | Required 🟣    | https://www.udemy.com/course/aws-ansibleinfrastructure-as-code/ |
 | Chef            |               | Alternative 🟢 |                                                                 |
 | Puppet          |               | Alternative 🟢 |                                                                 |
 
 ## 13_CI/CD Tools
 | Technology/Tool | Understanding | Recommendation | Reference Links                                                |
 |-----------------|---------------|----------------|----------------------------------------------------------------|
-| GitHub Actions  | 3             | Required 🟣    | https://www.udemy.com/course/github-actions-the-complete-guide |
+| GitHub Actions  | 2             | Required 🟣    | https://www.udemy.com/course/github-actions-the-complete-guide |
 | TeamCity        |               | Alternative 🟢 |                                                                |
 | Jenkins         |               | Alternative 🟢 |                                                                |
 | Travis CI       |               | Alternative 🟢 |                                                                |
@@ -142,7 +141,7 @@ Legend:
 ## 14_Secret Management
 | Technology/Tool      | Understanding | Recommendation | Reference Links |
 |----------------------|---------------|----------------|-----------------|
-| Vault                |               | Required 🟣    |                 |
+| Vault                | 1             | Required 🟣    |                 |
 | Sealed Secrets       |               | Alternative 🟢 |                 |
 | SOPs                 |               | Alternative 🟢 |                 |
 | Cloud Specific Tools |               | Alternative 🟢 |                 |
@@ -167,7 +166,7 @@ Legend:
 ## 17_Container Orchestration
 | Technology/Tool    | Understanding | Recommendation | Reference Links                                                               |
 |--------------------|---------------|----------------|-------------------------------------------------------------------------------|
-| Kubernetes         | 2             | Required 🟣    | https://www.udemy.com/course/kubernetes-docker-container-devops-kanzen-nyumon |
+| Kubernetes         | 1             | Required 🟣    | https://www.udemy.com/course/kubernetes-docker-container-devops-kanzen-nyumon |
 | EKS (AWS)          |               | Alternative 🟢 |                                                                               |
 | GKE (Google Cloud) |               | Alternative 🟢 |                                                                               |
 | AKS (Azure)        |               | Alternative 🟢 |                                                                               |
