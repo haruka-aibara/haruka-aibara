@@ -14,13 +14,13 @@ Legend:
 - Optional = Order not strict / learn anytime (⚪️)
 
 ## 01_Learn a Programming Language
-| Technology/Tool      | Understanding | Recommendation | Reference Links                              |
-|----------------------|---------------|----------------|----------------------------------------------|
-| Python               | 2             | Required 🟣    | https://www.udemy.com/course/python-beginner |
-| Go                   |               | Required 🟣    |                                              |
-| Ruby                 |               | Alternative 🟢 |                                              |
-| Rust                 |               | Alternative 🟢 |                                              |
-| JavaScript / Node.js |               | Alternative 🟢 |                                              |
+| Technology/Tool      | Understanding | Recommendation | Reference Links                                 |
+|----------------------|---------------|----------------|-------------------------------------------------|
+| Python               | 2             | Required 🟣    | https://www.udemy.com/course/python-beginner ★- |
+| Go                   |               | Required 🟣    |                                                 |
+| Ruby                 |               | Alternative 🟢 |                                                 |
+| Rust                 |               | Alternative 🟢 |                                                 |
+| JavaScript / Node.js |               | Alternative 🟢 |                                                 |
 
 ## 02_Operating Systems
 | Technology/Tool       | Understanding | Recommendation | Reference Links |
@@ -59,10 +59,10 @@ Legend:
 | Bitbucket       |               | Alternative 🟢 |                 |
 
 ## 06_Containers
-| Technology/Tool | Understanding | Recommendation | Reference Links                        |
-|-----------------|---------------|----------------|----------------------------------------|
-| Docker          | 1             | Required 🟣    | https://www.udemy.com/course/ok-docker |
-| LXC             |               | Alternative 🟢 |                                        |
+| Technology/Tool | Understanding | Recommendation | Reference Links                           |
+|-----------------|---------------|----------------|-------------------------------------------|
+| Docker          | 1             | Required 🟣    | https://www.udemy.com/course/ok-docker ★5 |
+| LXC             |               | Alternative 🟢 |                                           |
 
 ## 07_What is and how to setup X?
 | Technology/Tool | Understanding | Recommendation | Reference Links |
@@ -120,30 +120,30 @@ Legend:
 | GCP Functions   |               | Alternative 🟢 |                 |
 
 ## 11_Provisioning
-| Technology/Tool | Understanding | Recommendation | Reference Links                                 |
-|-----------------|---------------|----------------|-------------------------------------------------|
-| Terraform       | 2             | Required 🟣    | https://www.udemy.com/course/iac-with-terraform |
-| AWS CDK         |               | Alternative 🟢 |                                                 |
-| CloudFormation  | 1             | Alternative 🟢 |                                                 |
-| Pulumi          |               | Alternative 🟢 |                                                 |
+| Technology/Tool | Understanding | Recommendation | Reference Links                                    |
+|-----------------|---------------|----------------|----------------------------------------------------|
+| Terraform       | 2             | Required 🟣    | https://www.udemy.com/course/iac-with-terraform ★4 |
+| AWS CDK         |               | Alternative 🟢 |                                                    |
+| CloudFormation  | 1             | Alternative 🟢 |                                                    |
+| Pulumi          |               | Alternative 🟢 |                                                    |
 
 ## 12_Configuration Management
-| Technology/Tool | Understanding | Recommendation | Reference Links                                                 |
-|-----------------|---------------|----------------|-----------------------------------------------------------------|
-| Ansible         | 1             | Required 🟣    | https://www.udemy.com/course/aws-ansibleinfrastructure-as-code/ |
-| Chef            |               | Alternative 🟢 |                                                                 |
-| Puppet          |               | Alternative 🟢 |                                                                 |
+| Technology/Tool | Understanding | Recommendation | Reference Links                                                    |
+|-----------------|---------------|----------------|--------------------------------------------------------------------|
+| Ansible         | 1             | Required 🟣    | https://www.udemy.com/course/aws-ansibleinfrastructure-as-code/ ★5 |
+| Chef            |               | Alternative 🟢 |                                                                    |
+| Puppet          |               | Alternative 🟢 |                                                                    |
 
 ## 13_CI/CD Tools
-| Technology/Tool | Understanding | Recommendation | Reference Links                                                |
-|-----------------|---------------|----------------|----------------------------------------------------------------|
-| GitHub Actions  | 2             | Required 🟣    | https://www.udemy.com/course/github-actions-the-complete-guide |
-| TeamCity        |               | Alternative 🟢 |                                                                |
-| Jenkins         |               | Alternative 🟢 |                                                                |
-| Travis CI       |               | Alternative 🟢 |                                                                |
-| Circle CI       |               | Required 🟣    |                                                                |
-| GitLab CI       |               | Required 🟣    |                                                                |
-| Drone           |               | Alternative 🟢 |                                                                |
+| Technology/Tool | Understanding | Recommendation | Reference Links                                                   |
+|-----------------|---------------|----------------|-------------------------------------------------------------------|
+| GitHub Actions  | 2             | Required 🟣    | https://www.udemy.com/course/github-actions-the-complete-guide ★5 |
+| TeamCity        |               | Alternative 🟢 |                                                                   |
+| Jenkins         |               | Alternative 🟢 |                                                                   |
+| Travis CI       |               | Alternative 🟢 |                                                                   |
+| Circle CI       |               | Required 🟣    |                                                                   |
+| GitLab CI       |               | Required 🟣    |                                                                   |
+| Drone           |               | Alternative 🟢 |                                                                   |
 
 ## 14_Secret Management
 | Technology/Tool      | Understanding | Recommendation | Reference Links |
@@ -171,14 +171,14 @@ Legend:
 | Graylog         |               | Alternative 🟢 |                 |
 
 ## 17_Container Orchestration
-| Technology/Tool    | Understanding | Recommendation | Reference Links                                                               |
-|--------------------|---------------|----------------|-------------------------------------------------------------------------------|
-| Kubernetes         | 1             | Required 🟣    | https://www.udemy.com/course/kubernetes-docker-container-devops-kanzen-nyumon |
-| EKS (AWS)          |               | Alternative 🟢 |                                                                               |
-| GKE (Google Cloud) |               | Alternative 🟢 |                                                                               |
-| AKS (Azure)        |               | Alternative 🟢 |                                                                               |
-| AWS ECS / Fargate  |               | Alternative 🟢 |                                                                               |
-| Docker Swarm       |               | Alternative 🟢 |                                                                               |
+| Technology/Tool    | Understanding | Recommendation | Reference Links                                                                    |
+|--------------------|---------------|----------------|------------------------------------------------------------------------------------|
+| Kubernetes         | 1             | Required 🟣    | https://www.udemy.com/course/kubernetes-docker-container-devops-kanzen-nyumon ★4.5 |
+| EKS (AWS)          |               | Alternative 🟢 |                                                                                    |
+| GKE (Google Cloud) |               | Alternative 🟢 |                                                                                    |
+| AKS (Azure)        |               | Alternative 🟢 |                                                                                    |
+| AWS ECS / Fargate  |               | Alternative 🟢 |                                                                                    |
+| Docker Swarm       |               | Alternative 🟢 |                                                                                    |
 
 ## 18_Application Monitoring
 | Technology/Tool | Understanding | Recommendation | Reference Links |
