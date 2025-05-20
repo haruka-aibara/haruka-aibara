@@ -79,30 +79,30 @@ Legend:
 | IIS             |               | Alternative 🟢 |                 |
 
 ## 08_Networking & Protocols
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| DNS             |               | Required 🟣    |                 |
-| HTTP            |               | Required 🟣    |                 |
-| HTTPS           |               | Required 🟣    |                 |
-| SSL/TLS         |               | Required 🟣    |                 |
-| SSH             |               | Required 🟣    |                 |
-| FTP/SFTP        |               | Alternative 🟢 |                 |
-| OSI Model       |               | Optional ⚪️    |                 |
-| Email Protocols |               | Optional ⚪️    |                 |
-|   - White / Grey Listing |      | Optional ⚪️    |                 |
-|   - SMTP        |               | Optional ⚪️    |                 |
-|   - IMAP        |               | Optional ⚪️    |                 |
-|   - POP3S       |               | Optional ⚪️    |                 |
-|   - DMARC       |               | Optional ⚪️    |                 |
-|   - SPF         |               | Optional ⚪️    |                 |
-|   - Domain Keys |               | Optional ⚪️    |                 |
+| Technology/Tool        | Understanding | Recommendation | Reference Links |
+|------------------------|---------------|----------------|-----------------|
+| DNS                    |               | Required 🟣    |                 |
+| HTTP                   |               | Required 🟣    |                 |
+| HTTPS                  |               | Required 🟣    |                 |
+| SSL/TLS                |               | Required 🟣    |                 |
+| SSH                    |               | Required 🟣    |                 |
+| FTP/SFTP               |               | Alternative 🟢 |                 |
+| OSI Model              |               | Optional ⚪️    |                 |
+| Email Protocols        |               | Optional ⚪️    |                 |
+| - White / Grey Listing |               | Optional ⚪️    |                 |
+| - SMTP                 |               | Optional ⚪️    |                 |
+| - IMAP                 |               | Optional ⚪️    |                 |
+| - POP3S                |               | Optional ⚪️    |                 |
+| - DMARC                |               | Optional ⚪️    |                 |
+| - SPF                  |               | Optional ⚪️    |                 |
+| - Domain Keys          |               | Optional ⚪️    |                 |
 
 ## 09_Cloud Providers
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| AWS             |               | Required 🟣    |                 |
+| AWS             | 2             | Required 🟣    |                 |
 | Azure           |               | Required 🟣    |                 |
-| Google Cloud    |               | Alternative 🟢 |                 |
+| Google Cloud    |               | Required 🟣    |                 |
 | Digital Ocean   |               | Alternative 🟢 |                 |
 | Alibaba Cloud   |               | Alternative 🟢 |                 |
 | Hetzner         |               | Alternative 🟢 |                 |
@@ -113,7 +113,7 @@ Legend:
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
 | AWS Lambda      |               | Required 🟣    |                 |
-| Cloudflare      |               | Alternative 🟢 |                 |
+| Cloudflare      |               | Required 🟣    |                 |
 | Azure Functions |               | Alternative 🟢 |                 |
 | Vercel          |               | Alternative 🟢 |                 |
 | Netlify         |               | Alternative 🟢 |                 |
@@ -122,10 +122,10 @@ Legend:
 ## 11_Provisioning
 | Technology/Tool | Understanding | Recommendation | Reference Links                                 |
 |-----------------|---------------|----------------|-------------------------------------------------|
-| Terraform       |               | Required 🟣    | https://www.udemy.com/course/iac-with-terraform |
-| AWS CDK         |               | Alternative 🟢 |                                                 |
-| CloudFormation  |               | Alternative 🟢 |                                                 |
-| Pulumi          |               | Alternative 🟢 |                                                 |
+| Terraform       | 2             | Required 🟣    | https://www.udemy.com/course/iac-with-terraform |
+| AWS CDK         | 1             | Alternative 🟢 |                                                 |
+| CloudFormation  | 1             | Alternative 🟢 |                                                 |
+| Pulumi          | 1             | Alternative 🟢 |                                                 |
 
 ## 12_Configuration Management
 | Technology/Tool | Understanding | Recommendation | Reference Links                                                 |
@@ -141,8 +141,8 @@ Legend:
 | TeamCity        |               | Alternative 🟢 |                                                                |
 | Jenkins         |               | Alternative 🟢 |                                                                |
 | Travis CI       |               | Alternative 🟢 |                                                                |
-| Circle CI       |               | Alternative 🟢 |                                                                |
-| GitLab CI       |               | Alternative 🟢 |                                                                |
+| Circle CI       |               | Required 🟣    |                                                                |
+| GitLab CI       |               | Required 🟣    |                                                                |
 | Drone           |               | Alternative 🟢 |                                                                |
 
 ## 14_Secret Management
@@ -161,13 +161,13 @@ Legend:
 | Datadog         |               | Required 🟣    |                 |
 | Zabbix          |               | Alternative 🟢 |                 |
 
-## 16_Log Management
+## 16_Logs Management
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| Splunk          |               | Required 🟣    |                 |
+| Splunk          |               | Alternative 🟢 |                 |
 | Loki            |               | Required 🟣    |                 |
 | Papertrail      |               | Alternative 🟢 |                 |
-| Elastic Stack   |               | Alternative 🟢 |                 |
+| Elastic Stack   |               | Required 🟣    |                 |
 | Graylog         |               | Alternative 🟢 |                 |
 
 ## 17_Container Orchestration
@@ -183,8 +183,8 @@ Legend:
 ## 18_Application Monitoring
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| Datadog         |               | Required 🟣    |                 |
-| Prometheus      |               | Required 🟣    |                 |
+| Datadog         |               | Alternative 🟢 |                 |
+| Prometheus      |               | Alternative 🟢 |                 |
 | Jaeger          |               | Alternative 🟢 |                 |
 | New Relic       |               | Alternative 🟢 |                 |
 | OpenTelemetry   |               | Alternative 🟢 |                 |
