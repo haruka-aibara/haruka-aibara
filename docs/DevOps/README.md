@@ -25,10 +25,10 @@ Legend:
 ## 02_Operating Systems
 | Technology/Tool       | Understanding | Recommendation | Reference Links |
 |-----------------------|---------------|----------------|-----------------|
-| Linux (Ubuntu/Debian) |               | Required 🟣    |                 |
+| Linux (Ubuntu/Debian) | 1             | Required 🟣    |                 |
 | SUSE Linux            |               | Alternative 🟢 |                 |
 | RHEL / Derivatives    |               | Required 🟣    |                 |
-| Windows               |               | Alternative 🟢 |                 |
+| Windows               | 2             | Alternative 🟢 |                 |
 | FreeBSD               |               | Required 🟣    |                 |
 | OpenBSD               |               | Alternative 🟢 |                 |
 | NetBSD                |               | Alternative 🟢 |                 |
@@ -81,26 +81,26 @@ Legend:
 ## 08_Networking & Protocols
 | Technology/Tool        | Understanding | Recommendation | Reference Links |
 |------------------------|---------------|----------------|-----------------|
-| DNS                    |               | Required 🟣    |                 |
-| HTTP                   |               | Required 🟣    |                 |
-| HTTPS                  |               | Required 🟣    |                 |
-| SSL/TLS                |               | Required 🟣    |                 |
-| SSH                    |               | Required 🟣    |                 |
-| FTP/SFTP               |               | Alternative 🟢 |                 |
-| OSI Model              |               | Optional ⚪️    |                 |
+| DNS                    | 1             | Required 🟣    |                 |
+| HTTP                   | 1             | Required 🟣    |                 |
+| HTTPS                  | 1             | Required 🟣    |                 |
+| SSL/TLS                | 1             | Required 🟣    |                 |
+| SSH                    | 1             | Required 🟣    |                 |
+| FTP/SFTP               | 1             | Alternative 🟢 |                 |
+| OSI Model              | 1             | Optional ⚪️    |                 |
 | Email Protocols        |               | Optional ⚪️    |                 |
 | - White / Grey Listing |               | Optional ⚪️    |                 |
-| - SMTP                 |               | Optional ⚪️    |                 |
-| - IMAP                 |               | Optional ⚪️    |                 |
-| - POP3S                |               | Optional ⚪️    |                 |
-| - DMARC                |               | Optional ⚪️    |                 |
-| - SPF                  |               | Optional ⚪️    |                 |
+| - SMTP                 | 1             | Optional ⚪️    |                 |
+| - IMAP                 | 1             | Optional ⚪️    |                 |
+| - POP3S                | 1             | Optional ⚪️    |                 |
+| - DMARC                | 1             | Optional ⚪️    |                 |
+| - SPF                  | 1             | Optional ⚪️    |                 |
 | - Domain Keys          |               | Optional ⚪️    |                 |
 
 ## 09_Cloud Providers
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| AWS             | 2             | Required 🟣    |                 |
+| AWS             | 3             | Required 🟣    |                 |
 | Azure           |               | Required 🟣    |                 |
 | Google Cloud    |               | Required 🟣    |                 |
 | Digital Ocean   |               | Alternative 🟢 |                 |
@@ -112,7 +112,7 @@ Legend:
 ## 10_Serverless
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| AWS Lambda      |               | Required 🟣    |                 |
+| AWS Lambda      | 1             | Required 🟣    |                 |
 | Cloudflare      |               | Required 🟣    |                 |
 | Azure Functions |               | Alternative 🟢 |                 |
 | Vercel          |               | Alternative 🟢 |                 |
@@ -123,9 +123,9 @@ Legend:
 | Technology/Tool | Understanding | Recommendation | Reference Links                                 |
 |-----------------|---------------|----------------|-------------------------------------------------|
 | Terraform       | 2             | Required 🟣    | https://www.udemy.com/course/iac-with-terraform |
-| AWS CDK         | 1             | Alternative 🟢 |                                                 |
+| AWS CDK         |               | Alternative 🟢 |                                                 |
 | CloudFormation  | 1             | Alternative 🟢 |                                                 |
-| Pulumi          | 1             | Alternative 🟢 |                                                 |
+| Pulumi          |               | Alternative 🟢 |                                                 |
 
 ## 12_Configuration Management
 | Technology/Tool | Understanding | Recommendation | Reference Links                                                 |
