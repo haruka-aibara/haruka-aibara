@@ -49,19 +49,19 @@ Legend:
 ## 04_Version Control Systems
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| Git             |               | Required 🟣    |                 |
+| Git             | 1             | Required 🟣    |                 |
 
 ## 05_VCS Hosting
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| GitHub          |               | Required 🟣    |                 |
-| GitLab          |               | Alternative 🟢 |                 |
+| GitHub          | 1             | Required 🟣    |                 |
+| GitLab          | 1             | Alternative 🟢 |                 |
 | Bitbucket       |               | Alternative 🟢 |                 |
 
 ## 06_Containers
 | Technology/Tool | Understanding | Recommendation | Reference Links                        |
 |-----------------|---------------|----------------|----------------------------------------|
-| Docker          |               | Required 🟣    | https://www.udemy.com/course/ok-docker |
+| Docker          | 1             | Required 🟣    | https://www.udemy.com/course/ok-docker |
 | LXC             |               | Alternative 🟢 |                                        |
 
 ## 07_What is and how to setup X?
@@ -78,7 +78,7 @@ Legend:
 | Apache          |               | Alternative 🟢 |                 |
 | IIS             |               | Alternative 🟢 |                 |
 
-## 08_Networking and Protocols
+## 08_Networking & Protocols
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
 | DNS             |               | Required 🟣    |                 |
@@ -89,6 +89,13 @@ Legend:
 | FTP/SFTP        |               | Alternative 🟢 |                 |
 | OSI Model       |               | Optional ⚪️    |                 |
 | Email Protocols |               | Optional ⚪️    |                 |
+|   - White / Grey Listing |      | Optional ⚪️    |                 |
+|   - SMTP        |               | Optional ⚪️    |                 |
+|   - IMAP        |               | Optional ⚪️    |                 |
+|   - POP3S       |               | Optional ⚪️    |                 |
+|   - DMARC       |               | Optional ⚪️    |                 |
+|   - SPF         |               | Optional ⚪️    |                 |
+|   - Domain Keys |               | Optional ⚪️    |                 |
 
 ## 09_Cloud Providers
 | Technology/Tool | Understanding | Recommendation | Reference Links |
