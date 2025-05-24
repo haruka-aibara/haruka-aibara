@@ -263,3 +263,17 @@ module "github-actions-test-security" {
 
   topics = ["github-actions", "ci", "cd", "security", "permissions", "best-practices"]
 }
+
+# =========================================
+# My Monitoring Learning Repositories
+# =========================================
+
+# Grafana and Prometheus Monitoring Hands-on
+module "grafana-prometheus-monitoring-hands-on" {
+  source = "./modules/repository"
+
+  repository_name = "grafana-prometheus-monitoring-hands-on"
+  description     = "Hands-on practice repository for monitoring with Grafana and Prometheus"
+
+  topics = ["monitoring", "grafana", "prometheus", "observability", "metrics"]
+}
