@@ -26,10 +26,10 @@ Legend:
 | Technology/Tool       | Understanding | Recommendation | Reference Links |
 |-----------------------|---------------|----------------|-----------------|
 | Linux (Ubuntu/Debian) | 2             | Required 🟣    |                 |
-| SUSE Linux            |               | Alternative 🟢 |                 |
 | RHEL / Derivatives    |               | Required 🟣    |                 |
-| Windows               | 2             | Alternative 🟢 |                 |
 | FreeBSD               |               | Required 🟣    |                 |
+| SUSE Linux            |               | Alternative 🟢 |                 |
+| Windows               | 2             | Alternative 🟢 |                 |
 | OpenBSD               |               | Alternative 🟢 |                 |
 | NetBSD                |               | Alternative 🟢 |                 |
 
@@ -37,7 +37,6 @@ Legend:
 | Technology/Tool        | Understanding | Recommendation | Reference Links |
 |------------------------|---------------|----------------|-----------------|
 | Bash                   |               | Required 🟣    |                 |
-| PowerShell             | 2             | Alternative 🟢 |                 |
 | Vim                    |               | Required 🟣    |                 |
 | Nano                   |               | Required 🟣    |                 |
 | Emacs                  |               | Required 🟣    |                 |
@@ -45,6 +44,7 @@ Legend:
 | Performance Monitoring |               | Required 🟣    |                 |
 | Networking Tools       |               | Required 🟣    |                 |
 | Text Manipulation      |               | Required 🟣    |                 |
+| PowerShell             | 2             | Alternative 🟢 |                 |
 
 ## 04_Version Control Systems
 | Technology/Tool | Understanding | Recommendation | Reference Links |
@@ -67,12 +67,12 @@ Legend:
 ## 07_What is and how to setup X?
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| Forward Proxy   |               | Required 🟣    |                 |
-| Reverse Proxy   |               | Required 🟣    |                 |
-| Caching Server  |               | Required 🟣    |                 |
-| Firewall        |               | Required 🟣    |                 |
-| Load Balancer   |               | Required 🟣    |                 |
-| Nginx           |               | Required 🟣    |                 |
+| Forward Proxy   | 1             | Required 🟣    |                 |
+| Reverse Proxy   | 1             | Required 🟣    |                 |
+| Caching Server  | 1             | Required 🟣    |                 |
+| Firewall        | 1             | Required 🟣    |                 |
+| Load Balancer   | 1             | Required 🟣    |                 |
+| Nginx           | 1             | Required 🟣    |                 |
 | Caddy           |               | Alternative 🟢 |                 |
 | Tomcat          |               | Alternative 🟢 |                 |
 | Apache          |               | Alternative 🟢 |                 |
@@ -101,8 +101,8 @@ Legend:
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
 | AWS             | 3             | Required 🟣    |                 |
-| Azure           |               | Required 🟣    |                 |
-| Google Cloud    |               | Required 🟣    |                 |
+| Azure           | 1             | Required 🟣    |                 |
+| Google Cloud    | 1             | Required 🟣    |                 |
 | Digital Ocean   |               | Alternative 🟢 |                 |
 | Alibaba Cloud   |               | Alternative 🟢 |                 |
 | Hetzner         |               | Alternative 🟢 |                 |
@@ -138,11 +138,11 @@ Legend:
 | Technology/Tool | Understanding | Recommendation | Reference Links                                                   |
 |-----------------|---------------|----------------|-------------------------------------------------------------------|
 | GitHub Actions  | 2             | Required 🟣    | https://www.udemy.com/course/github-actions-the-complete-guide ★5 |
+| Circle CI       |               | Required 🟣    |                                                                   |
+| GitLab CI       |               | Required 🟣    |                                                                   |
 | TeamCity        |               | Alternative 🟢 |                                                                   |
 | Jenkins         |               | Alternative 🟢 |                                                                   |
 | Travis CI       |               | Alternative 🟢 |                                                                   |
-| Circle CI       |               | Required 🟣    |                                                                   |
-| GitLab CI       |               | Required 🟣    |                                                                   |
 | Drone           |               | Alternative 🟢 |                                                                   |
 
 ## 14_Secret Management
@@ -164,10 +164,10 @@ Legend:
 ## 16_Logs Management
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
-| Splunk          |               | Alternative 🟢 |                 |
 | Loki            |               | Required 🟣    |                 |
-| Papertrail      |               | Alternative 🟢 |                 |
 | Elastic Stack   |               | Required 🟣    |                 |
+| Splunk          |               | Alternative 🟢 |                 |
+| Papertrail      |               | Alternative 🟢 |                 |
 | Graylog         |               | Alternative 🟢 |                 |
 
 ## 17_Container Orchestration
