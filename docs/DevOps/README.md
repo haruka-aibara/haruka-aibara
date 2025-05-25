@@ -1,243 +1,243 @@
-# DevOps Skill Map
+# DevOps スキルマップ
 
-This skill map is based on [roadmap.sh/devops](https://roadmap.sh/devops).
+このスキルマップは [roadmap.sh/devops](https://roadmap.sh/devops) を基にしています。
 
-Understanding Level:
-- 0: Unaware
-  - Not aware of the technology/tool's existence
-  - No knowledge about the technical domain
-  - Example: Not aware of Docker or containerization technology
-- 1: Basic Recognition
-  - Only recognizes the name, no detailed understanding
-  - Cannot explain functionality or operating principles
-  - Example: Recognizes the name Docker but doesn't understand container technology details or operating principles
-- 2: Basic Understanding
-  - Understands the purpose and basic concepts of the technology/tool
-  - Can explain basic terminology and concepts
-  - Example: Understands Docker's purpose and basic container technology concepts and can explain them
-- 3: Theoretical Knowledge
-  - Has systematic learning knowledge but limited practical experience
-  - Understands basic operation procedures and concepts
-  - Example: Understands Docker's basic operation procedures and concepts but has limited practical experience
-- 4: Practical Knowledge
-  - Has some practical experience and can solve basic problems
-  - Can utilize in basic work situations
-  - Example: Can set up basic Docker environments and solve problems
-- 5: Professional Usage
-  - Can utilize effectively in professional work
-  - Can solve complex problems and optimize
-  - Example: Can set up, operate, and optimize Docker environments in production
-- 6: Expert Proficiency
-  - Can design advanced architectures
-  - Can contribute to technical guidance and community
-  - Example: Can contribute to Docker development or develop advanced Docker plugins
+理解レベル：
+- 0: 未認知
+  - 技術/ツールの存在を知らない
+  - 技術領域についての知識がない
+  - 例：Dockerやコンテナ技術の存在を知らない
+- 1: 基本的な認識
+  - 名前のみ認識、詳細な理解はない
+  - 機能や動作原理を説明できない
+  - 例：Dockerという名前は知っているが、コンテナ技術の詳細や動作原理を理解していない
+- 2: 基本的な理解
+  - 技術/ツールの目的と基本概念を理解している
+  - 基本的な用語や概念を説明できる
+  - 例：Dockerの目的と基本的なコンテナ技術の概念を理解し、説明できる
+- 3: 理論的知識
+  - 体系的な学習知識はあるが、実践経験は限定的
+  - 基本的な操作手順と概念を理解している
+  - 例：Dockerの基本的な操作手順と概念を理解しているが、実践経験は限定的
+- 4: 実践的知識
+  - 実践経験があり、基本的な問題を解決できる
+  - 基本的な業務状況で活用できる
+  - 例：基本的なDocker環境の構築と問題解決ができる
+- 5: 専門的な使用
+  - 専門的な業務で効果的に活用できる
+  - 複雑な問題の解決と最適化ができる
+  - 例：本番環境でのDocker環境の構築、運用、最適化ができる
+- 6: エキスパートレベル
+  - 高度なアーキテクチャを設計できる
+  - 技術的なガイダンスやコミュニティへの貢献ができる
+  - 例：Dockerの開発に貢献したり、高度なDockerプラグインを開発できる
 
-Legend:
-- Required = Personal Recommendation / Opinion (🟣)
-- Alternative = Alternative Option (🟢)
-- Optional = Order not strict / learn anytime (⚪️)
+凡例：
+- 必須 = 個人的な推奨/意見 (🟣)
+- 代替 = 代替オプション (🟢)
+- 任意 = 順序は厳密ではない/いつでも学習可能 (⚪️)
 
-## 01_Learn a Programming Language
-| Technology/Tool      | Understanding | Recommendation | Reference Links                                 |
-|----------------------|---------------|----------------|-------------------------------------------------|
-| Python               | 4             | Required 🟣    | https://www.udemy.com/course/python-beginner ★- |
-| Go                   | 1             | Required 🟣    |                                                 |
-| Ruby                 | 1             | Alternative 🟢 |                                                 |
-| Rust                 | 1             | Alternative 🟢 |                                                 |
-| JavaScript / Node.js | 1             | Alternative 🟢 |                                                 |
+## 01_プログラミング言語の学習
+| 技術/ツール             | 理解度 | 推奨度  | 参考リンク                                         |
+|----------------------|--------|-------|-------------------------------------------------|
+| Python               | 4      | 必須 🟣 | https://www.udemy.com/course/python-beginner ★- |
+| Go                   | 1      | 必須 🟣 |                                                 |
+| Ruby                 | 1      | 代替 🟢 |                                                 |
+| Rust                 | 1      | 代替 🟢 |                                                 |
+| JavaScript / Node.js | 1      | 代替 🟢 |                                                 |
 
-## 02_Operating Systems
-| Technology/Tool       | Understanding | Recommendation | Reference Links |
-|-----------------------|---------------|----------------|-----------------|
-| Linux (Ubuntu/Debian) | 2             | Required 🟣    |                 |
-| RHEL / Derivatives    | 1             | Required 🟣    |                 |
-| FreeBSD               | 0             | Required 🟣    |                 |
-| SUSE Linux            | 1             | Alternative 🟢 |                 |
-| Windows               | 4             | Alternative 🟢 |                 |
-| OpenBSD               | 0             | Alternative 🟢 |                 |
-| NetBSD                | 0             | Alternative 🟢 |                 |
+## 02_オペレーティングシステム
+| 技術/ツール              | 理解度 | 推奨度  | 参考リンク |
+|-----------------------|--------|-------|---------|
+| Linux (Ubuntu/Debian) | 2      | 必須 🟣 |         |
+| RHEL / 派生版         | 1      | 必須 🟣 |         |
+| FreeBSD               | 0      | 必須 🟣 |         |
+| SUSE Linux            | 1      | 代替 🟢 |         |
+| Windows               | 4      | 代替 🟢 |         |
+| OpenBSD               | 0      | 代替 🟢 |         |
+| NetBSD                | 0      | 代替 🟢 |         |
 
-## 03_Terminal Knowledge
-| Technology/Tool        | Understanding | Recommendation | Reference Links |
-|------------------------|---------------|----------------|-----------------|
-| Bash                   | 2             | Required 🟣    |                 |
-| Vim                    | 2             | Required 🟣    |                 |
-| Nano                   | 2             | Required 🟣    |                 |
-| Emacs                  | 2             | Required 🟣    |                 |
-| Process Monitoring     | 1             | Required 🟣    |                 |
-| Performance Monitoring | 1             | Required 🟣    |                 |
-| Networking Tools       | 1             | Required 🟣    |                 |
-| Text Manipulation      | 1             | Required 🟣    |                 |
-| PowerShell             | 4             | Alternative 🟢 |                 |
+## 03_ターミナル知識
+| 技術/ツール    | 理解度 | 推奨度  | 参考リンク |
+|-------------|--------|-------|---------|
+| Bash        | 2      | 必須 🟣 |         |
+| Vim         | 2      | 必須 🟣 |         |
+| Nano        | 2      | 必須 🟣 |         |
+| Emacs       | 2      | 必須 🟣 |         |
+| プロセス監視    | 1      | 必須 🟣 |         |
+| パフォーマンス監視 | 1      | 必須 🟣 |         |
+| ネットワークツール   | 1      | 必須 🟣 |         |
+| テキスト操作    | 1      | 必須 🟣 |         |
+| PowerShell  | 4      | 代替 🟢 |         |
 
-## 04_Version Control Systems
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| Git             | 4             | Required 🟣    |                 |
+## 04_バージョン管理システム
+| 技術/ツール | 理解度 | 推奨度  | 参考リンク |
+|----------|--------|-------|---------|
+| Git      | 4      | 必須 🟣 |         |
 
-## 05_VCS Hosting
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| GitHub          | 4             | Required 🟣    |                 |
-| GitLab          | 3             | Alternative 🟢 |                 |
-| Bitbucket       | 1             | Alternative 🟢 |                 |
+## 05_VCSホスティング
+| 技術/ツール  | 理解度 | 推奨度  | 参考リンク |
+|-----------|--------|-------|---------|
+| GitHub    | 4      | 必須 🟣 |         |
+| GitLab    | 3      | 代替 🟢 |         |
+| Bitbucket | 1      | 代替 🟢 |         |
 
-## 06_Containers
-| Technology/Tool | Understanding | Recommendation | Reference Links                           |
-|-----------------|---------------|----------------|-------------------------------------------|
-| Docker          | 3             | Required 🟣    | https://www.udemy.com/course/ok-docker ★5 |
-| LXC             | 0             | Alternative 🟢 |                                           |
+## 06_コンテナ
+| 技術/ツール | 理解度 | 推奨度  | 参考リンク                                   |
+|----------|--------|-------|-------------------------------------------|
+| Docker   | 3      | 必須 🟣 | https://www.udemy.com/course/ok-docker ★5 |
+| LXC      | 0      | 代替 🟢 |                                           |
 
-## 07_What is and how to setup X?
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| Forward Proxy   | 2             | Required 🟣    |                 |
-| Reverse Proxy   | 2             | Required 🟣    |                 |
-| Caching Server  | 2             | Required 🟣    |                 |
-| Firewall        | 2             | Required 🟣    |                 |
-| Load Balancer   | 2             | Required 🟣    |                 |
-| Nginx           | 2             | Required 🟣    |                 |
-| Caddy           | 0             | Alternative 🟢 |                 |
-| Tomcat          | 1             | Alternative 🟢 |                 |
-| Apache          | 1             | Alternative 🟢 |                 |
-| IIS             | 0             | Alternative 🟢 |                 |
+## 07_Xとは何か、そしてその設定方法
+| 技術/ツール  | 理解度 | 推奨度  | 参考リンク |
+|-----------|--------|-------|---------|
+| フォワードプロキシ | 2      | 必須 🟣 |         |
+| リバースプロキシ  | 2      | 必須 🟣 |         |
+| キャッシュサーバー | 2      | 必須 🟣 |         |
+| ファイアウォール  | 2      | 必須 🟣 |         |
+| ロードバランサー  | 2      | 必須 🟣 |         |
+| Nginx     | 2      | 必須 🟣 |         |
+| Caddy     | 0      | 代替 🟢 |         |
+| Tomcat    | 1      | 代替 🟢 |         |
+| Apache    | 1      | 代替 🟢 |         |
+| IIS       | 0      | 代替 🟢 |         |
 
-## 08_Networking & Protocols
-| Technology/Tool        | Understanding | Recommendation | Reference Links |
-|------------------------|---------------|----------------|-----------------|
-| DNS                    | 2             | Required 🟣    |                 |
-| HTTP                   | 2             | Required 🟣    |                 |
-| HTTPS                  | 2             | Required 🟣    |                 |
-| SSL/TLS                | 2             | Required 🟣    |                 |
-| SSH                    | 2             | Required 🟣    |                 |
-| FTP/SFTP               | 2             | Alternative 🟢 |                 |
-| OSI Model              | 2             | Optional ⚪️    |                 |
-| Email Protocols        |               |                |                 |
-| - White / Grey Listing | 0             | Optional ⚪️    |                 |
-| - SMTP                 | 2             | Optional ⚪️    |                 |
-| - IMAP                 | 2             | Optional ⚪️    |                 |
-| - POP3S                | 2             | Optional ⚪️    |                 |
-| - DMARC                | 2             | Optional ⚪️    |                 |
-| - SPF                  | 2             | Optional ⚪️    |                 |
-| - Domain Keys          | 0             | Optional ⚪️    |                 |
+## 08_ネットワークとプロトコル
+| 技術/ツール      | 理解度 | 推奨度  | 参考リンク |
+|---------------|--------|---------|---------|
+| DNS           | 2      | 必須 🟣 |         |
+| HTTP          | 2      | 必須 🟣 |         |
+| HTTPS         | 2      | 必須 🟣 |         |
+| SSL/TLS       | 2      | 必須 🟣 |         |
+| SSH           | 2      | 必須 🟣 |         |
+| FTP/SFTP      | 2      | 代替 🟢 |         |
+| OSIモデル        | 2      | 任意 ⚪️ |         |
+| メールプロトコル      |        |         |         |
+| - ホワイト/グレーリスト | 0      | 任意 ⚪️ |         |
+| - SMTP        | 2      | 任意 ⚪️ |         |
+| - IMAP        | 2      | 任意 ⚪️ |         |
+| - POP3S       | 2      | 任意 ⚪️ |         |
+| - DMARC       | 2      | 任意 ⚪️ |         |
+| - SPF         | 2      | 任意 ⚪️ |         |
+| - ドメインキー      | 0      | 任意 ⚪️ |         |
 
-## 09_Cloud Providers
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| AWS             | 5             | Required 🟣    |                 |
-| Azure           | 1             | Required 🟣    |                 |
-| Google Cloud    | 1             | Required 🟣    |                 |
-| Digital Ocean   | 0             | Alternative 🟢 |                 |
-| Alibaba Cloud   | 1             | Alternative 🟢 |                 |
-| Hetzner         | 0             | Alternative 🟢 |                 |
-| Contabo         | 0             | Alternative 🟢 |                 |
-| Heroku          | 0             | Alternative 🟢 |                 |
+## 09_クラウドプロバイダー
+| 技術/ツール      | 理解度 | 推奨度  | 参考リンク |
+|---------------|--------|-------|---------|
+| AWS           | 5      | 必須 🟣 |         |
+| Azure         | 1      | 必須 🟣 |         |
+| Google Cloud  | 1      | 必須 🟣 |         |
+| Digital Ocean | 0      | 代替 🟢 |         |
+| Alibaba Cloud | 1      | 代替 🟢 |         |
+| Hetzner       | 0      | 代替 🟢 |         |
+| Contabo       | 0      | 代替 🟢 |         |
+| Heroku        | 0      | 代替 🟢 |         |
 
-## 10_Serverless
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| AWS Lambda      | 4             | Required 🟣    |                 |
-| Cloudflare      | 1             | Required 🟣    |                 |
-| Azure Functions | 1             | Alternative 🟢 |                 |
-| Vercel          | 0             | Alternative 🟢 |                 |
-| Netlify         | 0             | Alternative 🟢 |                 |
-| GCP Functions   | 1             | Alternative 🟢 |                 |
+## 10_サーバーレス
+| 技術/ツール        | 理解度 | 推奨度  | 参考リンク |
+|-----------------|--------|-------|---------|
+| AWS Lambda      | 4      | 必須 🟣 |         |
+| Cloudflare      | 1      | 必須 🟣 |         |
+| Azure Functions | 1      | 代替 🟢 |         |
+| Vercel          | 0      | 代替 🟢 |         |
+| Netlify         | 0      | 代替 🟢 |         |
+| GCP Functions   | 1      | 代替 🟢 |         |
 
-## 11_Provisioning
-| Technology/Tool | Understanding | Recommendation | Reference Links                                    |
-|-----------------|---------------|----------------|----------------------------------------------------|
-| Terraform       | 4             | Required 🟣    | https://www.udemy.com/course/iac-with-terraform ★4 |
-| AWS CDK         | 2             | Alternative 🟢 |                                                    |
-| CloudFormation  | 2             | Alternative 🟢 |                                                    |
-| Pulumi          | 1             | Alternative 🟢 |                                                    |
+## 11_プロビジョニング
+| 技術/ツール       | 理解度 | 推奨度  | 参考リンク                                            |
+|----------------|--------|-------|----------------------------------------------------|
+| Terraform      | 4      | 必須 🟣 | https://www.udemy.com/course/iac-with-terraform ★4 |
+| AWS CDK        | 2      | 代替 🟢 |                                                    |
+| CloudFormation | 2      | 代替 🟢 |                                                    |
+| Pulumi         | 1      | 代替 🟢 |                                                    |
 
-## 12_Configuration Management
-| Technology/Tool | Understanding | Recommendation | Reference Links                                                    |
-|-----------------|---------------|----------------|--------------------------------------------------------------------|
-| Ansible         | 3             | Required 🟣    | https://www.udemy.com/course/aws-ansibleinfrastructure-as-code/ ★5 |
-| Chef            | 1             | Alternative 🟢 |                                                                    |
-| Puppet          | 1             | Alternative 🟢 |                                                                    |
+## 12_構成管理
+| 技術/ツール | 理解度 | 推奨度  | 参考リンク                                                            |
+|----------|--------|-------|--------------------------------------------------------------------|
+| Ansible  | 3      | 必須 🟣 | https://www.udemy.com/course/aws-ansibleinfrastructure-as-code/ ★5 |
+| Chef     | 1      | 代替 🟢 |                                                                    |
+| Puppet   | 1      | 代替 🟢 |                                                                    |
 
-## 13_CI/CD Tools
-| Technology/Tool | Understanding | Recommendation | Reference Links                                                   |
-|-----------------|---------------|----------------|-------------------------------------------------------------------|
-| GitHub Actions  | 3             | Required 🟣    | https://www.udemy.com/course/github-actions-the-complete-guide ★5 |
-| Circle CI       | 0             | Required 🟣    |                                                                   |
-| GitLab CI       | 2             | Required 🟣    |                                                                   |
-| TeamCity        | 0             | Alternative 🟢 |                                                                   |
-| Jenkins         | 1             | Alternative 🟢 |                                                                   |
-| Travis CI       | 0             | Alternative 🟢 |                                                                   |
-| Drone           | 0             | Alternative 🟢 |                                                                   |
+## 13_CI/CDツール
+| 技術/ツール       | 理解度 | 推奨度  | 参考リンク                                                           |
+|----------------|--------|-------|-------------------------------------------------------------------|
+| GitHub Actions | 3      | 必須 🟣 | https://www.udemy.com/course/github-actions-the-complete-guide ★5 |
+| Circle CI      | 0      | 必須 🟣 |                                                                   |
+| GitLab CI      | 2      | 必須 🟣 |                                                                   |
+| TeamCity       | 0      | 代替 🟢 |                                                                   |
+| Jenkins        | 1      | 代替 🟢 |                                                                   |
+| Travis CI      | 0      | 代替 🟢 |                                                                   |
+| Drone          | 0      | 代替 🟢 |                                                                   |
 
-## 14_Secret Management
-| Technology/Tool      | Understanding | Recommendation | Reference Links |
-|----------------------|---------------|----------------|-----------------|
-| Vault                | 2             | Required 🟣    |                 |
-| Sealed Secrets       | 0             | Alternative 🟢 |                 |
-| SOPs                 | 0             | Alternative 🟢 |                 |
-| Cloud Specific Tools | 0             | Alternative 🟢 |                 |
+## 14_シークレット管理
+| 技術/ツール       | 理解度 | 推奨度  | 参考リンク |
+|----------------|--------|-------|---------|
+| Vault          | 2      | 必須 🟣 |         |
+| Sealed Secrets | 0      | 代替 🟢 |         |
+| SOPs           | 0      | 代替 🟢 |         |
+| クラウド固有ツール    | 0      | 代替 🟢 |         |
 
-## 15_Infrastructure Monitoring
-| Technology/Tool | Understanding | Recommendation | Reference Links                                      |
-|-----------------|---------------|----------------|------------------------------------------------------|
-| Prometheus      | 3             | Required 🟣    | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
-| Grafana         | 3             | Required 🟣    | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
-| Datadog         | 1             | Required 🟣    |                                                      |
-| Zabbix          | 1             | Alternative 🟢 |                                                      |
+## 15_インフラストラクチャ監視
+| 技術/ツール   | 理解度 | 推奨度  | 参考リンク                                              |
+|------------|--------|-------|------------------------------------------------------|
+| Prometheus | 3      | 必須 🟣 | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
+| Grafana    | 3      | 必須 🟣 | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
+| Datadog    | 1      | 必須 🟣 |                                                      |
+| Zabbix     | 1      | 代替 🟢 |                                                      |
 
-## 16_Logs Management
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| Loki            | 1             | Required 🟣    |                 |
-| Elastic Stack   | 0             | Required 🟣    |                 |
-| Splunk          | 1             | Alternative 🟢 |                 |
-| Papertrail      | 0             | Alternative 🟢 |                 |
-| Graylog         | 0             | Alternative 🟢 |                 |
+## 16_ログ管理
+| 技術/ツール      | 理解度 | 推奨度  | 参考リンク |
+|---------------|--------|-------|---------|
+| Loki          | 1      | 必須 🟣 |         |
+| Elastic Stack | 0      | 必須 🟣 |         |
+| Splunk        | 1      | 代替 🟢 |         |
+| Papertrail    | 0      | 代替 🟢 |         |
+| Graylog       | 0      | 代替 🟢 |         |
 
-## 17_Container Orchestration
-| Technology/Tool    | Understanding | Recommendation | Reference Links                                                                    |
-|--------------------|---------------|----------------|------------------------------------------------------------------------------------|
-| Kubernetes         | 3             | Required 🟣    | https://www.udemy.com/course/kubernetes-docker-container-devops-kanzen-nyumon ★4.5 |
-| EKS (AWS)          | 2             | Alternative 🟢 |                                                                                    |
-| GKE (Google Cloud) | 1             | Alternative 🟢 |                                                                                    |
-| AKS (Azure)        | 1             | Alternative 🟢 |                                                                                    |
-| AWS ECS / Fargate  | 2             | Alternative 🟢 |                                                                                    |
-| Docker Swarm       | 1             | Alternative 🟢 |                                                                                    |
+## 17_コンテナオーケストレーション
+| 技術/ツール           | 理解度 | 推奨度  | 参考リンク                                                                            |
+|--------------------|--------|-------|------------------------------------------------------------------------------------|
+| Kubernetes         | 3      | 必須 🟣 | https://www.udemy.com/course/kubernetes-docker-container-devops-kanzen-nyumon ★4.5 |
+| EKS (AWS)          | 2      | 代替 🟢 |                                                                                    |
+| GKE (Google Cloud) | 1      | 代替 🟢 |                                                                                    |
+| AKS (Azure)        | 1      | 代替 🟢 |                                                                                    |
+| AWS ECS / Fargate  | 2      | 代替 🟢 |                                                                                    |
+| Docker Swarm       | 1      | 代替 🟢 |                                                                                    |
 
-## 18_Application Monitoring
-| Technology/Tool | Understanding | Recommendation | Reference Links                                      |
-|-----------------|---------------|----------------|------------------------------------------------------|
-| Datadog         | 1             | Alternative 🟢 |                                                      |
-| Prometheus      | 2             | Alternative 🟢 | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
-| Jaeger          | 0             | Alternative 🟢 |                                                      |
-| New Relic       | 0             | Alternative 🟢 |                                                      |
-| OpenTelemetry   | 0             | Alternative 🟢 |                                                      |
+## 18_アプリケーション監視
+| 技術/ツール      | 理解度 | 推奨度  | 参考リンク                                              |
+|---------------|--------|-------|------------------------------------------------------|
+| Datadog       | 1      | 代替 🟢 |                                                      |
+| Prometheus    | 2      | 代替 🟢 | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
+| Jaeger        | 0      | 代替 🟢 |                                                      |
+| New Relic     | 0      | 代替 🟢 |                                                      |
+| OpenTelemetry | 0      | 代替 🟢 |                                                      |
 
-## 19_Artifact Management
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| Artifactory     | 1             | Required 🟣    |                 |
-| Nexus           | 0             | Alternative 🟢 |                 |
-| Cloud Smith     | 0             | Alternative 🟢 |                 |
+## 19_アーティファクト管理
+| 技術/ツール    | 理解度 | 推奨度  | 参考リンク |
+|-------------|--------|-------|---------|
+| Artifactory | 1      | 必須 🟣 |         |
+| Nexus       | 0      | 代替 🟢 |         |
+| Cloud Smith | 0      | 代替 🟢 |         |
 
 ## 20_GitOps
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| ArgoCD          | 1             | Required 🟣    |                 |
-| FluxCD          | 0             | Alternative 🟢 |                 |
+| 技術/ツール | 理解度 | 推奨度  | 参考リンク |
+|----------|--------|-------|---------|
+| ArgoCD   | 1      | 必須 🟣 |         |
+| FluxCD   | 0      | 代替 🟢 |         |
 
-## 21_Service Mesh
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| Istio           | 1             | Required 🟣    |                 |
-| Consul          | 1             | Required 🟣    |                 |
-| Linkerd         | 0             | Alternative 🟢 |                 |
-| Envoy           | 1             | Alternative 🟢 |                 |
+## 21_サービスメッシュ
+| 技術/ツール | 理解度 | 推奨度  | 参考リンク |
+|----------|--------|-------|---------|
+| Istio    | 1      | 必須 🟣 |         |
+| Consul   | 1      | 必須 🟣 |         |
+| Linkerd  | 0      | 代替 🟢 |         |
+| Envoy    | 1      | 代替 🟢 |         |
 
-## 22_Cloud Design Patterns
-| Technology/Tool           | Understanding | Recommendation | Reference Links |
-|---------------------------|---------------|----------------|-----------------|
-| Availability              |               | Required 🟣    |                 |
-| Data Management           |               | Required 🟣    |                 |
-| Design and Implementation |               | Required 🟣    |                 |
-| Management and Monitoring |               | Required 🟣    |                 |
+## 22_クラウドデザインパターン
+| 技術/ツール  | 理解度 | 推奨度  | 参考リンク |
+|---------|--------|-------|---------|
+| 可用性    |        | 必須 🟣 |         |
+| データ管理   |        | 必須 🟣 |         |
+| 設計と実装 |        | 必須 🟣 |         |
+| 管理と監視 |        | 必須 🟣 |         |
