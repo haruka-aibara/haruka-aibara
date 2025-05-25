@@ -113,8 +113,8 @@ Legend:
 | Technology/Tool | Understanding | Recommendation | Reference Links |
 |-----------------|---------------|----------------|-----------------|
 | AWS             | 3             | Required 🟣    |                 |
-| Azure           |              | Required 🟣    |                 |
-| Google Cloud    |              | Required 🟣    |                 |
+| Azure           |               | Required 🟣    |                 |
+| Google Cloud    |               | Required 🟣    |                 |
 | Digital Ocean   |               | Alternative 🟢 |                 |
 | Alibaba Cloud   |               | Alternative 🟢 |                 |
 | Hetzner         |               | Alternative 🟢 |                 |
