@@ -97,15 +97,16 @@ resource "aws_vpc_endpoint" "ssmmessages" {
 }
 
 # EC2 Messages用のVPCエンドポイント
-resource "aws_vpc_endpoint" "ec2messages" {
-  vpc_id              = aws_vpc.main.id
-  service_name        = "com.amazonaws.ap-northeast-1.ec2messages"
-  vpc_endpoint_type   = "Interface"
-  subnet_ids          = [aws_subnet.public.id]
-  security_group_ids  = [aws_security_group.vpc_endpoints.id]
-  private_dns_enabled = true
-
-  tags = {
-    Name = "${var.name_prefix}-ec2messages-endpoint"
-  }
-} 
+# https://dev.classmethod.jp/articles/vpcendpoint-ec2messages-not-required/
+# resource "aws_vpc_endpoint" "ec2messages" {
+#   vpc_id              = aws_vpc.main.id
+#   service_name        = "com.amazonaws.ap-northeast-1.ec2messages"
+#   vpc_endpoint_type   = "Interface"
+#   subnet_ids          = [aws_subnet.public.id]
+#   security_group_ids  = [aws_security_group.vpc_endpoints.id]
+#   private_dns_enabled = true
+# 
+#   tags = {
+#     Name = "${var.name_prefix}-ec2messages-endpoint"
+#   }
+# } 
