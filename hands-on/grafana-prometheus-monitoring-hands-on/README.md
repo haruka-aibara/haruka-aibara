@@ -36,15 +36,25 @@ terraform apply
 
 ## アクセス方法
 
-デプロイ完了後、以下のURLでGrafanaダッシュボードにアクセスできます：
+デプロイ完了後、以下のURLで各コンポーネントにアクセスできます：
 
+### Grafana
 ```
 http://<Grafana-Public-IP>:3000
 ```
-
 デフォルトのログイン情報：
 - ユーザー名: admin
 - パスワード: admin（初回ログイン時に変更が必要）
+
+### Prometheus
+```
+http://<Prometheus-Public-IP>:9090
+```
+
+### Node Exporter
+```
+http://<Node-Exporter-Public-IP>:9100
+```
 
 ## アーキテクチャ
 
