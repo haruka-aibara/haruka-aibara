@@ -37,6 +37,14 @@ resource "aws_security_group" "grafana" {
     description = "Allow HTTP outbound traffic for package updates"
   }
 
+  egress {
+    from_port   = 9100
+    to_port     = 9100
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTP outbound traffic for node_exporter"
+  }
+
   tags = {
     Name = "${var.name_prefix}-sg"
   }
