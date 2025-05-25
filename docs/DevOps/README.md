@@ -4,9 +4,21 @@ This skill map is based on [roadmap.sh/devops](https://roadmap.sh/devops).
 
 Understanding Level:
 - 1: Understand basic concepts
+  - Can explain the basic concepts and terminology
+  - Can follow tutorials and documentation
+  - Example: Can explain what Docker containers are and run basic Docker commands
 - 2: Can use in practice
+  - Can implement solutions independently
+  - Can troubleshoot common issues
+  - Example: Can set up a CI/CD pipeline with GitHub Actions for a real project
 - 3: Can teach others
+  - Can design and implement complex solutions
+  - Can mentor others and write technical documentation
+  - Example: Can design and implement a complete Kubernetes cluster architecture
 - 4: Expert
+  - Can innovate and create new solutions
+  - Can contribute to the technology's development
+  - Example: Can contribute to the core development of tools like Terraform or Kubernetes
 
 Legend:
 - Required = Personal Recommendation / Opinion (🟣)
@@ -139,7 +151,7 @@ Legend:
 |-----------------|---------------|----------------|-------------------------------------------------------------------|
 | GitHub Actions  | 2             | Required 🟣    | https://www.udemy.com/course/github-actions-the-complete-guide ★5 |
 | Circle CI       |               | Required 🟣    |                                                                   |
-| GitLab CI       |               | Required 🟣    |                                                                   |
+| GitLab CI       | 1             | Required 🟣    |                                                                   |
 | TeamCity        |               | Alternative 🟢 |                                                                   |
 | Jenkins         |               | Alternative 🟢 |                                                                   |
 | Travis CI       |               | Alternative 🟢 |                                                                   |
@@ -154,12 +166,12 @@ Legend:
 | Cloud Specific Tools |               | Alternative 🟢 |                 |
 
 ## 15_Infrastructure Monitoring
-| Technology/Tool | Understanding | Recommendation | Reference Links |
-|-----------------|---------------|----------------|-----------------|
-| Prometheus      |               | Required 🟣    |                 |
-| Grafana         |               | Required 🟣    |                 |
-| Datadog         |               | Required 🟣    |                 |
-| Zabbix          |               | Alternative 🟢 |                 |
+| Technology/Tool | Understanding | Recommendation | Reference Links                                      |
+|-----------------|---------------|----------------|------------------------------------------------------|
+| Prometheus      | 1             | Required 🟣    | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
+| Grafana         | 1             | Required 🟣    | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
+| Datadog         |               | Required 🟣    |                                                      |
+| Zabbix          |               | Alternative 🟢 |                                                      |
 
 ## 16_Logs Management
 | Technology/Tool | Understanding | Recommendation | Reference Links |
