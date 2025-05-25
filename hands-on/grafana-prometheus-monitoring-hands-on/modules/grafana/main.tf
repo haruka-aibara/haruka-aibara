@@ -45,6 +45,13 @@ resource "aws_security_group" "grafana" {
     description = "Allow HTTP outbound traffic for node_exporter"
   }
 
+  egress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow HTTP outbound traffic for prometheus"
+  }
   tags = {
     Name = "${var.name_prefix}-sg"
   }
