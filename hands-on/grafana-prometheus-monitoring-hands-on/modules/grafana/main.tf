@@ -12,6 +12,14 @@ resource "aws_security_group" "grafana" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Prometheusのデフォルトポート
+  ingress {
+    from_port   = 9090
+    to_port     = 9090
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # アウトバウンドトラフィック
   egress {
     from_port   = 443
@@ -162,8 +170,10 @@ resource "aws_instance" "grafana" {
               sudo systemctl enable grafana-server
 
               # Prometheus
+              cd /usr/bin
               sudo wget https://github.com/prometheus/prometheus/releases/download/v2.53.4/prometheus-2.53.4.linux-amd64.tar.gz
-              sudo /bin/tar -zxvf prometheus-2.53.4.linux-amd64.tar.gz
+              sudo tar -zxvf prometheus-2.53.4.linux-amd64.tar.gz
+              sudo rm prometheus-2.53.4.linux-amd64.tar.gz
 
               # 設定ファイルのダウンロードと配置
               sudo aws s3 cp s3://${aws_s3_bucket.config.id}/prometheus/prometheus.service /etc/systemd/system/prometheus.service
