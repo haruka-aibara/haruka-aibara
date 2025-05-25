@@ -1,6 +1,6 @@
 # Overview of nano's shortcuts  
 
-以下リンク先に大量に使い方が記載されています
+以下リンク先に大量に nano の使い方が記載されています
 
 https://www.nano-editor.org/dist/latest/cheatsheet.html
 
