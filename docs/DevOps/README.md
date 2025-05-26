@@ -208,7 +208,7 @@
 | 技術/ツール      | 理解度 | 推奨度  | 参考リンク                                              |
 |---------------|--------|-------|------------------------------------------------------|
 | Datadog       | 1      | 代替 🟢 |                                                      |
-| Prometheus    | 2      | 代替 🟢 | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
+| Prometheus    | 3      | 代替 🟢 | https://www.udemy.com/course/awsgrafanaprometheus ★5 |
 | Jaeger        | 0      | 代替 🟢 |                                                      |
 | New Relic     | 0      | 代替 🟢 |                                                      |
 | OpenTelemetry | 0      | 代替 🟢 |                                                      |
