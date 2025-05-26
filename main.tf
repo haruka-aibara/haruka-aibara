@@ -160,6 +160,16 @@ module "docker-simple-cicd-demo" {
   topics = ["docker", "cicd", "devops"]
 }
 
+# Docker Hello World Example
+module "docker-hello-world" {
+  source = "./modules/repository"
+
+  repository_name = "docker-hello-world"
+  description     = "A simple Docker Hello World example demonstrating basic Docker concepts"
+
+  topics = ["docker", "hello-world", "getting-started"]
+}
+
 # =========================================
 # My GitHub Actions Learning Repositories
 # =========================================
