@@ -2,6 +2,10 @@
 marp: true
 theme: default
 paginate: true
+style: |
+  section {
+    font-family: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+  }
 ---
 
 # Marp サンプルプレゼンテーション
