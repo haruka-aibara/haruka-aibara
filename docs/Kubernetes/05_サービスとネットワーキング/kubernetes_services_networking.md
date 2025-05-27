@@ -68,7 +68,13 @@ style: |
     color: #1976d2;
     border-radius: 3px;
     padding: 0.15em 0.3em;
-    font-size: 0.85em;
+    font-size: 0.75em;
+    line-height: 1.2;
+  }
+
+  pre, code {
+    font-size: 0.65em !important;
+    line-height: 1.3 !important;
   }
 
   blockquote {
@@ -159,19 +165,31 @@ style: |
     font-size: 0.85em;
   }
 
-  /* コードブロックのスタイル調整 */
   pre {
-    font-size: 0.8em;
     margin: 0.5em 0;
-    max-height: 300px;
-    overflow-y: auto;
+    padding: 0.5em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
   }
 
-  /* 画像のスタイル調整 */
   img {
     max-width: 100%;
-    max-height: 400px;
+    max-height: 300px;
     object-fit: contain;
+  }
+
+  .image-source {
+    font-size: 0.7em;
+    color: #666;
+    text-align: right;
+    margin-top: 0.2em;
+  }
+
+  .code-container {
+    background: #f5f5f5;
+    border-radius: 3px;
+    padding: 0.5em;
+    margin: 0.5em 0;
   }
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
@@ -179,7 +197,11 @@ style: |
 # Kubernetes サービスとネットワーキング
 ## クラスター内の通信と外部公開
 
-![bg right:30%](https://kubernetes.io/images/docs/services-iptables-overview.svg)
+![width:300px](https://kubernetes.io/images/docs/services-iptables-overview.svg)
+
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
@@ -194,15 +216,25 @@ style: |
 💡 **重要**: ServiceはPodの集合に対する論理的なエンドポイントを提供します
 </div>
 
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# Serviceの基本概念
+
 ![width:500px](https://kubernetes.io/images/docs/services-iptables-overview.svg)
+
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
+
+- ServiceはPodの集合に対する論理的なエンドポイント
+- kube-proxyがiptablesルールを管理
+- クラスター内DNSによる名前解決
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
 
-# Serviceの種類
-
-<div class="columns">
-<div>
+# Serviceの種類 (1/2)
 
 ## 1. ClusterIP (デフォルト)
 - クラスター内部からのみアクセス可能
@@ -212,8 +244,10 @@ style: |
 - クラスター外からノードのIP:ポートでアクセス可能
 - 開発・テスト環境で使用
 
-</div>
-<div>
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# Serviceの種類 (2/2)
 
 ## 3. LoadBalancer
 - クラウドプロバイダーのロードバランサーを使用
@@ -222,10 +256,11 @@ style: |
 ## 4. ExternalName
 - 外部サービスへのDNSエイリアスを提供
 
-</div>
-</div>
+![width:400px](https://kubernetes.io/images/docs/services-overview.svg)
 
-![width:600px](https://kubernetes.io/images/docs/services-overview.svg)
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
@@ -254,7 +289,20 @@ spec:
 - 例: `my-service.default.svc.cluster.local`
 </div>
 
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# ClusterIP Serviceの動作
+
 ![width:400px](https://kubernetes.io/images/docs/services-iptables-overview.svg)
+
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
+
+- kube-proxyがiptablesルールを管理
+- ラウンドロビンによる負荷分散
+- クラスター内DNSによる名前解決
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
@@ -283,7 +331,20 @@ spec:
 - 本番環境ではLoadBalancerの使用を推奨
 </div>
 
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# NodePort Serviceの動作
+
 ![width:400px](https://kubernetes.io/images/docs/services-nodeport.svg)
+
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
+
+- すべてのノードの指定ポートでアクセス可能
+- ノード間での負荷分散
+- クラスター外からのアクセスに使用
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
@@ -311,12 +372,25 @@ spec:
 - 本番環境での推奨方式
 </div>
 
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# LoadBalancer Serviceの動作
+
 ![width:400px](https://kubernetes.io/images/docs/services-loadbalancer.svg)
+
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
+
+- クラウドプロバイダーのロードバランサーを使用
+- 外部からのアクセスを複数ノードに分散
+- 高可用性とスケーラビリティを提供
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
 
-# Ingress
+# Ingress (1/2)
 
 - HTTP/HTTPSトラフィックのルーティングを管理
 - ホスト名やパスベースのルーティング
@@ -342,12 +416,26 @@ spec:
               number: 80
 ```
 
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# Ingress (2/2)
+
 ![width:400px](https://kubernetes.io/images/docs/ingress.svg)
+
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
+
+- 複数のServiceを単一のエンドポイントで公開
+- パスベースのルーティング
+- SSL/TLS終端
+- ロードバランシング
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
 
-# ネットワークポリシー
+# ネットワークポリシー (1/2)
 
 - Pod間の通信を制御
 - 名前空間レベルでの分離
@@ -372,15 +460,26 @@ spec:
           role: frontend
 ```
 
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# ネットワークポリシー (2/2)
+
 ![width:400px](https://kubernetes.io/images/docs/network-policy.svg)
+
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
+</div>
+
+- Pod間の通信を制御
+- 名前空間レベルでの分離
+- セキュリティポリシーの実装
+- マイクロサービス間の通信制御
 
 ---
 <div class="header-bar">Kubernetes サービスとネットワーキング</div>
 
-# 実践的な使用例
-
-<div class="columns">
-<div>
+# 実践的な使用例 (1/2)
 
 ## マイクロサービス構成
 - フロントエンド → API → データベース
@@ -389,8 +488,14 @@ spec:
 
 ![width:300px](https://kubernetes.io/images/docs/services-iptables-overview.svg)
 
+<div class="image-source">
+出典: Kubernetes公式ドキュメント - Services, Load Balancing, and Networking
 </div>
-<div>
+
+---
+<div class="header-bar">Kubernetes サービスとネットワーキング</div>
+
+# 実践的な使用例 (2/2)
 
 ## ベストプラクティス
 - 最小権限の原則
@@ -403,9 +508,6 @@ spec:
 - 本番環境ではLoadBalancer + Ingress
 - 内部サービスはClusterIP
 - ネットワークポリシーで通信制限
-</div>
-
-</div>
 </div>
 
 ---
