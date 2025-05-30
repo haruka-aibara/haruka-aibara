@@ -1,0 +1,11 @@
+[project]
+name = "selenium-edge-automation"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pytest==7.4.0",
+    "selenium==4.17.2",
+    "webdriver-manager==4.0.1",
+]
