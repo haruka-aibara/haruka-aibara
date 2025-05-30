@@ -331,3 +331,17 @@ module "terraform-fmt-github-actions-ci" {
 
   topics = ["terraform", "fmt", "github-actions", "ci", "automation"]
 }
+
+# =========================================
+# Python
+# =========================================
+
+# Selenium Edge Automation
+module "selenium-edge-automation" {
+  source = "./modules/repository"
+
+  repository_name = "selenium-edge-automation"
+  description     = "Python automation testing with Selenium and Microsoft Edge"
+
+  topics = ["python", "selenium", "edge", "automation", "testing", "webdriver"]
+}
