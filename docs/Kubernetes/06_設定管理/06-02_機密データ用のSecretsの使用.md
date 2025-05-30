@@ -1,66 +1,45 @@
-# Kubernetes講義：機密データ用のSecretsの使用
+# 機密データ用のSecretsの使用
 
-## 概要と重要性
-Kubernetesにおいて、パスワードやトークン、APIキーなどの機密データを安全に管理するためのSecretsは、セキュアなアプリケーション構築に不可欠な要素です。
+## 1. Secretsとは
+Secretsは、パスワードやトークン、APIキーなどの機密データを安全に管理するためのKubernetesリソースです。
 
-## Secretsの基本概念
-Secretsは、機密性の高いデータをKubernetesクラスター内で安全に保存・管理するためのオブジェクトで、Base64エンコーディングされてetcdに保存されます。
+## 2. なぜSecretsが必要なのか
 
-## Secretsの主な特徴
+### Secretsがない場合の問題点
+- 機密情報がコンテナイメージや設定ファイルに平文で保存される
+- 機密情報の変更時にイメージの再ビルドが必要
+- 環境ごとの機密情報管理が困難
+- アクセス制御が不十分
+- セキュリティリスクが高まる
 
-### 作成方法
-Secretsは手動または自動的に作成することができます：
+### Secretsを使用するメリット
+- 機密情報を安全に管理できる
+- 環境ごとに異なる機密情報を簡単に管理できる
+- アクセス制御（RBAC）で権限管理が可能
+- 機密情報の変更時にイメージの再ビルドが不要
+- 機密情報の一元管理が可能
 
+## 3. 重要なポイント
+Secretsは、アプリケーションの機密情報を安全に管理し、セキュアなアプリケーション構築を実現するための重要な機能です。特に、マイクロサービスアーキテクチャでは、各サービスが異なる機密情報を必要とするため、Secretsはその要件を満たすのに最適です。
+
+## 4. 実際の使い方
+
+### Secretsの作成
 ```yaml
-# 手動作成の例
 apiVersion: v1
 kind: Secret
 metadata:
   name: db-credentials
 type: Opaque
 data:
-  username: YWRtaW4=  # Base64エンコードされた "admin"
-  password: cGFzc3dvcmQxMjM=  # Base64エンコードされた "password123"
-```
-
-コマンドラインからの作成も可能です：
-
-```bash
-# リテラル値からSecretを作成
-kubectl create secret generic db-credentials \
-  --from-literal=username=admin \
-  --from-literal=password=password123
-
-# ファイルからSecretを作成
-kubectl create secret generic ssl-certificates \
-  --from-file=./tls.crt \
-  --from-file=./tls.key
+  # Base64エンコードされた値
+  username: YWRtaW4=  # "admin"
+  password: cGFzc3dvcmQxMjM=  # "password123"
 ```
 
 ### Podでの利用方法
-Secretsは主に2つの方法でPodに提供されます：
 
-1. **ボリュームとしてマウント**：
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: app-pod
-spec:
-  containers:
-  - name: app-container
-    image: my-app:1.0
-    volumeMounts:
-    - name: secrets-volume
-      mountPath: /etc/secrets
-      readOnly: true
-  volumes:
-  - name: secrets-volume
-    secret:
-      secretName: db-credentials
-```
-
-2. **環境変数として設定**：
+1. **環境変数として使用**:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -83,54 +62,51 @@ spec:
           key: password
 ```
 
-### アクセス制御
-KubernetesのRBAC（Role-Based Access Control）を使用して、Secretsへのアクセスを制限することができます：
-
+2. **ファイルとして使用**:
 ```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: Role
+apiVersion: v1
+kind: Pod
 metadata:
-  namespace: default
-  name: secret-reader
-rules:
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "list"]
-  resourceNames: ["db-credentials"]
+  name: app-pod
+spec:
+  containers:
+  - name: app-container
+    image: my-app:1.0
+    volumeMounts:
+    - name: secrets-volume
+      mountPath: /etc/secrets
+      readOnly: true
+  volumes:
+  - name: secrets-volume
+    secret:
+      secretName: db-credentials
 ```
 
-### Secretsの制限事項とセキュリティ上の課題
-- サイズ制限：1MB以下である必要があります
-- 一度作成したSecretのキーを更新することは難しいため、多くの場合、新しいSecretを作成して古いものを削除する方法が採られます
-- **重要な注意点**: Secretsはデフォルトでは単にBase64エンコードされているだけであり、これは暗号化ではありません。Base64は誰でも簡単にデコードできるため、本質的にはデータの難読化にすぎません
-  ```bash
-  # Base64のデコード例
-  echo 'cGFzc3dvcmQxMjM=' | base64 --decode
-  # 出力: password123
-  ```
-- デフォルトではSecretはetcdに暗号化されずに保存されるため、追加の暗号化設定が強く推奨されます
-- クラスター管理者やetcdにアクセスできる人は、全てのSecretデータを閲覧できる可能性があります
+## 5. 図解による説明
 
-## セキュリティのベストプラクティス
-- Secretsへのアクセスを最小権限の原則に基づいて制限する
-- **etcdの暗号化を必ず有効にする**：Secretデータの実際の保護には、etcdでの保存時の暗号化が不可欠です
-  ```yaml
-  # APIサーバー設定の例（kube-apiserver.yaml）
-  apiVersion: apiserver.config.k8s.io/v1
-  kind: EncryptionConfiguration
-  resources:
-    - resources:
-        - secrets
-      providers:
-        - aescbc:
-            keys:
-              - name: key1
-                secret: <base64-encoded-key>
-        - identity: {}
-  ```
-- イメージやGitリポジトリにSecretデータを含めない
-- 定期的にSecretをローテーションする
-- より高度なセキュリティが必要な場合は、HashiCorp VaultやAWS Secrets Managerなどの専用の外部シークレット管理ツールの使用を検討する
+```mermaid
+graph TD
+    A[Secrets] -->|環境変数として| B[Pod]
+    A -->|ファイルとして| B
+    C[開発環境] -->|異なる機密情報| A
+    D[テスト環境] -->|異なる機密情報| A
+    E[本番環境] -->|異なる機密情報| A
+    F[RBAC] -->|アクセス制御| A
+```
 
-## 実際の使用例
-データベース接続情報、TLS証明書、OAuthトークンなどの機密情報をKubernetes Secretsとして保存することで、アプリケーションのセキュリティを向上させながら、環境間での移植性を維持することができます。
+この図は、Secretsが異なる環境の機密情報を管理し、それらをPodに安全に提供する様子を示しています。また、RBACによるアクセス制御も表現しています。
+
+## セキュリティ上の注意点
+- SecretsはデフォルトではBase64エンコードのみで、暗号化されていない
+- etcdの暗号化を必ず有効にする
+- アクセス制御（RBAC）を適切に設定する
+- 機密情報の定期的なローテーションを実施する
+- より高度なセキュリティが必要な場合は、HashiCorp Vaultなどの外部シークレット管理ツールの使用を検討する
+
+## ベストプラクティス
+- 環境ごとに異なるSecretsを使用する
+- 最小権限の原則に基づいてアクセス制御を設定する
+- 機密情報の変更履歴を管理する
+- 定期的な機密情報のローテーションを実施する
+- 機密情報の漏洩を防ぐため、ログや監査ログを適切に設定する
+- イメージやGitリポジトリに機密情報を含めない

@@ -1,38 +1,36 @@
 # Kubernetes Ingress
 
 ## 概要
-Kubernetesにおいて外部からのHTTP/HTTPSトラフィックをクラスター内のサービスにルーティングするためのリソース。
+Kubernetesにおいて外部からのHTTP/HTTPSトラフィックをクラスター内のサービスにルーティングするためのリソースです。
 
-## 理論的説明
-Ingressはクラスター外部からのリクエストをクラスター内の複数のサービスに対してパス/ホストベースのルーティングルールを適用し、トラフィックを効率的に分配する仕組み。
+## なぜ必要なのか
 
-## Ingressの主な機能
+### この機能がないとどうなるのか
+- URLベースのルーティングができない
+- SSL/TLS終端の一元管理ができない
+- 複数サービスへの単一エントリポイントが提供できない
 
-### パスベースのルーティング
-- 同じホスト名に対して異なるパスごとに別のサービスにルーティング可能
-- 例: example.com/app1 → app1サービス、example.com/app2 → app2サービス
+### どのような問題が発生するのか
+- サービスごとに個別のロードバランサーが必要
+- SSL/TLS証明書の管理が複雑になる
+- ルーティングルールの管理が困難になる
 
-### ホストベースのルーティング
-- 異なるホスト名に基づいて別々のサービスにルーティング可能
-- 例: app1.example.com → app1サービス、app2.example.com → app2サービス
+### どのようなメリットがあるのか
+- 柔軟なルーティングルールの設定
+- SSL/TLS終端の一元管理
+- 効率的なリソース利用
 
-### TLS/SSL終端
-- HTTPSトラフィックの暗号化/復号化をIngressレベルで処理
-- 証明書の一元管理が可能
+## 重要なポイント
 
-## Ingress Controller
+Ingressの主な特徴は以下の3つです：
 
-Ingressリソースを実際に機能させるためには、Ingress Controllerのデプロイが必須です。
-代表的なIngress Controllerには以下があります：
+1. パスベースのルーティング
+2. ホストベースのルーティング
+3. TLS/SSL終端
 
-- Nginx Ingress Controller（最も広く使われている）
-- Traefik
-- HAProxy
-- Kong
-- Istio Ingress
+## 実際の使い方
 
-## 基本的なIngressマニフェスト例
-
+### 基本的なIngressの定義
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -61,17 +59,7 @@ spec:
               number: 80
 ```
 
-## アノテーション
-
-Ingressの振る舞いをカスタマイズするためのアノテーション例：
-
-- `nginx.ingress.kubernetes.io/rewrite-target`: パスの書き換え
-- `nginx.ingress.kubernetes.io/ssl-redirect`: HTTPSリダイレクトの設定
-- `nginx.ingress.kubernetes.io/proxy-body-size`: ボディサイズの制限
-- `nginx.ingress.kubernetes.io/proxy-connect-timeout`: タイムアウト設定
-
-## TLS設定例
-
+### TLS設定の例
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -95,16 +83,35 @@ spec:
               number: 80
 ```
 
-## Ingressの利点
+## 図解による説明
 
-- 複数サービスへの単一エントリポイント提供
-- URLベースのルーティング
-- SSL/TLS終端の一元管理
-- ロードバランシング
-- 名前ベースの仮想ホスティング
+```mermaid
+graph TD
+    A[Ingress] --> B[ルーティング]
+    A --> C[SSL/TLS]
+    A --> D[ロードバランシング]
+    
+    B --> E[パスベース]
+    B --> F[ホストベース]
+    C --> G[証明書管理]
+    D --> H[サービス分散]
+    
+    E --> I[柔軟な設定]
+    F --> I
+    G --> J[セキュリティ]
+    H --> K[高可用性]
+```
 
-## 注意点
+## セキュリティ考慮事項
 
-- Ingress単体では機能せず、Ingress Controllerが必要
-- Ingress Controllerの種類によって使用できるアノテーションが異なる
-- クラウドプロバイダによって実装が異なる場合がある
+- 適切なTLS/SSL設定
+- アクセス制御の実装
+- セキュリティコンテキストの設定
+- トラフィックの暗号化
+- 定期的なセキュリティ監査
+
+## 参考資料
+
+- [Ingress公式ドキュメント](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+- [Kubernetes Ingress入門](https://thenewstack.io/kubernetes-ingress-for-beginners/)
+- [Kubernetes Ingressチュートリアル](https://www.youtube.com/watch?v=80Ew_fsV4rM)

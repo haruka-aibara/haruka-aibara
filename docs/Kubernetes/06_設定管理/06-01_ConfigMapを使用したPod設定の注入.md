@@ -3,46 +3,48 @@
 ## 概要
 ConfigMapはKubernetesにおいてアプリケーション設定を分離し、環境ごとのデプロイを柔軟に行うための重要なリソースです。
 
-## ConfigMapとは
-ConfigMapはアプリケーションの構成情報をコンテナイメージから分離して管理するためのKubernetesリソースで、環境変数、コマンドライン引数、設定ファイルなどの形で Pod に設定データを提供します。
+## 1. ConfigMapとは
+ConfigMapは、アプリケーションの設定情報をコンテナイメージから分離して管理するためのKubernetesリソースです。
 
-## ConfigMapの基本概念
+## 2. なぜConfigMapが必要なのか
 
-### なぜConfigMapを使うのか
-- コードと設定の分離
-- 環境ごとに異なる設定値の管理
-- 構成変更時のイメージ再構築不要
-- 設定データの一元管理
+### ConfigMapがない場合の問題点
+- アプリケーションの設定値を変更するたびに、コンテナイメージを再ビルドする必要がある
+- 環境ごと（開発・テスト・本番）に異なる設定値を管理できない
+- 設定値の変更履歴が追跡できない
+- 設定値の共有や再利用が難しい
 
-### ConfigMapの作成方法
+### ConfigMapを使用するメリット
+- アプリケーションコードと設定を分離できる
+- 環境ごとに異なる設定値を簡単に管理できる
+- 設定変更時にイメージの再ビルドが不要
+- 設定データを一元管理できる
+- 設定値の変更履歴をGitで管理できる
 
-1. **コマンドラインから直接作成**:
-```bash
-# キーと値のペアから作成
-kubectl create configmap app-config --from-literal=DB_HOST=mysql --from-literal=DB_PORT=3306
+## 3. 重要なポイント
+ConfigMapは、アプリケーションの設定を柔軟に管理し、環境ごとのデプロイを簡単にするための重要な機能です。特に、マイクロサービスアーキテクチャでは、各サービスの設定を個別に管理する必要があり、ConfigMapはその要件を満たすのに最適です。
 
-# ファイルから作成
-kubectl create configmap app-config --from-file=config.properties
+## 4. 実際の使い方
 
-# ディレクトリから作成
-kubectl create configmap app-config --from-file=config-dir/
-```
-
-2. **YAMLマニフェストから作成**:
+### ConfigMapの作成
 ```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: app-config
 data:
+  # 環境変数として使用する設定
   DB_HOST: mysql
   DB_PORT: "3306"
+  
+  # 設定ファイルとして使用する設定
   config.properties: |
     app.name=MyApp
     app.description=サンプルアプリケーション
+    app.log.level=INFO
 ```
 
-### ConfigMapのPodへの注入方法
+### Podでの利用方法
 
 1. **環境変数として使用**:
 ```yaml
@@ -55,34 +57,14 @@ spec:
   - name: app-container
     image: myapp:1.0
     env:
-    - name: DATABASE_HOST  # コンテナ内の環境変数名
-      valueFrom:
-        configMapKeyRef:
-          name: app-config  # ConfigMap名
-          key: DB_HOST      # ConfigMap内のキー
-    - name: DATABASE_PORT
+    - name: DATABASE_HOST
       valueFrom:
         configMapKeyRef:
           name: app-config
-          key: DB_PORT
+          key: DB_HOST
 ```
 
-2. **環境変数としてすべてのキーを一括で使用**:
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: app-pod
-spec:
-  containers:
-  - name: app-container
-    image: myapp:1.0
-    envFrom:
-    - configMapRef:
-        name: app-config  # ConfigMap名
-```
-
-3. **ボリュームマウントとして使用**:
+2. **設定ファイルとして使用**:
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -94,56 +76,37 @@ spec:
     image: myapp:1.0
     volumeMounts:
     - name: config-volume
-      mountPath: /etc/config  # コンテナ内のマウントパス
-  volumes:
-  - name: config-volume
-    configMap:
-      name: app-config  # ConfigMap名
-```
-
-上記の例では、ConfigMapのデータが `/etc/config` ディレクトリ内のファイルとして配置されます。各キーがファイル名になり、値がファイルの内容になります。
-
-4. **特定のキーのみをファイルとしてマウント**:
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: app-pod
-spec:
-  containers:
-  - name: app-container
-    image: myapp:1.0
-    volumeMounts:
-    - name: config-volume
-      mountPath: /etc/config/app.properties  # 特定のファイルとしてマウント
-      subPath: config.properties             # ConfigMapのキー
+      mountPath: /etc/config
   volumes:
   - name: config-volume
     configMap:
       name: app-config
-      items:
-      - key: config.properties
-        path: config.properties
 ```
 
-### ConfigMapの更新と反映
+## 5. 図解による説明
 
-- 環境変数として利用している場合は、Podの再起動が必要
-- ボリュームマウントとして利用している場合は、自動的に更新される（遅延あり）
-- ボリューム更新の遅延時間は数秒〜数分（デフォルトは約1分）
+```mermaid
+graph TD
+    A[ConfigMap] -->|環境変数として| B[Pod]
+    A -->|設定ファイルとして| B
+    C[開発環境] -->|異なる設定値| A
+    D[テスト環境] -->|異なる設定値| A
+    E[本番環境] -->|異なる設定値| A
+```
 
-### ConfigMapの制限事項
+この図は、ConfigMapが異なる環境の設定値を管理し、それらをPodに注入する様子を示しています。ConfigMapは環境変数や設定ファイルとしてPodに提供され、アプリケーションはこれらの設定値を使用して動作します。
 
-- バイナリデータには向かない（Secret リソースを使用）
-- サイズ制限: 1MB以下を推奨
-- 機密情報（パスワード、APIキーなど）の保存には不適切（代わりにSecretを使用）
+## セキュリティ上の注意点
+- 機密情報（パスワード、APIキーなど）はConfigMapではなく、Secretsを使用する
+- ConfigMapのデータは暗号化されないため、機密性の高い情報は含めない
+- アクセス制御（RBAC）を適切に設定し、必要なユーザーのみがConfigMapを参照できるようにする
 
-### ConfigMapのベストプラクティス
-
-- 環境ごとに異なるConfigMapを使い分ける
-- 設定変更の履歴を管理するためGitでバージョン管理する
+## ベストプラクティス
+- 環境ごとに異なるConfigMapを使用する
+- 設定値の変更履歴をGitで管理する
 - アプリケーションの機能別にConfigMapを分割する
 - デフォルト値をアプリケーション内に持ち、ConfigMapが存在しない場合のフォールバック処理を実装する
+- 設定値の変更を監視し、必要に応じてPodを再起動する仕組みを実装する
 
 ## まとめ
 

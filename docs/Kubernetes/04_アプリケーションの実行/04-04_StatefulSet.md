@@ -1,18 +1,33 @@
-# StatefulSet
+# Kubernetes: StatefulSet
 
-StatefulSetは、安定したネットワーク識別子と永続的なストレージを必要とするステートフルなアプリケーションを管理するためのコントローラーです。データベースなどのステートフルアプリケーションの実行に適しており、各Podの順序と一意性を保証します。
+## 1. トピックの簡単な説明
+StatefulSetは、安定したネットワーク識別子と永続的なストレージを必要とするステートフルなアプリケーションを管理するためのコントローラーで、各Podの順序と一意性を保証します。
 
-## 主要概念
+## 2. なぜ必要なのか
 
-StatefulSetは、以下の特徴を持つステートフルなアプリケーションの実行に適しています：
-- 安定したネットワーク識別子（DNS名）
-- 安定した永続ストレージ
+### この機能がないとどうなるのか
+- データベースなどのステートフルアプリケーションの管理が困難になる
+- Podの識別子が不安定になり、アプリケーションの連携が困難になる
+- 永続ストレージの管理が複雑になる
+- 順序付きのデプロイやスケーリングが実現できない
+
+### どのような問題が発生するのか
+- データの整合性が保てない
+- アプリケーションの設定が複雑になる
+- 障害復旧が困難になる
+- スケーリング時のデータ管理が煩雑になる
+
+### どのようなメリットがあるのか
+- 安定したネットワーク識別子（DNS名）の提供
+- 永続ストレージの自動管理
 - 順序付きのデプロイとスケーリング
-- 順序付きの自動更新
+- アプリケーションの一貫性の確保
+- 障害復旧の自動化
 
-## 実装例
+## 3. 重要なポイントの解説
+StatefulSetは、データベースやメッセージキューなどのステートフルアプリケーションをKubernetes上で安全に運用するために必要な機能を提供します。特に、Podの識別子の安定性と永続ストレージの管理が重要なポイントです。
 
-### 基本的なStatefulSetの定義
+## 4. 実際の使い方や具体例
 
 ```yaml
 apiVersion: apps/v1
@@ -49,52 +64,37 @@ spec:
           storage: 1Gi
 ```
 
-## StatefulSetの特徴
+## 5. 図解による説明
 
 ```mermaid
 graph TD
-    A[StatefulSet] --> B[安定したネットワーク識別子]
-    A --> C[安定したストレージ]
-    A --> D[順序付きデプロイ]
-    A --> E[順序付きスケーリング]
+    A[StatefulSet] --> B[Pod web-0]
+    A --> C[Pod web-1]
+    A --> D[Pod web-2]
     
-    B --> F[Pod名: web-0, web-1, web-2]
-    C --> G[PVC: www-web-0, www-web-1, www-web-2]
-    D --> H[順序: 0→1→2]
-    E --> I[スケールアップ: 0→1→2]
-    E --> J[スケールダウン: 2→1→0]
+    B --> E[PVC www-web-0]
+    C --> F[PVC www-web-1]
+    D --> G[PVC www-web-2]
+    
+    H[スケーリング] --> I[順序付きデプロイ]
+    I --> J[web-0 作成]
+    J --> K[web-1 作成]
+    K --> L[web-2 作成]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#f66,stroke:#333,stroke-width:2px
+    style I fill:#6f6,stroke:#333,stroke-width:2px
 ```
 
-## 主なユースケース
-
-1. データベース（MySQL, PostgreSQL, MongoDB等）
-2. メッセージキュー（RabbitMQ, Kafka等）
-3. キャッシュシステム（Redis等）
-4. 分散ストレージシステム
+この図は、StatefulSetによる順序付きのデプロイと永続ストレージの管理を示しています。各Podは一意の識別子を持ち、対応する永続ストレージと紐付けられています。
 
 ## セキュリティ考慮事項
-
 - 永続ボリュームのアクセス制御
 - ネットワークポリシーの適切な設定
 - 機密情報の管理（Secrets）
 - リソース制限の設定
 - 定期的なバックアップの実施
 
-## 更新戦略
-
-StatefulSetは以下の2つの更新戦略をサポートしています：
-
-1. `RollingUpdate`（デフォルト）
-   - 順序付きでPodを更新
-   - 一度に1つのPodを更新
-   - 更新中のPodが正常に動作するまで次のPodを更新しない
-
-2. `OnDelete`
-   - 手動でPodを削除した時のみ更新
-   - より細かい制御が必要な場合に使用
-
 ## 参考資料
-
-- [StatefulSet公式ドキュメント](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/)
-- [ステートフルKubernetesアプリケーションの構築アプローチ](https://thenewstack.io/different-approaches-for-building-stateful-kubernetes-applications/)
-- [Kubernetes StatefulSetチュートリアル](https://www.youtube.com/watch?v=pPQKAR1pA9U)
+- [Kubernetes公式ドキュメント: StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/)
+- [Kubernetes Best Practices: StatefulSet](https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/)
