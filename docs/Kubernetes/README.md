@@ -39,7 +39,7 @@
 - [05-06 NodePort Service](05_サービスとネットワーキング/05-06_NodePort_Service_クラスター型へ公開.md)
 - [05-07 LoadBalancer Service](05_サービスとネットワーキング/05-07_LoadBalancer_Service_クラスタ内外へ公開.md)
 - [05-08 Ingress Service](05_サービスとネットワーキング/05-08_Ingress_Service_クラスター外へServiceを公開.md)
-- [05-09 ネットワーキング Bridge Host Null Overlay]("05_サービスとネットワーキング/05-09_ネットワーキング Bridge Host Null Overlay.md")
+- [05-09 ネットワーキング Bridge Host Null Overlay](05_サービスとネットワーキング/05-09_ネットワーキング_Bridge_Host_Null_Overlay.md)
 
 ### 06_設定管理
 - [06-01 ConfigMapを使用したPod設定の注入](06_設定管理/06-01_ConfigMapを使用したPod設定の注入.md)
