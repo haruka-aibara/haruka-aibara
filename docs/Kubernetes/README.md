@@ -14,7 +14,6 @@
 - [01-05 Minikube](01_イントロダクション/01-05_minikube.md)
 - [01-06 kubectl](01_イントロダクション/01-06_kubectl.md)
 - [01-07 命令型vs宣言型](01_イントロダクション/01-07_Imperative-vs-Declarative.md)
-- [kubernetes_introduction](01_イントロダクション/kubernetes_introduction.md)
 
 ### 02_コンテナ
 - [02-01 コンテナの概要](02_コンテナ/02-01_コンテナの概要.md)
@@ -30,7 +29,6 @@
 - [04-03 Deployment](04_アプリケーションの実行/04-03_Deployment.md)
 - [04-04 StatefulSet](04_アプリケーションの実行/04-04_StatefulSet.md)
 - [04-05 ジョブ](04_アプリケーションの実行/04-05_ジョブ.md)
-- [kubernetes-app-execution](04_アプリケーションの実行/kubernetes-app-execution.md)
 
 ### 05_サービスとネットワーキング
 - [05-01 外部サービスへのアクセス](05_サービスとネットワーキング/05-01_外部サービスへのアクセス.md)
@@ -41,8 +39,7 @@
 - [05-06 NodePort Service](05_サービスとネットワーキング/05-06_NodePort_Service_クラスター型へ公開.md)
 - [05-07 LoadBalancer Service](05_サービスとネットワーキング/05-07_LoadBalancer_Service_クラスタ内外へ公開.md)
 - [05-08 Ingress Service](05_サービスとネットワーキング/05-08_Ingress_Service_クラスター外へServiceを公開.md)
-- [05-09 ネットワーキング: Bridge Host Null Overlay](05_サービスとネットワーキング/05-09_ネットワーキング: Bridge Host Null Overlay.md)
-- [kubernetes_services_networking](05_サービスとネットワーキング/kubernetes_services_networking.md)
+- [05-09 ネットワーキング Bridge Host Null Overlay]("05_サービスとネットワーキング/05-09_ネットワーキング Bridge Host Null Overlay.md")
 
 ### 06_設定管理
 - [06-01 ConfigMapを使用したPod設定の注入](06_設定管理/06-01_ConfigMapを使用したPod設定の注入.md)
