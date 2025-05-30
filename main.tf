@@ -287,3 +287,47 @@ module "grafana-prometheus-monitoring-hands-on" {
 
   topics = ["monitoring", "grafana", "prometheus", "observability", "metrics"]
 }
+
+# =========================================
+# Terraform
+# =========================================
+
+# Terraform Modules Hands-on
+module "terraform-modules-hands-on" {
+  source = "./modules/repository"
+
+  repository_name = "terraform-modules-hands-on"
+  description     = "Hands-on practice repository for learning Terraform modules with practical examples"
+
+  topics = ["terraform", "modules", "infrastructure-as-code", "iac", "hands-on", "learning"]
+}
+
+# Terraform Hands-on Practice
+module "terraform-hands-on" {
+  source = "./modules/repository"
+
+  repository_name = "terraform-hands-on"
+  description     = "General Terraform hands-on practice repository with various examples and use cases"
+
+  topics = ["terraform", "infrastructure-as-code", "iac", "hands-on", "aws", "azure", "gcp"]
+}
+
+# Terraform IAM User Hands-on
+module "terraform-iam-user-hands-on" {
+  source = "./modules/repository"
+
+  repository_name = "terraform-iam-user-hands-on"
+  description     = "Hands-on practice repository for managing IAM users with Terraform"
+
+  topics = ["terraform", "aws", "iam", "user-management", "hands-on", "learning"]
+}
+
+# Terraform fmt CI
+module "terraform-fmt-github-actions-ci" {
+  source = "./modules/repository"
+
+  repository_name = "terraform-fmt-github-actions-ci"
+  description     = "GitHub Actions workflow YAML for terraform fmt ci"
+
+  topics = ["terraform", "fmt", "github-actions", "ci", "automation"]
+}
