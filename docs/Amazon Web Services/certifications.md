@@ -14,3 +14,11 @@
 | Advanced Networking       | SPECIALTY    |                    |      |      |            |    |
 | Machine Learning          | SPECIALTY    |                    |      |      |            |    |
 | Security                  | SPECIALTY    | SCS-C02 2025-03-31 | 913  | 〇    | 2028-03-31 |    |
+
+memo:
+
+SOA -> DOP
+
+MLA / DEA -> MLS
+
+ANS
