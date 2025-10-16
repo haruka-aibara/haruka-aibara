@@ -36,6 +36,16 @@ module "all-round-learning" {
   topics = ["learning", "documentation"]
 }
 
+# haruka-aibara-public Confluence Repository
+module "haruka-aibara-public" {
+  source = "./modules/repository"
+
+  repository_name = "haruka-aibara-public"
+  description     = "A repository for documenting everything I learn"
+
+  topics = ["learning", "documentation"]
+}
+
 # =========================================
 # My Slack AI Integration Projects
 # =========================================
