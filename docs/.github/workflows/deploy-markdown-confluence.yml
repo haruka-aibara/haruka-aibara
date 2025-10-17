@@ -1,0 +1,147 @@
+name: "Confluence Publisher"
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    outputs:
+      folders: ${{ steps.detect.outputs.folders }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Determine changed top-level folders at repo root
+        id: detect
+        run: |
+          set -euo pipefail
+          base_ref="${{ github.event_name == 'pull_request' && github.base_ref || 'origin/main' }}"
+          git fetch origin main --depth=1 || true
+          changed_paths=$(git diff --name-only "$base_ref"...HEAD || true)
+          # mapping keys define publishable top-level folders
+          map_keys=$(jq -r 'keys[]' confluence-folders.json)
+          # top-level dirs that changed in this PR/commit range
+          changed_top=$(printf '%s\n' "$changed_paths" | awk -F'/' 'NF>0 {print $1}' | sort -u)
+          # intersect changed_top with map_keys
+          folders=$(comm -12 <(printf '%s\n' "$changed_top" | sort) <(printf '%s\n' "$map_keys" | sort))
+          if [ -z "$folders" ]; then
+            # if no mapped folders changed, publish all mapped folders
+            folders="$map_keys"
+          fi
+          json_array=$(printf '%s\n' "$folders" | jq -R . | jq -s -c .)
+          echo "folders=$json_array" >> "$GITHUB_OUTPUT"
+  publish:
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        folder: ${{ fromJson(needs.discover.outputs.folders) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Read mapping and resolve parentId
+        id: map
+        run: |
+          set -euo pipefail
+          folder="${{ matrix.folder }}"
+          folder_name=$(basename "$folder")
+          parent_id=$(jq -r --arg key "$folder_name" '.[$key] // empty' confluence-folders.json)
+          if [ -z "$parent_id" ] || [ "$parent_id" = "null" ]; then
+            echo "Mapping for $folder_name not found in confluence-folders.json" >&2
+            exit 1
+          fi
+          echo "parent_id=$parent_id" >> "$GITHUB_OUTPUT"
+      - name: Check if folder has markdown files
+        id: check_files
+        run: |
+          set -euo pipefail
+          folder="${{ matrix.folder }}"
+          if [ -d "$folder" ] && [ "$(find "$folder" -name "*.md" -type f | wc -l)" -gt 0 ]; then
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+            echo "Found markdown files in $folder"
+          else
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+            echo "No markdown files found in $folder, skipping publish"
+          fi
+      - name: Deploy Markdown to Confluence (${{ matrix.folder }})
+        if: steps.check_files.outputs.has_files == 'true'
+        uses: markdown-confluence/publish-action@main
+        with:
+          confluenceBaseUrl: ${{ secrets.CONFLUENCE_BASE_URL }}
+          confluenceParentId: ${{ steps.map.outputs.parent_id }}
+          atlassianUserName: ${{ secrets.CONFLUENCE_MAIL_ADDRESS }}
+          atlassianApiToken: ${{ secrets.CONFLUENCE_TOKEN }}
+          contentRoot: ${{ matrix.folder }}
+          folderToPublish: .
+      - name: Delete Confluence pages for removed Markdown (${{ matrix.folder }})
+        if: ${{ github.event_name != 'pull_request' }}
+        env:
+          CONFLUENCE_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
+          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_MAIL_ADDRESS }}
+          CONFLUENCE_TOKEN: ${{ secrets.CONFLUENCE_TOKEN }}
+          PARENT_ID: ${{ steps.map.outputs.parent_id }}
+          FOLDER: ${{ matrix.folder }}
+        run: |
+          set -euo pipefail
+          
+          # Get the list of files that were deleted in this commit
+          # Use git show to get the files that were deleted in the current commit
+          deleted_files=$(git show --name-only --diff-filter=D --pretty=format: HEAD | grep -E "^$FOLDER/.*\\.md$" || true)
+          
+          if [ -z "$deleted_files" ]; then
+            echo "No deleted markdown files under $FOLDER in the current commit"
+            exit 0
+          fi
+          
+          echo "Found deleted files:"
+          echo "$deleted_files"
+
+          # Helper: URL encode
+          uriencode() {
+            python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read().strip(), safe=''))"
+          }
+
+          # Iterate and delete matching Confluence pages by title
+          while IFS= read -r md; do
+            title=$(basename "$md" .md)
+            # CQL: title exact match under ancestor parent
+            cql="title='${title}' and ancestor=${PARENT_ID} and type=page"
+            cql_enc=$(printf '%s' "$cql" | uriencode)
+            search_url="${CONFLUENCE_BASE_URL}/wiki/rest/api/search?cql=${cql_enc}&limit=50"
+            echo "Searching pages for title=$title under parent=$PARENT_ID"
+            echo "CQL query: $cql"
+            echo "Search URL: $search_url"
+            res=$(curl -sS -u "${CONFLUENCE_USER}:${CONFLUENCE_TOKEN}" -H 'Accept: application/json' "$search_url")
+            echo "API Response: $res"
+            page_ids=$(printf '%s' "$res" | jq -r '.results[]?.content?.id // empty') || true
+            if [ -z "$page_ids" ]; then
+              echo "No matching pages found for $title"
+              # Try alternative search without ancestor constraint
+              echo "Trying alternative search without ancestor constraint..."
+              cql_alt="title='${title}' and type=page"
+              cql_alt_enc=$(printf '%s' "$cql_alt" | uriencode)
+              search_url_alt="${CONFLUENCE_BASE_URL}/wiki/rest/api/search?cql=${cql_alt_enc}&limit=50"
+              echo "Alternative CQL: $cql_alt"
+              res_alt=$(curl -sS -u "${CONFLUENCE_USER}:${CONFLUENCE_TOKEN}" -H 'Accept: application/json' "$search_url_alt")
+              echo "Alternative API Response: $res_alt"
+              page_ids=$(printf '%s' "$res_alt" | jq -r '.results[]?.content?.id // empty') || true
+              if [ -z "$page_ids" ]; then
+                echo "Still no matching pages found for $title"
+                continue
+              fi
+            fi
+            while IFS= read -r pid; do
+              if [ -z "$pid" ]; then continue; fi
+              echo "Deleting page id=$pid title=$title"
+              curl -sS -u "${CONFLUENCE_USER}:${CONFLUENCE_TOKEN}" -X DELETE -H 'Accept: application/json' "${CONFLUENCE_BASE_URL}/wiki/rest/api/content/${pid}" -o /dev/null -w "%{http_code}\n"
+            done <<< "$page_ids"
+          done <<< "$deleted_files"
