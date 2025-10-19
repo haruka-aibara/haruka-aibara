@@ -17,5 +17,15 @@
   "IPA": "94666763",
   "Jira": "94928933",
   "Kubernetes": "94896165",
-  "Linux": "94928942"
+  "Linux": "94928942",
+  "Markdown": "94666772",
+  "Marp": "94666781",
+  "Microsoft365": "94928951",
+  "PowerShell": "94666790",
+  "Prometheus and Grafana": "94896174",
+  "Terraform": "94928960",
+  "HashiCorp Vault": "94666799",
+  "VBScript": "94666808",
+  "Visual Studio Code": "94896183",
+  "Windows-Batch": "94666817"
 }
