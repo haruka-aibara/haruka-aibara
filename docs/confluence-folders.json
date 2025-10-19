@@ -2,5 +2,11 @@
   "Amazon Web Services": "93585474",
   "Google Cloud": "93716808",
   "Azure": "93618301",
-  "Python": "94240846"
+  "Python": "94240846",
+  "AI and Machine Learning": "94242376",
+  "Ansible": "94470145",
+  "Code Review": "94896129",
+  "Cursor": "94896138",
+  "Data Engineering": "94896147",
+  "DevOps": "94928897"
 }
