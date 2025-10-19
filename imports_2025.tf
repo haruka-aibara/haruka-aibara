@@ -69,11 +69,6 @@ import {
 }
 
 import {
-  to = module.all-round-learning.github_repository.this
-  id = "all-round-learning"
-}
-
-import {
   to = module.github-actions-test-jobs-artifacts-outputs.github_repository.this
   id = "github-actions-test-jobs-artifacts-outputs"
 }
