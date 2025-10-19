@@ -26,16 +26,6 @@ module "private" {
 # My Learning Repositories
 # =========================================
 
-# All-Round Learning Repository
-module "all-round-learning" {
-  source = "./modules/repository"
-
-  repository_name = "all-round-learning"
-  description     = "A repository for documenting everything I learn"
-
-  topics = ["learning", "documentation"]
-}
-
 # haruka-aibara-public Confluence Repository
 module "haruka-aibara-public" {
   source = "./modules/repository"
