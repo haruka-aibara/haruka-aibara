@@ -19,6 +19,4 @@ memo:
 
 SOA -> DOP
 
-MLA / DEA -> MLS
-
 ANS
