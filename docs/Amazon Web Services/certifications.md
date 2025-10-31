@@ -8,7 +8,7 @@
 | Developer                 | ASSOCIATE    | DVA-C02 2024-03-25 | 889    | 〇   | 2027-03-25 |      |
 | SysOps Administrator      | ASSOCIATE    |                    |        |      |            |      |
 | Data Engineer             | ASSOCIATE    | DEA-C01 2025-07-31 | 892    | 〇   | 2028-07-31 |      |
-| Machine Learning Engineer | ASSOCIATE    |                    |        |      |            |      |
+| Machine Learning Engineer | ASSOCIATE    | MLA-C01 2025-09-11 | 859    | 〇   | 2028-09-11 |      |
 | Solutions Architect       | PROFESSIONAL | SAP-C02 2024-09-30 | 910    | 〇   | 2027-09-30 |      |
 | DevOps Engineer           | PROFESSIONAL |                    |        |      |            |      |
 | Advanced Networking       | SPECIALTY    |                    |        |      |            |      |
