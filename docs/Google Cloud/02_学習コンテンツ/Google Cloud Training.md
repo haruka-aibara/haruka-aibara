@@ -9,4 +9,4 @@ Google Cloud の学習パス（learning path）が提供されています。ト
 - **実践的な内容**: ハンズオンラボやクイズを通じて実際に手を動かしながら学べます
 - **資格試験対策**: Google Cloud 認定資格の取得に向けた学習リソースも含まれています
 
-![alt text](../99_assets/md-image-2.png)
+![alt text](./assets/md-image-2.png)
