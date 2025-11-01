@@ -1,5 +1,3 @@
-[haruka-aibara-public](https://haruka-aibara.atlassian.net/wiki/spaces/harukaaibarapublic/overview)
-
 dumping everything i learn here. 
 
 code snippets, tech concepts, random discoveries, and whatever else i pick up. 
