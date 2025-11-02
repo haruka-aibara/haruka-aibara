@@ -140,3 +140,20 @@ resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
   }
 }
 
+
+# Google Cloud Hands-on Workspace
+resource "tfe_workspace" "google-cloud-hands-on" {
+  name                   = "google-cloud-hands-on"
+  organization           = local.tfe_organization
+  auto_apply             = true
+  auto_apply_run_trigger = true
+  file_triggers_enabled  = false
+  queue_all_runs         = false
+  terraform_version      = "1.13.4"
+
+  vcs_repo {
+    identifier                 = "${local.tfe_organization}/google-cloud-hands-on"
+    github_app_installation_id = local.github_app_installation_id
+    ingress_submodules         = false
+  }
+}
