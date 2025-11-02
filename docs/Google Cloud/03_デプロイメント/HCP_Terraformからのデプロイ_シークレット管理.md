@@ -2,6 +2,10 @@
 
 HCP Terraform から Google Cloud にデプロイする際に、認証情報などの機密情報を安全に管理する方法を説明します。VCS統合やワークスペースの作成は完了していることを前提とします。
 
+## 参考ページ
+
+https://qiita.com/GleapPost/items/b933b23a42eb3df40272
+
 ## シークレット管理の概要
 
 HCP Terraform では、以下のような方法でシークレットを管理できます：
