@@ -14,3 +14,8 @@ variable "region" {
   description = "Google Cloud region"
   default     = "asia-northeast1"
 }
+
+variable "billing_account_id" {
+  type        = string
+  description = "Google Cloud billing account ID"
+}
