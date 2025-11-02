@@ -284,7 +284,7 @@ Renovateは以下のようなTerraformファイルを解析して、バージョ
 ```hcl
 # versions.tf または terraformブロックがあるファイル
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.0" # Renovateがこのバージョンを監視・更新（= "x.x.x" と指定している場合などは自動更新）
 
   required_providers {
     aws = {
