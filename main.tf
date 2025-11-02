@@ -333,6 +333,20 @@ module "terraform-fmt-github-actions-ci" {
 }
 
 # =========================================
+# My Google Cloud Learning Repositories
+# =========================================
+
+# Google Cloud Hands-on Practice
+module "google-cloud-hands-on" {
+  source = "./modules/repository"
+
+  repository_name = "google-cloud-hands-on"
+  description     = "Hands-on practice repository for learning Google Cloud with gcloud CLI and various Google Cloud services"
+
+  topics = ["google-cloud", "gcloud", "hands-on", "learning", "cloud"]
+}
+
+# =========================================
 # Python
 # =========================================
 
