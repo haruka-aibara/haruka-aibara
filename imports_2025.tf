@@ -82,3 +82,47 @@ import {
   to = module.private.github_repository.this
   id = "private"
 }
+
+# =========================================
+# HCP Terraform Workspaces Imports
+# =========================================
+
+import {
+  to = tfe_workspace.aws-cost-allocation-tags
+  id = "haruka-aibara/aws-cost-allocation-tags"
+}
+
+import {
+  to = tfe_workspace.bedrock-slack-ai-agent
+  id = "haruka-aibara/bedrock-slack-ai-agent"
+}
+
+import {
+  to = tfe_workspace.bedrock-slack-ai-chatbot
+  id = "haruka-aibara/bedrock-slack-ai-chatbot"
+}
+
+import {
+  to = tfe_workspace.deploy-hcp-vault-dedicated-with-terraform
+  id = "haruka-aibara/deploy-hcp-vault-dedicated-with-terraform"
+}
+
+import {
+  to = tfe_workspace.generate-dev-io-summary
+  id = "haruka-aibara/generate-dev-io-summary"
+}
+
+import {
+  to = tfe_workspace.haruka-aibara
+  id = "haruka-aibara/haruka-aibara"
+}
+
+import {
+  to = tfe_workspace.iam-access-analyzer-policy-generate
+  id = "haruka-aibara/iam-access-analyzer-policy-generate"
+}
+
+import {
+  to = tfe_workspace.terraform-aws-budget-slack-notifier
+  id = "haruka-aibara/terraform-aws-budget-slack-notifier"
+}
