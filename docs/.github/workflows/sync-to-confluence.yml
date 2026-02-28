@@ -21,4 +21,4 @@ jobs:
           MARK_PASSWORD: ${{ secrets.CONFLUENCE_API_TOKEN }}
           MARK_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
         with:
-          args: -files "Confluence/**/*.md"
+          args: mark -files "Confluence/**/*.md"
