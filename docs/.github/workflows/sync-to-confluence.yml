@@ -1,0 +1,24 @@
+name: Sync to Confluence
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Confluence/**'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync Markdown to Confluence
+        uses: docker://ghcr.io/kovetskiy/mark:latest
+        env:
+          MARK_USERNAME: ${{ secrets.CONFLUENCE_USER }}
+          MARK_PASSWORD: ${{ secrets.CONFLUENCE_API_TOKEN }}
+          MARK_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
+        with:
+          args: -files "Confluence/**/*.md"

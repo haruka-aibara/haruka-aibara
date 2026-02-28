@@ -1,3 +1,6 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Title: GitHub リポジトリと Confluence 同期（旧試行記録） -->
+
 以下記事を参考に設定を行ったところ、
 確かに GitHub リポジトリ上の markdown ファイルをもとに Confluence ページが作成されることは確認できましたアップロードすることは確かにできました。
 
