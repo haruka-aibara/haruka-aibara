@@ -14,7 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sync Markdown to Confluence
+      - name: Create parent pages
+        uses: docker://kovetskiy/mark:latest
+        env:
+          MARK_USERNAME: ${{ secrets.CONFLUENCE_USER }}
+          MARK_PASSWORD: ${{ secrets.CONFLUENCE_API_TOKEN }}
+          MARK_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
+        with:
+          args: mark -files "Confluence/GitHub-Confluence同期.md"
+
+      - name: Sync all pages
         uses: docker://kovetskiy/mark:latest
         env:
           MARK_USERNAME: ${{ secrets.CONFLUENCE_USER }}
