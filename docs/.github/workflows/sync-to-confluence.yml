@@ -14,15 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Sync Markdown to Confluence
-        uses: docker://ghcr.io/kovetskiy/mark:latest
+        uses: docker://kovetskiy/mark:latest
         env:
           MARK_USERNAME: ${{ secrets.CONFLUENCE_USER }}
           MARK_PASSWORD: ${{ secrets.CONFLUENCE_API_TOKEN }}

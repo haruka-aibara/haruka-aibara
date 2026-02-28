@@ -11,7 +11,7 @@
 
 | ツール | Cloud | DC | GH Actions | 変換形式 | メンテ状況 |
 |---|---|---|---|---|---|
-| **mark** (kovetskiy) | ○ | ○ | ○ (Docker) | HTML | 活発（v12.1.2、2025年2月） |
+| **mark** (kovetskiy) | ○ | ○ | ○ (Docker) | HTML | 活発（v15.3.0） |
 | markdown-confluence | ○ | × | ○ | ADF | やや停滞（最終 2024年9月） |
 | md2conf (hunyadi) | ○ | △ | △ | XHTML | 活発（API v2 対応済） |
 | Telefonica sync-action | ○ | 不明 | ◎ (専用設計) | HTML+SVG | 活発（2025年11月実績あり） |
