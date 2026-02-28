@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Create parent pages
-        uses: docker://kovetskiy/mark:latest
+        uses: docker://kovetskiy/mark:v15.3.0
         env:
           MARK_USERNAME: ${{ secrets.CONFLUENCE_USER }}
           MARK_PASSWORD: ${{ secrets.CONFLUENCE_API_TOKEN }}
@@ -24,7 +24,7 @@ jobs:
           args: mark -files "Confluence/GitHub-Confluence同期.md"
 
       - name: Sync all pages
-        uses: docker://kovetskiy/mark:latest
+        uses: docker://kovetskiy/mark:v15.3.0
         env:
           MARK_USERNAME: ${{ secrets.CONFLUENCE_USER }}
           MARK_PASSWORD: ${{ secrets.CONFLUENCE_API_TOKEN }}
