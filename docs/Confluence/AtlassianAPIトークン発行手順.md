@@ -1,4 +1,5 @@
 <!-- Space: harukaaibarapublic -->
+<!-- Parent: GitHub-Confluence同期 -->
 <!-- Title: Atlassian API トークン発行手順 -->
 
 # Atlassian API トークン発行手順

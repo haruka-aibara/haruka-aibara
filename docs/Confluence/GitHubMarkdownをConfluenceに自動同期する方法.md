@@ -1,4 +1,5 @@
 <!-- Space: harukaaibarapublic -->
+<!-- Parent: GitHub-Confluence同期 -->
 <!-- Title: GitHub Markdown を Confluence に自動同期する方法 -->
 
 # GitHub Markdown を Confluence に自動同期する方法

@@ -1,4 +1,5 @@
 <!-- Space: harukaaibarapublic -->
+<!-- Parent: GitHub-Confluence同期 -->
 <!-- Title: mark イメージを ECR で管理して GitHub Actions から使う -->
 
 # mark イメージを ECR で管理して GitHub Actions から使う
