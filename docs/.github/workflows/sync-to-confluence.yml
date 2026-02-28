@@ -42,5 +42,5 @@ jobs:
               -v "${GITHUB_WORKSPACE}:/workspace" \
               -w /workspace \
               kovetskiy/mark:v15.3.0 \
-              mark -file "$f"
+              mark -f "$f"
           done
