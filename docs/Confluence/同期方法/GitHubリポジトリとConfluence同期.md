@@ -1,4 +1,5 @@
 <!-- Space: harukaaibarapublic -->
+<!-- Parent: 同期方法 -->
 <!-- Title: GitHub リポジトリと Confluence 同期（旧試行記録） -->
 
 以下記事を参考に設定を行ったところ、
