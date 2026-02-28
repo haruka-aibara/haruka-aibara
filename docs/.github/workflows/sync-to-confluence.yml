@@ -22,9 +22,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          # .md ファイルをパスの深さ順に並べる。
-          # 同じ深さ内では、フォルダ名と同名のファイル（インデックスページ）を先に処理する。
-          # これにより親ページが必ず子ページより先に Confluence に作成される。
+          # mark は親ページが存在しない場合に自動作成するが、正しい階層を解決できず
+          # ルート直下に作成してしまう。そのため親ページを先に処理する必要がある。
+          # .md ファイルをパスの深さ順に並べ、同じ深さ内ではフォルダ名と同名の
+          # インデックスページを優先することで、親が必ず子より先に作成される。
           find Confluence -name "*.md" | while IFS= read -r f; do
             dir=$(dirname "$f")
             base=$(basename "$f" .md)
@@ -43,4 +44,6 @@ jobs:
               -w /workspace \
               kovetskiy/mark:v15.3.0 \
               mark -f "$f"
+              # dumb-init がエントリーポイントのため "mark" コマンド名が必須。
+              # フラグは -f（-file / --file は存在しない）。
           done
