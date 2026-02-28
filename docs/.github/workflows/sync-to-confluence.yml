@@ -14,11 +14,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sync Markdown to Confluence
-        uses: docker://kovetskiy/mark:v15.3.0
+      - name: Sync Markdown to Confluence (depth-ordered)
         env:
           MARK_USERNAME: ${{ secrets.CONFLUENCE_USER }}
           MARK_PASSWORD: ${{ secrets.CONFLUENCE_API_TOKEN }}
           MARK_BASE_URL: ${{ secrets.CONFLUENCE_BASE_URL }}
-        with:
-          args: mark -files "Confluence/**/*.md"
+        run: |
+          set -euo pipefail
+
+          # .md ファイルをパスの深さ順に並べる。
+          # 同じ深さ内では、フォルダ名と同名のファイル（インデックスページ）を先に処理する。
+          # これにより親ページが必ず子ページより先に Confluence に作成される。
+          find Confluence -name "*.md" | while IFS= read -r f; do
+            dir=$(dirname "$f")
+            base=$(basename "$f" .md)
+            parent=$(basename "$dir")
+            depth=$(printf "%s" "$f" | tr -cd '/' | wc -c)
+            is_index=$([ "$base" = "$parent" ] && echo 0 || echo 1)
+            printf "%d %d %s\n" "$depth" "$is_index" "$f"
+          done | sort -k1,1n -k2,2n | awk '{print $3}' | \
+          while IFS= read -r f; do
+            echo "Syncing: $f"
+            docker run --rm \
+              -e MARK_USERNAME \
+              -e MARK_PASSWORD \
+              -e MARK_BASE_URL \
+              -v "${GITHUB_WORKSPACE}:/workspace" \
+              -w /workspace \
+              kovetskiy/mark:v15.3.0 \
+              -file "$f"
+          done
