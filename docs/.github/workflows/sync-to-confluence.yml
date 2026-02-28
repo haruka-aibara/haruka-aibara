@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'Confluence/**'
+      - 'Terraform/**'
   workflow_dispatch:
 
 jobs:
