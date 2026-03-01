@@ -4,28 +4,41 @@
 
 # Terraform レジストリ
 
-[registry.terraform.io](https://registry.terraform.io) は Terraform の公式パッケージリポジトリ。プロバイダーとモジュールを検索・利用できる。
+「Terraform で Datadog のモニターを管理したい」「GitHub のリポジトリ設定をコード化したい」といったとき、自分でプラグインを書かなくていい。[registry.terraform.io](https://registry.terraform.io) に誰かが作ったプロバイダーやモジュールが公開されているので、それを使えば大抵のサービスを管理できる。
 
 ---
 
 ## プロバイダー
 
-クラウドサービスや SaaS と Terraform をつなぐプラグイン。
+クラウドや SaaS と Terraform をつなぐプラグイン。使いたいサービスのプロバイダーを `terraform init` でインストールして使う。
 
 ```
-registry.terraform.io/hashicorp/aws       # AWS（公式）
-registry.terraform.io/hashicorp/google    # GCP（公式）
-registry.terraform.io/hashicorp/azurerm   # Azure（公式）
-registry.terraform.io/datadog/datadog     # Datadog（パートナー）
+hashicorp/aws       # AWS（公式）
+hashicorp/google    # GCP（公式）
+hashicorp/azurerm   # Azure（公式）
+datadog/datadog     # Datadog（パートナー）
+integrations/github # GitHub（パートナー）
 ```
 
-レジストリでプロバイダーを検索すると、対応リソース一覧・設定例・引数リファレンスが確認できる。
+レジストリのページで対応リソース一覧・引数リファレンス・設定例が確認できる。公式ドキュメントより実例が多くて参考になることも多い。
+
+---
+
+## プロバイダーのティア
+
+| ティア | 管理者 | 信頼性 |
+|---|---|---|
+| Official | HashiCorp | 最高 |
+| Partner | 各ベンダー（HashiCorp 認定） | 高い |
+| Community | コミュニティ | 要確認 |
+
+本番で使うなら Official か Partner を選ぶ。Community はコードを読んで問題ないか確認してから使う。
 
 ---
 
 ## モジュール
 
-よく使われるパターンをまとめた再利用可能なコードセット。
+VPC を Terraform で作るとき、サブネット・ルートテーブル・NAT ゲートウェイなどを全部自分で書くと大変。レジストリのモジュールを使えば数行で済む。
 
 ```hcl
 module "vpc" {
@@ -38,16 +51,4 @@ module "vpc" {
 }
 ```
 
-`terraform-aws-modules` はコミュニティが管理する AWS 向けの人気モジュール群。本番利用前にコードを読んで内容を把握するのが望ましい。
-
----
-
-## プロバイダーのティア
-
-| ティア | 意味 |
-|---|---|
-| Official | HashiCorp が管理 |
-| Partner | 各ベンダーが管理（HashiCorp 認定） |
-| Community | コミュニティ管理 |
-
-本番利用では Official または Partner を優先する。
+`terraform-aws-modules` は AWS 関係者も関与する信頼性の高いモジュール群。ただし何が作られるかを理解した上で使う。ブラックボックスのまま本番に入れるのは避ける。
