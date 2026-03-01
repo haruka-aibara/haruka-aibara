@@ -1,3 +1,7 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Parent: DevOps -->
+<!-- Title: SRE 基礎 -->
+
 # SRE 基礎——SLO・SLI・エラーバジェットで信頼性を管理する
 
 「障害が起きるたびに全力で対応して疲弊する」「どこまで安定させればいいのかわからない」——SRE（Site Reliability Engineering）は信頼性を数値で管理することで、「頑張りすぎ」と「頑張らなさすぎ」の両方を防ぐ考え方。

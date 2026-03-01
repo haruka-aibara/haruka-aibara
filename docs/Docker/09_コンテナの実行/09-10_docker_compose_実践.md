@@ -1,3 +1,7 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Parent: Docker -->
+<!-- Title: Docker Compose 実践 -->
+
 # Docker Compose 実践——本番に近い構成を組む
 
 「`docker run` を何度も打つのが面倒」「チームメンバーが手順通りに環境を立ち上げられない」——Docker Compose は複数コンテナの構成をコードで宣言し、1コマンドで再現できるようにする。

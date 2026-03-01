@@ -1,3 +1,7 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Parent: Prometheus and Grafana -->
+<!-- Title: OpenTelemetry -->
+
 # OpenTelemetry——ログ・メトリクス・トレースを統一する
 
 「サービスが遅い原因を調べたいが、どのサービスのどの処理がボトルネックかわからない」「ツールを変えるたびに計装コードを書き直した」——OpenTelemetry（OTel）はベンダー中立な計装の標準規格。一度コードを書けば、Datadog・Jaeger・Prometheus など好きなバックエンドに送れる。

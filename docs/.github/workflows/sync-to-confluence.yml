@@ -8,6 +8,16 @@ on:
       - 'Confluence/**'
       - 'Terraform/**'
       - 'Amazon Web Services/**'
+      - 'Slack/**'
+      - 'スライド作成/**'
+      - 'DevOps/**'
+      - 'Docker/**'
+      - 'Prometheus and Grafana/**'
+      - 'GitHub Actions/**'
+      - 'Google Cloud/**'
+      - 'HashiCorp Vault/**'
+      - 'Kubernetes/**'
+      - 'Data Engineering/**'
   workflow_dispatch:
 
 jobs:
@@ -30,7 +40,7 @@ jobs:
           # インデックスページを優先することで、親が必ず子より先に作成される。
           # front matter（<!-- Space: ...）があるファイルのみ対象にする。
           # 空ファイルや front matter なしのファイルを mark に渡すとエラーになるため。
-          find Confluence Terraform "Amazon Web Services" -name "*.md" \
+          find Confluence Terraform "Amazon Web Services" Slack "スライド作成" DevOps Docker "Prometheus and Grafana" "GitHub Actions" "Google Cloud" "HashiCorp Vault" Kubernetes "Data Engineering" -name "*.md" \
             | xargs grep -l "<!-- Space:" 2>/dev/null \
             | while IFS= read -r f; do
             dir=$(dirname "$f")
