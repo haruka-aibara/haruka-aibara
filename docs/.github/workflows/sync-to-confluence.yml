@@ -48,7 +48,10 @@ jobs:
               -v "${GITHUB_WORKSPACE}:/workspace" \
               -w /workspace \
               kovetskiy/mark:v15.3.0 \
-              mark -f "$f"
+              mark -f "$f" \
+              || echo "WARNING: Failed to sync $f, continuing..."
               # dumb-init がエントリーポイントのため "mark" コマンド名が必須。
               # フラグは -f（-file / --file は存在しない）。
+              # 新規ページ作成時に mark が attachment API で panic するケースがある。
+              # 1回目は失敗しても 2回目（update）で通るため、エラーを無視して続行する。
           done
