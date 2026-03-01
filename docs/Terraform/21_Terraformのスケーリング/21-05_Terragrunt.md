@@ -4,7 +4,7 @@
 
 # Terragrunt
 
-Terragrunt は Terraform のラッパーツール。DRY（Don't Repeat Yourself）原則を実現し、複数環境・複数アカウントの管理を効率化する。
+dev / staging / prod の 3 環境で、同じバックエンド設定・プロバイダー設定を 3 つ書いて管理している——こういう状態になったら Terragrunt の導入を検討するタイミング。Terraform のラッパーとして DRY な構成を実現する。
 
 ---
 

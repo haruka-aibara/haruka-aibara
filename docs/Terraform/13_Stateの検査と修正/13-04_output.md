@@ -4,7 +4,7 @@
 
 # terraform output（State から出力値を取得）
 
-apply 後に State に記録された出力値を取得するコマンド。
+apply した後に「インスタンスの ID 何番だっけ」「ALB の DNS は？」と毎回コンソールを開いている場合、`terraform output` で確認できる。スクリプトや CI/CD への値渡しにも使える。
 
 ---
 

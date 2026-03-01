@@ -4,7 +4,7 @@
 
 # コンプライアンスと Sentinel
 
-Sentinel は HashiCorp が提供するポリシー as コードフレームワーク。HCP Terraform（旧 Terraform Cloud）と統合されており、apply の前にポリシーチェックを強制できる。
+「開発者が誤って本番に暗号化なしの S3 バケットを作れてしまう」——Checkov で警告しても無視して apply できてしまう。Sentinel は apply の手前でポリシーに違反するリソースを強制的にブロックする仕組み。HCP Terraform と組み合わせることで、コードレベルではなくインフラ操作レベルでルールを強制できる。
 
 ---
 

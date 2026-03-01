@@ -4,7 +4,7 @@
 
 # terraform state pull / push
 
-State ファイルをローカルに取得・アップロードするコマンド。
+「`state rm` の前にバックアップを取りたい」「リモート State の中身を直接確認したい」「バックエンドを S3 から別の場所に移行したい」——こういうときに使うのが `state pull` と `state push`。
 
 ---
 
