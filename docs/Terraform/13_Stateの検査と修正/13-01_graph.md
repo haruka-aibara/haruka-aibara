@@ -4,51 +4,45 @@
 
 # terraform graph
 
-リソース間の依存関係を DOT 形式で出力するコマンド。グラフとして可視化できる。
+「なぜかこのリソースが先に作られてしまう」「apply が遅い原因がわからない」——リソース間の依存関係を把握したいときに使う。`terraform graph` はリソースの依存グラフを DOT 形式で出力する。
 
 ---
 
 ## 基本的な使い方
 
 ```bash
+# DOT 形式のテキストを出力
 terraform graph
-```
 
-DOT 言語形式のテキストが出力される。
-
-```dot
-digraph {
-  compound = "true"
-  newrank = "true"
-  subgraph "root" {
-    "[root] aws_instance.web" [label = "aws_instance.web", shape = "box"]
-    "[root] aws_security_group.web" [label = "aws_security_group.web", shape = "box"]
-    "[root] aws_instance.web" -> "[root] aws_security_group.web"
-  }
-}
-```
-
----
-
-## Graphviz で画像に変換
-
-```bash
-# Graphviz をインストール
-brew install graphviz  # macOS
-
-# PNG に変換
+# Graphviz で画像に変換（要インストール）
 terraform graph | dot -Tpng -o graph.png
-
-# SVG に変換（テキスト検索が効く）
 terraform graph | dot -Tsvg -o graph.svg
 ```
 
+```bash
+# macOS で Graphviz をインストール
+brew install graphviz
+```
+
 ---
 
-## 用途
+## 出力例
 
-- 意図しない依存関係の可視化
-- デプロイ順序の確認
-- 大規模な構成の全体把握
+```dot
+digraph {
+  "[root] aws_instance.web" -> "[root] aws_security_group.web"
+  "[root] aws_eip.web" -> "[root] aws_instance.web"
+}
+```
 
-実務では plan が遅い・エラーが起きる原因を調査するときに使う。大規模な構成では出力が複雑になりすぎて読みにくいため、特定のモジュールに絞って使うことが多い。
+矢印の向きが依存関係を示す。`aws_security_group` → `aws_instance` → `aws_eip` の順で作られる。
+
+---
+
+## 実務での使い所
+
+- **apply が遅い**：依存が直列になっているリソースが多すぎる場合、並列化できる箇所を探す
+- **予期しない順序で作成される**：参照を確認して依存関係が正しいか検証する
+- **大規模な構成の全体把握**：どのリソースが他の多くのリソースに依存されているか一目でわかる
+
+大規模な構成では出力が複雑になりすぎるので、特定のモジュールに絞って使うと読みやすい。

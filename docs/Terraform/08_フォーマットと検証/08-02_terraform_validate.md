@@ -4,24 +4,24 @@
 
 # terraform validate
 
-Terraform 設定の構文・論理的な正しさをチェックするコマンド。実際の API 呼び出しは行わない。
+「plan を実行したら存在しないリソース名を参照してエラーになった」—plan は AWS に API を叩くのでそれなりに時間がかかる。`validate` は API 呼び出しなしで構文・論理チェックができるので、plan の前に素早くエラーを潰せる。
 
 ---
 
 ## 基本的な使い方
 
 ```bash
-# 事前に terraform init が必要
+# 事前に init が必要
 terraform init
 terraform validate
 ```
 
-正常な場合：
+問題がなければ：
 ```
 Success! The configuration is valid.
 ```
 
-エラーがある場合：
+エラーがあれば：
 ```
 ╷
 │ Error: Reference to undeclared resource
@@ -37,30 +37,21 @@ Success! The configuration is valid.
 
 ## チェックされる内容
 
-- 構文エラー（HCL の文法）
+- HCL の構文エラー
 - 未定義の変数・リソースへの参照
 - 必須属性の欠落
 - 型の不一致
 
 ---
 
-## CI/CD での活用
-
-```yaml
-- name: Validate
-  run: terraform validate
-```
-
-`fmt` → `validate` → `plan` の順でチェックすることで、PR マージ前に問題を検出できる。
-
----
-
-## terraform validate vs terraform plan
+## validate vs plan
 
 | | validate | plan |
 |---|---|---|
-| API 呼び出し | なし | あり（Read API） |
+| AWS API 呼び出し | なし | あり |
 | 認証情報 | 不要 | 必要 |
-| チェック精度 | 構文・論理 | 構文・論理 + 実際のリソース状態 |
+| 速度 | 速い | 遅い |
+| チェック精度 | 構文・論理のみ | 実際のリソース状態も確認 |
 
-`validate` はオフラインで実行できるため、認証なしのステージでも動かせる。
+CI での順番: `fmt -check` → `validate` → `plan`
+validate はオフラインで動くので、認証情報を使わない静的チェックのステージでも実行できる。

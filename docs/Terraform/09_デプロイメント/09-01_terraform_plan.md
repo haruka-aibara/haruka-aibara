@@ -4,15 +4,7 @@
 
 # terraform plan
 
-現在の State と .tf の定義を比較して、何が変わるかをプレビューするコマンド。
-
----
-
-## 基本的な使い方
-
-```bash
-terraform plan
-```
+apply する前に「何が変わるか」を確認するコマンド。本番環境に apply する前に plan を読む習慣がないと、予期しないリソースの削除や再作成が起きて痛い目に遭う。
 
 ---
 
@@ -42,33 +34,30 @@ Plan: 1 to add, 0 to change, 1 to destroy.
 | `~` | 更新（in-place） |
 | `-/+` | 削除してから再作成（replace） |
 
-`-/+` が出たら特に注意。本番リソースが一時的に消える可能性がある。
+**`-/+` が出たら特に注意**。本番リソースが一時的に消える。RDS や ALB で出たら、ダウンタイムの覚悟か代替手段が必要。
 
 ---
 
-## plan ファイルの保存と利用
+## plan ファイルを保存する
 
 ```bash
 # plan 結果をファイルに保存
 terraform plan -out=tfplan
 
-# 保存した plan だけを適用（plan と apply の間に差が出ない）
+# 保存した plan を適用（この plan の内容だけが実行される）
 terraform apply tfplan
 ```
 
-CI/CD では `plan -out` → レビュー → `apply` の流れで使うのが安全。
+CI/CD では `plan -out` → レビュー・承認 → `apply tfplan` の流れが安全。plan と apply の間にコードが変わっても、保存した plan の内容だけが実行される。
 
 ---
 
 ## よく使うオプション
 
 ```bash
-# 特定のリソースのみ plan
+# 特定リソースのみ確認
 terraform plan -target=aws_instance.web
 
 # 変数を渡す
-terraform plan -var="env=production"
-
-# 変数ファイルを渡す
 terraform plan -var-file="production.tfvars"
 ```

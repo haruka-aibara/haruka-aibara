@@ -4,7 +4,7 @@
 
 # terraform fmt
 
-HCL コードを標準フォーマットに自動修正するコマンド。
+複数人で Terraform を書いていると、インデントの幅や `=` の揃え方がバラバラになる。「スタイルの統一」を人間がレビューするのは無駄。`terraform fmt` が自動修正するので、CI で強制しておけばスタイル議論が不要になる。
 
 ---
 
@@ -14,41 +14,26 @@ HCL コードを標準フォーマットに自動修正するコマンド。
 # カレントディレクトリの .tf ファイルをフォーマット
 terraform fmt
 
-# サブディレクトリも含めて再帰的に処理
+# サブディレクトリも含めて処理
 terraform fmt -recursive
 
-# 変更内容を表示（実際には変更しない）
+# 何が変わるか確認だけ（実際には変更しない）
 terraform fmt -check -diff
 ```
 
-`-check` オプションを使うと、フォーマットが必要なファイルがある場合に exit code 3 で終了する。CI での差分チェックに使える。
-
 ---
 
-## CI/CD での使い方
-
-GitHub Actions でフォーマットチェックを行う例：
-
-```yaml
-- name: Check formatting
-  run: terraform fmt -check -recursive
-```
-
-フォーマットが崩れていると CI が失敗するようにしておくと、コードスタイルを統一しやすい。
-
----
-
-## フォーマット対象の変換例
+## 変換の例
 
 ```hcl
-# フォーマット前
+# フォーマット前（インデントがバラバラ）
 resource "aws_instance" "web" {
 ami = "ami-xxx"
   instance_type    =  "t3.micro"
 tags={Name="web"}
 }
 
-# フォーマット後
+# フォーマット後（自動で整形）
 resource "aws_instance" "web" {
   ami           = "ami-xxx"
   instance_type = "t3.micro"
@@ -56,4 +41,15 @@ resource "aws_instance" "web" {
 }
 ```
 
-インデント・イコールの揃え・スペースを自動修正してくれる。
+---
+
+## CI でフォーマットを強制する
+
+```yaml
+- name: Check formatting
+  run: terraform fmt -check -recursive
+```
+
+`-check` オプションは、フォーマットが崩れているファイルがあると exit code 3 で終了する。PR に組み込んでおけば「フォーマットが崩れたままマージ」がなくなる。
+
+ローカルでは `terraform fmt -recursive` を実行してからコミットする習慣をつけると、CI で引っかかることがなくなる。
