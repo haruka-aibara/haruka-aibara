@@ -1,3 +1,7 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Parent: AWSセキュリティ成熟度モデル -->
+<!-- Title: AWSセキュリティ成熟度モデル v2 達成基準ガイド -->
+
 # AWSセキュリティ成熟度モデル v2 達成基準ガイド
 
 > 公式サイト: https://maturitymodel.security.aws.dev/en/model/
