@@ -40,16 +40,16 @@ jobs:
           # インデックスページを優先することで、親が必ず子より先に作成される。
           # front matter（<!-- Space: ...）があるファイルのみ対象にする。
           # 空ファイルや front matter なしのファイルを mark に渡すとエラーになるため。
-          find Confluence Terraform "Amazon Web Services" Slack "スライド作成" DevOps Docker "Prometheus and Grafana" "GitHub Actions" "Google Cloud" "HashiCorp Vault" Kubernetes "Data Engineering" -name "*.md" \
-            | xargs grep -l "<!-- Space:" 2>/dev/null \
+          find Confluence Terraform "Amazon Web Services" Slack "スライド作成" DevOps Docker "Prometheus and Grafana" "GitHub Actions" "Google Cloud" "HashiCorp Vault" Kubernetes "Data Engineering" -name "*.md" -print0 \
+            | { xargs -0 grep -l "<!-- Space:" 2>/dev/null || true; } \
             | while IFS= read -r f; do
             dir=$(dirname "$f")
             base=$(basename "$f" .md)
             parent=$(basename "$dir")
             depth=$(printf "%s" "$f" | tr -cd '/' | wc -c)
             is_index=$([ "$base" = "$parent" ] && echo 0 || echo 1)
-            printf "%d %d %s\n" "$depth" "$is_index" "$f"
-          done | sort -k1,1n -k2,2n | awk '{print $3}' | \
+            printf "%d\t%d\t%s\n" "$depth" "$is_index" "$f"
+          done | sort -t$'\t' -k1,1n -k2,2n | cut -f3- | \
           while IFS= read -r f; do
             echo "Syncing: $f"
             docker run --rm \
