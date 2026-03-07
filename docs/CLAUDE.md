@@ -109,11 +109,13 @@ Confluence/
 
 ## Confluence 同期対象ディレクトリ
 
-`.github/workflows/sync-to-confluence.yml` の `paths:` に列挙されているディレクトリのみ自動同期される。現在の対象：
+全ディレクトリを順次 Confluence に同期していく予定。`.github/workflows/sync-to-confluence.yml` の `paths:` に列挙されているディレクトリのみ自動同期される。
 
-`Confluence/`, `Terraform/`, `Amazon Web Services/`, `Slack/`, `スライド作成/`, `DevOps/`, `Docker/`, `Prometheus and Grafana/`, `GitHub Actions/`, `Google Cloud/`, `HashiCorp Vault/`, `Kubernetes/`, `Data Engineering/`
+新しいディレクトリを同期対象に追加するときは以下が必要：
+1. ワークフローの `paths:` にディレクトリを追加
+2. 各 `.md` ファイルに front matter を付与（`<!-- Space: -->`, `<!-- Parent: -->`, `<!-- Title: -->`）
 
-**対象外のディレクトリ**（`Code Review/`, `スクラム開発/`, `Python/` 等）に書いた記事は Confluence に反映されない。反映したい場合は `paths:` への追加と front matter の付与が必要。
+現時点で同期済みのディレクトリは `Confluence/`, `Terraform/`, `Amazon Web Services/`, `Slack/`, `スライド作成/`, `DevOps/`, `Docker/`, `Prometheus and Grafana/`, `GitHub Actions/`, `Google Cloud/`, `HashiCorp Vault/`, `Kubernetes/`, `Data Engineering/`。
 
 ## 既存コンテンツの状況
 
