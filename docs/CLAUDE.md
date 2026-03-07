@@ -107,6 +107,15 @@ Confluence/
 - mark は新規ページ作成時に attachment API で panic することがある。1回目が失敗しても2回目（update）で通るため、ワークフローのエラーは再実行で解消することが多い
 - **exit code 123 の既知バグ（2026-03-02 修正済み）**：`find` がスペース入りパス（`Amazon Web Services` 等）を出力すると `xargs` がスペースで分割してしまい grep が失敗 → exit 123。修正：`find -print0 | xargs -0`、`printf "%d\t%d\t%s\n"` + `sort -t$'\t'` + `cut -f3-` を使うこと。`awk '{print $3}'` はスペース入りパスを壊すので使わない
 
+## Confluence 同期対象ディレクトリ
+
+`.github/workflows/sync-to-confluence.yml` の `paths:` に列挙されているディレクトリのみ自動同期される。現在の対象：
+
+`Confluence/`, `Terraform/`, `Amazon Web Services/`, `Slack/`, `スライド作成/`, `DevOps/`, `Docker/`, `Prometheus and Grafana/`, `GitHub Actions/`, `Google Cloud/`, `HashiCorp Vault/`, `Kubernetes/`, `Data Engineering/`
+
+**対象外のディレクトリ**（`Code Review/`, `スクラム開発/`, `Python/` 等）に書いた記事は Confluence に反映されない。反映したい場合は `paths:` への追加と front matter の付与が必要。
+
 ## 既存コンテンツの状況
 
 - **Terraform**: roadmap.sh/terraform に沿った構成で 01〜23 章すべて執筆済み。重複記事を作らないこと
+- **Code Review**: `AIがコードを書くなら、AIレビューは何を見ているのか.md`、`AI時代のCI：何を入れて何を入れないか.md` を追加済み（2026-03-07）。Confluence 非同期
