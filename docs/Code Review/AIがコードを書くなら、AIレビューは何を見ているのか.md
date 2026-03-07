@@ -1,3 +1,7 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Parent: Code Review -->
+<!-- Title: AI がコードを書くなら、AI レビューは何を見ているのか -->
+
 # AI がコードを書くなら、AI レビューは何を見ているのか
 
 Pull Request を開いたら Copilot のコードレビューが自動で走る。そのコードは Claude Code で生成した。

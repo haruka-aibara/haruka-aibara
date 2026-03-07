@@ -18,6 +18,7 @@ on:
       - 'HashiCorp Vault/**'
       - 'Kubernetes/**'
       - 'Data Engineering/**'
+      - 'Code Review/**'
   workflow_dispatch:
 
 jobs:

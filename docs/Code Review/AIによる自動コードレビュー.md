@@ -1,3 +1,7 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Parent: Code Review -->
+<!-- Title: AI によるコードレビューの自動化 -->
+
 # AI によるコードレビューの自動化
 
 ## 問題

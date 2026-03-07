@@ -1,3 +1,7 @@
+<!-- Space: harukaaibarapublic -->
+<!-- Parent: Code Review -->
+<!-- Title: AI 時代の CI：何を入れて何を入れないか -->
+
 # AI 時代の CI：何を入れて何を入れないか
 
 「入れられるものは全部入れればいい」——これが一番やってはいけない。
