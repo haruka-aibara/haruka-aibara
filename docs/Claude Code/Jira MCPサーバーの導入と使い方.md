@@ -22,20 +22,20 @@ Jira MCPサーバーを導入すると、Claude Codeの会話の中でJiraのチ
 Atlassian が公式に提供するリモートMCPサーバーを使う方法。API トークン不要で OAuth 認証。
 
 ```bash
-claude mcp add --transport sse jira https://mcp.atlassian.com/v1/sse
+claude mcp add --transport http jira https://mcp.atlassian.com/v1/mcp
 ```
 
 **`--scope user` をつけるとすべてのプロジェクトで使えるようになる：**
 
 ```bash
-claude mcp add --scope user --transport sse jira https://mcp.atlassian.com/v1/sse
+claude mcp add --scope user --transport http jira https://mcp.atlassian.com/v1/mcp
 ```
 
-初回接続時にブラウザが開き、Atlassian アカウントで OAuth 認証を求められる。
+初回接続時にブラウザが開き、Atlassian アカウントで OAuth 認証を求められる。`/mcp` コマンドで認証状態を確認できる。
 
 ### 方法2：API トークン方式（ローカルサーバー）
 
-SSE が使えない環境や、API トークンで認証を管理したい場合の代替手段。Node.js が必要。
+HTTP が使えない環境や、API トークンで認証を管理したい場合の代替手段。Node.js が必要。
 
 **1. Atlassian API トークンを作成**
 
@@ -94,14 +94,14 @@ PROJECT-123 のステータスを「進行中」に変えて
 
 `--scope user` で登録した場合、設定は `~/.claude/mcp.json` に保存される。
 
-**方法1（リモートSSE）の場合：**
+**方法1（リモートHTTP）の場合：**
 
 ```json
 {
   "mcpServers": {
     "jira": {
-      "type": "sse",
-      "url": "https://mcp.atlassian.com/v1/sse"
+      "type": "http",
+      "url": "https://mcp.atlassian.com/v1/mcp"
     }
   }
 }
