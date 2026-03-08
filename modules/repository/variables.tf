@@ -39,12 +39,6 @@ variable "has_projects" {
   default     = true
 }
 
-variable "has_downloads" {
-  description = "Whether to enable GitHub Downloads on the repository"
-  type        = bool
-  default     = true
-}
-
 variable "allow_merge_commit" {
   description = "Whether to allow merge commits"
   type        = bool
