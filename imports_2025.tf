@@ -78,11 +78,6 @@ import {
   id = "haruka-aibara"
 }
 
-import {
-  to = module.private.github_repository.this
-  id = "private"
-}
-
 # =========================================
 # HCP Terraform Workspaces Imports
 # =========================================
