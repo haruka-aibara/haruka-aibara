@@ -11,7 +11,7 @@ resource "tfe_workspace" "aws-cost-allocation-tags" {
   auto_apply_run_trigger = true
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "1.9.8"
+  terraform_version      = "1.14.6"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/aws-cost-allocation-tags"
@@ -28,7 +28,7 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
   auto_apply_run_trigger = false
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "1.9.6"
+  terraform_version      = "1.14.6"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/bedrock-slack-ai-agent"
@@ -45,7 +45,7 @@ resource "tfe_workspace" "bedrock-slack-ai-chatbot" {
   auto_apply_run_trigger = true
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "~>1.13.0"
+  terraform_version      = "~> 1.14.0"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/bedrock-slack-ai-chatbot"
@@ -62,7 +62,7 @@ resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
   auto_apply_run_trigger = false
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "1.9.6"
+  terraform_version      = "1.14.6"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/deploy-hcp-vault-dedicated-with-terraform"
@@ -79,7 +79,7 @@ resource "tfe_workspace" "generate-dev-io-summary" {
   auto_apply_run_trigger = true
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "1.9.6"
+  terraform_version      = "1.14.6"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/generate-dev-io-summary"
@@ -97,7 +97,7 @@ resource "tfe_workspace" "haruka-aibara" {
   auto_apply_run_trigger = false
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "~>1.13.0"
+  terraform_version      = "~> 1.14.0"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/haruka-aibara"
@@ -114,7 +114,7 @@ resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
   auto_apply_run_trigger = true
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "1.11.2"
+  terraform_version      = "1.14.6"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/iam-access-analyzer-policy-generate"
@@ -131,7 +131,7 @@ resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
   auto_apply_run_trigger = true
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "1.9.7"
+  terraform_version      = "1.14.6"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/terraform-aws-budget-slack-notifier"
@@ -149,7 +149,7 @@ resource "tfe_workspace" "google-cloud-hands-on" {
   auto_apply_run_trigger = true
   file_triggers_enabled  = false
   queue_all_runs         = false
-  terraform_version      = "1.13.4"
+  terraform_version      = "1.14.6"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/google-cloud-hands-on"
