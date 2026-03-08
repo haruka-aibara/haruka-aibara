@@ -17,27 +17,31 @@ Jira MCPサーバーを導入すると、Claude Codeの会話の中でJiraのチ
 
 ## セットアップ
 
-### 1. Atlassian API トークンを作成
+### 方法1：公式リモートMCPサーバー（推奨）
 
-[Atlassian Account → Security → API tokens](https://id.atlassian.com/manage-profile/security/api-tokens) でトークンを作成。
-
-作成したトークンはコピーして安全な場所に保管（再表示されない）。
-
-### 2. MCPサーバーを登録
-
-**ローカルサーバー方式（Node.js が必要）：**
+Atlassian が公式に提供するリモートMCPサーバーを使う方法。API トークン不要で OAuth 認証。
 
 ```bash
-claude mcp add jira \
-  -e ATLASSIAN_URL=https://your-domain.atlassian.net \
-  -e ATLASSIAN_USER_EMAIL=your@email.com \
-  -e ATLASSIAN_API_TOKEN=your_token \
-  -- npx -y @atlassian/mcp
+claude mcp add --transport sse jira https://mcp.atlassian.com/v1/sse
 ```
 
-`your-domain` は自分のJiraのURLのサブドメイン部分。
-
 **`--scope user` をつけるとすべてのプロジェクトで使えるようになる：**
+
+```bash
+claude mcp add --scope user --transport sse jira https://mcp.atlassian.com/v1/sse
+```
+
+初回接続時にブラウザが開き、Atlassian アカウントで OAuth 認証を求められる。
+
+### 方法2：API トークン方式（ローカルサーバー）
+
+SSE が使えない環境や、API トークンで認証を管理したい場合の代替手段。Node.js が必要。
+
+**1. Atlassian API トークンを作成**
+
+[Atlassian Account → Security → API tokens](https://id.atlassian.com/manage-profile/security/api-tokens) でトークンを作成（再表示されないのでコピーして保管）。
+
+**2. MCPサーバーを登録**
 
 ```bash
 claude mcp add --scope user jira \
@@ -47,7 +51,9 @@ claude mcp add --scope user jira \
   -- npx -y @atlassian/mcp
 ```
 
-### 3. 確認
+`your-domain` は自分のJiraのURLのサブドメイン部分。
+
+### 確認
 
 ```bash
 claude mcp list
@@ -88,6 +94,21 @@ PROJECT-123 のステータスを「進行中」に変えて
 
 `--scope user` で登録した場合、設定は `~/.claude/mcp.json` に保存される。
 
+**方法1（リモートSSE）の場合：**
+
+```json
+{
+  "mcpServers": {
+    "jira": {
+      "type": "sse",
+      "url": "https://mcp.atlassian.com/v1/sse"
+    }
+  }
+}
+```
+
+**方法2（APIトークン）の場合：**
+
 ```json
 {
   "mcpServers": {
@@ -107,6 +128,7 @@ PROJECT-123 のステータスを「進行中」に変えて
 
 ## 参考
 
+- [Using the Atlassian Remote MCP Server (beta) - Atlassian Community](https://community.atlassian.com/forums/Atlassian-Platform-articles/Using-the-Atlassian-Remote-MCP-Server-beta/ba-p/3005104)
 - [atlassian/mcp npm パッケージ](https://www.npmjs.com/package/@atlassian/mcp)
 - [Atlassian API トークン管理](https://id.atlassian.com/manage-profile/security/api-tokens)
 - [Claude Code MCP ドキュメント](https://docs.anthropic.com/ja/docs/claude-code/mcp)
