@@ -12,16 +12,6 @@ module "haruka-aibara" {
   topics = ["profile"]
 }
 
-# Private
-module "private" {
-  source = "./modules/repository"
-
-  repository_name = "private"
-  description     = "private"
-  visibility      = "private"
-  has_wiki        = false
-}
-
 # =========================================
 # My Learning Repositories
 # =========================================
