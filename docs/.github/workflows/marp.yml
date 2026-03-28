@@ -25,7 +25,9 @@ jobs:
         run: npm install -g @marp-team/marp-cli
 
       - name: Build slides
-        run: marp slides/ --html --output dist/ --allow-local-files
+        run: |
+          mkdir -p dist
+          marp slides/ --html --output dist/ --allow-local-files
 
       - name: Create index page
         run: |
