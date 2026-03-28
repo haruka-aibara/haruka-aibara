@@ -27,7 +27,10 @@ jobs:
       - name: Build slides
         run: |
           mkdir -p dist
-          marp slides/ --html --output dist/ --allow-local-files
+          for f in slides/*.md; do
+            name=$(basename "$f" .md)
+            marp --html --allow-local-files "$f" --output "dist/${name}.html"
+          done
 
       - name: Create index page
         run: |
