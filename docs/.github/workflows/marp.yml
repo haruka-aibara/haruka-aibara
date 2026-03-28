@@ -26,13 +26,13 @@ jobs:
 
       - name: Build slides
         run: |
-          while IFS= read -r -d '' f; do
+          find slides/ -name "*.md" -print0 | while IFS= read -r -d '' f; do
             rel="${f#slides/}"
-            outdir="dist/$(dirname "$rel")"
-            name="$(basename "$rel" .md).html"
-            mkdir -p "$outdir"
-            marp --html --allow-local-files "$f" --output "${outdir}/${name}"
-          done < <(find slides/ -name "*.md" -print0)
+            dir="$(dirname "$rel")"
+            name="$(basename "$rel" .md)"
+            mkdir -p "dist/$dir"
+            marp --html --allow-local-files "$f" -o "dist/$dir/$name.html"
+          done
 
       - name: Create index page
         run: |
