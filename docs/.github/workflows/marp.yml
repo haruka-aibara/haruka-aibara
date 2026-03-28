@@ -31,7 +31,7 @@ jobs:
             dir="$(dirname "$rel")"
             name="$(basename "$rel" .md)"
             mkdir -p "dist/$dir"
-            marp --html --allow-local-files "$f" -o "dist/$dir/$name.html"
+            marp --html --allow-local-files "$f" -o "dist/$dir/$name.html" </dev/null
           done
 
       - name: Create index page
