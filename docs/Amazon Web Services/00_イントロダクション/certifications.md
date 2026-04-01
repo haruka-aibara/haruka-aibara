@@ -11,6 +11,7 @@
 | Machine Learning Engineer | ASSOCIATE    | MLA-C01 2025-09-11 | 859  | 〇    | 2028-09-11 |    |
 | Solutions Architect       | PROFESSIONAL | SAP-C02 2024-09-30 | 910  | 〇    | 2027-09-30 |    |
 | DevOps Engineer           | PROFESSIONAL | DOP-C02 2026-02-09 | 951  | 〇    | 2029-02-09 |    |
-| Advanced Networking       | SPECIALTY    |                    |      |      |            |    |
+| Generative AI Developer   | PROFESSIONAL | AIP-C01            |      |      |            |    |
+| Advanced Networking       | SPECIALTY    | ANS-C01 2026-04-01 | 1000 | 〇    | 2029-04-01 |    |
 | Machine Learning          | SPECIALTY    | MLS-C01 2025-10-31 | 876  | 〇    | 2028-10-31 |    |
 | Security                  | SPECIALTY    | SCS-C02 2025-03-31 | 913  | 〇    | 2028-03-31 |    |
