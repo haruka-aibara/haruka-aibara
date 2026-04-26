@@ -71,53 +71,7 @@
 
 - **記事末尾に参考リンクをつける**：記事を書くときは必ず `## 参考` セクションを末尾に付けて、参照した公式ドキュメント・ブログ等のリンクを列挙する。省略しない
 
----
-
-## Confluence 自動同期
-
-`Confluence/` ディレクトリの内容は `main` push 時に GitHub Actions で Confluence に自動同期される。
-
-### ディレクトリ構造とページ階層
-
-git のディレクトリ構造 = Confluence のページ階層。
-
-```
-Confluence/
-├── Confluence.md              ← Confluence セクションの親ページ
-├── 運用手順.md                ← Confluence 直下の子ページ
-├── カテゴリ名/
-│   ├── カテゴリ名.md          ← カテゴリの親ページ（フォルダ名と同名にすること）
-│   └── 記事.md
-└── ...
-```
-
-### front matter（必須）
-
-```markdown
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 親ページのタイトル -->
-<!-- Title: このページのタイトル -->
-```
-
-### 注意事項
-
-- タイトル変更・ファイル移動・ファイル削除をした場合、**Confluence 上の旧ページは自動削除されない**。手動で削除すること
-- 新しいカテゴリを追加するときは、**フォルダ名と同名の `.md` ファイル**（インデックスページ）を必ず作ること
-- 詳細な操作手順は `Confluence/運用手順.md` を参照
-- mark は新規ページ作成時に attachment API で panic することがある。1回目が失敗しても2回目（update）で通るため、ワークフローのエラーは再実行で解消することが多い
-- **exit code 123 の既知バグ（2026-03-02 修正済み）**：`find` がスペース入りパス（`Amazon Web Services` 等）を出力すると `xargs` がスペースで分割してしまい grep が失敗 → exit 123。修正：`find -print0 | xargs -0`、`printf "%d\t%d\t%s\n"` + `sort -t$'\t'` + `cut -f3-` を使うこと。`awk '{print $3}'` はスペース入りパスを壊すので使わない
-
-## Confluence 同期対象ディレクトリ
-
-全ディレクトリを順次 Confluence に同期していく予定。`.github/workflows/sync-to-confluence.yml` の `paths:` に列挙されているディレクトリのみ自動同期される。
-
-新しいディレクトリを同期対象に追加するときは以下が必要：
-1. ワークフローの `paths:` にディレクトリを追加
-2. 各 `.md` ファイルに front matter を付与（`<!-- Space: -->`, `<!-- Parent: -->`, `<!-- Title: -->`）
-
-現時点で同期済みのディレクトリは `Confluence/`, `Terraform/`, `Amazon Web Services/`, `Slack/`, `スライド作成/`, `DevOps/`, `Docker/`, `Prometheus and Grafana/`, `GitHub Actions/`, `Google Cloud/`, `HashiCorp Vault/`, `Kubernetes/`, `Data Engineering/`。
-
 ## 既存コンテンツの状況
 
 - **Terraform**: roadmap.sh/terraform に沿った構成で 01〜23 章すべて執筆済み。重複記事を作らないこと
-- **Code Review**: `AIがコードを書くなら、AIレビューは何を見ているのか.md`、`AI時代のCI：何を入れて何を入れないか.md` を追加済み（2026-03-07）。Confluence 非同期
+- **Code Review**: `AIがコードを書くなら、AIレビューは何を見ているのか.md`、`AI時代のCI：何を入れて何を入れないか.md` を追加済み（2026-03-07）
