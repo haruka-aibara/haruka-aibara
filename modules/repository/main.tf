@@ -33,3 +33,22 @@ resource "github_repository" "this" {
     prevent_destroy = true
   }
 }
+
+resource "github_branch_protection" "this" {
+  count = var.enable_branch_protection ? 1 : 0
+
+  repository_id = github_repository.this.node_id
+  pattern       = var.protected_branch_pattern
+
+  allows_force_pushes = false
+  allows_deletions    = false
+  enforce_admins      = var.enforce_admins
+
+  dynamic "required_pull_request_reviews" {
+    for_each = var.require_pull_request_reviews ? [1] : []
+    content {
+      required_approving_review_count = var.required_approving_review_count
+      dismiss_stale_reviews           = true
+    }
+  }
+}
