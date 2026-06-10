@@ -68,3 +68,33 @@ variable "topics" {
   type        = list(string)
   default     = []
 }
+
+variable "enable_branch_protection" {
+  description = "Whether to enable branch protection on the repository"
+  type        = bool
+  default     = true
+}
+
+variable "protected_branch_pattern" {
+  description = "The branch name pattern to protect"
+  type        = string
+  default     = "main"
+}
+
+variable "enforce_admins" {
+  description = "Whether to enforce branch protection rules for repository administrators"
+  type        = bool
+  default     = false
+}
+
+variable "require_pull_request_reviews" {
+  description = "Whether to require pull request reviews before merging"
+  type        = bool
+  default     = false
+}
+
+variable "required_approving_review_count" {
+  description = "The number of approving reviews required when pull request reviews are enabled"
+  type        = number
+  default     = 0
+}
