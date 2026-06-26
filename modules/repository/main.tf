@@ -15,8 +15,6 @@ resource "github_repository" "this" {
 
   topics = var.topics
 
-  vulnerability_alerts = true
-
   dynamic "security_and_analysis" {
     for_each = var.visibility == "public" ? [1] : []
     content {
@@ -32,6 +30,10 @@ resource "github_repository" "this" {
   lifecycle {
     prevent_destroy = true
   }
+}
+
+resource "github_repository_vulnerability_alerts" "this" {
+  repository = github_repository.this.name
 }
 
 resource "github_branch_protection" "this" {
