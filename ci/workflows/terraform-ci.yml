@@ -1,0 +1,63 @@
+name: Terraform CI
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory that contains the Terraform code
+        type: string
+        default: "."
+      terraform-version:
+        description: Terraform version to use (empty = read .terraform-version, else latest)
+        type: string
+        default: ""
+
+jobs:
+  fmt:
+    name: terraform fmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve Terraform version
+        id: tfver
+        run: |
+          if [ -n "${{ inputs.terraform-version }}" ]; then
+            echo "version=${{ inputs.terraform-version }}" >> "$GITHUB_OUTPUT"
+          elif [ -f "${{ inputs.working-directory }}/.terraform-version" ]; then
+            echo "version=$(cat "${{ inputs.working-directory }}/.terraform-version")" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=latest" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ steps.tfver.outputs.version }}
+      - name: terraform fmt -check
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform fmt -check -recursive
+
+  tflint:
+    name: tflint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: terraform-linters/setup-tflint@v4
+      - name: tflint --init
+        working-directory: ${{ inputs.working-directory }}
+        run: tflint --init
+      - name: tflint
+        working-directory: ${{ inputs.working-directory }}
+        run: tflint -f compact
+
+  trivy:
+    name: trivy (IaC misconfig)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy config scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: config
+          scan-ref: ${{ inputs.working-directory }}
+          format: table
+          exit-code: "1"
+          severity: HIGH,CRITICAL
