@@ -8,7 +8,15 @@
 # Add a line here to onboard a new repo.
 locals {
   terraform_ci_repos = {
-    "aws-cost-allocation-tags" = { working_directory = "." }
+    "aws-cost-allocation-tags"                  = { working_directory = "." }
+    "bedrock-slack-ai-agent"                    = { working_directory = "." }
+    "bedrock-slack-ai-chatbot"                  = { working_directory = "." }
+    "deploy-hcp-vault-dedicated-with-terraform" = { working_directory = "." }
+    "generate-dev-io-summary"                   = { working_directory = "." }
+    "haruka-aibara"                             = { working_directory = "." }
+    "iam-access-analyzer-policy-generate"       = { working_directory = "." }
+    "terraform-aws-budget-slack-notifier"       = { working_directory = "." }
+    "google-cloud-hands-on"                     = { working_directory = "." }
   }
 }
 
