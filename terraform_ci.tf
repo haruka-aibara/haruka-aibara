@@ -38,6 +38,8 @@ resource "github_repository_file" "reusable_terraform_ci" {
 resource "github_repository_file" "terraform_ci_caller" {
   for_each = local.terraform_ci_repos
 
+  depends_on = [github_repository_file.reusable_terraform_ci]
+
   repository = each.key
   branch     = "main"
   file       = ".github/workflows/terraform-ci.yml"
