@@ -349,3 +349,17 @@ module "selenium-edge-automation" {
 
   topics = ["python", "selenium", "edge", "automation", "testing", "webdriver"]
 }
+
+# =========================================
+# Shared CI / GitHub Actions
+# =========================================
+
+# Reusable GitHub Actions workflows (Terraform CI logic single source)
+module "github-actions" {
+  source = "./modules/repository"
+
+  repository_name = "github-actions"
+  description     = "Shared reusable GitHub Actions workflows (Terraform CI etc.)"
+
+  topics = ["github-actions", "ci", "terraform"]
+}
