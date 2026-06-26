@@ -26,4 +26,4 @@ output "repository_ssh_clone_url" {
 output "repository_http_clone_url" {
   description = "The HTTPS clone URL of the repository"
   value       = github_repository.this.http_clone_url
-} 
+}
