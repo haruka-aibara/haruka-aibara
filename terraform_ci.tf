@@ -4,6 +4,14 @@
 # all managed from this repo as the single source.
 # =========================================
 
+# Terraform repositories that should receive the CI caller workflow.
+# Add a line here to onboard a new repo.
+locals {
+  terraform_ci_repos = {
+    "aws-cost-allocation-tags" = { working_directory = "." }
+  }
+}
+
 # Push the reusable workflow body into the github-actions repo.
 resource "github_repository_file" "reusable_terraform_ci" {
   repository          = module.github-actions.repository_name
@@ -11,6 +19,24 @@ resource "github_repository_file" "reusable_terraform_ci" {
   file                = ".github/workflows/terraform-ci.yml"
   content             = file("${path.module}/ci/workflows/terraform-ci.yml")
   commit_message      = "Update reusable Terraform CI workflow (managed by Terraform)"
+  overwrite_on_create = true
+
+  lifecycle {
+    ignore_changes = [commit_author, commit_email]
+  }
+}
+
+# Distribute the thin caller workflow to each Terraform repository.
+resource "github_repository_file" "terraform_ci_caller" {
+  for_each = local.terraform_ci_repos
+
+  repository = each.key
+  branch     = "main"
+  file       = ".github/workflows/terraform-ci.yml"
+  content = templatefile("${path.module}/ci/templates/terraform-ci-caller.yml.tftpl", {
+    working_directory = each.value.working_directory
+  })
+  commit_message      = "Add Terraform CI caller workflow (managed by Terraform)"
   overwrite_on_create = true
 
   lifecycle {
