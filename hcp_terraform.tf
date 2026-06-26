@@ -12,7 +12,7 @@ resource "tfe_workspace" "aws-cost-allocation-tags" {
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
-  terraform_version             = "1.15.6"
+  terraform_version             = "1.15.7"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/aws-cost-allocation-tags"
@@ -30,7 +30,7 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
-  terraform_version             = "1.15.6"
+  terraform_version             = "1.15.7"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/bedrock-slack-ai-agent"
@@ -66,7 +66,7 @@ resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
-  terraform_version             = "1.15.6"
+  terraform_version             = "1.15.7"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/deploy-hcp-vault-dedicated-with-terraform"
@@ -84,7 +84,7 @@ resource "tfe_workspace" "generate-dev-io-summary" {
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
-  terraform_version             = "1.15.6"
+  terraform_version             = "1.15.7"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/generate-dev-io-summary"
@@ -121,7 +121,7 @@ resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
-  terraform_version             = "1.15.6"
+  terraform_version             = "1.15.7"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/iam-access-analyzer-policy-generate"
@@ -139,7 +139,7 @@ resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
-  terraform_version             = "1.15.6"
+  terraform_version             = "1.15.7"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/terraform-aws-budget-slack-notifier"
@@ -158,7 +158,7 @@ resource "tfe_workspace" "google-cloud-hands-on" {
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
-  terraform_version             = "1.15.6"
+  terraform_version             = "1.15.7"
 
   vcs_repo {
     identifier                 = "${local.tfe_organization}/google-cloud-hands-on"
