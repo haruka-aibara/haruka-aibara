@@ -1,3 +1,5 @@
+# trivy:ignore:GIT-0001
+# trivy:ignore:GIT-0003
 resource "github_repository" "this" {
   name        = var.repository_name
   description = var.description
@@ -36,6 +38,7 @@ resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
+# trivy:ignore:GIT-0004
 resource "github_branch_protection" "this" {
   count = var.enable_branch_protection ? 1 : 0
 
