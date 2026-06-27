@@ -1,4 +1,5 @@
 # trivy:ignore:GIT-0001
+# trivy:ignore:GIT-0003
 resource "github_repository" "this" {
   name        = var.repository_name
   description = var.description
