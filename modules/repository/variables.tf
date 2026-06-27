@@ -98,3 +98,9 @@ variable "required_approving_review_count" {
   type        = number
   default     = 0
 }
+
+variable "require_up_to_date_branch" {
+  description = "Whether to require branches to be up to date before merging"
+  type        = bool
+  default     = true
+}
