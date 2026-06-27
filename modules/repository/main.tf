@@ -49,6 +49,14 @@ resource "github_branch_protection" "this" {
   allows_deletions    = false
   enforce_admins      = var.enforce_admins
 
+  dynamic "required_status_checks" {
+    for_each = var.require_up_to_date_branch ? [1] : []
+    content {
+      strict   = true
+      contexts = []
+    }
+  }
+
   dynamic "required_pull_request_reviews" {
     for_each = var.require_pull_request_reviews ? [1] : []
     content {
