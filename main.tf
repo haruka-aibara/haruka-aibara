@@ -26,6 +26,17 @@ module "haruka-aibara-public" {
   topics = ["learning", "documentation"]
 }
 
+# haruka-aibara-private Repository
+module "haruka-aibara-private" {
+  source = "./modules/repository"
+
+  repository_name = "haruka-aibara-private"
+  description     = "A private repository for personal use"
+  visibility      = "private"
+
+  topics = ["personal"]
+}
+
 # =========================================
 # My Slack AI Integration Projects
 # =========================================
