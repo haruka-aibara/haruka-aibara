@@ -88,3 +88,4 @@
 - **Terraform**: `Provisioning/Terraform/` 配下。roadmap.sh/terraform に沿った構成で 01〜23 章すべて執筆済み。重複記事を作らないこと
 - **Code Review**: `AIがコードを書くなら、AIレビューは何を見ているのか.md`、`AI時代のCI：何を入れて何を入れないか.md` を追加済み（2026-03-07）
 - **生成AIパスポート**: `AI and Machine Learning/生成AIパスポート/` 配下。2026年2月改訂シラバス（RAG・AIエージェント・MCP・AI新法を追加）に対応した1か月学習ルート記事あり
+- **AI自律開発×AWSセキュリティ**: `Cloud Providers/Amazon Web Services/04_セキュリティ/生成AIセキュリティ/セキュリティ機能開発をAIに任せて人間は承認だけにできるか.md` を追加済み（2026-07-04）。5層防御（アカウント分離／実行環境／機械ゲート／昇格経路／デプロイ後）＋承認の形骸化対策という構成
