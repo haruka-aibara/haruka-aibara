@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: サービス詳細とサマリー -->
-<!-- Title: Amazon VPC Latticeについて -->
-
 # Amazon VPC Lattice について
 
 ## どういうときに必要になるか

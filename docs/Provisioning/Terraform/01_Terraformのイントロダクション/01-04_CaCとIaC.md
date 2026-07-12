@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 01_Terraformのイントロダクション -->
-<!-- Title: CaC と IaC -->
-
 # CaC（Configuration as Code）と IaC（Infrastructure as Code）
 
 「Ansible でできるのに Terraform が必要なの？」「Terraform でサーバーの設定もできる？」という疑問が出たとき、IaC と CaC の違いを知っていると整理できる。似た言葉だが対象が違う。

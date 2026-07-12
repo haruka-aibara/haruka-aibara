@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 19_CI_CD統合 -->
-<!-- Title: GitLab CI での Terraform -->
-
 # GitLab CI での Terraform
 
 GitLab CI/CD で Terraform の plan / apply を自動化する構成。GitLab には Terraform との統合機能が標準で含まれている。

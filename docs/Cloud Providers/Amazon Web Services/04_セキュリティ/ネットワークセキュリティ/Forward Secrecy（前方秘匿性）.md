@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: ネットワークセキュリティ -->
-<!-- Title: Forward Secrecy（前方秘匿性）とは -->
-
 # Forward Secrecy（前方秘匿性）とは
 
 TLS で暗号化した通信は「今は読めないが、将来は読まれるかもしれない」というリスクを持っている。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 22_セキュリティ -->
-<!-- Title: Trivy -->
-
 # Trivy
 
 「Checkov で IaC を、Trivy でコンテナをスキャン」と複数ツールを使い分けているなら、Trivy 一本にまとめられる可能性がある。Trivy はコンテナ・IaC・OS パッケージ・ライブラリを横断してスキャンできる OSS のセキュリティスキャンツール。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: IAM -->
-<!-- Title: SCP で組織の安全ネットを張る -->
-
 # SCP で組織の安全ネットを張る
 
 GuardDuty や Security Hub は「やらかしてから検知する」仕組みだ。一方で SCP（Service Control Policy）は「そもそもやらかせない状態にする」——これが**予防的コントロール**の考え方。

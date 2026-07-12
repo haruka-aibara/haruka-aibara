@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: データ保護 -->
-<!-- Title: AWS KMS -->
-
 # AWS KMS（Key Management Service）
 
 暗号化キーを自分でサーバーに保管して管理するのはリスクが高い——キーとデータが同じ場所にあると、どちらかが漏洩したとき両方アウトになる。KMS は暗号化キーの生成・保管・ローテーションを AWS が管理し、アクセス制御と使用ログを提供するサービス。

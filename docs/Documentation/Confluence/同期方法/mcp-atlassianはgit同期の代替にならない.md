@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 同期方法 -->
-<!-- Title: mcp-atlassian は git 同期の代替にならない -->
-
 # mcp-atlassian は git 同期の代替にならない
 
 ## きっかけ

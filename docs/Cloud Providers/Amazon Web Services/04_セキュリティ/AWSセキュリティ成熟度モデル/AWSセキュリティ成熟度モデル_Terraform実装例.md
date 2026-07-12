@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: AWSセキュリティ成熟度モデル -->
-<!-- Title: AWSセキュリティ成熟度モデル v2 Terraform 実装例 -->
-
 # AWSセキュリティ成熟度モデル v2 — Terraform リソース早見表
 
 各項目を実装するときに使う主なTerraformリソース名をまとめたもの。

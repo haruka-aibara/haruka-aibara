@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 13_Stateの検査と修正 -->
-<!-- Title: terraform graph -->
-
 # terraform graph
 
 「なぜかこのリソースが先に作られてしまう」「apply が遅い原因がわからない」——リソース間の依存関係を把握したいときに使う。`terraform graph` はリソースの依存グラフを DOT 形式で出力する。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 01_Terraformのイントロダクション -->
-<!-- Title: Terraform のインストール -->
-
 # Terraform のインストール
 
 ---

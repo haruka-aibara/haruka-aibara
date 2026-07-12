@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 15_プロビジョナー -->
-<!-- Title: remote-exec プロビジョナー -->
-
 # remote-exec プロビジョナー
 
 リモートマシンに SSH（または WinRM）で接続してコマンドを実行するプロビジョナー。EC2 インスタンスに直接スクリプトを実行したいときに使う。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 12_Stateのベストプラクティス -->
-<!-- Title: State のベストプラクティス -->
-
 # State のベストプラクティス
 
 State の扱いを間違えると「チームで State が共有できない」「機密情報が Git に入る」「誰かが apply 中に別の人が apply して State が壊れる」といった問題が起きる。最初から正しい設定にしておけば後で困らない。

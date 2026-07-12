@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: AWSセキュリティ成熟度モデル -->
-<!-- Title: AWS Organizations 初期セキュリティ設定チェックリスト -->
-
 # AWS Organizations 初期セキュリティ設定チェックリスト
 
 新しい AWS 環境を引き継いだとき、あるいはゼロからセキュリティを整備し始めるとき、「何から手をつければいいか」が分かりにくい。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 05-03_メタ引数 -->
-<!-- Title: for_each -->
-
 # for_each
 
 「S3 バケットを logs と backups の 2 つ作りたい」「IAM ユーザーをリストから一括作成したい」——`count` でもできるが、途中の要素を削除するとインデックスがずれて別リソースが再作成される問題がある。`for_each` はキー名でリソースを識別するのでずれない。

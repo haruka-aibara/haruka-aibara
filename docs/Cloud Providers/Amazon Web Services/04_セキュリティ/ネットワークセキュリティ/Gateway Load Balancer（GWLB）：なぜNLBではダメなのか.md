@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: ネットワークセキュリティ -->
-<!-- Title: Gateway Load Balancer（GWLB）：なぜ NLB ではダメなのか -->
-
 # Gateway Load Balancer（GWLB）：なぜ NLB ではダメなのか
 
 ## パケットインスペクションが必要になる場面

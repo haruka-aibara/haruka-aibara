@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 09_デプロイメント -->
-<!-- Title: terraform plan -->
-
 # terraform plan
 
 apply する前に「何が変わるか」を確認するコマンド。本番環境に apply する前に plan を読む習慣がないと、予期しないリソースの削除や再作成が起きて痛い目に遭う。

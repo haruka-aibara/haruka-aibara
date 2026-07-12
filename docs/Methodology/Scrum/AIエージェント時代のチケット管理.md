@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: スクラム開発 -->
-<!-- Title: AI エージェント時代のチケット管理 -->
-
 # AI エージェント時代のチケット管理
 
 「GitHub Copilot Coding Agent や Claude Code にチケットをアサインしたら、何も実装してくれなかった」「AI エージェントが動いてはいるが、全然期待通りのことをしない」——その原因は、チケットの書き方が「人間が読む前提」のままだから。

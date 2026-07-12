@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 13_Stateの検査と修正 -->
-<!-- Title: terraform state replace-provider -->
-
 # terraform state replace-provider
 
 State 内のリソースに紐づくプロバイダーを別のプロバイダーに置き換えるコマンド。プロバイダーの移行（フォーク・リネーム）時に使う。

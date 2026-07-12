@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 09_デプロイメント -->
-<!-- Title: terraform apply -->
-
 # terraform apply
 
 plan の内容を実際のインフラに反映するコマンド。apply する前に plan を必ず確認する。特に `-/+`（replace）が出ているリソースは要注意。

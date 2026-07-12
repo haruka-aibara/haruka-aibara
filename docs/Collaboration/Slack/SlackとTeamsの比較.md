@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Slack -->
-<!-- Title: Slack と Teams どっちを使うべきか -->
-
 # Slack と Teams どっちを使うべきか
 
 「Microsoft 365 を契約しているから Teams を使っておけばいい」——それは間違いではないが、開発・技術チームにとって Slack と Teams では生産性に大きな差が出る場面がある。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 04_セキュリティ -->
-<!-- Title: 生成AIセキュリティ -->
-
 # 生成AIセキュリティ（Bedrock）
 
 Amazon Bedrock を社内展開するときに押さえるべきセキュリティ領域をまとめる。

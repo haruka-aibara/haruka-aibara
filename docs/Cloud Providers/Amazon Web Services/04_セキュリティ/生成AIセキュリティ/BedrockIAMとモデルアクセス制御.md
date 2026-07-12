@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 生成AIセキュリティ -->
-<!-- Title: Bedrock IAM とモデルアクセス制御 -->
-
 # Bedrock IAM とモデルアクセス制御
 
 「DeepSeek が Bedrock に追加された。うちの組織では使わせたくないが、どう止めるか」「開発者ロールが `bedrock:*` を持っていて、高コストなモデルを誰でも呼べる状態になっている」——Bedrock を使い始めると、IAM の設計が後手に回ることが多い。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 22_セキュリティ -->
-<!-- Title: Terrascan -->
-
 # Terrascan
 
 S3 バケットのパブリックアクセスが開いたまま apply してしまった、暗号化のついていない RDS を作ってしまった——こういう問題は apply 後ではなく、コードレビューの段階で検知したい。Terrascan は IaC コードを静的にスキャンして問題を事前に見つけるツール。

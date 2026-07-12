@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 13_Stateの検査と修正 -->
-<!-- Title: terraform state pull / push -->
-
 # terraform state pull / push
 
 「`state rm` の前にバックアップを取りたい」「リモート State の中身を直接確認したい」「バックエンドを S3 から別の場所に移行したい」——こういうときに使うのが `state pull` と `state push`。

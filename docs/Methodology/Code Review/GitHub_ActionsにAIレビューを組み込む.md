@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Code Review -->
-<!-- Title: GitHub Actions に AI レビューを組み込む -->
-
 # GitHub Actions に AI レビューを組み込む
 
 ## 問題

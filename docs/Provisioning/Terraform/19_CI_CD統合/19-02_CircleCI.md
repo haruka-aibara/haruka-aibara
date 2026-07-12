@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 19_CI_CD統合 -->
-<!-- Title: CircleCI での Terraform -->
-
 # CircleCI での Terraform
 
 CircleCI で Terraform の plan / apply を自動化する構成。

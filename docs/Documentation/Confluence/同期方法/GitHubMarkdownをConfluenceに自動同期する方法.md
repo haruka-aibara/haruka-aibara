@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 同期方法 -->
-<!-- Title: GitHub Markdown を Confluence に自動同期する方法 -->
-
 # GitHub Markdown を Confluence に自動同期する方法
 
 2026年2月時点の調査まとめ。Cloud / DC 両対応を見据えた選定基準で整理している。

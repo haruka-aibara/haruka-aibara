@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 13_Stateの検査と修正 -->
-<!-- Title: terraform output（State から取得） -->
-
 # terraform output（State から出力値を取得）
 
 apply した後に「インスタンスの ID 何番だっけ」「ALB の DNS は？」と毎回コンソールを開いている場合、`terraform output` で確認できる。スクリプトや CI/CD への値渡しにも使える。

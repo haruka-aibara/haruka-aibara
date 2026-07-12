@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 19_CI_CD統合 -->
-<!-- Title: GitHub Actions との統合 -->
-
 # GitHub Actions との統合
 
 PR でインフラ変更をレビューし、merge 後に自動 apply する CI/CD パイプラインの実装例。

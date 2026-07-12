@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 検知と可視化 -->
-<!-- Title: GuardDuty の死角 -->
-
 # GuardDuty の死角
 
 「GuardDuty を有効化しているから大丈夫」——これは半分正しくて半分間違い。GuardDuty は強力だが、**検知できない攻撃パターンが明確に存在する**。それを知らずに安心しているのが最も危険な状態だ。

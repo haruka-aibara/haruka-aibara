@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 22_セキュリティ -->
-<!-- Title: Checkov -->
-
 # Checkov
 
 「アクセスログが無効な S3 バケット」「暗号化されていない EBS」——こういった設定ミスは apply して数日後に気づくことが多い。Checkov は Terraform コードを静的解析して、apply 前にセキュリティ問題を検知するツール。CI に組み込むと PR の段階で止められる。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 検知と可視化 -->
-<!-- Title: AWS Security Hub -->
-
 # AWS Security Hub
 
 GuardDuty・Config・Inspector・Macie などのセキュリティツールを個別に確認していると、どこにどんな問題があるか全体像がつかめない。Security Hub はこれらのサービスからの検知結果を一箇所に集約して、アカウント全体のセキュリティ状況をスコア化して見せてくれる。

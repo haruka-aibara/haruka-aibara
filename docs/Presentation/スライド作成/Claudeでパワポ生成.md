@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: スライド作成 -->
-<!-- Title: Claude でパワポを生成する -->
-
 # Claude でパワポを生成する
 
 Claude には複数の方法でパワポを生成する機能がある。使えるプランと目的によって選ぶ。

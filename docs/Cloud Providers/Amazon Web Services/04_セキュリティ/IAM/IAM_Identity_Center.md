@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: IAM -->
-<!-- Title: IAM Identity Center -->
-
 # IAM Identity Center（旧 AWS SSO）
 
 複数の AWS アカウントごとに IAM ユーザーを作って管理している——メンバーが増えるほど「どのアカウントに誰のアクセス権があるか」が把握できなくなる。IAM Identity Center は組織の全アカウントへのアクセスを一元管理できる仕組み。Google Workspace や Azure AD と連携してシングルサインオンも実現できる。

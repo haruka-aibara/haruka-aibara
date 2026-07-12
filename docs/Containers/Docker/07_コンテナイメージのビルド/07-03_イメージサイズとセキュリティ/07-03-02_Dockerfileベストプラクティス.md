@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Docker -->
-<!-- Title: Dockerfile ベストプラクティス -->
-
 # Dockerfile ベストプラクティス——セキュリティとサイズの両立
 
 「イメージが 1GB 超えている」「コンテナが root で動いている」「脆弱性スキャンで大量に検出された」——Dockerfile を少し見直すだけで改善できることが多い。

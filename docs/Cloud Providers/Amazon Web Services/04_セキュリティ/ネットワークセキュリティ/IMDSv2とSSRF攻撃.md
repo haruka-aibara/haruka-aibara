@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: ネットワークセキュリティ -->
-<!-- Title: IMDSv2 と SSRF 攻撃 -->
-
 # IMDSv2 と SSRF 攻撃
 
 EC2 インスタンスで動くアプリに SSRF（Server-Side Request Forgery）の脆弱性があると、攻撃者は `http://169.254.169.254/` にリクエストを送ることでインスタンスの IAM クレデンシャルを盗める。これが「IMDS（Instance Metadata Service）攻撃」だ。

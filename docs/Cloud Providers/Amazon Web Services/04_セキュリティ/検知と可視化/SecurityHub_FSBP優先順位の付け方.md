@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 検知と可視化 -->
-<!-- Title: Security Hub FSBP コントロールの優先順位の付け方 -->
-
 # Security Hub FSBP コントロールの優先順位の付け方
 
 Security Hub を有効化した直後、画面には「FAILED: 500件以上」という数字が並ぶ。何から手をつければいいのか途方に暮れる——これが Security Hub あるあるだ。

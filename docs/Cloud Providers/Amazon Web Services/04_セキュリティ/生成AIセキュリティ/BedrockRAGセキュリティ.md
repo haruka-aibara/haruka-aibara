@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 生成AIセキュリティ -->
-<!-- Title: Bedrock Knowledge Base の RAG セキュリティ -->
-
 # Bedrock Knowledge Base の RAG セキュリティ
 
 「営業部門が社内 AI で質問したら、人事の機密情報が回答に混じって返ってきた」——Knowledge Base（RAG）の素朴な実装にある、見落とされがちな落とし穴。
