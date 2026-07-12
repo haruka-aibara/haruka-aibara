@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: GitHub Actions -->
-<!-- Title: 外部イメージの ECR ミラーリングと Inspector スキャン -->
-
 # 外部イメージの ECR ミラーリングと Inspector スキャン
 
 GitHub Actions で `docker run kovetskiy/mark:v15.3.0` のように Docker Hub の外部イメージを直接使うと、いくつかのリスクがある。タグはミュータブルなため supply chain 攻撃の入り口になりうる、Docker Hub のレートリミットで CI が落ちる、CVE が含まれていても気づけない——エンタープライズで使うなら解決しておきたい問題だ。

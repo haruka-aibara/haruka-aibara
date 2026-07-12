@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 08_フォーマットと検証 -->
-<!-- Title: terraform validate -->
-
 # terraform validate
 
 「plan を実行したら存在しないリソース名を参照してエラーになった」—plan は AWS に API を叩くのでそれなりに時間がかかる。`validate` は API 呼び出しなしで構文・論理チェックができるので、plan の前に素早くエラーを潰せる。

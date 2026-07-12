@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Slack -->
-<!-- Title: 開発チームでの Slack 活用 -->
-
 # 開発チームでの Slack 活用
 
 「なんとなく使っている」から「チームの情報インフラになっている」状態にするための設計と Tips。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Summaries -->
-<!-- Title: Transit Gateway アプライアンスモードとは -->
-
 # Transit Gateway アプライアンスモードとは
 
 複数 VPC を Transit Gateway で接続し、ファイアウォールアプライアンス（Palo Alto、Fortinet など）を経由させる構成を組もうとしたとき、**通信が断続的に切れる・セッションが壊れる**という問題が起きることがある。アプライアンスモードはこれを解決するための設定だ。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 04_プロバイダー -->
-<!-- Title: Terraform レジストリ -->
-
 # Terraform レジストリ
 
 「Terraform で Datadog のモニターを管理したい」「GitHub のリポジトリ設定をコード化したい」といったとき、自分でプラグインを書かなくていい。[registry.terraform.io](https://registry.terraform.io) に誰かが作ったプロバイダーやモジュールが公開されているので、それを使えば大抵のサービスを管理できる。

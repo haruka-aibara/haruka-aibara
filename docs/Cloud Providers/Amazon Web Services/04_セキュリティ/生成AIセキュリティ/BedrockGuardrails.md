@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 生成AIセキュリティ -->
-<!-- Title: Bedrock Guardrails -->
-
 # Bedrock Guardrails
 
 「AI が社員の機密情報を含んだ回答を返してしまった」「ユーザーがプロンプトを操作して、業務外のことを AI に実行させた」——Guardrails は AI の入出力に対してコンテンツフィルタリングをかけるサービス。有効化しておかないと、AI が何を返しても止める手段がない。

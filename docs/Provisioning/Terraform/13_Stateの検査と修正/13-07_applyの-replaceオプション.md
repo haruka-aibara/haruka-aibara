@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 13_Stateの検査と修正 -->
-<!-- Title: apply の -replace オプション -->
-
 # apply の -replace オプション
 
 特定のリソースを強制的に削除して再作成するオプション。EC2 インスタンスのリフレッシュや、State が壊れた場合の修復に使う。

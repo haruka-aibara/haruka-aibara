@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 検知と可視化 -->
-<!-- Title: Amazon Inspector -->
-
 # Amazon Inspector
 
 「EC2 に古い OpenSSL が入ったまま本番稼働している」「ECR のコンテナイメージに CVE が含まれている」——パッチ適用が追いつかないのはよくある話だが、「どのインスタンスに何の脆弱性があるか」を把握していないのは論外。Inspector は EC2・ECR・Lambda を継続的にスキャンして脆弱性を自動検出する。

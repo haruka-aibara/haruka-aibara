@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 01_Terraformのイントロダクション -->
-<!-- Title: Terraform とは -->
-
 # Terraform とは
 
 IaC ツールはいくつかあるが、「AWS だけ」「Azure だけ」に依存せず、複数クラウドやサービスを同じ書き方で管理したい場合に選ばれるのが Terraform。AWS の EC2 も、Datadog のアラートも、GitHub のリポジトリも、同じ `.tf` ファイルで管理できる。

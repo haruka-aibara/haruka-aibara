@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 08_フォーマットと検証 -->
-<!-- Title: TFLint -->
-
 # TFLint
 
 `terraform validate` では検出できないベストプラクティス違反や、プロバイダー固有の問題を検出する静的解析ツール。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Summaries -->
-<!-- Title: API Gateway VPC Link について -->
-
 # API Gateway VPC Link について
 
 ## どういうときに必要になるか

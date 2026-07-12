@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 05-03_メタ引数 -->
-<!-- Title: provider メタ引数 -->
-
 # provider メタ引数
 
 リソースが使用するプロバイダーを明示的に指定するメタ引数。複数リージョン・複数アカウントへのデプロイで使う。

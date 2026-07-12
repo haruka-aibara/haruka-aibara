@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 15_プロビジョナー -->
-<!-- Title: local-exec プロビジョナー -->
-
 # local-exec プロビジョナー
 
 Terraform を実行しているローカルマシン（または CI ランナー）でコマンドを実行するプロビジョナー。SSH 不要なのでプロビジョナーの中では比較的使いやすい。

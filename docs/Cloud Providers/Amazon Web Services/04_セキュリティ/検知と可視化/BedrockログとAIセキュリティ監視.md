@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 検知と可視化 -->
-<!-- Title: Bedrock ログと AI セキュリティ監視 -->
-
 # Bedrock ログと AI セキュリティ監視
 
 「社員が Bedrock を使い始めた。でも誰がどんなプロンプトを送ったか、機密情報を AI に貼り付けていないか、Guardrails が無効化されていないか——何かあったとき追える状態になっているか？」

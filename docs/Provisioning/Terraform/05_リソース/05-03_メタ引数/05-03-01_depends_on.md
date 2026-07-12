@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 05-03_メタ引数 -->
-<!-- Title: depends_on -->
-
 # depends_on
 
 リソース間の明示的な依存関係を指定するメタ引数。

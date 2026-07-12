@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: セットアップ -->
-<!-- Title: Atlassian API トークン発行手順 -->
-
 # Atlassian API トークン発行手順
 
 mark 等のツールで GitHub から Confluence に自動同期する際に必要な API トークンの発行手順。

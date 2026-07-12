@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 19_CI_CD統合 -->
-<!-- Title: Jenkins での Terraform -->
-
 # Jenkins での Terraform
 
 Jenkins パイプラインで Terraform の plan / apply を実行する構成。オンプレ環境や既存の Jenkins 環境がある場合に選択肢になる。

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 検知と可視化 -->
-<!-- Title: CloudTrail -->
-
 # CloudTrail
 
 「誰かがセキュリティグループを変更した」「IAM ポリシーが書き換えられた」——こういうことが起きたとき、CloudTrail がなければ誰がいつ何をしたか追跡できない。CloudTrail は AWS アカウント内の API 操作をすべて記録するサービス。有効化しておかないとインシデント発生時に証拠が残らない。

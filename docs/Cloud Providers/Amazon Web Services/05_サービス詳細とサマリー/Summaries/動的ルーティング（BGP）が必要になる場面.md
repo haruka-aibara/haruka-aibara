@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Summaries -->
-<!-- Title: 動的ルーティング（BGP）が必要になる場面 -->
-
 # 動的ルーティング（BGP）が必要になる場面
 
 ## 「静的でよくない？」と思うのは、まだ冗長化を考えていないとき

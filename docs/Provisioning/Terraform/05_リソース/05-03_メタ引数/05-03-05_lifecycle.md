@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 05-03_メタ引数 -->
-<!-- Title: lifecycle -->
-
 # lifecycle
 
 「AMI を変えたら EC2 が一瞬消えてダウンタイムが出た」「Auto Scaling が変えた台数を次の apply で戻してしまう」「本番 DB を誰かが誤って destroy した」——こういった問題を防ぐのが `lifecycle` の各オプション。

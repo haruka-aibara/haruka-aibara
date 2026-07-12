@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: ネットワークセキュリティ -->
-<!-- Title: Route 53 Resolver DNS Firewall：VPCからの不審なDNSをブロックする -->
-
 # Route 53 Resolver DNS Firewall：VPCからの不審なDNSをブロックする
 
 ## 問題：マルウェアが「DNS を使って」外と通信する

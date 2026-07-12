@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Summaries -->
-<!-- Title: プライベート ASN とは -->
-
 # プライベート ASN とは
 
 ## BGP を使う前に「自分の番号」が要る

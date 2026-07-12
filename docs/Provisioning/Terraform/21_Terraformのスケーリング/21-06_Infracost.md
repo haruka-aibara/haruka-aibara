@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 21_Terraformのスケーリング -->
-<!-- Title: Infracost -->
-
 # Infracost
 
 Infracost は Terraform の plan 結果からクラウドコストを見積もるツール。PR の段階でコスト増減を把握できる。

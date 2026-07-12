@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: サービス詳細とサマリー -->
-<!-- Title: VPC Reachability Analyzer について -->
-
 # VPC Reachability Analyzer について
 
 ## こんなとき困る

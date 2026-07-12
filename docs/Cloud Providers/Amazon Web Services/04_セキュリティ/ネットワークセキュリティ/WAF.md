@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: ネットワークセキュリティ -->
-<!-- Title: AWS WAF -->
-
 # AWS WAF
 
 「ログを見たら SQL インジェクションを繰り返している IP があった」「ボットが API を叩き続けてレートが跳ね上がった」——セキュリティグループは IP とポートしか制御できない。WAF は HTTP/HTTPS のリクエスト内容を見てフィルタリングできる。

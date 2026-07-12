@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: ネットワークセキュリティ -->
-<!-- Title: MACsec：Direct Connect の L2 暗号化と CKN/CAK/LAG -->
-
 # MACsec：Direct Connect の L2 暗号化と CKN/CAK/LAG
 
 ## なぜ Direct Connect でも暗号化が必要か

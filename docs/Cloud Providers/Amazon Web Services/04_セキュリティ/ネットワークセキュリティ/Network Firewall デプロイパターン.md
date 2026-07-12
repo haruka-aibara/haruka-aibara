@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: ネットワークセキュリティ -->
-<!-- Title: AWS Network Firewall デプロイパターン：分散 vs 集約 -->
-
 # AWS Network Firewall デプロイパターン：分散 vs 集約
 
 ## なぜパターン選択で迷うのか

@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 検知と可視化 -->
-<!-- Title: Amazon GuardDuty -->
-
 # Amazon GuardDuty
 
 「EC2 インスタンスが暗号通貨マイニングをしていた」「漏洩したアクセスキーが別の国から使われた」——こういった異常はログをずっと目で確認していても気づけない。GuardDuty は CloudTrail・VPC フローログ・DNS ログを機械学習で分析して、脅威を自動検知するサービス。有効化するだけで動作し、エージェントのインストールは不要。

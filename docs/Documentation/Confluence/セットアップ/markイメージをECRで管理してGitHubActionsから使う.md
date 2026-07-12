@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: セットアップ -->
-<!-- Title: mark イメージを ECR で管理して GitHub Actions から使う -->
-
 # mark イメージを ECR で管理して GitHub Actions から使う
 
 ghcr.io への外部依存をなくし、mark の Docker イメージを自社 ECR で管理する構成。

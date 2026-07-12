@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: Google Cloud -->
-<!-- Title: GCP IAM とセキュリティ -->
-
 # GCP IAM とセキュリティ
 
 「GCP のサービスアカウントキーを GitHub に上げてしまった」「誰に何の権限があるか把握できていない」——AWS IAM と考え方は似ているが、GCP 独自の概念を押さえないと事故を起こす。

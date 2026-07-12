@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: 08_フォーマットと検証 -->
-<!-- Title: terraform fmt -->
-
 # terraform fmt
 
 複数人で Terraform を書いていると、インデントの幅や `=` の揃え方がバラバラになる。「スタイルの統一」を人間がレビューするのは無駄。`terraform fmt` が自動修正するので、CI で強制しておけばスタイル議論が不要になる。

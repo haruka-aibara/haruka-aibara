@@ -1,7 +1,3 @@
-<!-- Space: harukaaibarapublic -->
-<!-- Parent: データ保護 -->
-<!-- Title: AWS Secrets Manager -->
-
 # AWS Secrets Manager
 
 DB パスワードや API キーを環境変数や設定ファイルに直書きしている——これはコードレビューで見落とされると Git に入るし、エンジニアが退職しても認証情報が残り続ける。Secrets Manager はシークレットを安全に保管・配布・ローテーションする仕組み。
