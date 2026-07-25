@@ -51,12 +51,12 @@ module "generate-dev-io-summary" {
   topics = ["terraform", "aws", "generative-ai"]
 }
 
-# Single-turn Bedrock Chatbot
+# Thread-aware Bedrock Chatbot
 module "bedrock-slack-ai-chatbot" {
   source = "./modules/repository"
 
   repository_name = "bedrock-slack-ai-chatbot"
-  description     = "A Slack AI chatbot application using Amazon Bedrock for single question-and-answer format without continuous conversation history"
+  description     = "Slack AI chatbot on Amazon Bedrock that reads the thread it is mentioned in for context. Serverless, managed with Terraform."
 
   topics = ["aws", "bedrock", "slack", "ai", "chatbot"]
 }
