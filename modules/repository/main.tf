@@ -6,8 +6,11 @@ resource "github_repository" "this" {
   visibility  = var.visibility
   auto_init   = var.auto_init
 
-  has_issues   = var.has_issues
-  has_wiki     = var.has_wiki
+  has_issues = var.has_issues
+  # Wikis are only available on private repositories with GitHub Pro or above.
+  # GitHub silently keeps them disabled otherwise, which would make every plan
+  # show a false -> true diff that never converges.
+  has_wiki     = var.visibility == "public" ? var.has_wiki : false
   has_projects = var.has_projects
 
   allow_merge_commit     = var.allow_merge_commit

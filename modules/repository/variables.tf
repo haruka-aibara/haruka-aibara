@@ -28,7 +28,7 @@ variable "has_issues" {
 }
 
 variable "has_wiki" {
-  description = "Whether to enable GitHub Wiki on the repository"
+  description = "Whether to enable GitHub Wiki on the repository. Forced to false for private repositories, where wikis require GitHub Pro or above"
   type        = bool
   default     = true
 }
