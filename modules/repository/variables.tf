@@ -28,7 +28,7 @@ variable "has_issues" {
 }
 
 variable "has_wiki" {
-  description = "Whether to enable GitHub Wiki on the repository"
+  description = "Whether to enable GitHub Wiki on the repository. Forced to false for private repositories, where wikis require GitHub Pro or above"
   type        = bool
   default     = true
 }
@@ -70,7 +70,7 @@ variable "topics" {
 }
 
 variable "enable_branch_protection" {
-  description = "Whether to enable branch protection on the repository"
+  description = "Whether to enable branch protection on the repository. Ignored for private repositories, where branch protection requires GitHub Pro or above"
   type        = bool
   default     = true
 }
