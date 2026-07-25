@@ -6,7 +6,7 @@ terraform {
     }
   }
 
-  required_version = "1.15.7"
+  required_version = "1.15.8"
 
   required_providers {
     github = {
@@ -15,7 +15,7 @@ terraform {
     }
     tfe = {
       source  = "hashicorp/tfe"
-      version = "~> 0.78"
+      version = "~> 0.79"
     }
   }
 }
