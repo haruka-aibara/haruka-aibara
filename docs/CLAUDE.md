@@ -95,6 +95,9 @@
 
 - **Terraform**: `Provisioning/Terraform/` 配下に 01〜23 章執筆済み。重複記事を作らないこと
 - **Linux**: `Operating System/Linux/` 配下に 01〜17 章執筆済み（17 は学習コンテンツ）。重複記事を作らないこと
+- **Docker**: `Containers/Docker/` 配下に 00〜13 章執筆済み。重複記事を作らないこと
+- **Python**: `Programming Language/Python/` 配下は全ファイル執筆済み（00〜18 章）
+- **GitHub**: `VCS Hosting/GitHub/` 配下は全ファイル執筆済み
 - **Code Review**: `AIがコードを書くなら、AIレビューは何を見ているのか.md`、`AI時代のCI：何を入れて何を入れないか.md` あり
 - **生成AIパスポート**: `AI and Machine Learning/生成AIパスポート/` 配下に学習ルート記事あり
 - **IPA試験再編**: `IPA/セキスペはいつ受けるか_2026年度CBT化と2027年度試験再編.md` あり
