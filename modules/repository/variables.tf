@@ -70,7 +70,7 @@ variable "topics" {
 }
 
 variable "enable_branch_protection" {
-  description = "Whether to enable branch protection on the repository"
+  description = "Whether to enable branch protection on the repository. Ignored for private repositories, where branch protection requires GitHub Pro or above"
   type        = bool
   default     = true
 }

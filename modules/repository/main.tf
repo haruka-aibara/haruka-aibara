@@ -38,9 +38,12 @@ resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
+# Branch protection is only available on private repositories with GitHub Pro or
+# above, so guard on visibility the same way security_and_analysis does. Creating
+# it on a private repository under GitHub Free fails with HTTP 403.
 # trivy:ignore:GIT-0004
 resource "github_branch_protection" "this" {
-  count = var.enable_branch_protection ? 1 : 0
+  count = var.enable_branch_protection && var.visibility == "public" ? 1 : 0
 
   repository_id = github_repository.this.node_id
   pattern       = var.protected_branch_pattern
