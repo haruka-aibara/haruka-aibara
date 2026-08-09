@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slack ワークフローを実際に作ってみる</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Slack ワークフローを実際に作ってみる</h1>
+<p class="lede"><a href="./Slackワークフローの作り方.md">Slack ワークフローの作り方</a> の「実際の作成手順」を、キャプチャを取りながらそのまま実行した記録。今回は「絵文字リアクションが使用された時」をトリガーにするワークフローを作る。</p>
+
+<h2>1. ワークフロー作成画面を開く</h2>
+<p>サイドバーの <code>ツール</code> → <code>ワークフロー</code> から、<code>＋新規</code> でワークフロー作成画面を開く。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-1.png" alt="ワークフロー作成画面">
+<figcaption>ワークフロー作成画面</figcaption>
+</figure>
+
+<h2>2. 新規ワークフローの編集画面が開く</h2>
+<p>「イベントを選択する」からトリガーを設定していく。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-2.png" alt="イベント選択画面">
+<figcaption>イベント選択画面</figcaption>
+</figure>
+
+<h2>3. トリガーを選ぶ</h2>
+<p>トリガー候補の中から「絵文字リアクションが使用された時」を選択する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-3.png" alt="トリガー選択画面（絵文字リアクションが使用された時）">
+<figcaption>トリガー選択画面（絵文字リアクションが使用された時）</figcaption>
+</figure>
+
+<h2>4. 対象の絵文字とチャンネルを設定する</h2>
+<p>反応する絵文字と、対象チャンネル（<code>slack-workflow-test</code>）を指定する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-4.png" alt="絵文字・チャンネル設定画面">
+<figcaption>絵文字・チャンネル設定画面</figcaption>
+</figure>
+<p><code>:muscle:</code>（すべての肌色）を選択し、<code>続行する</code> を押せる状態になった。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-5.png" alt="絵文字選択後の設定画面">
+<figcaption>絵文字選択後の設定画面</figcaption>
+</figure>
+
+<h2>5. トリガー設定完了、ステップ追加へ</h2>
+<p>トリガーが「<code>slack-workflow-test</code> で <code>muscle::skin-tone</code> を使ってほかのメンバーがリアクションしたら開始する」に確定した。次は「ステップを追加する」でワークフローの中身を作っていく。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-6.png" alt="トリガー設定完了画面">
+<figcaption>トリガー設定完了画面</figcaption>
+</figure>
+
+<h2>6. ステップを選ぶ</h2>
+<p>「メッセージ」カテゴリの中から「スレッドでメッセージに返信する」を選択する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-7.png" alt="ステップ選択画面（スレッドでメッセージに返信する）">
+<figcaption>ステップ選択画面（スレッドでメッセージに返信する）</figcaption>
+</figure>
+
+<h2>7. 返信内容を設定する</h2>
+<p>返信先は「リアクションされたメッセージへの参照」（トリガーの変数）を選び、本文に <code>💪 スタンプが押されました！</code> を入力する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-8.png" alt="返信内容設定画面">
+<figcaption>返信内容設定画面</figcaption>
+</figure>
+
+<h2>8. ステップ追加完了</h2>
+<p>「1. スレッドでメッセージに返信する」がステップとして追加され、返信プレビューも確認できる状態になった。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-9.png" alt="ステップ追加完了画面">
+<figcaption>ステップ追加完了画面</figcaption>
+</figure>
+
+<h2>9. さらに別チャンネルへメッセージ送信するステップを追加</h2>
+<p>続けて、別チャンネルにも通知したいので「メッセージ」カテゴリから今度は「チャンネルへメッセージを送信する」を選択する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-10.png" alt="ステップ選択画面（チャンネルへメッセージを送信する）">
+<figcaption>ステップ選択画面（チャンネルへメッセージを送信する）</figcaption>
+</figure>
+
+<h2>10. 送信先チャンネルとメッセージ内容を設定する</h2>
+<p>送信先チャンネルに <code>slack-workflow-test-2</code> を選び、本文に「どこかのチャンネルで 💪 スタンプが押されました！ご確認ください。」を入力する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-11.png" alt="送信先・メッセージ内容設定画面">
+<figcaption>送信先・メッセージ内容設定画面</figcaption>
+</figure>
+
+<h2>11. 2つ目のステップも追加完了</h2>
+<p>「2. <code>slack-workflow-test-2</code> にメッセージを送信する」がステップとして追加された。これでトリガー1つ・ステップ2つの構成になった。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-12.png" alt="2ステップ目追加完了画面">
+<figcaption>2ステップ目追加完了画面</figcaption>
+</figure>
+
+<h2>12. 権限設定をする</h2>
+<p>右上の <code>...</code> メニューから「権限」を開き、このワークフローを実行できる人を設定する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-13.png" alt="... メニュー（権限）">
+<figcaption><code>...</code> メニュー（権限）</figcaption>
+</figure>
+<p>「権限」ダイアログには、ワークフローマネージャー（編集・公開・削除ができる人）、このワークフローを誰が検索できるか、誰がコピーできるか、をそれぞれ設定する項目がある。個人検証では初期値のままでもいいが、企業利用では検索範囲・コピー範囲まできちんと絞ったほうがよさそう。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-14.png" alt="権限ダイアログ">
+<figcaption>権限ダイアログ</figcaption>
+</figure>
+
+<h2>13. ワークフロー名と説明を入れる</h2>
+<p>タイトル横の「詳細を編集する」から、ワークフロー名と説明を設定できる。今回は <code>マッスル速報</code> という名前にする（💪 スタンプの反応を検知して知らせるワークフローなので）。説明文は「<code>slack-workflow-test</code> で誰かが 💪 リアクションを押したら、スレッド返信と別チャンネルへの通知で即座に知らせる速報ワークフローです」とした。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-15.png" alt="「詳細を編集する」ボタン">
+<figcaption>「詳細を編集する」ボタン</figcaption>
+</figure>
+<p>「ワークフローの詳細」ダイアログで名前と説明を入力し、アイコンもアップロードできる。保存するとタイトル部分に反映される。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-16.png" alt="ワークフローの詳細ダイアログ（名前・説明を入力）">
+<figcaption>ワークフローの詳細ダイアログ（名前・説明を入力）</figcaption>
+</figure>
+
+<h2>14. 公開前の最終確認</h2>
+<p>タイトルが「マッスル速報」、説明文も反映された状態。トリガー1つ・ステップ2つの構成が最終形。まだ右上のステータスは「未公開」なので、この後「公開する」を押して実際に 💪 リアクションで動作確認する。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-17.png" alt="公開前の最終画面">
+<figcaption>公開前の最終画面</figcaption>
+</figure>
+
+<h2>15. 「完了」を押すと公開前の確認ダイアログが出る</h2>
+<p>右上の <code>完了</code> を押すと、そのまま公開されるわけではなく「公開前にワークフローの詳細と権限が正しいことを確認してください」という確認ダイアログが開く。名前・説明・権限をここで最終チェックし、問題なければ <code>公開する</code> を押す。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-18.png" alt="公開前確認ダイアログ">
+<figcaption>公開前確認ダイアログ</figcaption>
+</figure>
+
+<h2>16. 公開完了</h2>
+<p>「マッスル速報 が公開されました！」の画面が表示され、右上のステータスも「未公開」から「公開する」（公開済み表示）に変わった。ここでは「チャンネルを選択する」から、任意のチャンネルの「ワークフロー」タブにこのワークフローを追加することもできる（必須ではない）。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-19.png" alt="公開完了画面">
+<figcaption>公開完了画面</figcaption>
+</figure>
+<p>なお「チャンネルに追加する」は必須ではない。今回のような絵文字リアクションなどのイベント駆動型トリガーは、トリガー設定の時点でチャンネルと紐づいているのでこのまま動く。「チャンネルに追加する」が意味を持つのは、リンク・ボタンから起動する手動トリガー型のワークフローで、チャンネルの <code>Workflows</code> タブに起動導線を置きたい場合。</p>
+
+<h2>17. 実際に動作確認</h2>
+<p><code>slack-workflow-test</code> の適当なメッセージに 💪 リアクションをつけたところ、スレッドに「マッスル速報」から「💪 スタンプが押されました！」と返信が届いた。狙いどおり動作した。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-20.png" alt="動作確認：スレッド返信が届いた画面">
+<figcaption>動作確認：スレッド返信が届いた画面</figcaption>
+</figure>
+<p>もう1つのステップ（別チャンネルへの通知）も確認。<code>slack-workflow-test-2</code> に「マッスル速報」から「どこかのチャンネルで 💪 スタンプが押されました！ご確認ください。」が届いており、トリガー1つ・ステップ2つとも狙いどおり動作した。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-21.png" alt="動作確認：別チャンネルへの通知が届いた画面">
+<figcaption>動作確認：別チャンネルへの通知が届いた画面</figcaption>
+</figure>
+
+<h2>まとめ：Terraform 化は必要か</h2>
+<p>このクラシック Workflow Builder（トリガー＋ステップの GUI）には、作成・更新用の公開 API が存在しない。Terraform の Slack provider（community 製）もチャンネルやユーザーグループは管理できるが、ワークフロー定義はカバー対象外。コードで管理したいなら Deno Slack SDK / Bolt を使った別の（コードベースの）ワークフロー基盤に乗り換える必要があり、今回作った程度の規模・変更頻度ではその移行コストは見合わない。UI での手動管理で十分。</p>
+
+</main>
+</body>
+</html>
