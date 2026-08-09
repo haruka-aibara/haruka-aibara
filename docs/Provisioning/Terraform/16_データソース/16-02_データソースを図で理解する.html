@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terraform データソース（data）を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>データソース（data）を図で理解する</h1>
+<p class="lede">Terraform が「知らない」リソースを、壊さずに読み取るための仕組み。</p>
+
+<h2>何が問題なのか</h2>
+<p>Terraform は自分が管理しているリソースしか知らない。でも現実には、管理外のリソースを参照したい場面がたくさんある——ネットワークチームが管理している VPC、コンソールで手作業で作られた Route53 ホストゾーン、AWS 側が更新し続けている最新の AMI。</p>
+<p><strong>それを解決するのが <code>data</code> ブロック。</strong>作成も変更も削除もせず、読み取るだけ。</p>
+<p>参照したいというだけで <code>resource</code> に書いてしまうと、Terraform はそれを自分の持ち物だと解釈する。他チームのリソースを上書きしたり、<code>destroy</code> で消したりできてしまう。<code>data</code> はそこを構造的に分ける。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="resourceは作成・変更・削除、dataは読み取りのみという役割の違い">
+  <defs>
+    <marker id="ah-c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--c1)"/>
+    </marker>
+    <marker id="ah-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--c3)"/>
+    </marker>
+  </defs>
+
+  <rect x="8" y="26" width="200" height="248" rx="9" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="20" y="18" font-size="12" font-weight="600" fill="var(--ink)">設定ファイル（.tf）</text>
+  <rect x="24" y="52" width="168" height="58" rx="6" fill="var(--c1)"/>
+  <text x="108" y="76" font-size="11" fill="var(--on)" text-anchor="middle">resource "aws_instance"</text>
+  <text x="108" y="94" font-size="10.5" fill="var(--on)" text-anchor="middle" opacity=".85">所有して管理する</text>
+  <rect x="24" y="182" width="168" height="58" rx="6" fill="var(--c3)"/>
+  <text x="108" y="206" font-size="11" fill="var(--on)" text-anchor="middle">data "aws_vpc"</text>
+  <text x="108" y="224" font-size="10.5" fill="var(--on)" text-anchor="middle" opacity=".85">読むだけ</text>
+
+  <rect x="300" y="26" width="392" height="248" rx="9" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="312" y="18" font-size="12" font-weight="600" fill="var(--ink)">AWS 上の実物</text>
+
+  <rect x="314" y="44" width="364" height="92" rx="7" fill="var(--lane)"/>
+  <text x="328" y="64" font-size="11" fill="var(--muted)">この Terraform が作って持っているもの</text>
+  <rect x="328" y="76" width="106" height="44" rx="5" fill="var(--c1)" opacity=".78"/>
+  <text x="381" y="103" font-size="10.5" fill="var(--on)" text-anchor="middle">EC2 インスタンス</text>
+  <rect x="444" y="76" width="106" height="44" rx="5" fill="var(--c1)" opacity=".78"/>
+  <text x="497" y="95" font-size="10.5" fill="var(--on)" text-anchor="middle">セキュリティ</text>
+  <text x="497" y="111" font-size="10.5" fill="var(--on)" text-anchor="middle">グループ</text>
+
+  <rect x="314" y="156" width="364" height="104" rx="7" fill="var(--lane)"/>
+  <text x="328" y="176" font-size="11" fill="var(--muted)">管理外（でも参照したい）</text>
+  <rect x="328" y="188" width="106" height="56" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="381" y="211" font-size="10.5" fill="var(--ink)" text-anchor="middle">手動で作った</text>
+  <text x="381" y="227" font-size="10.5" fill="var(--ink)" text-anchor="middle">VPC</text>
+  <rect x="444" y="188" width="106" height="56" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="497" y="211" font-size="10.5" fill="var(--ink)" text-anchor="middle">別チームの</text>
+  <text x="497" y="227" font-size="10.5" fill="var(--ink)" text-anchor="middle">Route53</text>
+  <rect x="560" y="188" width="104" height="56" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <text x="612" y="211" font-size="10.5" fill="var(--ink)" text-anchor="middle">AWS 提供の</text>
+  <text x="612" y="227" font-size="10.5" fill="var(--ink)" text-anchor="middle">最新 AMI</text>
+
+  <line x1="196" y1="81" x2="308" y2="81" stroke="var(--c1)" stroke-width="1.8" marker-end="url(#ah-c1)"/>
+  <text x="252" y="74" font-size="10.5" fill="var(--c1)" text-anchor="middle">作る・変える・消す</text>
+  <line x1="308" y1="211" x2="196" y2="211" stroke="var(--c3)" stroke-width="1.8" marker-end="url(#ah-c3)"/>
+  <text x="252" y="204" font-size="10.5" fill="var(--c3)" text-anchor="middle">読む（何も変えない）</text>
+</svg>
+<figcaption><code>data</code> は読み取り専用なので、<code>terraform destroy</code> しても参照先の VPC や Route53 は消えない。逆に言えば、<code>data</code> で書いておけば「うっかり壊す」経路そのものが存在しない。</figcaption>
+</figure>
+
+<h2>書き方</h2>
+<p>デフォルト VPC を読み取る例。<code>default = true</code> は「どれを探すか」の条件。</p>
+<pre><code>data "aws_vpc" "default" {
+  default = true
+}</code></pre>
+<p>読み取った値は <code>data.</code> から始まる名前で参照する。</p>
+
+<figure>
+<svg viewBox="0 0 700 244" role="img" aria-label="dataブロックの宣言と参照の書き方の対応">
+  <text x="20" y="16" font-size="11.5" font-weight="600" fill="var(--muted)">宣言する</text>
+  <rect x="20" y="26" width="660" height="76" rx="7" fill="var(--lane)"/>
+
+  <rect x="70" y="36" width="78" height="22" rx="3" fill="var(--c1)" opacity=".22"/>
+  <rect x="156" y="36" width="78" height="22" rx="3" fill="var(--c2)" opacity=".22"/>
+  <text x="30" y="53" font-size="14" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="var(--ink)">data "aws_vpc" "default" {</text>
+  <text x="30" y="73" font-size="14" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="var(--muted)">  default = true</text>
+  <text x="30" y="93" font-size="14" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="var(--ink)">}</text>
+
+  <text x="20" y="136" font-size="11.5" font-weight="600" fill="var(--muted)">参照する</text>
+  <rect x="20" y="146" width="660" height="44" rx="7" fill="var(--lane)"/>
+  <rect x="76" y="156" width="70" height="26" rx="3" fill="var(--c1)" opacity=".22"/>
+  <rect x="153" y="156" width="70" height="26" rx="3" fill="var(--c2)" opacity=".22"/>
+  <rect x="230" y="156" width="22" height="26" rx="3" fill="var(--c3)" opacity=".22"/>
+  <text x="30" y="175" font-size="16" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" fill="var(--ink)">data.aws_vpc.default.id</text>
+  <text x="290" y="175" font-size="11" fill="var(--muted)">← 先頭の data. を忘れやすい</text>
+
+  <g font-size="11" fill="var(--muted)">
+    <rect x="20" y="212" width="11" height="11" rx="2" fill="var(--c1)"/>
+    <text x="37" y="222">タイプ（プロバイダが決めている）</text>
+    <rect x="250" y="212" width="11" height="11" rx="2" fill="var(--c2)"/>
+    <text x="267" y="222">名前（自分で付ける）</text>
+    <rect x="420" y="212" width="11" height="11" rx="2" fill="var(--c3)"/>
+    <text x="437" y="222">読み取りたい属性</text>
+  </g>
+</svg>
+<figcaption><code>resource</code> の参照は <code>aws_vpc.main.id</code> と3つに区切るが、<code>data</code> は先頭に <code>data.</code> が付いて4つになる。この差が最初のつまずきどころ。</figcaption>
+</figure>
+
+<p>あとは <code>resource</code> の中でふつうに使える。</p>
+<pre><code>resource "aws_subnet" "app" {
+  vpc_id     = data.aws_vpc.default.id
+  cidr_block = "172.31.100.0/24"
+}</code></pre>
+
+<h2>よくある例：最新の AMI を拾う</h2>
+<p>AMI ID を <code>ami-0123456789abcdef0</code> のように直接書くと、セキュリティ更新が出ても古いままになる。<code>data</code> で条件を書いておけば、apply のたびに最新のものが選ばれる。</p>
+<pre><code>data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t3.micro"
+}</code></pre>
+
+<h2>最初に知っておくこと</h2>
+<ul>
+<li><strong>条件に合うものが見つからないとエラーで止まる</strong>：空っぽの値が返るのではなく、<code>no matching ... found</code> で plan ごと失敗する。フィルタの書き間違いはここで気づく。</li>
+<li><strong>条件に複数マッチしてもエラー</strong>：<code>aws_vpc</code> や <code>aws_ami</code> は「ちょうど1件」を要求する。1件に絞れる条件を書く。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://developer.hashicorp.com/terraform/language/data-sources">Terraform - Query data from external sources（Data Sources）</a></li>
+<li><a href="https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc">Terraform AWS Provider - aws_vpc（データソース）</a></li>
+</ul>
+
+</main>
+</body>
+</html>
