@@ -2,7 +2,7 @@
 
 `docker run --memory 512m` と書いたら、その 512MB は誰がどう強制しているのか。答えがカーネルの **cgroups**。namespace が「視界」を分けるのに対し、cgroups は「使える量」を分ける——2つ合わせてコンテナの隔離が成立する。
 
-cgroups 自体の仕組み（v1/v2、systemd との関係、ファイルシステムとしての操作）は Linux 側の [cgroups](../../../Operating%20System/Linux/16_コンテナ化/16-02_cgroups.md) にまとめてあるので、ここでは **Docker から見た cgroups** に絞る。
+cgroups 自体の仕組み（v1/v2、systemd との関係、ファイルシステムとしての操作）は Linux 側の [cgroups](../../Linux/16_コンテナ化/16-02_cgroups.md) にまとめてあるので、ここでは **Docker から見た cgroups** に絞る。
 
 ## docker run のオプションと cgroups の対応
 

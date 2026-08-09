@@ -46,7 +46,7 @@ Kubernetes は強力さと引き換えに運用コストが大きい（クラス
 - AWS 内で「複数コンテナをちゃんと運用」→ ECS/Fargate が Kubernetes より低コストな中間解
 - マルチチーム・大規模・エコシステム（Helm、ArgoCD、service mesh）が必要 → EKS 等のマネージド Kubernetes
 
-「業界標準だから」で選ぶと運用で支払うことになる。詳細な学習は `Container Orchestration/Kubernetes/` を参照。
+「業界標準だから」で選ぶと運用で支払うことになる。詳細な学習は `Kubernetes/` を参照。
 
 ## 参考
 

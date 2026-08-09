@@ -12,7 +12,7 @@ sudo apt-get update
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 ```
 
-リポジトリ追加の一般論（署名鍵の意味を含む）は [パッケージリポジトリ](../../../Operating%20System/Linux/10_パッケージ管理/10-01_パッケージリポジトリ.md) を参照。動作確認は：
+リポジトリ追加の一般論（署名鍵の意味を含む）は [パッケージリポジトリ](../../Linux/10_パッケージ管理/10-01_パッケージリポジトリ.md) を参照。動作確認は：
 
 ```bash
 sudo docker run --rm hello-world
