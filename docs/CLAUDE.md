@@ -166,3 +166,4 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **ADR×AI**: `ADR/ADRの要否をAIに判断させるリポジトリ設計.md` あり
 - **Trusted Advisor通知**: `Amazon Web Services/04_セキュリティ/検知と可視化/TrustedAdvisorアラートのSlack通知.md` あり
 - **HTTP/2**: `Networking/HTTP2.html`。図中心 HTML 記事のリファレンス実装
+- **HTTP/3 と QUIC**: `Networking/HTTP3.html`
