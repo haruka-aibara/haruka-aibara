@@ -156,7 +156,7 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **スクラムマスターチェックリスト**: `Methodology/Scrum/スクラムマスターのセルフチェックリスト/` 配下。親ページ＋`スクラムイベント/`＋`ベストプラクティス/` の分割構成
 - **受託×心理的安全性**: `Methodology/Scrum/受託開発で心理的安全性はどこまで作れるか.md` あり
 - **AI自律開発×AWSセキュリティ**: `Cloud Providers/Amazon Web Services/04_セキュリティ/生成AIセキュリティ/` 配下にあり
-- **Slack**: `Collaboration/Slack/` 配下に `Slack.md`、`SlackとTeamsの比較.md`、`開発チームでのSlack活用.md`、`Slackワークフローの作り方.md` あり
+- **Slack**: `Collaboration/Slack/` 配下に `SlackとTeamsの比較.md`、`開発チームでのSlack活用.md`、`Slackワークフローの作り方.md` あり
 - **ADR×AI**: `Documentation/ADR/ADRの要否をAIに判断させるリポジトリ設計.md` あり
 - **Trusted Advisor通知**: `Cloud Providers/Amazon Web Services/04_セキュリティ/検知と可視化/TrustedAdvisorアラートのSlack通知.md` あり
 - **HTTP/2**: `Networking/HTTP2.html`。図中心 HTML 記事のリファレンス実装
