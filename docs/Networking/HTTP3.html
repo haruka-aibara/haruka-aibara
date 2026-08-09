@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTTP/3 と QUIC を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+.note p{margin:.35rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>HTTP/3 と QUIC を図で理解する</h1>
+<p class="lede">TCP を捨てて UDP の上に載せ替えたプロトコル。HTTP/2 に残った「1パケット落ちると全部止まる」を消しにいった。</p>
+
+<h2>何が問題だったのか</h2>
+<p>HTTP/3 を検討し始めるきっかけは、たいてい性能改善の理想論ではなく<strong>苦情</strong>だ——「電車の中だとページが固まる」「モバイルだけ異様に遅い」。サーバのレイテンシもオリジンの応答も正常なのに、特定のネットワークからだけ体感が崩れる。</p>
+<p>原因は HTTP/2 が全リクエストを1本の TCP コネクションに集約したことにある。TCP はバイト列の順序を保証するので、パケットが1つ落ちると、その後ろに届いたデータは<strong>無関係なストリームのものでも受信バッファに積まれたまま</strong>アプリに渡らない。多重化したぶん、1つの損失が巻き込む範囲が広がった。</p>
+
+<figure>
+<svg viewBox="0 0 700 330" role="img" aria-label="パケット消失時のTCPとQUICの挙動の比較">
+  <text x="0" y="10" font-size="13" font-weight="600" fill="var(--ink)">HTTP/2 over TCP — 1つ落ちると全ストリームが止まる</text>
+
+  <text x="0" y="42" font-size="11" fill="var(--muted)">ネットワーク</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="110" y="24" width="56" height="26" rx="4" fill="none" stroke="var(--stop)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <line x1="116" y1="30" x2="160" y2="44" stroke="var(--stop)" stroke-width="1.5"/>
+    <line x1="160" y1="30" x2="116" y2="44" stroke="var(--stop)" stroke-width="1.5"/>
+    <text x="138" y="64" font-size="10" fill="var(--stop)">A1 消失</text>
+    <rect x="172" y="24" width="56" height="26" rx="4" fill="var(--c2)"/><text x="200" y="42" fill="var(--on)">B1</text>
+    <rect x="234" y="24" width="56" height="26" rx="4" fill="var(--c3)"/><text x="262" y="42" fill="var(--on)">C1</text>
+    <rect x="296" y="24" width="56" height="26" rx="4" fill="var(--c1)"/><text x="324" y="42" fill="var(--on)">A2</text>
+    <rect x="358" y="24" width="56" height="26" rx="4" fill="var(--c2)"/><text x="386" y="42" fill="var(--on)">B2</text>
+    <rect x="420" y="24" width="56" height="26" rx="4" fill="var(--c3)"/><text x="448" y="42" fill="var(--on)">C2</text>
+    <rect x="482" y="24" width="56" height="26" rx="4" fill="var(--c2)"/><text x="510" y="42" fill="var(--on)">B3</text>
+    <rect x="544" y="24" width="56" height="26" rx="4" fill="var(--c3)"/><text x="572" y="42" fill="var(--on)">C3</text>
+    <rect x="606" y="24" width="56" height="26" rx="4" fill="var(--c1)" stroke="var(--ink)" stroke-dasharray="3 2" opacity=".9"/>
+    <text x="634" y="42" fill="var(--on)">A1再送</text>
+  </g>
+
+  <text x="0" y="88" font-size="11" fill="var(--muted)">アプリに届く</text>
+  <rect x="110" y="70" width="490" height="26" rx="4" fill="var(--lane)"/>
+  <text x="355" y="88" font-size="11" fill="var(--muted)" text-anchor="middle">受信バッファで順序待ち（B・C も巻き添え）</text>
+  <g>
+    <rect x="606" y="70" width="16" height="26" rx="3" fill="var(--c1)"/>
+    <rect x="624" y="70" width="16" height="26" rx="3" fill="var(--c2)"/>
+    <rect x="642" y="70" width="20" height="26" rx="3" fill="var(--c3)"/>
+  </g>
+  <text x="662" y="112" font-size="10" fill="var(--muted)" text-anchor="end">ここで一気に解放</text>
+
+  <text x="0" y="170" font-size="13" font-weight="600" fill="var(--ink)">HTTP/3 over QUIC — 止まるのは落ちたストリームだけ</text>
+
+  <text x="0" y="202" font-size="11" fill="var(--muted)">ネットワーク</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="110" y="184" width="56" height="26" rx="4" fill="none" stroke="var(--stop)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <line x1="116" y1="190" x2="160" y2="204" stroke="var(--stop)" stroke-width="1.5"/>
+    <line x1="160" y1="190" x2="116" y2="204" stroke="var(--stop)" stroke-width="1.5"/>
+    <rect x="172" y="184" width="56" height="26" rx="4" fill="var(--c2)"/><text x="200" y="202" fill="var(--on)">B1</text>
+    <rect x="234" y="184" width="56" height="26" rx="4" fill="var(--c3)"/><text x="262" y="202" fill="var(--on)">C1</text>
+    <rect x="296" y="184" width="56" height="26" rx="4" fill="var(--c1)"/><text x="324" y="202" fill="var(--on)">A2</text>
+    <rect x="358" y="184" width="56" height="26" rx="4" fill="var(--c2)"/><text x="386" y="202" fill="var(--on)">B2</text>
+    <rect x="420" y="184" width="56" height="26" rx="4" fill="var(--c3)"/><text x="448" y="202" fill="var(--on)">C2</text>
+    <rect x="482" y="184" width="56" height="26" rx="4" fill="var(--c2)"/><text x="510" y="202" fill="var(--on)">B3</text>
+    <rect x="544" y="184" width="56" height="26" rx="4" fill="var(--c3)"/><text x="572" y="202" fill="var(--on)">C3</text>
+    <rect x="606" y="184" width="56" height="26" rx="4" fill="var(--c1)" stroke="var(--ink)" stroke-dasharray="3 2" opacity=".9"/>
+    <text x="634" y="202" fill="var(--on)">A1再送</text>
+  </g>
+
+  <text x="0" y="248" font-size="11" fill="var(--muted)">アプリに届く</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="172" y="230" width="56" height="26" rx="4" fill="var(--c2)"/><text x="200" y="248" fill="var(--on)">B1</text>
+    <rect x="234" y="230" width="56" height="26" rx="4" fill="var(--c3)"/><text x="262" y="248" fill="var(--on)">C1</text>
+    <rect x="296" y="230" width="56" height="26" rx="4" fill="var(--lane)"/><text x="324" y="248" fill="var(--muted)" font-size="10">A2待機</text>
+    <rect x="358" y="230" width="56" height="26" rx="4" fill="var(--c2)"/><text x="386" y="248" fill="var(--on)">B2</text>
+    <rect x="420" y="230" width="56" height="26" rx="4" fill="var(--c3)"/><text x="448" y="248" fill="var(--on)">C2</text>
+    <rect x="482" y="230" width="56" height="26" rx="4" fill="var(--c2)"/><text x="510" y="248" fill="var(--on)">B3</text>
+    <rect x="544" y="230" width="56" height="26" rx="4" fill="var(--c3)"/><text x="572" y="248" fill="var(--on)">C3</text>
+    <rect x="606" y="230" width="26" height="26" rx="3" fill="var(--c1)"/><text x="619" y="248" fill="var(--on)" font-size="9.5">A1</text>
+    <rect x="636" y="230" width="26" height="26" rx="3" fill="var(--c1)"/><text x="649" y="248" fill="var(--on)" font-size="9.5">A2</text>
+  </g>
+  <text x="110" y="278" font-size="11" fill="var(--c3)">→ B・C は届いたそばからアプリに渡る。待つのは A だけ</text>
+
+  <g font-size="11" fill="var(--muted)">
+    <rect x="110" y="302" width="11" height="11" rx="2" fill="var(--c1)"/><text x="127" y="312">ストリーム A</text>
+    <rect x="220" y="302" width="11" height="11" rx="2" fill="var(--c2)"/><text x="237" y="312">ストリーム B</text>
+    <rect x="330" y="302" width="11" height="11" rx="2" fill="var(--c3)"/><text x="347" y="312">ストリーム C</text>
+    <text x="450" y="312">1マス = パケット1個の時間</text>
+  </g>
+</svg>
+<figcaption>TCP は「コネクション全体で1本のバイト列」という前提を変えられない。順序の穴が空けば、その先は中身が何であれ渡せない。QUIC はストリームごとに順序と再送を管理するので、穴が空くのはそのストリームだけで済む。この差が効くのは損失が起きるネットワーク——モバイル、Wi-Fi の混雑、遠距離。損失のほぼ無い回線では体感差は出ない。</figcaption>
+</figure>
+
+<h2>QUIC は何をまとめたのか</h2>
+<p>QUIC は TCP と TLS を1つのプロトコルに統合し、UDP の上に載せたもの。TCP がやっていた順序保証・再送・輻輳制御を、ストリーム単位で作り直して内側に持っている。HTTP/3 は「QUIC の上で HTTP を話すための仕様」でしかなく、実質の中身は QUIC 側にある。</p>
+<p>なぜ UDP なのか。TCP を直せばいい話に見えるが、TCP は OS カーネルと世界中の中間装置（NAT・FW・ロードバランサ）に焼き付いていて、新しい挙動を足しても途中で落とされる。UDP は素通しされる単なる入れ物なので、その中身をユーザ空間で自由に定義できる。</p>
+
+<figure>
+<svg viewBox="0 0 700 350" role="img" aria-label="プロトコルスタックの統合とハンドシェイク往復数の比較">
+  <g font-size="11.5" text-anchor="middle">
+    <text x="125" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">HTTP/2</text>
+    <rect x="20" y="22" width="210" height="30" rx="5" fill="var(--c1)"/><text x="125" y="42" fill="var(--on)">HTTP/2</text>
+    <rect x="20" y="56" width="210" height="30" rx="5" fill="var(--lane)"/><text x="125" y="76" fill="var(--ink)">TLS 1.3</text>
+    <rect x="20" y="90" width="210" height="30" rx="5" fill="var(--lane)"/><text x="125" y="110" fill="var(--ink)">TCP</text>
+    <rect x="20" y="124" width="210" height="30" rx="5" fill="var(--lane)"/><text x="125" y="144" fill="var(--ink)">IP</text>
+
+    <text x="575" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">HTTP/3</text>
+    <rect x="470" y="22" width="210" height="30" rx="5" fill="var(--c3)"/><text x="575" y="42" fill="var(--on)">HTTP/3</text>
+    <rect x="470" y="56" width="210" height="64" rx="5" fill="var(--c3)" opacity=".78"/>
+    <text x="575" y="80" fill="var(--on)">QUIC</text>
+    <text x="575" y="100" fill="var(--on)" font-size="10">TLS 1.3 ＋ ストリーム単位の順序保証・再送</text>
+    <rect x="470" y="124" width="210" height="30" rx="5" fill="var(--lane)"/><text x="575" y="144" fill="var(--ink)">UDP / IP</text>
+  </g>
+  <path d="M250 88 L440 88" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ar)"/>
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <text x="345" y="80" font-size="11" fill="var(--muted)" text-anchor="middle">2層を1つに</text>
+
+  <text x="0" y="196" font-size="13" font-weight="600" fill="var(--ink)">結果：最初のリクエストを送れるまでの往復が減る</text>
+  <g stroke="var(--line)">
+    <line x1="170" y1="206" x2="170" y2="330" stroke-dasharray="3 3"/>
+    <line x1="320" y1="206" x2="320" y2="330" stroke-dasharray="3 3"/>
+    <line x1="470" y1="206" x2="470" y2="330" stroke-dasharray="3 3"/>
+  </g>
+  <g font-size="10" fill="var(--muted)" text-anchor="middle">
+    <text x="170" y="216">0</text><text x="320" y="216">1 RTT</text><text x="470" y="216">2 RTT</text>
+  </g>
+
+  <g font-size="11" fill="var(--ink)">
+    <text x="0" y="248">HTTP/2</text>
+    <text x="0" y="290">HTTP/3 初回</text>
+    <text x="0" y="326">HTTP/3 再訪</text>
+  </g>
+  <g font-size="10" text-anchor="middle">
+    <rect x="170" y="230" width="150" height="26" rx="4" fill="var(--c2)"/><text x="245" y="248" fill="var(--on)">TCP ハンドシェイク</text>
+    <rect x="322" y="230" width="148" height="26" rx="4" fill="var(--c4)"/><text x="396" y="248" fill="var(--on)">TLS 1.3</text>
+    <rect x="170" y="272" width="150" height="26" rx="4" fill="var(--c3)"/><text x="245" y="290" fill="var(--on)">QUIC ＋ TLS 1.3</text>
+    <rect x="170" y="308" width="70" height="26" rx="4" fill="var(--c1)"/><text x="205" y="326" fill="var(--on)">0-RTT</text>
+  </g>
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="478" y="248">▶ ここでやっとリクエスト</text>
+    <text x="328" y="290">▶ リクエスト</text>
+    <text x="248" y="326">▶ 1発目のパケットにリクエストを同梱</text>
+  </g>
+</svg>
+<figcaption>TCP の 1 往復と TLS の 1 往復が別々だったものが、QUIC では同じ 1 往復に畳まれる。0-RTT は「一度接続したことのある相手」限定で、再接続時に鍵材料を再利用して初回パケットにリクエストを載せる仕組み。後述のリプレイ問題があるので、無条件に有効化していいものではない。</figcaption>
+</figure>
+
+<h2>IP が変わっても接続が切れない</h2>
+<p>もう一つ、モバイルで効く違いがある。Wi-Fi から回線に切り替わった瞬間にダウンロードがやり直しになる、動画が数秒固まる——あれは TCP が接続を「送信元 IP・ポート・宛先 IP・ポート」の4つ組で識別しているから起きる。IP が変われば、TCP にとっては別の接続でしかない。</p>
+
+<figure>
+<svg viewBox="0 0 700 226" role="img" aria-label="ネットワーク切替時のTCPとQUICの接続識別の違い">
+  <rect x="4" y="4" width="336" height="214" rx="10" fill="none" stroke="var(--line)"/>
+  <text x="20" y="26" font-size="12.5" font-weight="600" fill="var(--ink)">TCP — 4タプルで識別</text>
+  <g font-size="10.5">
+    <rect x="20" y="40" width="70" height="28" rx="5" fill="var(--lane)"/><text x="55" y="59" fill="var(--ink)" text-anchor="middle">端末</text>
+    <line x1="96" y1="54" x2="242" y2="54" stroke="var(--muted)" marker-end="url(#ar)"/>
+    <text x="169" y="48" font-size="9.5" fill="var(--muted)" text-anchor="middle">203.0.113.5:51000 →</text>
+    <rect x="250" y="40" width="70" height="28" rx="5" fill="var(--lane)"/><text x="285" y="59" fill="var(--ink)" text-anchor="middle">サーバ</text>
+    <text x="20" y="86" fill="var(--c3)">✓ 通信中</text>
+  </g>
+  <text x="20" y="118" font-size="10.5" fill="var(--muted)">↓ Wi-Fi からモバイル回線へ（IP が変わる）</text>
+  <g font-size="10.5">
+    <rect x="20" y="132" width="70" height="28" rx="5" fill="var(--lane)"/><text x="55" y="151" fill="var(--ink)" text-anchor="middle">端末</text>
+    <line x1="96" y1="146" x2="242" y2="146" stroke="var(--stop)" stroke-dasharray="4 3"/>
+    <text x="169" y="140" font-size="9.5" fill="var(--stop)" text-anchor="middle">198.51.100.77:49000 →</text>
+    <rect x="250" y="132" width="70" height="28" rx="5" fill="var(--lane)"/><text x="285" y="151" fill="var(--ink)" text-anchor="middle">サーバ</text>
+  </g>
+  <text x="20" y="182" font-size="10.5" fill="var(--stop)">✕ 別接続とみなされ、TCP と TLS を張り直し</text>
+  <text x="20" y="204" font-size="10.5" fill="var(--muted)">ダウンロードは中断、動画は途切れる</text>
+
+  <rect x="360" y="4" width="336" height="214" rx="10" fill="none" stroke="var(--line)"/>
+  <text x="376" y="26" font-size="12.5" font-weight="600" fill="var(--ink)">QUIC — Connection ID で識別</text>
+  <g font-size="10.5">
+    <rect x="376" y="40" width="70" height="28" rx="5" fill="var(--lane)"/><text x="411" y="59" fill="var(--ink)" text-anchor="middle">端末</text>
+    <line x1="452" y1="54" x2="598" y2="54" stroke="var(--muted)" marker-end="url(#ar)"/>
+    <rect x="479" y="42" width="92" height="17" rx="4" fill="var(--c3)"/>
+    <text x="525" y="55" font-size="9.5" fill="var(--on)" text-anchor="middle">CID: 8f3a…</text>
+    <rect x="606" y="40" width="70" height="28" rx="5" fill="var(--lane)"/><text x="641" y="59" fill="var(--ink)" text-anchor="middle">サーバ</text>
+    <text x="376" y="86" fill="var(--c3)">✓ 通信中</text>
+  </g>
+  <text x="376" y="118" font-size="10.5" fill="var(--muted)">↓ Wi-Fi からモバイル回線へ（IP が変わる）</text>
+  <g font-size="10.5">
+    <rect x="376" y="132" width="70" height="28" rx="5" fill="var(--lane)"/><text x="411" y="151" fill="var(--ink)" text-anchor="middle">端末</text>
+    <line x1="452" y1="146" x2="598" y2="146" stroke="var(--muted)" marker-end="url(#ar)"/>
+    <rect x="479" y="134" width="92" height="17" rx="4" fill="var(--c3)"/>
+    <text x="525" y="147" font-size="9.5" fill="var(--on)" text-anchor="middle">CID: 8f3a…</text>
+    <rect x="606" y="132" width="70" height="28" rx="5" fill="var(--lane)"/><text x="641" y="151" fill="var(--ink)" text-anchor="middle">サーバ</text>
+  </g>
+  <text x="376" y="182" font-size="10.5" fill="var(--c3)">✓ 同じ接続として継続（鍵の再交換も不要）</text>
+  <text x="376" y="204" font-size="10.5" fill="var(--muted)">ダウンロードも動画もそのまま流れ続ける</text>
+</svg>
+<figcaption>図では同じ ID を描いたが、実際は経路上の観測者に接続を追跡させないよう、移行のたびに事前に配られた別の ID へ差し替える（サーバ側では同じ接続として紐づく）。落とし穴はロードバランサ側で、IP ではなく Connection ID を見て同じバックエンドへ振り分けられないと、移行した瞬間に別サーバへ飛んで接続が壊れる。サーバは <code>disable_active_migration</code> で移行を拒否することもできる。</figcaption>
+</figure>
+
+<h2>ヘッダ圧縮は HPACK から QPACK へ</h2>
+<p>HTTP/2 の HPACK は「1回目に送ったヘッダを動的テーブルに登録し、2回目以降はその番号だけ送る」という仕組みだった。これは<strong>到着順が保証されている</strong>ことを暗黙の前提にしている。QUIC ではストリームが順不同で届くので、そのままでは成立しない。</p>
+
+<figure>
+<svg viewBox="0 0 700 214" role="img" aria-label="HPACKが到着順に依存する様子とQUICで破綻する様子">
+  <text x="0" y="12" font-size="13" font-weight="600" fill="var(--ink)">HPACK — 必ず順番に届く前提</text>
+  <g font-size="10.5">
+    <rect x="110" y="24" width="240" height="44" rx="6" fill="var(--c1)"/>
+    <text x="230" y="42" fill="var(--on)" text-anchor="middle">リクエスト 1（先に到着）</text>
+    <text x="230" y="58" fill="var(--on)" text-anchor="middle" font-size="10">cookie: … を動的テーブル #62 に登録</text>
+    <line x1="356" y1="46" x2="384" y2="46" stroke="var(--muted)" marker-end="url(#ar)"/>
+    <rect x="390" y="24" width="240" height="44" rx="6" fill="var(--c1)" opacity=".8"/>
+    <text x="510" y="42" fill="var(--on)" text-anchor="middle">リクエスト 2</text>
+    <text x="510" y="58" fill="var(--on)" text-anchor="middle" font-size="10">「#62」とだけ書けば復元できる</text>
+  </g>
+
+  <text x="0" y="112" font-size="13" font-weight="600" fill="var(--ink)">QUIC — 順不同に届く</text>
+  <g font-size="10.5">
+    <rect x="110" y="124" width="240" height="44" rx="6" fill="none" stroke="var(--stop)" stroke-width="1.5"/>
+    <text x="230" y="142" fill="var(--stop)" text-anchor="middle">リクエスト 2 が先に到着</text>
+    <text x="230" y="158" fill="var(--stop)" text-anchor="middle" font-size="10">「#62」→ そんな番号はまだ無い</text>
+    <line x1="356" y1="146" x2="384" y2="146" stroke="var(--muted)" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+    <rect x="390" y="124" width="240" height="44" rx="6" fill="var(--lane)"/>
+    <text x="510" y="142" fill="var(--muted)" text-anchor="middle">リクエスト 1（あとで到着）</text>
+    <text x="510" y="158" fill="var(--muted)" text-anchor="middle" font-size="10">ここで初めて #62 が埋まる</text>
+  </g>
+  <text x="110" y="196" font-size="11" fill="var(--muted)">QPACK：テーブル更新は専用ストリームで送り、未着の番号を参照するリクエストは「保留」にする</text>
+</svg>
+<figcaption>保留を許す本数は <code>SETTINGS_QPACK_BLOCKED_STREAMS</code> で上限を決める。0 にすれば絶対に待たないが、動的テーブルをほぼ使えず圧縮率が落ちる。大きくすれば圧縮率は上がるが、待たされるストリームが出て HTTP/3 で消したはずの HoL がヘッダ層に戻ってくる。既定値を触る場面は少ないが、「圧縮率と待ち時間の交換レートを設定で決める」構造になっている点は知っておくと設定項目の意味が読める。</figcaption>
+</figure>
+
+<h2>実際に HTTP/3 で通信が始まるまで</h2>
+<p>ここが運用で一番誤解されるところ。<strong>「HTTP/3 を有効にした」＝「全アクセスが HTTP/3 になる」ではない。</strong> ブラウザは最初から UDP で話しかけたりしない。まず従来どおり TCP で繋ぎ、サーバから「うちは HTTP/3 も話せる」と教えられて初めて次回から試す。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="Alt-Svcによる HTTP/3 への切り替えとフォールバックの流れ">
+  <g font-size="10.5">
+    <rect x="4" y="26" width="210" height="58" rx="7" fill="var(--lane)"/>
+    <text x="109" y="48" fill="var(--ink)" text-anchor="middle" font-size="11.5" font-weight="600">① 初回アクセス</text>
+    <text x="109" y="68" fill="var(--muted)" text-anchor="middle">TCP + TLS で HTTP/2 として接続</text>
+    <line x1="220" y1="55" x2="240" y2="55" stroke="var(--muted)" marker-end="url(#ar)"/>
+
+    <rect x="246" y="26" width="210" height="58" rx="7" fill="var(--lane)"/>
+    <text x="351" y="48" fill="var(--ink)" text-anchor="middle" font-size="11.5" font-weight="600">② 応答ヘッダを受け取る</text>
+    <text x="351" y="68" fill="var(--c2)" text-anchor="middle" font-size="10">Alt-Svc: h3=":443"; ma=86400</text>
+    <line x1="462" y1="55" x2="482" y2="55" stroke="var(--muted)" marker-end="url(#ar)"/>
+
+    <rect x="488" y="26" width="208" height="58" rx="7" fill="var(--lane)"/>
+    <text x="592" y="48" fill="var(--ink)" text-anchor="middle" font-size="11.5" font-weight="600">③ 次回から QUIC を試す</text>
+    <text x="592" y="68" fill="var(--muted)" text-anchor="middle">UDP 443 へ接続</text>
+  </g>
+
+  <path d="M540 90 L540 118 L470 118 L470 136" fill="none" stroke="var(--muted)"  marker-end="url(#ar)"/>
+  <path d="M644 90 L644 118 L620 118 L620 136" fill="none" stroke="var(--muted)" marker-end="url(#ar)"/>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="390" y="142" width="160" height="44" rx="7" fill="var(--c3)"/>
+    <text x="470" y="160" fill="var(--on)">通った</text>
+    <text x="470" y="176" fill="var(--on)" font-size="10">HTTP/3 で通信</text>
+    <rect x="562" y="142" width="134" height="44" rx="7" fill="none" stroke="var(--stop)" stroke-width="1.5"/>
+    <text x="629" y="160" fill="var(--stop)">UDP が塞がれている</text>
+    <text x="629" y="176" fill="var(--stop)" font-size="10">黙って HTTP/2 のまま</text>
+  </g>
+
+  <rect x="4" y="142" width="330" height="44" rx="7" fill="none" stroke="var(--c4)" stroke-dasharray="4 3"/>
+  <text x="169" y="160" font-size="10.5" fill="var(--c4)" text-anchor="middle">DNS に HTTPS レコード（RFC 9460）があれば</text>
+  <text x="169" y="176" font-size="10.5" fill="var(--c4)" text-anchor="middle">① を飛ばして初回から HTTP/3 で始められる</text>
+  <path d="M109 138 L109 90" fill="none" stroke="var(--c4)" stroke-dasharray="4 3" marker-end="url(#ar4)"/>
+  <defs>
+    <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--c4)"/>
+    </marker>
+  </defs>
+
+  <text x="4" y="220" font-size="11" fill="var(--muted)">失敗しても表示は壊れない。だから「有効にしたのに HTTP/3 になっていない」に気づきにくい。</text>
+  <text x="4" y="240" font-size="11" fill="var(--muted)">確認は開発者ツールの Protocol 列、または curl --http3 で。</text>
+</svg>
+<figcaption><code>ma</code> は「この情報を何秒覚えていてよいか」。フォールバックが黙って起きるのは可用性の面では正しい設計だが、監視の面では厄介で、企業ネットワークの内側から見ると一生 HTTP/3 にならないのに誰も気づかない、ということが起きる。実際に何割が HTTP/3 で処理されたかは、CDN やサーバ側のアクセスログでプロトコル別に集計するのが確実。</figcaption>
+</figure>
+
+<h2>運用で押さえること</h2>
+<ul>
+<li><strong>効くネットワークとそうでないネットワークがある</strong>：損失やネットワーク切替が起きる環境（モバイル・遠距離・混雑した Wi-Fi）が本命。低損失の回線やデータセンタ内では、ほとんど差が出ない。「HTTP/3 にしたのに速くならない」の答えはたいていここ。</li>
+<li><strong>評価は平均値ではなく裾で見る</strong>：改善が出るのは条件の悪い一部のユーザなので、p50 を眺めていても動かない。p95 / p99 と、モバイル回線に絞ったセグメントで比較する。</li>
+<li><strong>UDP 443 の許可が要る</strong>：セキュリティグループ、NACL、オンプレのファイアウォール。TCP しか開けていない構成では、有効化しても静かに HTTP/2 のままになる。</li>
+<li><strong>有効化は端点だけでよい</strong>：CDN やリバースプロキシで受ければ、オリジンとの間は HTTP/1.1 のままでかまわない。AWS なら CloudFront が HTTP/3 に対応している一方、ALB は対応していない（この種の対応状況は変わるので、導入前に最新のドキュメントで確認する）。</li>
+<li><strong>CPU コストは TCP より高い傾向</strong>：QUIC は暗号化とパケット処理をユーザ空間で行うため、カーネルの TCP スタックほど安くない。高トラフィックのオリジンで自前運用するなら、計測してから決める。</li>
+</ul>
+
+<h2>セキュリティ視点</h2>
+<p>HTTP/3 の導入判断が技術部門で止まらずセキュリティ側に回ってくる理由は、速度ではなく<strong>可視性</strong>にある。</p>
+
+<div class="note">
+<p><strong>中間装置から中身が見えなくなる</strong></p>
+<p>TLS over TCP なら、暗号化されていてもシーケンス番号やフラグ、ハンドシェイクの一部は経路上から観測できた。QUIC はトランスポートのヘッダまで暗号化するので、外から分かるのはごく一部のビットだけになる。既存の IDS・プロキシ・DLP が前提にしていた検査ポイントが消える。<br>
+「監視できないから UDP 443 を塞ぐ」という判断は現実によく採られる。塞いでもユーザからは何も壊れて見えない（HTTP/2 に落ちるだけ）ので、決めるなら意図的に決めて記録しておく。可視性を残したいなら、TLS の終端点を自分の管理下（CDN・リバースプロキシ）に置き、そこでログを取る設計にする。</p>
+</div>
+
+<div class="note">
+<p><strong>0-RTT のリプレイ</strong></p>
+<p>0-RTT で送られるデータは、経路上で記録した攻撃者がそのまま再送できる。サーバ側から見ると正規のリクエストと区別がつかない。決済や更新系がこれに乗ると二重実行になりうるので、0-RTT を受け付けるのは冪等な操作に限る。プロトコルの欠陥ではなく「往復を1つ削る代わりに再送検知を諦めた」という交換条件なので、有効化するかは用途で判断する。</p>
+</div>
+
+<div class="note">
+<p><strong>増幅反射 DDoS の踏み台</strong></p>
+<p>UDP なので送信元 IP を詐称できる。QUIC はこれを見越して、アドレス検証が済むまでは<strong>受信バイト数の3倍を超えて送り返してはならない</strong>という制限と、Retry パケットによる検証手段を持っている。逆に言えば、この制限を正しく実装していないサーバやライブラリは増幅の踏み台になる。自前で QUIC サーバを運用するならパッチ適用の対象として追う。</p>
+</div>
+
+<h3>提案するときの言い方</h3>
+<table>
+<tr><th>技術的な言い方</th><th>ビジネス側に伝わる言い方</th></tr>
+<tr><td>HTTP/3 を有効化する</td><td>電波の悪い場所やモバイル回線からのアクセスで、ページが固まる・読み込みが途中で止まる体験を減らせる</td></tr>
+<tr><td>UDP 443 を許可しない</td><td>通信内容を検査できない経路を作らない判断。ユーザ体験は現状維持で、劣化はしない</td></tr>
+<tr><td>0-RTT を無効にする</td><td>接続を数十ミリ秒速くする代わりに同じ注文が二重に通るリスクを取る、という取引を断る</td></tr>
+</table>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9000.html">RFC 9000 - QUIC: A UDP-Based Multiplexed and Secure Transport</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9001.html">RFC 9001 - Using TLS to Secure QUIC</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9114.html">RFC 9114 - HTTP/3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9204.html">RFC 9204 - QPACK: Field Compression for HTTP/3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9460.html">RFC 9460 - Service Binding and Parameter Specification via the DNS (SVCB / HTTPS RR)</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/Evolution_of_HTTP">MDN - HTTP の進化</a></li>
+<li><a href="https://blog.cloudflare.com/http3-the-past-present-and-future/">Cloudflare - HTTP/3: the past, the present, and the future</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html">AWS - CloudFront ディストリビューションの設定（対応 HTTP バージョン）</a></li>
+</ul>
+
+</main>
+</body>
+</html>
