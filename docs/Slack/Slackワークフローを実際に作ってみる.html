@@ -30,6 +30,7 @@ h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid
 p{margin:.7rem 0}
 figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
 figure img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+figure svg{display:block;width:100%;height:auto}
 figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
 ul{padding-left:1.3rem}li{margin:.35rem 0}
@@ -40,7 +41,62 @@ a{color:var(--c1)}
 <main>
 
 <h1>Slack ワークフローを実際に作ってみる</h1>
-<p class="lede"><a href="./Slackワークフローの作り方.md">Slack ワークフローの作り方</a> の「実際の作成手順」を、キャプチャを取りながらそのまま実行した記録。今回は「絵文字リアクションが使用された時」をトリガーにするワークフローを作る。</p>
+<p class="lede">ワークフロービルダーは「作れるらしい」で止まりがち。トリガーとステップという言葉を読んでも、実際に何をどう選ぶと何が動くのかは触るまで分からない。<a href="./Slackワークフローの作り方.md">Slack ワークフローの作り方</a> の手順を、キャプチャを取りながら最後まで通した記録。</p>
+
+<h2>ここで試したこと</h2>
+<p>「絵文字リアクションが使用された時」をトリガーに、ワークフローを1本作って公開し、実際にリアクションを押して動くところまで確認した。</p>
+<ul>
+<li><strong>トリガー</strong>：<code>slack-workflow-test</code> で 💪 リアクションが押されたら開始</li>
+<li><strong>ステップ1</strong>：そのメッセージのスレッドに返信する</li>
+<li><strong>ステップ2</strong>：別チャンネル <code>slack-workflow-test-2</code> にも通知を送る</li>
+</ul>
+<p>あわせて、名前・説明の設定（<code>マッスル速報</code> と命名）、実行できる人の権限設定、公開前の確認ダイアログまで一通り触っている。コードは1行も書かない。</p>
+
+<h2>最終的にどうなる</h2>
+<p>できあがるのはこの形。トリガー1つに対してステップを2つぶら下げた構成になる。</p>
+<figure>
+<svg viewBox="0 0 700 260" role="img" aria-label="💪 リアクションをトリガーに、スレッド返信と別チャンネル通知の2ステップが実行される図">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+
+  <rect x="8" y="95" width="176" height="70" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="96" y="120" text-anchor="middle" font-size="11" fill="var(--muted)">#slack-workflow-test</text>
+  <text x="96" y="145" text-anchor="middle" font-size="14" fill="var(--ink)">💪 リアクション</text>
+
+  <rect x="262" y="95" width="176" height="70" rx="8" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/>
+  <text x="350" y="120" text-anchor="middle" font-size="11" fill="var(--muted)">ワークフロー</text>
+  <text x="350" y="145" text-anchor="middle" font-size="14" fill="var(--ink)">マッスル速報</text>
+
+  <rect x="516" y="40" width="176" height="64" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/>
+  <text x="604" y="63" text-anchor="middle" font-size="11" fill="var(--muted)">ステップ1</text>
+  <text x="604" y="87" text-anchor="middle" font-size="14" fill="var(--ink)">スレッドに返信</text>
+
+  <rect x="516" y="156" width="176" height="64" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="2"/>
+  <text x="604" y="179" text-anchor="middle" font-size="11" fill="var(--muted)">ステップ2</text>
+  <text x="604" y="203" text-anchor="middle" font-size="14" fill="var(--ink)">別チャンネルに通知</text>
+
+  <line x1="184" y1="130" x2="254" y2="130" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)"/>
+  <text x="219" y="118" text-anchor="middle" font-size="11" fill="var(--muted)">トリガー</text>
+
+  <path d="M438,130 H478 V72 H508" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)"/>
+  <path d="M438,130 H478 V188 H508" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah)"/>
+</svg>
+<figcaption>トリガーは「どのチャンネルで・どの絵文字か」まで指定する。ステップは上から順に実行され、1つのトリガーに何個でも足せる。</figcaption>
+</figure>
+<p>公開後、<code>slack-workflow-test</code> のメッセージに 💪 を押すと、スレッドに返信が届く。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-20.png" alt="スレッドに「💪 スタンプが押されました！」と返信が届いた画面">
+<figcaption>返信の送信者はワークフロー名（マッスル速報）になる。押した本人ではない。</figcaption>
+</figure>
+<p>同時に、別チャンネル <code>slack-workflow-test-2</code> にも通知が飛ぶ。</p>
+<figure>
+<img src="assets/Slackワークフローを実際に作ってみる/image-21.png" alt="別チャンネルに通知メッセージが届いた画面">
+<figcaption>ステップ2はトリガーになったチャンネルと無関係の場所に送れる。通知の集約先を作るときの基本形。</figcaption>
+</figure>
+<p>以下、ここに至るまでの手順を画面そのままで残す。</p>
 
 <h2>1. ワークフロー作成画面を開く</h2>
 <p>サイドバーの <code>ツール</code> → <code>ワークフロー</code> から、<code>＋新規</code> でワークフロー作成画面を開く。</p>
