@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DDoS の手法 — 枯渇型と反射増幅型</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DDoS の手法 — 枯渇型と反射増幅型</h1>
+<p class="lede">1人の攻撃者が、なぜ自分の回線幅を超えるトラフィックを出せるのか。</p>
+
+<h2>何が問題なのか</h2>
+<p>「サービスが落ちた。でも CPU もメモリも余っていた」——DoS 対策の入口でつまずくのはここ。DoS は「サーバを重くする攻撃」ではなく、<strong>有限なものを先に使い切る攻撃</strong>。何を使い切られたのかで、打つ手がまったく変わる。</p>
+
+<figure>
+<svg viewBox="0 0 700 176" role="img" aria-label="回線帯域・接続テーブル・アプリ処理のどこが枯渇するかの図">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">どこが先に尽きるか</text>
+
+  <rect x="0" y="26" width="212" height="96" rx="8" fill="var(--lane)"/>
+  <text x="106" y="52" font-size="12" font-weight="600" fill="var(--c2)" text-anchor="middle">① 回線帯域</text>
+  <text x="106" y="76" font-size="11" fill="var(--muted)" text-anchor="middle">パケットが入り口で</text>
+  <text x="106" y="93" font-size="11" fill="var(--muted)" text-anchor="middle">溢れる</text>
+  <text x="106" y="113" font-size="10.5" fill="var(--ink)" text-anchor="middle">反射増幅型 / UDP Flood</text>
+
+  <rect x="244" y="26" width="212" height="96" rx="8" fill="var(--lane)"/>
+  <text x="350" y="52" font-size="12" font-weight="600" fill="var(--c1)" text-anchor="middle">② 接続テーブル</text>
+  <text x="350" y="76" font-size="11" fill="var(--muted)" text-anchor="middle">帯域は空いているのに</text>
+  <text x="350" y="93" font-size="11" fill="var(--muted)" text-anchor="middle">新規接続を受けられない</text>
+  <text x="350" y="113" font-size="10.5" fill="var(--ink)" text-anchor="middle">SYN Flood</text>
+
+  <rect x="488" y="26" width="212" height="96" rx="8" fill="var(--lane)"/>
+  <text x="594" y="52" font-size="12" font-weight="600" fill="var(--c4)" text-anchor="middle">③ アプリの処理能力</text>
+  <text x="594" y="76" font-size="11" fill="var(--muted)" text-anchor="middle">1リクエストが重い所を</text>
+  <text x="594" y="93" font-size="11" fill="var(--muted)" text-anchor="middle">少ない回数で突く</text>
+  <text x="594" y="113" font-size="10.5" fill="var(--ink)" text-anchor="middle">HTTP Flood / Slowloris</text>
+
+  <text x="0" y="150" font-size="11" fill="var(--muted)">帯域を見て「トラフィックは正常です」と判断すると、②③ を丸ごと見落とす。</text>
+  <text x="0" y="168" font-size="11" fill="var(--muted)">この記事は ① と ② を扱う。</text>
+</svg>
+<figcaption>③ は 1 秒あたり数十リクエストでも成立するので、そもそも「攻撃らしい量」に見えない。トラフィック量だけを監視の指標にすると、まるごと取りこぼす。</figcaption>
+</figure>
+
+<h2>接続テーブルを枯らす — TCP SYN Flood</h2>
+<p>TCP はデータを流す前に 3 ウェイハンドシェイクをする。サーバは SYN を受け取った時点で「途中まで確立した接続」を覚えておく必要があり、その保持領域（SYN バックログ）は有限。</p>
+<p>攻撃者は <strong>SYN を送るだけ送って、最後の ACK を返さない</strong>。しかも送信元 IP を詐称するので、サーバの SYN/ACK は存在しない相手に飛び、返事は永遠に来ない。半開き接続がタイムアウトするまでの間にバックログが埋まり、正規ユーザの SYN が捨てられる。</p>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="正常な3ウェイハンドシェイクとSYN Floodの比較">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">正常 — 3 ウェイハンドシェイク</text>
+  <text x="14" y="34" font-size="11" fill="var(--muted)">クライアント</text>
+  <text x="600" y="34" font-size="11" fill="var(--muted)">サーバ</text>
+  <line x1="60" y1="42" x2="60" y2="118" stroke="var(--line)" stroke-width="2"/>
+  <line x1="620" y1="42" x2="620" y2="118" stroke="var(--line)" stroke-width="2"/>
+  <line x1="60" y1="56" x2="612" y2="56" stroke="var(--c1)" stroke-width="2"/>
+  <polygon points="620,56 610,52 610,60" fill="var(--c1)"/>
+  <text x="340" y="51" font-size="11" fill="var(--c1)" text-anchor="middle">SYN</text>
+  <line x1="620" y1="82" x2="68" y2="82" stroke="var(--c1)" stroke-width="2"/>
+  <polygon points="60,82 70,78 70,86" fill="var(--c1)"/>
+  <text x="340" y="77" font-size="11" fill="var(--c1)" text-anchor="middle">SYN/ACK ＋ バックログに記録</text>
+  <line x1="60" y1="108" x2="612" y2="108" stroke="var(--c3)" stroke-width="2"/>
+  <polygon points="620,108 610,104 610,112" fill="var(--c3)"/>
+  <text x="340" y="103" font-size="11" fill="var(--c3)" text-anchor="middle">ACK → 接続成立。バックログから外れる</text>
+
+  <text x="0" y="158" font-size="12.5" font-weight="600" fill="var(--ink)">SYN Flood — ACK が返らないので、外れない</text>
+  <text x="8" y="180" font-size="11" fill="var(--muted)">攻撃者</text>
+  <text x="600" y="180" font-size="11" fill="var(--muted)">サーバ</text>
+  <line x1="60" y1="188" x2="60" y2="248" stroke="var(--line)" stroke-width="2"/>
+  <line x1="620" y1="188" x2="620" y2="248" stroke="var(--line)" stroke-width="2"/>
+  <g stroke="var(--c2)" stroke-width="2">
+    <line x1="60" y1="200" x2="612" y2="200"/>
+    <line x1="60" y1="214" x2="612" y2="214"/>
+    <line x1="60" y1="228" x2="612" y2="228"/>
+  </g>
+  <polygon points="620,200 610,196 610,204" fill="var(--c2)"/>
+  <polygon points="620,214 610,210 610,218" fill="var(--c2)"/>
+  <polygon points="620,228 610,224 610,232" fill="var(--c2)"/>
+  <text x="300" y="196" font-size="10.5" fill="var(--c2)" text-anchor="middle">SYN（送信元 IP は詐称）</text>
+  <rect x="636" y="190" width="60" height="58" rx="5" fill="var(--stop)" opacity=".85"/>
+  <text x="666" y="212" font-size="10" fill="var(--on)" text-anchor="middle">バック</text>
+  <text x="666" y="226" font-size="10" fill="var(--on)" text-anchor="middle">ログ満杯</text>
+  <text x="60" y="262" font-size="11" fill="var(--stop)">↑ 1 パケット 60 バイト程度。帯域はほとんど使わない</text>
+</svg>
+<figcaption>「トラフィック量が平常どおりなのに新規接続だけ失敗する」という症状になるのはこのため。切り分けには <code>ss -s</code> や <code>netstat -an | grep SYN_RECV</code> で半開き接続の数を見る。</figcaption>
+</figure>
+
+<p><strong>対策は SYN Cookie</strong>。接続状態を保存する代わりに、必要な情報をハッシュ化して SYN/ACK のシーケンス番号に埋め込んで返し、ACK が返ってきた時点で初めて接続を作る。<em>覚えないので、埋まりようがない</em>という発想。Linux では <code>net.ipv4.tcp_syncookies</code> が既定で有効。CDN やロードバランサ（CloudFront、ALB/NLB など）を前段に置けば、そこで吸収される。</p>
+
+<h2>帯域を埋める — 反射と増幅</h2>
+<p>回線を埋めるには、攻撃者が自分の回線幅より大きなトラフィックを作らなければならない。そのための道具が<strong>反射（reflection）</strong>と<strong>増幅（amplification）</strong>だ。</p>
+<ul>
+<li><strong>反射</strong>：送信元 IP を被害者に詐称してリクエストを投げる。応答は被害者に届く。攻撃元が隠れ、被害者から見ると無関係な第三者から攻撃されているように見える。</li>
+<li><strong>増幅</strong>：そのとき<em>要求より応答が大きいサービス</em>を選ぶ。攻撃者の 1 Gbps が数百 Gbps になる。</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="反射増幅型DDoSの流れと、プロトコル別の増幅率">
+  <rect x="0" y="18" width="120" height="46" rx="7" fill="var(--c2)"/>
+  <text x="60" y="46" font-size="12" fill="var(--on)" text-anchor="middle">攻撃者</text>
+  <rect x="270" y="0" width="160" height="34" rx="7" fill="var(--lane)"/>
+  <text x="350" y="22" font-size="11.5" fill="var(--ink)" text-anchor="middle">公開 NTP / DNS など</text>
+  <rect x="270" y="42" width="160" height="34" rx="7" fill="var(--lane)"/>
+  <text x="350" y="64" font-size="11.5" fill="var(--ink)" text-anchor="middle">公開 NTP / DNS など</text>
+  <rect x="270" y="84" width="160" height="34" rx="7" fill="var(--lane)"/>
+  <text x="350" y="106" font-size="11.5" fill="var(--ink)" text-anchor="middle">公開 NTP / DNS など</text>
+  <text x="350" y="136" font-size="11" fill="var(--muted)" text-anchor="middle">踏み台（無防備に公開されたサーバ）</text>
+
+  <g stroke="var(--c2)" stroke-width="1.6">
+    <line x1="120" y1="38" x2="262" y2="17"/><line x1="120" y1="41" x2="262" y2="59"/><line x1="120" y1="44" x2="262" y2="101"/>
+  </g>
+  <polygon points="270,16 260,13 261,21" fill="var(--c2)"/>
+  <polygon points="270,59 260,55 261,63" fill="var(--c2)"/>
+  <polygon points="270,101 260,97 261,105" fill="var(--c2)"/>
+  <text x="196" y="152" font-size="10.5" fill="var(--c2)" text-anchor="middle">小さな要求</text>
+  <text x="196" y="167" font-size="10.5" fill="var(--c2)" text-anchor="middle">送信元 = 被害者 IP</text>
+
+  <g stroke="var(--stop)" stroke-width="4">
+    <line x1="430" y1="17" x2="568" y2="38"/><line x1="430" y1="59" x2="568" y2="41"/><line x1="430" y1="101" x2="568" y2="44"/>
+  </g>
+  <polygon points="580,41 566,34 566,48" fill="var(--stop)"/>
+  <rect x="580" y="18" width="120" height="46" rx="7" fill="var(--stop)"/>
+  <text x="640" y="46" font-size="12" fill="var(--on)" text-anchor="middle">被害者</text>
+  <text x="504" y="152" font-size="10.5" fill="var(--stop)" text-anchor="middle">大きな応答</text>
+  <text x="504" y="167" font-size="10.5" fill="var(--stop)" text-anchor="middle">＝ 増幅されたトラフィック</text>
+
+  <text x="0" y="204" font-size="12.5" font-weight="600" fill="var(--ink)">増幅率（US-CERT TA14-017A ほかの実測値）</text>
+  <g font-size="11" fill="var(--muted)">
+    <text x="0" y="228">DNS</text><rect x="118" y="216" width="14" height="15" rx="2" fill="var(--c1)"/><text x="142" y="228">28〜54 倍</text>
+    <text x="0" y="250">SSDP</text><rect x="118" y="238" width="8" height="15" rx="2" fill="var(--c1)"/><text x="142" y="250">30.8 倍</text>
+    <text x="0" y="272">NTP（monlist）</text><rect x="118" y="260" width="145" height="15" rx="2" fill="var(--c2)"/><text x="273" y="272">556.9 倍</text>
+    <text x="0" y="294">memcached</text><rect x="118" y="282" width="560" height="15" rx="2" fill="var(--stop)"/><text x="400" y="294" fill="var(--on)">51,000 倍（2018 年 GitHub、1.35 Tbps）</text>
+  </g>
+</svg>
+<figcaption>棒の長さは比率どおりではない（memcached は他と 3 桁違うため圧縮している）。UDP がこれに使われるのは、コネクションレスで送信元 IP の詐称が成立してしまうから。TCP では 3 ウェイハンドシェイクが通らないので同じことができない。</figcaption>
+</figure>
+
+<h3>Smurf — 反射増幅の原型</h3>
+<p>ICMP エコー要求の送信元を被害者に詐称し、<strong>サブネットのブロードキャストアドレス</strong>宛に送る。そのセグメントの全ホストが一斉に被害者へ応答を返す。ホストが 100 台いれば 100 倍。</p>
+<p>今はほぼ成立しない。ルータがディレクテッドブロードキャストを既定で転送しなくなった（RFC 2644）ため。ただし「<em>送信元を偽って、第三者に返させる</em>」というアイデアはそのまま現在の攻撃に受け継がれている。</p>
+
+<h3>DRDoS — 同じ発想を一般化したもの</h3>
+<p>Distributed Reflection Denial of Service。Smurf の ICMP／ブロードキャスト依存を捨て、<strong>インターネット上に散らばった無数の UDP サービスを踏み台にする</strong>形に一般化したもの。反射増幅型 DDoS の総称としてこの名前が使われる。</p>
+
+<h3>NTP リフレクション — 増幅率が桁違いだった例</h3>
+<p>NTP の <code>monlist</code> は「直近に通信したクライアントを最大 600 件返す」管理用コマンド。要求は数十バイト、応答は数千バイトになる。増幅率 <strong>556.9 倍</strong>。2014 年に大規模攻撃が続発した（CVE-2013-5211）。対策は ntpd 4.2.7p26 以降への更新、または <code>monlist</code> の無効化。</p>
+
+<h2>踏み台にされない側の責任</h2>
+<div class="note">
+<p><strong>反射増幅型は、受ける側の対策だけでは減らない</strong></p>
+<p>被害者側でできるのは「大量に届いたものを捌く」ことだけで、攻撃の総量は<em>踏み台が何台あるか</em>で決まる。世界中のオープンなサーバが減らない限り、この攻撃はなくならない。</p>
+</div>
+<ul>
+<li><strong>BCP 38（Ingress Filtering）</strong>：自ネットワークから出ていくパケットの送信元 IP が自分の割当範囲かを検証し、外れていれば落とす。詐称パケットを発生源で止める。</li>
+<li><strong>UDP サービスを無防備に公開しない</strong>：DNS リゾルバ、NTP、memcached、SSDP。セキュリティグループ／ファイアウォールで送信元を絞る。</li>
+<li><strong>帯域を埋める攻撃は自社設備で受け止めない</strong>：回線が埋まる攻撃に対して、回線の先にある機器の設定は無力。CDN や DDoS 緩和サービス（AWS Shield Advanced、Cloudflare など）で自社回線の手前で吸収する。</li>
+</ul>
+
+<p>提案するときの言い方——「これは<em>うちが攻撃されるか</em>の話ではなく、<em>うちが他社への攻撃の発射台にされるか</em>の話です。オープンな NTP や DNS を放置すると、加害側として名前が出ます」。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4987.html">RFC 4987 - TCP SYN Flooding Attacks and Common Mitigations</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2827.html">RFC 2827 / BCP 38 - Network Ingress Filtering</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2644.html">RFC 2644 - Changing the Default for Directed Broadcasts in Routers</a></li>
+<li><a href="https://www.cisa.gov/news-events/alerts/2014/01/17/udp-based-amplification-attacks">CISA Alert TA14-017A - UDP-Based Amplification Attacks</a></li>
+<li><a href="https://www.cisa.gov/news-events/alerts/2014/01/13/ntp-amplification-attacks-using-cve-2013-5211">CISA - NTP Amplification Attacks Using CVE-2013-5211</a></li>
+<li><a href="https://github.blog/news-insights/company-news/ddos-incident-report/">GitHub Engineering - February 28th DDoS Incident Report（memcached）</a></li>
+<li><a href="https://docs.aws.amazon.com/whitepapers/latest/aws-best-practices-ddos-resiliency/welcome.html">AWS Best Practices for DDoS Resiliency</a></li>
+</ul>
+
+</main>
+</body>
+</html>
