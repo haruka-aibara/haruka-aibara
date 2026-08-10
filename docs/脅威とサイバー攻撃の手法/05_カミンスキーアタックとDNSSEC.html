@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>カミンスキーアタックと DNSSEC</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>カミンスキーアタックと DNSSEC</h1>
+<p class="lede">DNS の応答が本物かどうかを、DNS 自身は確かめられない。その穴と、その穴を塞ぐ仕組み。</p>
+
+<h2>何が問題なのか</h2>
+<p>DNS キャッシュに嘘の情報が載ると、そのリゾルバを使う<strong>利用者全員</strong>が偽サイトに誘導される。利用者は正しいドメイン名を入力していて、フィッシングメールも踏んでいない。それでも行き先が違う。</p>
+<p>なぜ載せられるのか。DNS は UDP の 1 往復で完結する設計で、応答が本物であることを保証しているのは<strong>トランザクション ID（16 ビット）と宛先ポートが一致すること</strong>だけ。署名も暗号化もない。攻撃者が本物の権威サーバより先に、この 2 つを当てた偽応答を届けられれば、リゾルバはそれを信じてキャッシュする。</p>
+
+<h2>従来のキャッシュポイズニングと、その歯止め</h2>
+
+<figure>
+<svg viewBox="0 0 700 218" role="img" aria-label="偽応答と本物の応答の競争、およびTTLによる歯止め">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">先に届いたほうが勝つ競争</text>
+
+  <rect x="0" y="26" width="120" height="40" rx="6" fill="var(--c1)"/>
+  <text x="60" y="51" font-size="11.5" fill="var(--on)" text-anchor="middle">リゾルバ</text>
+  <rect x="540" y="26" width="160" height="40" rx="6" fill="var(--lane)"/>
+  <text x="620" y="51" font-size="11.5" fill="var(--ink)" text-anchor="middle">本物の権威サーバ</text>
+  <rect x="540" y="96" width="160" height="40" rx="6" fill="var(--stop)" opacity=".85"/>
+  <text x="620" y="121" font-size="11.5" fill="var(--on)" text-anchor="middle">攻撃者</text>
+
+  <line x1="120" y1="40" x2="532" y2="40" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <polygon points="540,40 528,36 528,44" fill="var(--muted)"/>
+  <text x="330" y="34" font-size="10.5" fill="var(--muted)" text-anchor="middle">問い合わせ（TXID = 12345、送信元ポート = 33333）</text>
+
+  <line x1="532" y1="58" x2="128" y2="58" stroke="var(--c3)" stroke-width="2"/>
+  <polygon points="120,58 132,54 132,62" fill="var(--c3)"/>
+  <text x="330" y="74" font-size="10.5" fill="var(--c3)" text-anchor="middle">正しい応答（遅れて到着）</text>
+
+  <g stroke="var(--stop)" stroke-width="2">
+    <line x1="532" y1="104" x2="128" y2="104"/><line x1="532" y1="116" x2="128" y2="116"/><line x1="532" y1="128" x2="128" y2="128"/>
+  </g>
+  <polygon points="120,104 132,100 132,108" fill="var(--stop)"/>
+  <polygon points="120,116 132,112 132,120" fill="var(--stop)"/>
+  <polygon points="120,128 132,124 132,132" fill="var(--stop)"/>
+  <text x="330" y="150" font-size="10.5" fill="var(--stop)" text-anchor="middle">TXID を総当たりした偽応答を、本物より先に大量に投げ込む</text>
+
+  <rect x="0" y="170" width="700" height="42" rx="7" fill="var(--lane)"/>
+  <text x="16" y="188" font-size="11.5" font-weight="600" fill="var(--ink)">歯止めになっていたもの</text>
+  <text x="16" y="206" font-size="11" fill="var(--muted)">外すと本物がキャッシュされ、その TTL が切れるまで再挑戦できない。TTL が 1 日なら、チャンスは 1 日 1 回。</text>
+</svg>
+<figcaption>TXID は 16 ビット＝ 65,536 通り。総当たりできる規模だが、1 回外すと次のチャンスまで待たされる。この「待ち」があったおかげで、理論上の弱点は実害になりにくいと考えられていた。</figcaption>
+</figure>
+
+<h2>カミンスキーアタック（2008 年、CVE-2008-1447）</h2>
+<p>Dan Kaminsky が示したのは、この TTL の歯止めを<strong>無効化する</strong>方法だった。新しい実装バグではなく、DNS プロトコルの設計そのものに対する攻撃なので、特定のソフトだけの問題では済まなかった。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="カミンスキーアタックの2つの工夫">
+  <rect x="0" y="8" width="700" height="112" rx="8" fill="var(--lane)"/>
+  <circle cx="30" cy="36" r="13" fill="var(--c2)"/><text x="30" y="41" font-size="13" fill="var(--on)" text-anchor="middle">1</text>
+  <text x="54" y="41" font-size="12.5" font-weight="600" fill="var(--ink)">実在しないランダムなサブドメインを引かせる</text>
+  <text x="54" y="66" font-size="11" fill="var(--muted)">aaa001.example.com → 失敗 → aaa002.example.com → 失敗 → aaa003.example.com …</text>
+  <text x="54" y="88" font-size="11" fill="var(--ink)">キャッシュに載っていないので、毎回かならず権威サーバへ問い合わせが飛ぶ。</text>
+  <text x="54" y="108" font-size="11" fill="var(--stop)">＝ 外しても待たなくていい。TTL の歯止めが消える。</text>
+
+  <rect x="0" y="132" width="700" height="128" rx="8" fill="var(--lane)"/>
+  <circle cx="30" cy="160" r="13" fill="var(--c2)"/><text x="30" y="165" font-size="13" fill="var(--on)" text-anchor="middle">2</text>
+  <text x="54" y="165" font-size="12.5" font-weight="600" fill="var(--ink)">偽応答に入れるのは、その名前の A レコードではなく NS レコード</text>
+
+  <rect x="54" y="180" width="290" height="66" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="70" y="200" font-size="10.5" fill="var(--muted)">素朴な偽応答（効果が狭い）</text>
+  <text x="70" y="220" font-size="10.5" fill="var(--ink)">aaa001.example.com A 203.0.113.9</text>
+  <text x="70" y="238" font-size="10.5" fill="var(--muted)">→ 存在しない名前 1 つを汚しただけ</text>
+
+  <text x="356" y="216" font-size="16" fill="var(--stop)">→</text>
+
+  <rect x="378" y="180" width="308" height="66" rx="6" fill="var(--stop)" opacity=".85"/>
+  <text x="394" y="200" font-size="10.5" fill="var(--on)">カミンスキーの偽応答</text>
+  <text x="394" y="220" font-size="10.5" fill="var(--on)">example.com NS ns.attacker.example</text>
+  <text x="394" y="238" font-size="10.5" fill="var(--on)">→ ゾーンごと、以降ずっと攻撃者のもの</text>
+</svg>
+<figcaption>2 の NS レコードは、応答の Authority セクションに、その IP を示すグルーレコードは Additional セクションに入れて送られる。DNS の委任を表現するのに本来必要な仕組みが、そのまま乗っ取りの経路になっていた。1 と 2 の組み合わせで、当時の実装では数秒から数十秒で成立した。</figcaption>
+</figure>
+
+<h3>当座の対策：ソースポートのランダム化</h3>
+<p>2008 年に各実装が一斉に出したパッチの中身は、<strong>問い合わせの送信元ポートをランダムにする</strong>ことだった。攻撃者が当てるべき組み合わせが TXID の 16 ビットだけから、TXID ＋ ポートの約 32 ビットに広がる。総当たりのコストが数万倍になる。</p>
+<div class="note">
+<p><strong>ただしこれは確率を下げただけ</strong></p>
+<p>推測を難しくしているのであって、「偽応答を見分けている」わけではない。時間と帯域をかければ今でも成立しうるし、実際にその後も派生手法が報告されている。<em>応答が本物かを検証する</em>仕組みが別に要る——それが DNSSEC。</p>
+</div>
+
+<h2>DNSSEC — 応答に署名して、ルートまで遡って検証する</h2>
+<p>DNS の応答に電子署名を付け、受け取った側（リゾルバ）が検証する仕組み。秘密鍵を持たない攻撃者は正しい署名を作れないので、偽応答は検証で落ちる。</p>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="DNSSECの信頼の連鎖：ルートからjp、example.jpへ">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">信頼の連鎖（chain of trust）</text>
+
+  <rect x="0" y="26" width="200" height="70" rx="8" fill="var(--c1)"/>
+  <text x="100" y="50" font-size="12" fill="var(--on)" text-anchor="middle">ルートゾーン</text>
+  <text x="100" y="72" font-size="10.5" fill="var(--on)" text-anchor="middle">公開鍵をリゾルバに</text>
+  <text x="100" y="88" font-size="10.5" fill="var(--on)" text-anchor="middle">あらかじめ埋め込み</text>
+  <text x="100" y="116" font-size="10.5" fill="var(--c3)" text-anchor="middle">＝ トラストアンカー</text>
+
+  <line x1="200" y1="61" x2="242" y2="61" stroke="var(--ink)" stroke-width="1.5"/>
+  <polygon points="250,61 238,57 238,65" fill="var(--ink)"/>
+  <text x="225" y="50" font-size="9.5" fill="var(--muted)" text-anchor="middle">DS</text>
+
+  <rect x="250" y="26" width="200" height="70" rx="8" fill="var(--lane)"/>
+  <text x="350" y="50" font-size="12" fill="var(--ink)" text-anchor="middle">jp ゾーン</text>
+  <text x="350" y="72" font-size="10.5" fill="var(--muted)" text-anchor="middle">親（ルート）が置いた DS で</text>
+  <text x="350" y="88" font-size="10.5" fill="var(--muted)" text-anchor="middle">この鍵の正しさが確認できる</text>
+
+  <line x1="450" y1="61" x2="492" y2="61" stroke="var(--ink)" stroke-width="1.5"/>
+  <polygon points="500,61 488,57 488,65" fill="var(--ink)"/>
+  <text x="475" y="50" font-size="9.5" fill="var(--muted)" text-anchor="middle">DS</text>
+
+  <rect x="500" y="26" width="200" height="70" rx="8" fill="var(--lane)"/>
+  <text x="600" y="50" font-size="12" fill="var(--ink)" text-anchor="middle">example.jp ゾーン</text>
+  <text x="600" y="72" font-size="10.5" fill="var(--muted)" text-anchor="middle">実際の A レコードに</text>
+  <text x="600" y="88" font-size="10.5" fill="var(--muted)" text-anchor="middle">RRSIG（署名）が付く</text>
+
+  <rect x="0" y="140" width="700" height="112" rx="8" fill="var(--lane)"/>
+  <text x="16" y="162" font-size="11.5" font-weight="600" fill="var(--ink)">出てくるレコード</text>
+  <g font-size="11" fill="var(--muted)">
+    <text x="16" y="186"><tspan fill="var(--ink)" font-weight="600">DNSKEY</tspan> … そのゾーンの公開鍵</text>
+    <text x="16" y="208"><tspan fill="var(--ink)" font-weight="600">RRSIG</tspan> … 各レコードセットに対する署名</text>
+    <text x="16" y="230"><tspan fill="var(--ink)" font-weight="600">DS</tspan> … 子ゾーンの DNSKEY のハッシュ。<tspan fill="var(--c2)">親ゾーンに置く</tspan>ことで連鎖がつながる</text>
+  </g>
+</svg>
+<figcaption>DS を親に置くのは登録事業者（レジストラ）経由の作業になるため、DNS サーバの設定だけでは完結しない。子ゾーンで鍵を替えたのに親の DS を更新し忘れる、というのが典型的な事故のかたち。</figcaption>
+</figure>
+
+<h3>DNSSEC が保証しないこと</h3>
+<p>ここを取り違えると、入れたのに期待した効果が出ない。</p>
+<table>
+<tr><th>保証する</th><th>保証しない</th></tr>
+<tr><td>応答が正規のゾーン管理者から出たものであること（出所の認証）</td><td><strong>通信内容の秘匿</strong>。クエリも応答も平文のまま。「誰が何を引いたか」は経路上から見える。暗号化したいなら DoH / DoT という別の仕組み</td></tr>
+<tr><td>途中で改ざんされていないこと（完全性）</td><td><strong>ドメインの持ち主が善良であること</strong>。フィッシングサイトも自分のドメインに DNSSEC を設定できる</td></tr>
+<tr><td>「そのレコードは存在しない」という応答の正しさ（NSEC / NSEC3）</td><td>可用性。むしろ署名の期限切れや鍵の不整合で<em>引けなくなる</em>事故がある</td></tr>
+</table>
+<p>NSEC は「存在しないこと」を証明するために隣接する名前を返す仕組みだが、これを順に辿るとゾーンの中身が全部列挙できてしまう（ゾーンウォーキング）。名前をハッシュ化して返す NSEC3 はその対策。</p>
+
+<h3>運用で押さえること</h3>
+<ul>
+<li><strong>署名には有効期限がある</strong>。切れると、そのドメインが丸ごと引けなくなる。鍵の更新（ロールオーバー）と再署名は継続的な運用作業になる</li>
+<li><strong>自前で運用しないほうが安全なことが多い</strong>。Amazon Route 53 などのマネージド DNS は署名と鍵管理を引き受けてくれる</li>
+<li><strong>権威側で署名しても、リゾルバ側が検証しなければ意味がない</strong>。両側が揃って初めて効く。Google Public DNS や Cloudflare の 1.1.1.1 は検証する</li>
+</ul>
+
+<p>提案するときの言い方——「DNSSEC はフィッシング対策ではありません。<em>正規のドメイン宛のアクセスを、経路上で別の場所に付け替えられない</em>ための仕組みです。効くのは、利用者が正しいドメインを入力しているのに違うサーバに繋がる、という一番気づきにくい攻撃に対してです」。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://kb.isc.org/docs/aa-00924">ISC - CVE-2008-1447: DNS Cache Poisoning Issue（Kaminsky bug）</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5452.html">RFC 5452 - Measures for Making DNS More Resilient against Forged Answers</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4033.html">RFC 4033 - DNS Security Introduction and Requirements</a></li>
+<li><a href="https://jprs.jp/glossary/index.php?ID=0197">JPRS 用語辞典 - DNSSEC</a></li>
+<li><a href="https://www.nic.ad.jp/ja/basics/terms/dnssec.html">JPNIC - DNSSEC</a></li>
+<li><a href="https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/dns-configuring-dnssec.html">AWS - Route 53 での DNSSEC 署名の設定</a></li>
+</ul>
+
+</main>
+</body>
+</html>

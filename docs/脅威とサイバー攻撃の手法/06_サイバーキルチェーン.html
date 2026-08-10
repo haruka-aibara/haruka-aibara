@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>サイバーキルチェーン</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>サイバーキルチェーン</h1>
+<p class="lede">「侵入を防ぐ」だけで組んだ防御は、1 回突破された時点で何も残らない。</p>
+
+<h2>何が問題なのか</h2>
+<p>セキュリティ予算の議論は、放っておくと入口対策に寄る。ファイアウォール、アンチウイルス、メールフィルタ。しかし現実の攻撃は<strong>1 回の侵入で完結しない</strong>。侵入してから情報を持ち出すまでには、探索も、権限昇格も、外部との通信も要る。何日、何か月とかかることもある。</p>
+<p>そこを段階に分けて並べたのがサイバーキルチェーン。Lockheed Martin が 2011 年に提示したモデルで、狙いは「侵入を止める」ではなく——<strong>チェーンなので、どこか 1 か所を切れば攻撃は完遂しない</strong>という設計に切り替えることにある。</p>
+
+<h2>7 つの段階</h2>
+
+<figure>
+<svg viewBox="0 0 700 396" role="img" aria-label="サイバーキルチェーンの7段階と、防御側から見えるかどうか">
+  <rect x="0" y="8" width="700" height="82" rx="8" fill="var(--lane)" opacity=".6"/>
+  <text x="14" y="28" font-size="11" font-weight="600" fill="var(--muted)">攻撃者の手元 — 防御側からは見えない</text>
+
+  <g>
+    <rect x="14" y="36" width="330" height="44" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <circle cx="38" cy="58" r="12" fill="var(--muted)"/><text x="38" y="62" font-size="11.5" fill="var(--on)" text-anchor="middle">1</text>
+    <text x="60" y="55" font-size="11.5" font-weight="600" fill="var(--ink)">偵察 Reconnaissance</text>
+    <text x="60" y="72" font-size="10.5" fill="var(--muted)">社員名・メール形式・公開資産・使っている技術を調べる</text>
+
+    <rect x="356" y="36" width="330" height="44" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <circle cx="380" cy="58" r="12" fill="var(--muted)"/><text x="380" y="62" font-size="11.5" fill="var(--on)" text-anchor="middle">2</text>
+    <text x="402" y="55" font-size="11.5" font-weight="600" fill="var(--ink)">武器化 Weaponization</text>
+    <text x="402" y="72" font-size="10.5" fill="var(--muted)">攻撃コードとおとりファイルを組み合わせる</text>
+  </g>
+
+  <rect x="0" y="102" width="700" height="200" rx="8" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="14" y="122" font-size="11" font-weight="600" fill="var(--stop)">自社の環境で起きる — ここから先が検知と遮断の対象</text>
+
+  <g>
+    <rect x="14" y="130" width="672" height="38" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <circle cx="38" cy="149" r="12" fill="var(--c2)"/><text x="38" y="153" font-size="11.5" fill="var(--on)" text-anchor="middle">3</text>
+    <text x="60" y="146" font-size="11.5" font-weight="600" fill="var(--ink)">デリバリ Delivery</text>
+    <text x="60" y="162" font-size="10.5" fill="var(--muted)">メール添付・リンク・改ざんサイト・USB・取引先経由</text>
+    <text x="672" y="154" font-size="10.5" fill="var(--c3)" text-anchor="end">メールフィルタ / Proxy</text>
+  </g>
+  <g>
+    <rect x="14" y="172" width="672" height="38" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <circle cx="38" cy="191" r="12" fill="var(--c2)"/><text x="38" y="195" font-size="11.5" fill="var(--on)" text-anchor="middle">4</text>
+    <text x="60" y="188" font-size="11.5" font-weight="600" fill="var(--ink)">エクスプロイト Exploitation</text>
+    <text x="60" y="204" font-size="10.5" fill="var(--muted)">脆弱性を突いてコードが実行される</text>
+    <text x="672" y="196" font-size="10.5" fill="var(--c3)" text-anchor="end">パッチ適用 / EDR</text>
+  </g>
+  <g>
+    <rect x="14" y="214" width="672" height="38" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <circle cx="38" cy="233" r="12" fill="var(--c2)"/><text x="38" y="237" font-size="11.5" fill="var(--on)" text-anchor="middle">5</text>
+    <text x="60" y="230" font-size="11.5" font-weight="600" fill="var(--ink)">インストール Installation</text>
+    <text x="60" y="246" font-size="10.5" fill="var(--muted)">バックドア設置・サービス登録・タスク登録で居座る</text>
+    <text x="672" y="238" font-size="10.5" fill="var(--c3)" text-anchor="end">EDR / 構成変更の検知</text>
+  </g>
+  <g>
+    <rect x="14" y="256" width="672" height="38" rx="6" fill="var(--c1)"/>
+    <circle cx="38" cy="275" r="12" fill="var(--on)"/><text x="38" y="279" font-size="11.5" fill="var(--c1)" text-anchor="middle">6</text>
+    <text x="60" y="272" font-size="11.5" font-weight="600" fill="var(--on)">C2（遠隔操作） Command &amp; Control</text>
+    <text x="60" y="288" font-size="10.5" fill="var(--on)">外部の指令サーバと通信を確立。ここで攻撃者が対話的に動き出す</text>
+    <text x="672" y="280" font-size="10.5" fill="var(--on)" text-anchor="end">★アウトバウンド監視 / DNS ログ</text>
+  </g>
+
+  <rect x="0" y="314" width="700" height="56" rx="8" fill="var(--stop)" opacity=".85"/>
+  <circle cx="38" cy="342" r="12" fill="var(--on)"/><text x="38" y="346" font-size="11.5" fill="var(--stop)" text-anchor="middle">7</text>
+  <text x="60" y="338" font-size="11.5" font-weight="600" fill="var(--on)">目的の実行 Actions on Objectives</text>
+  <text x="60" y="356" font-size="10.5" fill="var(--on)">情報の探索・収集・外部への持ち出し／暗号化／破壊。ここまで来たら「インシデント」ではなく「被害」</text>
+
+  <text x="0" y="390" font-size="11" fill="var(--muted)">1 と 2 は防御側から見えない。だからといって無関係ではない——公開情報を減らすことは 1 のコストを上げる。</text>
+</svg>
+<figcaption>段階の数や名前はモデルによって違う（Unified Kill Chain は 18 段階）。7 という数字自体に意味はなく、「入口の 1 点ではなく複数の関門で考える」という発想のほうが本体。</figcaption>
+</figure>
+
+<h2>使い方は「どこで切るか」を並べること</h2>
+<p>段階を暗記しても役に立たない。使いどころは、<strong>自社の対策を段階に貼り付けてみて、空白の段がどこかを見る</strong>ところにある。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="段階が進むほど検知はしやすくなるが被害も大きくなるという関係">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">後の段階ほど「気づきやすい」が「失うものが大きい」</text>
+
+  <line x1="60" y1="150" x2="670" y2="150" stroke="var(--line)" stroke-width="1.5"/>
+  <g font-size="10.5" fill="var(--muted)" text-anchor="middle">
+    <text x="110" y="168">3 デリバリ</text>
+    <text x="250" y="168">4 エクスプロイト</text>
+    <text x="390" y="168">5 インストール</text>
+    <text x="510" y="168">6 C2</text>
+    <text x="630" y="168">7 目的の実行</text>
+  </g>
+
+  <path d="M60 140 L110 128 L250 112 L390 92 L510 66 L660 34" fill="none" stroke="var(--c3)" stroke-width="2.5"/>
+  <path d="M60 144 L110 142 L250 136 L390 120 L510 86 L660 44" fill="none" stroke="var(--stop)" stroke-width="2.5" stroke-dasharray="5 4"/>
+
+  <line x1="70" y1="36" x2="106" y2="36" stroke="var(--c3)" stroke-width="2.5"/>
+  <text x="114" y="40" font-size="10.5" fill="var(--c3)">検知しやすさ（防御側が気づける度合い）</text>
+  <line x1="70" y1="58" x2="106" y2="58" stroke="var(--stop)" stroke-width="2.5" stroke-dasharray="5 4"/>
+  <text x="114" y="62" font-size="10.5" fill="var(--stop)">被害の大きさ（気づいた時点で失っているもの）</text>
+
+  <line x1="510" y1="30" x2="510" y2="150" stroke="var(--c1)" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="500" y="192" font-size="11" fill="var(--c1)" text-anchor="end">ここが実務上いちばん割のいい関門 →</text>
+</svg>
+<figcaption>3〜4 は「不審かどうか」の判断が難しく、誤検知も多い。一方 6 の C2 通信は<em>内部から外部への継続的な通信</em>という形が残るので、平常時との差が出やすい。境界ファイアウォールの「外から内へ」のルールでは止まらない領域なので、アウトバウンドの通信ログと DNS クエリログを見ているかどうかで結果が変わる。</figcaption>
+</figure>
+
+<h2>このモデルが合わないところ</h2>
+<p>キルチェーンは<strong>外部からマルウェアで侵入してくる攻撃</strong>を前提に作られている。次のようなケースは、この 7 段階にきれいに乗らない。</p>
+<ul>
+<li><strong>正規アカウントの悪用</strong>：フィッシングで盗んだ認証情報でそのままログインされると、3〜5 が丸ごと存在しない</li>
+<li><strong>クラウドの設定ミス経由</strong>：公開状態の S3 バケットから情報が出ていく場合、侵入も永続化もない</li>
+<li><strong>内部犯行</strong>：最初から内側にいる</li>
+</ul>
+<p>細かい手口の粒度で見たいなら <strong>MITRE ATT&amp;CK</strong> のほうが実用的。キルチェーンが「段階」の粗い地図なのに対し、ATT&amp;CK は各段階で実際に使われる手口をカタログ化したもので、クラウドやコンテナ向けのマトリクスもある。</p>
+
+<table>
+<tr><th>使う場面</th><th>向いているもの</th></tr>
+<tr><td>他部門や経営層への説明、対策の全体像の合意</td><td>キルチェーン（7 つで話が終わる粒度）</td></tr>
+<tr><td>検知ルールの棚卸し、レッドチーム演習の設計</td><td>MITRE ATT&amp;CK（手口単位で網羅性を測れる）</td></tr>
+</table>
+
+<div class="note">
+<p><strong>提案するときの言い方</strong></p>
+<p>「侵入を 100% 防ぐ前提で予算を組むと、突破された瞬間に打つ手がなくなります。攻撃は複数の段階を踏むので、<em>どこか 1 段階で気づければ被害は止まる</em>——という考え方に変えたい。いま検知の空白になっているのは、外部への通信の監視です」。入口対策の追加購入より、既にあるログを見る体制の話に持ち込むほうが通しやすい。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html">Lockheed Martin - Cyber Kill Chain</a></li>
+<li><a href="https://attack.mitre.org/">MITRE ATT&amp;CK</a></li>
+<li><a href="https://www.ipa.go.jp/security/reports/technicalwatch/20111003.html">IPA - 「新しいタイプの攻撃」の対策に向けた設計・運用ガイド</a></li>
+<li><a href="https://www.unifiedkillchain.com/">The Unified Kill Chain</a></li>
+</ul>
+
+</main>
+</body>
+</html>

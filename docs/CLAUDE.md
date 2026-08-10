@@ -168,3 +168,4 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **サイバー攻撃の手法**: `サイバー攻撃/` 配下に 01〜14 を1手法1ファイルで執筆済み（CWE / ポートスキャン4種 / ポートノッキング / SPA / SSP / automatic fortification / DEP / ASLR / セッションフィクセーション / スニファ / プロミスキャスモード / WEP・WPA・ESSID / pass the hash / IP スプーフィング）。すべて図中心の HTML
 - **HTTP/2**: `Networking/HTTP2.html`。図中心 HTML 記事のリファレンス実装
 - **HTTP/3 と QUIC**: `Networking/HTTP3.html`
+- **脅威とサイバー攻撃の手法**: `脅威とサイバー攻撃の手法/` 配下に 01〜08（DDoS 各種／EDoS・DeOS／XSS／DNSSEC／キルチェーン／RLO／BadNets）。図中心 HTML、`README.md` が目次
