@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IC カードと磁気カードを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>IC カードと磁気カード — 「読まれる」か「答える」かの違い</h1>
+<p class="lede">磁気は書いてある情報を読ませるだけ。IC は中で計算して毎回違う答えを返す。だから複製できない。</p>
+
+<h2>何が問題なのか</h2>
+<p>磁気ストライプのカードは、<strong>記録された情報をそのまま読み出す</strong>方式。読めるということは、同じ情報を別のカードに書き込めるということでもある。読み取り機に細工した装置（スキマー）を仕掛ければ、通されたカードの情報を控えて<strong>完全な複製が作れる</strong>。暗証番号は別途カメラで盗み見る。これがスキミング被害の構図。</p>
+<p>情報を読ませる方式である限り、この問題は原理的に解けない。解決するには<strong>カードが情報を渡すのをやめる</strong>しかない。</p>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="磁気カードとICカードの認証方式の違い">
+  <g>
+    <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--stop)">磁気ストライプ — 記録を読み出す</text>
+    <rect x="8" y="26" width="150" height="60" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="83" y="50" font-size="11" fill="var(--ink)" text-anchor="middle">カード</text>
+    <rect x="24" y="58" width="118" height="16" rx="3" fill="var(--stop)"/>
+    <text x="83" y="70" font-size="9" fill="var(--on)" text-anchor="middle">番号・有効期限</text>
+    <path d="M164 56 L280 56" stroke="var(--stop)" stroke-width="1.6" marker-end="url(#l1)"/>
+    <text x="222" y="48" font-size="10.5" fill="var(--stop)" text-anchor="middle">中身をそのまま渡す</text>
+    <rect x="284" y="26" width="150" height="60" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="359" y="60" font-size="11" fill="var(--ink)" text-anchor="middle">読み取り機</text>
+    <text x="456" y="46" font-size="11" fill="var(--stop)">→ 途中で控えれば</text>
+    <text x="456" y="64" font-size="11" fill="var(--stop)">　 同じカードが作れる</text>
+    <text x="456" y="82" font-size="10.5" fill="var(--muted)">毎回同じ情報が流れるため</text>
+  </g>
+  <line x1="8" y1="104" x2="692" y2="104" stroke="var(--line)"/>
+  <g>
+    <text x="8" y="128" font-size="12.5" font-weight="600" fill="var(--c3)">IC カード — 問いかけに答える</text>
+    <rect x="8" y="140" width="150" height="76" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="83" y="162" font-size="11" fill="var(--ink)" text-anchor="middle">カード</text>
+    <rect x="24" y="172" width="118" height="32" rx="4" fill="var(--c3)"/>
+    <text x="83" y="185" font-size="9" fill="var(--on)" text-anchor="middle">鍵＋演算装置</text>
+    <text x="83" y="198" font-size="9" fill="var(--on)" text-anchor="middle">鍵は外に出ない</text>
+
+    <path d="M284 158 L164 158" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#l2)"/>
+    <text x="224" y="150" font-size="10.5" fill="var(--c1)" text-anchor="middle">毎回違う問い</text>
+    <path d="M164 196 L284 196" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#l3)"/>
+    <text x="224" y="212" font-size="10.5" fill="var(--c3)" text-anchor="middle">毎回違う答え</text>
+
+    <rect x="288" y="140" width="150" height="76" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="363" y="184" font-size="11" fill="var(--ink)" text-anchor="middle">読み取り機</text>
+    <text x="460" y="164" font-size="11" fill="var(--c3)">→ やり取りを盗んでも</text>
+    <text x="460" y="182" font-size="11" fill="var(--c3)">　 次の問いには答えられない</text>
+    <text x="460" y="200" font-size="10.5" fill="var(--muted)">＝ 複製したカードは作れない</text>
+  </g>
+  <defs>
+    <marker id="l1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--stop)"/></marker>
+    <marker id="l2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="l3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>IC カードがやっているのは<a href="../Authentication/チャレンジレスポンス認証.html">チャレンジレスポンス認証</a>そのもの。カードは小さなコンピュータで、鍵はチップの中に封じられていて読み出せない（<a href="耐タンパ性.html">耐タンパ性</a>）。この2点が揃って初めて「複製できない」が成立する。</figcaption>
+</figure>
+
+<h2>接触型と非接触型</h2>
+<table>
+<tr><th>種類</th><th>やり取りの方法</th><th>例</th></tr>
+<tr><td>接触型</td><td>金色の端子に読み取り機を当てて通信する</td><td>クレジットカード、住民基本台帳カード</td></tr>
+<tr><td>非接触型</td><td>電波でやり取りする。電力も電波から得るので電池が要らない</td><td>交通系 IC カード、社員証</td></tr>
+<tr><td>デュアルインターフェース</td><td>1枚で両方に対応</td><td>マイナンバーカード、タッチ決済対応カード</td></tr>
+</table>
+<p>非接触型は<strong>財布に入れたままでも読める</strong>のが利点であり、同時にリスクでもある（<a href="RFID.html">RFID</a>）。</p>
+
+<h2>移行を後押ししたのは責任の所在</h2>
+<p>クレジットカードの世界では、IC 化が技術論だけで進んだわけではない。<strong>IC に対応していない加盟店で不正利用が起きた場合、その損害を加盟店が負う</strong>という取り決め（ライアビリティシフト）が設けられ、これが決定的だった。</p>
+<p>セキュリティ対策が普及するときは、たいてい<strong>技術の優劣ではなく、損害を誰が負うかが動いたとき</strong>——この構図は他の分野でも繰り返し現れる。</p>
+
+<div class="note">
+<p><strong>IC カードでも守れないもの</strong></p>
+<p>複製されないのは<strong>カードという物理的な存在</strong>であって、カード番号ではない。EC サイトでは番号・有効期限・セキュリティコードを打ち込むだけで決済でき、そこに IC チップは関与しない。<strong>対面の偽造は激減した一方で、非対面の不正利用が増えた</strong>のはこのため。<br>
+だから非対面の決済には別の対策——<a href="../Payments/SETと3Dセキュア.html">3D セキュア</a>のような本人認証が要る。「IC 化したから安全」とひとまとめにせず、対面と非対面を分けて考える。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.emvco.com/">EMVCo</a></li>
+<li><a href="https://www.iso.org/standard/77180.html">ISO/IEC 7816 - Identification cards, Integrated circuit cards</a></li>
+<li><a href="https://www.j-credit.or.jp/security/">日本クレジット協会 - クレジットカード・セキュリティ</a></li>
+</ul>
+
+</main>
+</body>
+</html>

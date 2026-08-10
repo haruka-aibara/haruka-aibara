@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Base64 を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>Base64 — バイナリを「文字しか通らない場所」に載せる</h1>
+<p class="lede">3バイトを4文字に置き換えるだけの変換。暗号ではないので、見つけたら中身は読めると考える。</p>
+
+<h2>何が問題なのか</h2>
+<p>メール本文、JSON の値、HTTP ヘッダ、設定ファイル。これらは<strong>テキストしか置けない</strong>場所で、画像や証明書のようなバイナリをそのまま入れると壊れる。制御文字が混じって処理系が誤動作したり、改行コードが勝手に変換されたりするからだ。</p>
+<p>そこで、<strong>安全に通ることが分かっている64種類の文字だけを使って、どんなバイト列でも表せるようにする</strong>。それが Base64。</p>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="Base64が3バイトを4文字に変換する仕組み">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">3 バイト（24 ビット）を 6 ビットずつに切り直す</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="28" width="220" height="34" rx="5" fill="var(--c1)"/><text x="118" y="50" fill="var(--on)">M（01001101）</text>
+    <rect x="236" y="28" width="220" height="34" rx="5" fill="var(--c2)"/><text x="346" y="50" fill="var(--on)">a（01100001）</text>
+    <rect x="464" y="28" width="220" height="34" rx="5" fill="var(--c4)"/><text x="574" y="50" fill="var(--on)">n（01101110）</text>
+  </g>
+  <text x="8" y="82" font-size="10.5" fill="var(--muted)">8 ビット × 3</text>
+
+  <path d="M346 66 L346 88" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#b1)"/>
+
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="94" width="164" height="34" rx="5" fill="var(--c3)"/><text x="90" y="116" fill="var(--on)">010011</text>
+    <rect x="180" y="94" width="164" height="34" rx="5" fill="var(--c3)" opacity=".82"/><text x="262" y="116" fill="var(--on)">010110</text>
+    <rect x="352" y="94" width="164" height="34" rx="5" fill="var(--c3)" opacity=".82"/><text x="434" y="116" fill="var(--on)">000101</text>
+    <rect x="524" y="94" width="160" height="34" rx="5" fill="var(--c3)"/><text x="604" y="116" fill="var(--on)">101110</text>
+  </g>
+  <text x="8" y="148" font-size="10.5" fill="var(--muted)">6 ビット × 4（値は 0〜63 に収まる）</text>
+
+  <path d="M346 132 L346 154" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#b1)"/>
+
+  <g font-size="13" text-anchor="middle" font-weight="600">
+    <rect x="8" y="160" width="164" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="90" y="183" fill="var(--ink)">T</text>
+    <rect x="180" y="160" width="164" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="262" y="183" fill="var(--ink)">W</text>
+    <rect x="352" y="160" width="164" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="434" y="183" fill="var(--ink)">F</text>
+    <rect x="524" y="160" width="160" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="604" y="183" fill="var(--ink)">u</text>
+  </g>
+  <text x="8" y="214" font-size="10.5" fill="var(--muted)">それぞれの値を A–Z、a–z、0–9、+、/ の64文字に対応させる</text>
+  <text x="8" y="234" font-size="11" fill="var(--stop)">3 バイトが 4 文字になる = データ量は約 1.33 倍に増える。3 で割り切れないときは末尾を「=」で埋める。</text>
+  <defs><marker id="b1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>末尾の <code>=</code> は「元のデータがここで終わっている」ことを示す詰め物。文字列の末尾に <code>=</code> や <code>==</code> が付いていたら Base64 を疑う、という見分け方の目印にもなる。</figcaption>
+</figure>
+
+<h2>どこで出会うか</h2>
+<ul>
+<li><strong>メールの添付</strong>：MIME の <code>Content-Transfer-Encoding: base64</code>（<a href="MIME.html">MIME</a>）</li>
+<li><strong>証明書の PEM 形式</strong>：<code>-----BEGIN CERTIFICATE-----</code> に挟まれた部分は、バイナリの証明書を Base64 にしたもの</li>
+<li><strong>HTTP の Basic 認証</strong>：<code>Authorization: Basic dXNlcjpwYXNz</code></li>
+<li><strong>JWT</strong>：ドットで区切られた3つの部分が、それぞれ Base64URL で符号化されている</li>
+<li><strong>データ URL</strong>：HTML や CSS に画像を直接埋め込む形</li>
+</ul>
+<p>URL やファイル名に使うときは <code>+</code> と <code>/</code> が問題になるため、それぞれ <code>-</code> と <code>_</code> に置き換えた <strong>Base64URL</strong> という変種が使われる。JWT で見かけるのはこちら。</p>
+
+<div class="note">
+<p><strong>Base64 は暗号化ではない</strong></p>
+<p>いちばん多い誤解がこれ。Base64 に<strong>鍵は存在せず、誰でも一瞬で元に戻せる</strong>。設定ファイルのパスワードが Base64 になっているのを見て「暗号化されている」と判断してはいけないし、自分でそう実装してもいけない。<br>
+Basic 認証がまさにその例で、利用者名とパスワードを <code>:</code> で繋いで Base64 にしただけ。<strong>HTTPS でなければ、そのまま読める形でパスワードが流れている</strong>のと変わらない。<br>
+逆に調査側から見れば、これは道具になる。マルウェアの通信やフィッシングのメールで長い英数字の羅列＋末尾の <code>=</code> を見つけたら、デコードすれば中身が読める。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4648.html">RFC 4648 - The Base16, Base32, and Base64 Data Encodings</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2045.html">RFC 2045 - MIME Part One: Format of Internet Message Bodies</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7617.html">RFC 7617 - The 'Basic' HTTP Authentication Scheme</a></li>
+</ul>
+
+</main>
+</body>
+</html>

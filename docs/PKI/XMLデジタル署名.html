@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XML デジタル署名を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>XML デジタル署名 — 署名を文書のどこに置くかで3種類</h1>
+<p class="lede">デタッチ・エンベロープド・エンベローピング。名前は紛らわしいが、図にすれば一目で分かる。</p>
+
+<h2>何が問題なのか</h2>
+<p>XML 文書に署名したい。ところが XML には、<strong>意味が同じでも書き方が何通りもある</strong>という性質がある——タグの前後の空白、属性の並び順、名前空間の宣言位置、改行コード。バイト列としてハッシュを取ると、送受信の途中で処理系がこれらを整えただけで値が変わり、<strong>改ざんしていないのに署名検証が失敗する</strong>。</p>
+<p>そこで XML の署名には2つの仕掛けが要る。1つは書き方のゆれを揃える<strong>正規化</strong>。もう1つが、署名を文書のどこに配置するかという<strong>形式の選択</strong>。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="デタッチ署名・エンベロープド署名・エンベローピング署名の構造の違い">
+  <g>
+    <text x="8" y="14" font-size="12" font-weight="600" fill="var(--c1)">デタッチ署名</text>
+    <rect x="8" y="24" width="200" height="70" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="108" y="62" font-size="11" fill="var(--ink)" text-anchor="middle">対象データ</text>
+    <rect x="8" y="106" width="200" height="60" rx="7" fill="var(--c1)"/>
+    <text x="108" y="132" font-size="11" fill="var(--on)" text-anchor="middle">署名</text>
+    <text x="108" y="152" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">URI で対象を指す</text>
+    <path d="M108 104 L108 96" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#g1)"/>
+    <text x="8" y="192" font-size="10.5" fill="var(--muted)">署名とデータが別々にある。</text>
+    <text x="8" y="208" font-size="10.5" fill="var(--muted)">対象は XML でなくてもよい</text>
+    <text x="8" y="224" font-size="10.5" fill="var(--muted)">（画像や PDF も署名できる）。</text>
+  </g>
+  <g>
+    <text x="250" y="14" font-size="12" font-weight="600" fill="var(--c2)">エンベロープド署名</text>
+    <rect x="250" y="24" width="200" height="142" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="350" y="52" font-size="11" fill="var(--ink)" text-anchor="middle">対象データ（XML）</text>
+    <rect x="266" y="96" width="168" height="54" rx="6" fill="var(--c2)"/>
+    <text x="350" y="120" font-size="11" fill="var(--on)" text-anchor="middle">署名</text>
+    <text x="350" y="138" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">中に埋め込まれる</text>
+    <text x="250" y="192" font-size="10.5" fill="var(--muted)">データの中に署名が入る。</text>
+    <text x="250" y="208" font-size="10.5" fill="var(--muted)">署名部分を除いて計算する</text>
+    <text x="250" y="224" font-size="10.5" fill="var(--muted)">必要がある（自己参照を避ける）。</text>
+  </g>
+  <g>
+    <text x="492" y="14" font-size="12" font-weight="600" fill="var(--c4)">エンベローピング署名</text>
+    <rect x="492" y="24" width="200" height="142" rx="7" fill="var(--c4)"/>
+    <text x="592" y="52" font-size="11" fill="var(--on)" text-anchor="middle">署名</text>
+    <rect x="508" y="70" width="168" height="80" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="592" y="106" font-size="11" fill="var(--ink)" text-anchor="middle">対象データ</text>
+    <text x="592" y="126" font-size="10" fill="var(--muted)" text-anchor="middle">（署名に包まれている）</text>
+    <text x="492" y="192" font-size="10.5" fill="var(--muted)">署名がデータを包む。</text>
+    <text x="492" y="208" font-size="10.5" fill="var(--muted)">1つのファイルで完結し、</text>
+    <text x="492" y="224" font-size="10.5" fill="var(--muted)">対象が確実に一意に決まる。</text>
+  </g>
+  <defs><marker id="g1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>名前は「署名から見た関係」で付いている。デタッチ＝切り離されている、エンベロープド＝（データに）包まれた署名、エンベローピング＝（データを）包む署名。エンベロープドとエンベローピングは日本語にすると1文字違いで紛らわしいので、どちらが外側かで覚える。</figcaption>
+</figure>
+
+<h2>どれを使うか</h2>
+<ul>
+<li><strong>デタッチ</strong>：署名の対象が XML 以外のとき、また大きなファイルに後から署名を添えるとき。</li>
+<li><strong>エンベロープド</strong>：既存の XML の構造を保ったまま署名を足したいとき。<a href="../Authentication/SAML.html">SAML</a> のアサーションはこの形。</li>
+<li><strong>エンベローピング</strong>：署名とデータを1つにまとめて渡したいとき。</li>
+</ul>
+
+<h2>正規化を忘れると相互運用できない</h2>
+<p>署名を作る前に、<strong>正規化（Canonicalization、C14N）</strong>で書き方を揃える。属性を決まった順に並べ、名前空間の宣言を整理し、空白の扱いを統一する。この規則をどれにするかは署名の中に記録され、検証側も同じ規則で処理する。ここが送信側と受信側でずれると、正しい署名なのに検証が通らない、という形で表面化する。</p>
+
+<div class="note">
+<p><strong>XML Signature Wrapping</strong></p>
+<p>XML 署名では<strong>「署名の対象がどこか」を署名の中の URI で指している</strong>。この間接参照が攻撃の入口になる。攻撃者は正規の署名済み要素を文書の別の場所に移し、そこに自分が作った偽の要素を置く。実装が「署名は検証できたか」だけを見て「<strong>検証した要素が、実際に処理した要素と同じか</strong>」を見ていないと、偽の内容が受理される。<br>
+SAML の認証バイパスとして繰り返し報告されてきた古典的な脆弱性。XML 署名を自前で扱うときは、検証済みの要素そのものを処理対象にする実装になっているかを確認する。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.w3.org/TR/xmldsig-core1/">W3C - XML Signature Syntax and Processing Version 1.1</a></li>
+<li><a href="https://www.w3.org/TR/xml-c14n11/">W3C - Canonical XML Version 1.1</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc3275.html">RFC 3275 - XML-Signature Syntax and Processing</a></li>
+</ul>
+
+</main>
+</body>
+</html>

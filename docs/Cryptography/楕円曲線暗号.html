@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>楕円曲線暗号を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>楕円曲線暗号 — なぜ 256 ビットで RSA 3072 ビットと同じ強さなのか</h1>
+<p class="lede">鍵が10分の1の長さなのに安全と言われる理由と、選ぶときに見る点。</p>
+
+<h2>何が問題なのか</h2>
+<p>証明書を発行するとき、SSH 鍵を作るとき、KMS でキーを作るときに「RSA 2048 か、ECDSA P-256 か」を選ばされる。片方は 2048 ビット、もう片方は 256 ビット。<strong>短いほうが安全なわけがない</strong>という直感が邪魔をして、なんとなく RSA を選び続けることになる。ここは理屈を1つ知っておくと迷わなくなる。</p>
+
+<h2>強度の源が違う</h2>
+<p>RSA の安全性は「大きな数の素因数分解が難しい」ことに依存する。ところが素因数分解には<strong>数体ふるい法</strong>という、総当たりよりずっと速い解法が知られている。だから安全性を保つには鍵をどんどん長くするしかない。</p>
+<p>楕円曲線暗号（ECC）が依存するのは「楕円曲線上の離散対数問題」で、<strong>こちらには同種の高速な解法が見つかっていない</strong>。総当たりに近いコストがかかるので、短い鍵で同じ強度が出せる。</p>
+
+<figure>
+<svg viewBox="0 0 700 208" role="img" aria-label="同等の強度を得るために必要な鍵長の比較">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">同じ強度を得るために必要な鍵長</text>
+  <g font-size="11.5">
+    <text x="8" y="46" fill="var(--muted)">共通鍵 128bit 相当</text>
+    <text x="150" y="46" fill="var(--ink)">RSA</text>
+    <rect x="200" y="32" width="215" height="18" rx="3" fill="var(--c2)"/>
+    <text x="425" y="46" fill="var(--muted)">3072 bit</text>
+    <text x="150" y="70" fill="var(--ink)">ECC</text>
+    <rect x="200" y="56" width="18" height="18" rx="3" fill="var(--c3)"/>
+    <text x="228" y="70" fill="var(--muted)">256 bit</text>
+
+    <text x="8" y="116" fill="var(--muted)">共通鍵 192bit 相当</text>
+    <text x="150" y="116" fill="var(--ink)">RSA</text>
+    <rect x="200" y="102" width="380" height="18" rx="3" fill="var(--c2)"/>
+    <path d="M566 100 L556 122 M574 100 L564 122" stroke="var(--card)" stroke-width="3"/>
+    <text x="590" y="116" fill="var(--muted)">7680 bit（棒は途中を省略）</text>
+    <text x="150" y="140" fill="var(--ink)">ECC</text>
+    <rect x="200" y="126" width="27" height="18" rx="3" fill="var(--c3)"/>
+    <text x="237" y="140" fill="var(--muted)">384 bit</text>
+  </g>
+  <text x="8" y="180" font-size="11" fill="var(--muted)">RSA は強度を1段上げるのに鍵が倍以上になる。鍵が長くなれば署名・復号の計算量も跳ね上がり、</text>
+  <text x="8" y="196" font-size="11" fill="var(--muted)">証明書やハンドシェイクのサイズも増える。ECC はこの伸び方が緩やか。</text>
+</svg>
+<figcaption>この対応関係は NIST SP 800-57 に表として載っており、鍵長の議論をするときの共通言語になる。「RSA 2048 は 112 ビット相当」という言い方もここから来ている。</figcaption>
+</figure>
+
+<h2>何をしているのか</h2>
+<p>楕円曲線上には「2点から3点目を決める」加算のルールが定義されている。ある点 P を k 回足した点 Q（= kP）を求めるのは速いが、<strong>P と Q から k を逆算する方法が知られていない</strong>。この k が秘密鍵、Q が公開鍵にあたる。</p>
+
+<figure>
+<svg viewBox="0 0 700 220" role="img" aria-label="楕円曲線上の点の加算と、スカラー倍の一方向性">
+  <g>
+    <path d="M60 190 C 60 120, 90 60, 140 40 C 190 20, 240 60, 270 110 C 290 145, 300 170, 305 190"
+          fill="none" stroke="var(--c1)" stroke-width="2"/>
+    <path d="M60 190 C 62 200, 66 206, 72 208" fill="none" stroke="var(--c1)" stroke-width="2"/>
+    <line x1="30" y1="190" x2="330" y2="190" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="180" y1="12" x2="180" y2="212" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="90" y1="150" x2="300" y2="58" stroke="var(--c2)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <circle cx="112" cy="140" r="5" fill="var(--c4)"/><text x="96" y="134" font-size="11" fill="var(--c4)">P</text>
+    <circle cx="205" cy="99" r="5" fill="var(--c4)"/><text x="210" y="94" font-size="11" fill="var(--c4)">Q</text>
+    <circle cx="277" cy="68" r="5" fill="var(--c2)"/><text x="284" y="64" font-size="11" fill="var(--c2)">交点</text>
+    <circle cx="277" cy="145" r="5" fill="var(--c3)"/><text x="284" y="150" font-size="11" fill="var(--c3)">P+Q</text>
+    <line x1="277" y1="68" x2="277" y2="145" stroke="var(--c3)" stroke-width="1.2" stroke-dasharray="3 3"/>
+    <text x="30" y="212" font-size="10.5" fill="var(--muted)">2点を通る直線と曲線の交点を、x軸で折り返した点が「P+Q」</text>
+  </g>
+  <g>
+    <rect x="366" y="26" width="326" height="70" rx="8" fill="var(--lane)"/>
+    <text x="384" y="52" font-size="12" font-weight="600" fill="var(--c3)">やさしい方向</text>
+    <text x="384" y="76" font-size="11.5" fill="var(--ink)">秘密の数 k と点 P から、Q = kP を計算する</text>
+    <rect x="366" y="110" width="326" height="70" rx="8" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+    <text x="384" y="136" font-size="12" font-weight="600" fill="var(--stop)">むずかしい方向</text>
+    <text x="384" y="160" font-size="11.5" fill="var(--ink)">公開されている P と Q から、k を求める</text>
+    <text x="366" y="204" font-size="11" fill="var(--muted)">この非対称性が安全性の根拠。k が秘密鍵、Q が公開鍵。</text>
+  </g>
+</svg>
+<figcaption>実際に使われるのはこの図のような連続した曲線ではなく、有限体上の（ばらばらの点の集合になる）曲線。図は加算のルールのイメージで、数の性質そのものは絵に描けない。</figcaption>
+</figure>
+
+<h2>実務で選ぶとき</h2>
+<ul>
+<li><strong>用途は2つ</strong>：鍵交換なら <code>ECDH / ECDHE</code>、署名なら <code>ECDSA</code> または <code>EdDSA（Ed25519）</code>。データそのものの暗号化には使わない。</li>
+<li><strong>曲線は決め打ちでよい</strong>：TLS 証明書やクラウドの鍵管理では <code>P-256</code>（secp256r1）、SSH 鍵なら <code>Ed25519</code>。迷ったらこれで足りる。</li>
+<li><strong>互換性だけが RSA の残る理由</strong>：古い機器や決済端末が ECDSA を解さないことがある。相手を選べない公開サービスでは RSA と ECDSA の証明書を両方置く構成も取られる。</li>
+</ul>
+
+<div class="note">
+<p><strong>ECDSA は署名のたびに乱数が要る</strong></p>
+<p>この乱数を使い回すと、2つの署名から<strong>秘密鍵が計算で復元できる</strong>。PlayStation 3 の署名鍵が漏れた事件も、Bitcoin ウォレットからの鍵漏洩も原因はこれ。自前で署名を実装するのでなければ気にしなくてよいが、乱数生成器が貧弱な組込み環境では現実に起きる。乱数を使わない決定論的な方式（Ed25519、RFC 6979 の ECDSA）を選べばこの危険は消える。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/57/pt1/r5/final">NIST SP 800-57 Part 1 Rev.5 - Recommendation for Key Management</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8032.html">RFC 8032 - Edwards-Curve Digital Signature Algorithm (EdDSA)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6979.html">RFC 6979 - Deterministic Usage of DSA and ECDSA</a></li>
+<li><a href="https://www.cryptrec.go.jp/list.html">CRYPTREC暗号リスト</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PKI を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>PKI — 「その公開鍵は本人のものか」を社会の仕組みで解く</h1>
+<p class="lede">暗号技術だけでは埋まらない穴を、第三者・手続き・運用規程で埋める枠組み。</p>
+
+<h2>何が問題なのか</h2>
+<p>公開鍵暗号は、鍵を配れるところが優れている。だが根本的な穴が1つある——<strong>受け取った公開鍵が本当に相手のものか、確かめる方法が暗号の中にない</strong>。攻撃者が経路の途中で自分の公開鍵にすり替えれば、そのまま気づかず通信できてしまう。</p>
+<p>この穴は暗号を強くしても埋まらない。<strong>「この公開鍵は確かにこの相手のものだ」と誰かが保証する</strong>という、技術の外側の仕組みが要る。それが PKI（公開鍵基盤、Public Key Infrastructure）。</p>
+
+<figure>
+<svg viewBox="0 0 700 218" role="img" aria-label="公開鍵のすり替えと、証明書による検知">
+  <g>
+    <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--stop)">保証する人がいない場合</text>
+    <rect x="8" y="26" width="110" height="34" rx="5" fill="var(--c1)"/><text x="63" y="48" font-size="11" fill="var(--on)" text-anchor="middle">利用者</text>
+    <rect x="290" y="26" width="130" height="34" rx="5" fill="var(--stop)"/><text x="355" y="48" font-size="11" fill="var(--on)" text-anchor="middle">割り込んだ攻撃者</text>
+    <rect x="582" y="26" width="110" height="34" rx="5" fill="var(--c4)"/><text x="637" y="48" font-size="11" fill="var(--on)" text-anchor="middle">本物のサーバ</text>
+    <path d="M122 43 L286 43" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#w1)"/>
+    <path d="M424 43 L578 43" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#w1)"/>
+    <text x="204" y="76" font-size="10.5" fill="var(--stop)" text-anchor="middle">攻撃者の公開鍵を</text>
+    <text x="204" y="92" font-size="10.5" fill="var(--stop)" text-anchor="middle">サーバのものとして受け取る</text>
+    <text x="500" y="76" font-size="10.5" fill="var(--muted)" text-anchor="middle">攻撃者は本物とも別に通信し</text>
+    <text x="500" y="92" font-size="10.5" fill="var(--muted)" text-anchor="middle">中身を読みながら中継する</text>
+  </g>
+  <line x1="8" y1="110" x2="692" y2="110" stroke="var(--line)"/>
+  <g>
+    <text x="8" y="134" font-size="12.5" font-weight="600" fill="var(--c3)">証明書がある場合</text>
+    <rect x="8" y="146" width="110" height="34" rx="5" fill="var(--c1)"/><text x="63" y="168" font-size="11" fill="var(--on)" text-anchor="middle">利用者</text>
+    <rect x="290" y="146" width="130" height="34" rx="5" fill="var(--stop)"/><text x="355" y="168" font-size="11" fill="var(--on)" text-anchor="middle">割り込んだ攻撃者</text>
+    <rect x="582" y="146" width="110" height="34" rx="5" fill="var(--c4)"/><text x="637" y="168" font-size="11" fill="var(--on)" text-anchor="middle">本物のサーバ</text>
+    <path d="M122 163 L286 163" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#w1)"/>
+    <text x="204" y="200" font-size="10.5" fill="var(--c3)" text-anchor="middle">公開鍵に「この鍵は example.com のもの」という</text>
+    <text x="204" y="212" font-size="10.5" fill="var(--c3)" text-anchor="middle">第三者の署名が付いている → 偽物は用意できない</text>
+  </g>
+  <defs><marker id="w1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>攻撃者も証明書を取ること自体はできる。だが取れるのは自分が支配しているドメインの証明書だけで、他人のドメイン名が入った証明書は（認証局が正しく本人確認していれば）発行されない。PKI が守っているのは「鍵と名前の結び付き」。</figcaption>
+</figure>
+
+<h2>PKI を構成するもの</h2>
+<p>PKI は製品ではなく、次の要素をまとめた枠組みを指す。技術より<strong>手続きと運用規程</strong>の比重が大きい。</p>
+<table>
+<tr><th>要素</th><th>役割</th></tr>
+<tr><td>認証局（CA）</td><td>証明書を発行・失効させる。実務では<a href="CA_RA_IA_VA.html">RA・IA・VA</a> に役割が分かれる</td></tr>
+<tr><td>デジタル証明書</td><td>「この公開鍵はこの主体のもの」を CA が署名した文書（<a href="X.509証明書とは.md">X.509</a>）</td></tr>
+<tr><td>失効情報</td><td>期限前に無効にした証明書の一覧（<a href="証明書の失効確認_CRLとOCSP.html">CRL・OCSP</a>）</td></tr>
+<tr><td>リポジトリ</td><td>証明書と失効情報を誰でも取得できる場所</td></tr>
+<tr><td>CP / CPS</td><td>認証局の運用規程。どこまで本人確認するか、鍵をどう守るかを文書化したもの</td></tr>
+<tr><td>利用者・検証者</td><td>証明書を使う側。検証を正しく行う責任はこちらにある</td></tr>
+</table>
+
+<h2>信頼はどこから来るのか</h2>
+<p>「CA が保証している」と言うが、その CA を信じる根拠は何か。答えは<strong>あらかじめ手元にある信頼の起点（トラストアンカー）</strong>で、具体的には OS やブラウザに最初から組み込まれているルート証明書のこと。<a href="認証局の階層構造とルート証明書.html">階層構造</a>をたどって、この起点まで繋がることが確認できれば信頼する、という作りになっている。</p>
+<p>つまり最終的な信頼の源は<strong>「OS やブラウザの提供元が、その認証局を審査して収録した」</strong>という事実にある。暗号で証明されるものではなく、監査と運用への信頼に帰着する——ここが PKI の要であり、同時に弱点でもある。</p>
+
+<div class="note">
+<p><strong>認証局が誤発行すれば全部崩れる</strong></p>
+<p>信頼の起点にある CA が不正に他人のドメインの証明書を発行すれば、その証明書は正しく検証を通ってしまう。実際に 2011 年の DigiNotar 侵害では偽の Google 証明書が発行され、盗聴に使われた。同社はトラストストアから排除されて廃業した。この事故の後、発行された証明書をすべて公開ログに記録する<strong>証明書透明性（Certificate Transparency）</strong>が導入され、自社ドメインの証明書が勝手に発行されていないかを誰でも監視できるようになっている。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5280.html">RFC 5280 - Internet X.509 Public Key Infrastructure Certificate and CRL Profile</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc3647.html">RFC 3647 - Internet X.509 PKI Certificate Policy and Certification Practices Framework</a></li>
+<li><a href="https://certificate.transparency.dev/">Certificate Transparency</a></li>
+</ul>
+
+</main>
+</body>
+</html>

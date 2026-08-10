@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>認証局の役割分担 CA・RA・IA・VA を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>CA・RA・IA・VA — 認証局の中で分かれている4つの役割</h1>
+<p class="lede">受け付ける人、発行する人、有効性を答える人。分けてあるのは守り方が違うから。</p>
+
+<h2>何が問題なのか</h2>
+<p>認証局（CA）を1つの箱として見ていると、設計や監査の議論についていけなくなる。「登録局はどこに置くか」「検証局は外部サービスでよいか」といった話が出てくるからだ。</p>
+<p>そもそもなぜ分けるのか。<strong>やっていることの性質がまったく違い、必要な守り方も違う</strong>から。申請の受付は人と拠点が要る業務で、証明書への署名は物理的に隔離された装置の中でしか行ってはいけない処理。同じ場所に置くと、どちらかに合わせて過剰か手薄になる。</p>
+
+<figure>
+<svg viewBox="0 0 700 262" role="img" aria-label="CA・RA・IA・VAの役割分担と証明書の流れ">
+  <rect x="8" y="30" width="684" height="146" rx="10" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="24" y="52" font-size="12.5" font-weight="600" fill="var(--ink)">CA（認証局）— 全体の呼び名</text>
+
+  <rect x="30" y="66" width="180" height="90" rx="8" fill="var(--c1)"/>
+  <text x="120" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">RA（登録局）</text>
+  <text x="120" y="112" font-size="10.5" fill="var(--on)" text-anchor="middle">申請の受付と本人確認</text>
+  <text x="120" y="130" font-size="10.5" fill="var(--on)" text-anchor="middle">審査して可否を判断する</text>
+  <text x="120" y="148" font-size="10.5" fill="var(--on)" opacity=".85" text-anchor="middle">発行はしない</text>
+
+  <path d="M214 111 L254 111" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#v1)"/>
+
+  <rect x="258" y="66" width="180" height="90" rx="8" fill="var(--c2)"/>
+  <text x="348" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">IA（発行局）</text>
+  <text x="348" y="112" font-size="10.5" fill="var(--on)" text-anchor="middle">証明書に署名して発行</text>
+  <text x="348" y="130" font-size="10.5" fill="var(--on)" text-anchor="middle">失効の処理も行う</text>
+  <text x="348" y="148" font-size="10.5" fill="var(--on)" opacity=".85" text-anchor="middle">CA の秘密鍵を扱う</text>
+
+  <path d="M442 111 L482 111" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#v1)"/>
+
+  <rect x="486" y="66" width="180" height="90" rx="8" fill="var(--c3)"/>
+  <text x="576" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">VA（検証局）</text>
+  <text x="576" y="112" font-size="10.5" fill="var(--on)" text-anchor="middle">「この証明書は今も</text>
+  <text x="576" y="130" font-size="10.5" fill="var(--on)" text-anchor="middle">有効か」に答える</text>
+  <text x="576" y="148" font-size="10.5" fill="var(--on)" opacity=".85" text-anchor="middle">失効情報を集約して公開</text>
+
+  <rect x="8" y="200" width="150" height="34" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="83" y="222" font-size="11" fill="var(--ink)" text-anchor="middle">申請者</text>
+  <path d="M83 198 L83 170 L110 170 L110 160" stroke="var(--c1)" stroke-width="1.5" fill="none" marker-end="url(#v2)"/>
+  <text x="170" y="216" font-size="10.5" fill="var(--c1)">① 申請（身元を示す書類など）</text>
+  <text x="170" y="232" font-size="10.5" fill="var(--c2)">② 発行された証明書を受け取る</text>
+
+  <rect x="542" y="200" width="150" height="34" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="617" y="222" font-size="11" fill="var(--ink)" text-anchor="middle">証明書を検証する側</text>
+  <path d="M600 198 L600 170 L576 170 L576 160" stroke="var(--c3)" stroke-width="1.5" fill="none" marker-end="url(#v2)"/>
+  <text x="380" y="252" font-size="10.5" fill="var(--c3)">③ 有効性を問い合わせる（OCSP など）</text>
+  <defs>
+    <marker id="v1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="v2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+  </defs>
+</svg>
+<figcaption>RA は組織の中に置かれることがある。社内の証明書発行で「人事部門が在籍確認をして、発行そのものは外部の認証局が行う」という形は、RA だけを社内に持つ構成。逆に IA を社内に置くには、鍵を守る設備と運用の負担を丸ごと引き受けることになる。</figcaption>
+</figure>
+
+<h2>それぞれで守るものが違う</h2>
+<table>
+<tr><th>役割</th><th>いちばんの脅威</th><th>主な対策</th></tr>
+<tr><td>RA</td><td>なりすまし申請を通してしまう</td><td>本人確認の手順、承認者の分離、申請記録の保存</td></tr>
+<tr><td>IA</td><td>CA の秘密鍵の窃取・不正な発行</td><td>HSM に鍵を封じる、上位のものはネットワークから切り離す、発行ログの監査</td></tr>
+<tr><td>VA</td><td>停止・応答の改ざん</td><td>可用性の確保（止まると検証できない）、応答への署名</td></tr>
+</table>
+<p>この分担がそのまま、認証局の運用規程（CP／CPS）に書かれる内容になる。外部の認証局を選ぶときに読むべきなのもここで、<strong>「どこまで本人確認するのか」は認証局ごとに違う</strong>——その差が<a href="ドメイン認証と企業認証とEV認証.html">DV／OV／EV</a> という証明書の種類になっている。</p>
+
+<div class="note">
+<p><strong>実物では名前どおりに分かれていないことも多い</strong></p>
+<p>RA・IA・VA は<strong>機能の呼び名</strong>であって、必ず別のサーバや別の組織になっているわけではない。小規模な認証局では1台のソフトウェアが全部を兼ねる。設計図や試験で問われるのは役割の切り分けなので、「どの機能がどこにあるか」で読むとよい。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5280.html">RFC 5280 - Internet X.509 Public Key Infrastructure Certificate and CRL Profile</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc3647.html">RFC 3647 - Internet X.509 PKI Certificate Policy and Certification Practices Framework</a></li>
+<li><a href="https://www.ipa.go.jp/security/pki/index.html">IPA - 電子署名・認証・タイムスタンプ</a></li>
+</ul>
+
+</main>
+</body>
+</html>

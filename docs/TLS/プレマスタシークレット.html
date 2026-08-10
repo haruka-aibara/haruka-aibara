@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>プレマスタシークレットを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>プレマスタシークレット — なぜ鍵を何段階も作り直すのか</h1>
+<p class="lede">共有した秘密をそのまま暗号鍵にはしない。間に2段挟むことで、毎回違う鍵と、用途ごとに分かれた鍵を作る。</p>
+
+<h2>何が問題なのか</h2>
+<p>TLS の解説を読むと、<strong>プレマスタシークレット → マスタシークレット → 実際の鍵</strong>と3段階が出てくる。共通鍵を1つ共有すれば済みそうなのに、なぜこんな手間をかけるのか。</p>
+<p>理由は2つある。<strong>同じ相手との通信で毎回違う鍵にしたい</strong>ことと、<strong>用途ごとに別の鍵を使いたい</strong>こと。この2つを満たすために、共有した秘密を材料として何度か加工する。</p>
+
+<figure>
+<svg viewBox="0 0 700 290" role="img" aria-label="プレマスタシークレットからセッション鍵が導出されるまで">
+  <rect x="240" y="16" width="220" height="44" rx="7" fill="var(--c4)"/>
+  <text x="350" y="36" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">プレマスタシークレット</text>
+  <text x="350" y="52" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">鍵交換で両者が手に入れる材料</text>
+
+  <rect x="8" y="80" width="200" height="44" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="108" y="100" font-size="10.5" fill="var(--ink)" text-anchor="middle">クライアントの乱数</text>
+  <text x="108" y="116" font-size="10.5" fill="var(--ink)" text-anchor="middle">サーバの乱数</text>
+  <text x="108" y="142" font-size="10" fill="var(--muted)" text-anchor="middle">ハンドシェイクの最初に</text>
+  <text x="108" y="156" font-size="10" fill="var(--muted)" text-anchor="middle">平文で交換されている</text>
+
+  <path d="M350 60 L350 96" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#e1)"/>
+  <path d="M212 102 L262 102" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#e1)"/>
+  <rect x="266" y="96" width="168" height="34" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="350" y="118" font-size="11" fill="var(--ink)" text-anchor="middle">混ぜて計算する</text>
+
+  <rect x="240" y="146" width="220" height="40" rx="7" fill="var(--c1)"/>
+  <text x="350" y="171" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">マスタシークレット</text>
+  <path d="M350 130 L350 142" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#e1)"/>
+
+  <path d="M310 186 L160 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
+  <path d="M336 186 L300 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
+  <path d="M364 186 L400 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
+  <path d="M390 186 L540 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
+
+  <g font-size="10">
+    <rect x="80" y="220" width="150" height="40" rx="6" fill="var(--c3)"/>
+    <text x="155" y="238" fill="var(--on)" text-anchor="middle">暗号化鍵</text>
+    <text x="155" y="253" fill="var(--on)" opacity=".9" text-anchor="middle">クライアント→サーバ</text>
+    <rect x="238" y="220" width="150" height="40" rx="6" fill="var(--c3)"/>
+    <text x="313" y="238" fill="var(--on)" text-anchor="middle">暗号化鍵</text>
+    <text x="313" y="253" fill="var(--on)" opacity=".9" text-anchor="middle">サーバ→クライアント</text>
+    <rect x="396" y="220" width="110" height="40" rx="6" fill="var(--c2)"/>
+    <text x="451" y="238" fill="var(--on)" text-anchor="middle">MAC 鍵</text>
+    <text x="451" y="253" fill="var(--on)" opacity=".9" text-anchor="middle">方向ごと</text>
+    <rect x="514" y="220" width="110" height="40" rx="6" fill="var(--c2)"/>
+    <text x="569" y="238" fill="var(--on)" text-anchor="middle">初期化ベクトル</text>
+  </g>
+  <text x="8" y="282" font-size="11" fill="var(--muted)">1本の秘密から、方向別・用途別に複数の鍵を切り出す。どれか1つが漏れても他の用途には使えない。</text>
+  <defs><marker id="e1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>平文で流れている乱数を混ぜることに意味がある。乱数はハンドシェイクごとに変わるので、たとえ同じプレマスタシークレットが再び使われても、そこから出てくる鍵は別になる。過去の通信を丸ごと再生する攻撃を、この段階で無効にしている。</figcaption>
+</figure>
+
+<h2>プレマスタシークレットの作り方は2通りある</h2>
+<table>
+<tr><th></th><th>RSA 鍵交換（古い方式）</th><th>ECDHE（現在）</th></tr>
+<tr><td>作り方</td><td>クライアントが乱数として生成する</td><td>両者の計算で共有秘密を導き出す</td></tr>
+<tr><td>渡し方</td><td>サーバの公開鍵で暗号化して送る</td><td>送らない（各自が計算する）</td></tr>
+<tr><td>サーバの秘密鍵が後から漏れたら</td><td class="dead">記録された過去の通信が全部復号できる</td><td>過去の通信は復号できない</td></tr>
+</table>
+<p>この差が前方秘匿性の有無で、TLS 1.3 が RSA 鍵交換を廃止した理由でもある（<a href="../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a>）。TLS 1.3 では「プレマスタシークレット」という語自体が使われなくなり、鍵交換で得た共有秘密を HKDF という導出関数に通す形に整理された。<strong>用語としては TLS 1.2 までのもの</strong>だが、段階を踏んで鍵を作るという考え方は同じまま残っている。</p>
+
+<div class="note">
+<p><strong>マスタシークレットを書き出すと通信が読める</strong></p>
+<p>ブラウザや多くのライブラリには、<code>SSLKEYLOGFILE</code> という環境変数を設定すると<strong>鍵の材料をファイルに書き出す</strong>機能がある。これを Wireshark に読ませれば、暗号化された通信をその場で復号して中身を確認できる。開発時の切り分けには非常に有用だが、<strong>本番環境や共有端末で有効にすれば、そのファイルは通信の中身をすべて開ける鍵束</strong>になる。CI やコンテナのイメージにこの設定が紛れ込んでいないかは、見ておく価値がある。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5246.html">RFC 5246 - The Transport Layer Security (TLS) Protocol Version 1.2</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5869.html">RFC 5869 - HMAC-based Extract-and-Expand Key Derivation Function (HKDF)</a></li>
+</ul>
+
+</main>
+</body>
+</html>
