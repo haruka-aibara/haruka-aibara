@@ -165,6 +165,7 @@ resource "tfe_team_token" "green" {
 
 <p>ただし静的シークレットがゼロになるわけではない。Vault が HCP Terraform の API を叩くための設定用トークンが1本、Vault の中に残る。正確には「消える」ではなく「1カ所に集約されて Vault の監査とアクセス制御の下に入る」だ。</p>
 <p>判断軸はシンプルで、<strong>すでに Vault を運用しているかどうか</strong>。あるなら乗せる価値は大きい。このためだけに Vault を立てるのは、トークン1本の管理のために可用性を守るべきインフラを1つ抱えることになり、割に合わない。その場合は 23-07 の自己ローテーションに本記事の <code>expired_at</code> 短縮を足した構成が実質の最適解になる。</p>
+<p>もう1つ、その Vault が <strong>Enterprise / HCP Vault Dedicated ならライセンスのクライアント枠も試算に入れる</strong>。クライアント数課金では JWT 認証のエンティティ（<code>user_claim</code> の一意な値）ごとに1クライアントを消費するので、ワークスペース単位で認証させればワークスペース数ぶん課金対象が増える（<code>user_claim</code> に <code>sub</code> を使うと run_phase ごとにエンティティが分かれて2倍になるので、<code>terraform_full_workspace</code> を使う）。本記事の範囲は管理用ワークスペース1個なので誤差だが、同じ仕組みを全ワークスペースの AWS 認証などへ横展開するとクライアント数はワークスペース数に比例して伸びる。Community 版のセルフホストならクライアント課金自体がない。</p>
 
 <h2>参考</h2>
 <ul>
@@ -172,6 +173,7 @@ resource "tfe_team_token" "green" {
 <li><a href="https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/resources/team_token">tfe_team_token リソース（expired_at）</a></li>
 <li><a href="https://developer.hashicorp.com/vault/docs/secrets/terraform">Vault: HCP Terraform secrets engine</a></li>
 <li><a href="https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/vault-configuration">Dynamic Credentials with the Vault Provider</a></li>
+<li><a href="https://developer.hashicorp.com/vault/docs/concepts/billing/clients/counting">Vault: Client count calculation</a></li>
 </ul>
 
 </main>
