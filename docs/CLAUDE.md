@@ -175,3 +175,6 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **サイバー攻撃の手法**: `Cyber Attacks/` 配下に 01〜22 を1手法1ファイルで執筆済み（CWE / ポートスキャン4種 / ポートノッキング / SPA / SSP / automatic fortification / DEP / ASLR / セッションフィクセーション / スニファ / プロミスキャスモード / WEP・WPA・ESSID / pass the hash / IP スプーフィング / DDoS 各種 / DNS 水責め / EDoS・DeOS / XSS / DNSSEC / キルチェーン / RLO / BadNets）。すべて図中心の HTML。攻撃手法の記事はここに追加する（別ディレクトリを作らない）
 - **HTTP/2**: `Networking/HTTP2.html`。図中心 HTML 記事のリファレンス実装
 - **HTTP/3 と QUIC**: `Networking/HTTP3.html`
+- **HSTS**: `Networking/HSTS.html`
+- **ファイル転送・リモート操作**: `Networking/ファイル転送とリモート操作/` 配下に 1 トピック 1 ファイル（FTP / パッシブ通信 / PASV / Anonymous FTP / SFTP / FTPS / TFTP / Telnet）
+- **無線 LAN**: `Networking/無線LAN/` 配下に 1 トピック 1 ファイル（CSMA/CA / アクセス手順 / ビーコン / ESSID / ステルスモード / ANY モード / WEP の IV / WPA・WPA2 / TKIP / CCMP / パーソナル・エンタープライズ / WPA3 / Enhanced Open / IEEE 802.1X / EAPOL / EAP / EAP の種類 / PIAFS）。攻撃者視点の WEP・WPA・ESSID は `Cyber Attacks/12_WEPとWPAとESSID.html` にある
