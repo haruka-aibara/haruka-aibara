@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cookie の属性</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Cookie の属性</h1>
+<p class="lede">セッション ID の入った Cookie が盗まれれば、パスワードなしで本人になりすませる。属性は「どこへ・誰に・いつまで」送るかを絞る防御線。</p>
+
+<h2>Cookie は黙っていると出歩きすぎる</h2>
+<p>Cookie はサーバが <code>Set-Cookie</code> ヘッダで置いていき、以後ブラウザが同じサイトへのリクエストに自動で添える。この「自動で添える」が便利さの源泉であり弱点でもある。何も指定しないと、<strong>平文の HTTP でも送るし、ページ内の JavaScript から読めるし、他サイト発のリクエストにも付いていく</strong>。属性はこの範囲を絞るためにある。</p>
+
+<figure>
+<svg viewBox="0 0 700 290" role="img" aria-label="Secure属性は平文HTTPへの送信を止め、HttpOnly属性はJavaScriptからの読み取りを止める">
+<defs>
+<marker id="ck1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="cks" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+</defs>
+<rect x="30" y="60" width="180" height="90" rx="10" fill="var(--card)" stroke="var(--ink)" stroke-width="1.7"/>
+<text x="120" y="86" font-size="11.5" fill="var(--ink)" text-anchor="middle">ブラウザ</text>
+<rect x="55" y="100" width="130" height="34" rx="6" fill="var(--c2)" opacity=".16"/>
+<text x="120" y="121" font-size="10" fill="var(--ink)" text-anchor="middle">🍪 session=abc123</text>
+<line x1="210" y1="88" x2="536" y2="88" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#ck1)"/>
+<text x="373" y="76" font-size="10.5" fill="var(--c1)" text-anchor="middle">HTTPS → Cookie を送る ✓</text>
+<line x1="210" y1="130" x2="330" y2="130" stroke="var(--stop)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#cks)"/>
+<line x1="336" y1="118" x2="360" y2="142" stroke="var(--stop)" stroke-width="2"/>
+<line x1="360" y1="118" x2="336" y2="142" stroke="var(--stop)" stroke-width="2"/>
+<text x="470" y="134" font-size="10.5" fill="var(--stop)">平文 HTTP → 送らない（Secure 属性）</text>
+<rect x="540" y="64" width="130" height="48" rx="8" fill="var(--c1)" opacity=".1"/>
+<rect x="540" y="64" width="130" height="48" rx="8" fill="none" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="605" y="93" font-size="11" fill="var(--ink)" text-anchor="middle">サーバ</text>
+<rect x="30" y="190" width="180" height="60" rx="10" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.6"/>
+<text x="120" y="214" font-size="10.5" fill="var(--stop)" text-anchor="middle">XSS で注入された</text>
+<text x="120" y="232" font-size="10.5" fill="var(--stop)" text-anchor="middle">document.cookie</text>
+<line x1="120" y1="186" x2="120" y2="158" stroke="var(--stop)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#cks)"/>
+<line x1="102" y1="160" x2="138" y2="178" stroke="var(--stop)" stroke-width="2"/>
+<line x1="138" y1="160" x2="102" y2="178" stroke="var(--stop)" stroke-width="2"/>
+<text x="250" y="220" font-size="10.5" fill="var(--ink)">JavaScript からは読めない（HttpOnly 属性）</text>
+<text x="250" y="240" font-size="10" fill="var(--muted)">→ XSS が成立しても Cookie の窃取までは防げる</text>
+<text x="350" y="276" font-size="10" fill="var(--muted)" text-anchor="middle">属性はサーバが Set-Cookie 時に指定する。後から効かせることはできない</text>
+</svg>
+<figcaption>Secure と HttpOnly は「守り先」が違う。Secure は経路上の盗聴、HttpOnly はページ内に紛れ込んだスクリプト（<a href="../../Cyber Attacks/18_XSSの3分類とセッションハイジャック.html">XSS</a>）が相手。セッション ID の Cookie には両方付けるのが基本。</figcaption>
+</figure>
+
+<h2>属性の一覧</h2>
+<table>
+<tr><th>属性</th><th>絞るもの</th><th>意味</th></tr>
+<tr><td><code>Secure</code></td><td>経路</td><td>HTTPS のときだけ送る</td></tr>
+<tr><td><code>HttpOnly</code></td><td>読み手</td><td>JavaScript（<code>document.cookie</code>）から読めなくする</td></tr>
+<tr><td><code>SameSite</code></td><td>発信元</td><td>他サイト起点のリクエストに付けるかどうか（<code>Strict</code> / <code>Lax</code> / <code>None</code>）。CSRF の緩和策</td></tr>
+<tr><td><code>Domain</code> / <code>Path</code></td><td>宛先</td><td>どのドメイン・パスへのリクエストに付けるか</td></tr>
+<tr><td><code>Expires</code> / <code>Max-Age</code></td><td>期間</td><td>いつまで保持するか。指定なしはブラウザを閉じるまでのセッション Cookie</td></tr>
+</table>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6265">RFC 6265 — HTTP State Management Mechanism</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Reference/Headers/Set-Cookie">MDN — Set-Cookie</a></li>
+</ul>
+
+</main>
+</body>
+</html>

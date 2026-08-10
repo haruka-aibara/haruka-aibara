@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ゾーン</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ゾーン</h1>
+<p class="lede">ドメインの木は世界でひとつながり。でも管理はひとつながりではない。「ここから先はあなたの責任」という区切りの単位がゾーン。</p>
+
+<h2>木は連続、管理は分割</h2>
+<p>DNS の名前空間はルートを頂点にした 1 本の木だが、全体をひとりで管理することはできない。そこで「この枝から下はあなたに任せる」という<strong>委任（delegation）</strong>を繰り返して管理を分割している。</p>
+<p>この<strong>委任によって区切られた、ひとまとまりの管理範囲</strong>がゾーン。権威サーバが持っている「原本」は、ドメイン全体ではなくこのゾーン単位のデータ（ゾーンファイル）で、そこに A レコードや MX レコードなどが書かれている。</p>
+
+<figure>
+<svg viewBox="0 0 700 320" role="img" aria-label="ドメインツリーの上にゾーンの境界が重なる図。jpゾーンはexample.jpを委任し、example.jpゾーンがwwwとmailを管理する">
+<line x1="350" y1="52" x2="200" y2="96" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="350" y1="52" x2="500" y2="96" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="200" y1="130" x2="200" y2="176" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="200" y1="210" x2="120" y2="254" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="200" y1="210" x2="280" y2="254" stroke="var(--line)" stroke-width="1.6"/>
+<rect x="310" y="20" width="80" height="32" rx="16" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="350" y="41" font-size="11.5" fill="var(--muted)" text-anchor="middle">.（ルート）</text>
+<rect x="140" y="98" width="120" height="120" rx="12" fill="var(--c2)" opacity=".08"/>
+<rect x="140" y="98" width="120" height="120" rx="12" fill="none" stroke="var(--c2)" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="112" y="112" font-size="10.5" fill="var(--c2)" text-anchor="end">jp ゾーン</text>
+<rect x="165" y="98" width="70" height="32" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/>
+<text x="200" y="119" font-size="11.5" fill="var(--ink)" text-anchor="middle">jp</text>
+<rect x="150" y="176" width="100" height="34" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="200" y="198" font-size="11.5" fill="var(--ink)" text-anchor="middle">example</text>
+<rect x="460" y="96" width="80" height="32" rx="6" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="500" y="117" font-size="11.5" fill="var(--muted)" text-anchor="middle">com …</text>
+<rect x="60" y="160" width="290" height="140" rx="12" fill="var(--c1)" opacity=".07"/>
+<rect x="60" y="160" width="290" height="140" rx="12" fill="none" stroke="var(--c1)" stroke-width="1.6" stroke-dasharray="6 4"/>
+<text x="358" y="292" font-size="10.5" fill="var(--c1)">example.jp ゾーン</text>
+<rect x="85" y="254" width="70" height="32" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="120" y="275" font-size="11.5" fill="var(--ink)" text-anchor="middle">www</text>
+<rect x="245" y="254" width="70" height="32" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="280" y="275" font-size="11.5" fill="var(--ink)" text-anchor="middle">mail</text>
+<text x="470" y="180" font-size="10.5" fill="var(--ink)">jp ゾーンは「example.jp の権威サーバは</text>
+<text x="470" y="198" font-size="10.5" fill="var(--ink)">ここ」という案内（NS レコード）だけ持つ</text>
+<text x="470" y="226" font-size="10.5" fill="var(--muted)">www や mail の中身を知っているのは</text>
+<text x="470" y="244" font-size="10.5" fill="var(--muted)">example.jp ゾーンの権威サーバだけ</text>
+<line x1="238" y1="146" x2="222" y2="170" stroke="var(--c1)" stroke-width="1.3"/>
+<text x="252" y="146" font-size="9.5" fill="var(--c1)">委任の境界</text>
+</svg>
+<figcaption>ゾーンの境界は木の枝と一致するとは限らない。example.jp がさらに <code>dev.example.jp</code> を別チームに委任すれば、そこからは別ゾーンになる。委任しなければ同じゾーンのまま。</figcaption>
+</figure>
+
+<p>ゾーンという単位は、このあとの話すべての前提になる。冗長化のためにゾーンのデータを複製するのが<a href="ゾーン転送.html">ゾーン転送</a>で、権威サーバが「答えられる範囲」もゾーンで決まる。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1034">RFC 1034 — Domain Names: Concepts and Facilities</a></li>
+<li><a href="https://jprs.jp/glossary/">JPRS 用語辞典</a></li>
+</ul>
+
+</main>
+</body>
+</html>

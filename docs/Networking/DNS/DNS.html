@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DNS</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DNS</h1>
+<p class="lede">通信には相手の IP アドレスが要る。でも人間が覚えているのは名前だけ。名前から IP を引く電話帳が DNS。</p>
+
+<h2>名前と IP アドレスの対応表を、誰が持つか</h2>
+<p>「<code>www.example.jp</code> に接続したい」と思っても、パケットの宛先に書けるのは IP アドレスだけ。名前 → IP の変換（名前解決）がすべての通信の前に挟まる。</p>
+<p>問題はこの対応表の管理方法。世界中の名前を 1 か所の表で管理するのは、量的にも更新頻度的にも無理がある。そこで DNS は名前を<strong>階層構造にして、階層ごとに管理者を分ける</strong>という設計を取った。</p>
+
+<figure>
+<svg viewBox="0 0 700 290" role="img" aria-label="ドメイン名の階層構造。ルートを頂点にjpやcomが分かれ、その下にexample.jp、さらにwwwと続く">
+<line x1="350" y1="58" x2="170" y2="102" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="350" y1="58" x2="350" y2="102" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="350" y1="58" x2="530" y2="102" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="170" y1="136" x2="170" y2="188" stroke="var(--line)" stroke-width="1.6"/>
+<line x1="170" y1="222" x2="170" y2="240" stroke="var(--line)" stroke-width="1.6"/>
+<rect x="305" y="24" width="90" height="34" rx="17" fill="var(--c2)" opacity=".12"/>
+<rect x="305" y="24" width="90" height="34" rx="17" fill="none" stroke="var(--c2)" stroke-width="1.7"/>
+<text x="350" y="46" font-size="12" fill="var(--ink)" text-anchor="middle">.（ルート）</text>
+<rect x="130" y="102" width="80" height="34" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="170" y="124" font-size="12" fill="var(--ink)" text-anchor="middle">jp</text>
+<rect x="310" y="102" width="80" height="34" rx="6" fill="var(--card)" stroke="var(--line)" stroke-width="1.6"/>
+<text x="350" y="124" font-size="12" fill="var(--muted)" text-anchor="middle">com</text>
+<rect x="490" y="102" width="80" height="34" rx="6" fill="var(--card)" stroke="var(--line)" stroke-width="1.6"/>
+<text x="530" y="124" font-size="12" fill="var(--muted)" text-anchor="middle">org</text>
+<rect x="110" y="188" width="120" height="34" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="170" y="210" font-size="12" fill="var(--ink)" text-anchor="middle">example</text>
+<rect x="130" y="240" width="80" height="34" rx="6" fill="var(--c1)" opacity=".12"/>
+<rect x="130" y="240" width="80" height="34" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.8"/>
+<text x="170" y="262" font-size="12" fill="var(--ink)" text-anchor="middle">www</text>
+<text x="430" y="200" font-size="12" fill="var(--ink)" text-anchor="middle">www.example.jp</text>
+<text x="430" y="222" font-size="10.5" fill="var(--muted)" text-anchor="middle">＝ 木を下から上へ読んだもの。</text>
+<text x="430" y="240" font-size="10.5" fill="var(--muted)" text-anchor="middle">右端ほど根に近く、住所の「国 → 市 → 番地」と同じ入れ子</text>
+<text x="620" y="46" font-size="10.5" fill="var(--muted)" text-anchor="middle">階層ごとに管理者が別</text>
+<text x="620" y="63" font-size="10.5" fill="var(--muted)" text-anchor="middle">（分散管理）</text>
+</svg>
+<figcaption>各階層は自分の直下だけ知っていればいい。「jp の下に example がある」ことは jp の管理者が、「example.jp の下に www がある」ことは example.jp の管理者が知っている。この分担の単位が<a href="ゾーン.html">ゾーン</a>。</figcaption>
+</figure>
+
+<h2>引くときは根から順に辿る</h2>
+<p>名前解決は、この木を<strong>ルートから順に「次はどこに聞けばいいか」を教えてもらいながら降りていく</strong>ことで行われる。ただし毎回端末がそれをやるのではなく、代行するサーバと役割分担がある。登場人物は <a href="DNSサーバの3つの役割.html">DNS サーバの 3 つの役割</a> にまとめた。</p>
+<p>一度引いた結果は各所でキャッシュされるので、実際にルートまで辿る問い合わせはごく一部で済む。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1034">RFC 1034 — Domain Names: Concepts and Facilities</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1035">RFC 1035 — Domain Names: Implementation and Specification</a></li>
+<li><a href="https://jprs.jp/glossary/">JPRS 用語辞典</a></li>
+</ul>
+
+</main>
+</body>
+</html>

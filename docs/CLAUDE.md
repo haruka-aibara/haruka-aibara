@@ -173,3 +173,7 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **HSTS**: `Networking/HSTS.html`
 - **ファイル転送・リモート操作**: `Networking/ファイル転送とリモート操作/` 配下に 1 トピック 1 ファイル（FTP / パッシブ通信 / PASV / Anonymous FTP / SFTP / FTPS / TFTP / Telnet）
 - **無線 LAN**: `Networking/無線LAN/` 配下に 1 トピック 1 ファイル（CSMA/CA / アクセス手順 / ビーコン / ESSID / ステルスモード / ANY モード / WEP の IV / WPA・WPA2 / TKIP / CCMP / パーソナル・エンタープライズ / WPA3 / Enhanced Open / IEEE 802.1X / EAPOL / EAP / EAP の種類 / PIAFS）。攻撃者視点の WEP・WPA・ESSID は `Cyber Attacks/12_WEPとWPAとESSID.html` にある
+- **DHCP**: `Networking/DHCP.html`（しくみ＋リレーエージェント）
+- **DNS**: `Networking/DNS/` 配下に 1 トピック 1 ファイル（DNS / サーバの3つの役割 / DNS over TLS / ゾーン / ゾーン転送 / オープンリゾルバ）。DNSSEC・キャッシュポイズニングは `Cyber Attacks/19_カミンスキーアタックとDNSSEC.html` にある（重複記事を作らない）
+- **メール**: `Networking/メール/` 配下に 1 トピック 1 ファイル（SMTPとPOP3 / APOP / IMAP4 / POP before SMTP / SMTP-AUTH / SMTPS / 送信ドメイン認証 / SPF / DKIM / DMARC）
+- **HTTP 基礎**: `Networking/HTTP/` 配下に 1 トピック 1 ファイル（キープアライブ / URLエンコード / HTTPヘッダ / Cookieの属性 / WebDAV）。HTTP2・HTTP3・HSTS は `Networking/` 直下
