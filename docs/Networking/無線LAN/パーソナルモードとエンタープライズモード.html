@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WPA のパーソナルモードとエンタープライズモード</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>WPA のパーソナルモードとエンタープライズモード</h1>
+<p class="lede">合言葉を全員で共有するか、一人ひとり別に認証するか。同じ WPA2/WPA3 でも運用がまるで変わる。</p>
+<h2>「退職者が出たら全端末を設定し直す」問題</h2>
+<p>家庭やお店の Wi-Fi は、1 つの合言葉（事前共有鍵、PSK）を全員で使う——これが<strong>パーソナルモード</strong>。手軽だが、合言葉を知っている人は全員同じ資格になるので、<strong>誰か 1 人が辞めたり漏らしたりすると全員分を変えるしかない</strong>。誰がつないでいたのかも分からない。</p>
+<p><strong>エンタープライズモード</strong>は合言葉を共有しない。接続してきた端末ごとに認証サーバ（RADIUS）へ問い合わせ、<strong>個人のアカウントや証明書</strong>で確認する。1 人だけ止めることができ、記録も個人単位で残る。</p>
+
+<figure>
+<svg viewBox="0 0 700 280" role="img" aria-label="PSKは全員同じ鍵、エンタープライズは個人ごとの鍵">
+<defs><marker id="q1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker><marker id="q2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker></defs><text x="0" y="13" font-size="11.5" fill="var(--c2)" text-anchor="start" font-weight="600">パーソナル（PSK）</text><g transform="translate(0,26)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(15,66) scale(0.95) rotate(0)"><circle cx="6" cy="6" r="5.5" fill="none" stroke="var(--c2)" stroke-width="2.4"/><line x1="11" y1="6" x2="26" y2="6" stroke="var(--c2)" stroke-width="2.4"/><line x1="21" y1="6" x2="21" y2="11" stroke="var(--c2)" stroke-width="2.2"/><line x1="16" y1="6" x2="16" y2="10.5" stroke="var(--c2)" stroke-width="2.2"/></g><g transform="translate(100,26)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(115,66) scale(0.95) rotate(0)"><circle cx="6" cy="6" r="5.5" fill="none" stroke="var(--c2)" stroke-width="2.4"/><line x1="11" y1="6" x2="26" y2="6" stroke="var(--c2)" stroke-width="2.4"/><line x1="21" y1="6" x2="21" y2="11" stroke="var(--c2)" stroke-width="2.2"/><line x1="16" y1="6" x2="16" y2="10.5" stroke="var(--c2)" stroke-width="2.2"/></g><g transform="translate(200,26)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(215,66) scale(0.95) rotate(0)"><circle cx="6" cy="6" r="5.5" fill="none" stroke="var(--c2)" stroke-width="2.4"/><line x1="11" y1="6" x2="26" y2="6" stroke="var(--c2)" stroke-width="2.4"/><line x1="21" y1="6" x2="21" y2="11" stroke="var(--c2)" stroke-width="2.2"/><line x1="16" y1="6" x2="16" y2="10.5" stroke="var(--c2)" stroke-width="2.2"/></g><line x1="268" y1="50" x2="322" y2="50" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#q1)"/><g transform="translate(330,42)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--ink)"/><circle cx="37" cy="-21" r="2.2" fill="var(--ink)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--ink)"/><circle cx="19" cy="8" r="2" fill="var(--ink)" opacity=".45"/></g><rect x="410" y="24" width="290" height="74" rx="8" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.4"/><text x="555" y="46" font-size="10.5" fill="var(--stop)" text-anchor="middle">全員が同じ合言葉＝区別できない</text><text x="555" y="66" font-size="10.5" fill="var(--stop)" text-anchor="middle">誰がつないだかも残らない</text><text x="555" y="86" font-size="10.5" fill="var(--stop)" text-anchor="middle">1 人漏らしたら全端末で変更</text><text x="110" y="100" font-size="10.5" fill="var(--c2)" text-anchor="middle">同じ鍵を全員で共有する</text><line x1="0" y1="128" x2="700" y2="128" stroke="var(--line)" stroke-width="1"/><text x="0" y="154" font-size="11.5" fill="var(--c3)" text-anchor="start" font-weight="600">エンタープライズ（IEEE 802.1X）</text><g transform="translate(0,168)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(15,208) scale(0.95) rotate(0)"><circle cx="6" cy="6" r="5.5" fill="none" stroke="var(--c1)" stroke-width="2.4"/><line x1="11" y1="6" x2="26" y2="6" stroke="var(--c1)" stroke-width="2.4"/><line x1="21" y1="6" x2="21" y2="11" stroke="var(--c1)" stroke-width="2.2"/><line x1="16" y1="6" x2="16" y2="10.5" stroke="var(--c1)" stroke-width="2.2"/></g><g transform="translate(100,168)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(115,208) scale(0.95) rotate(0)"><circle cx="6" cy="6" r="5.5" fill="none" stroke="var(--c2)" stroke-width="2.4"/><line x1="11" y1="6" x2="26" y2="6" stroke="var(--c2)" stroke-width="2.4"/><line x1="21" y1="6" x2="21" y2="11" stroke="var(--c2)" stroke-width="2.2"/><line x1="16" y1="6" x2="16" y2="10.5" stroke="var(--c2)" stroke-width="2.2"/></g><g transform="translate(200,168)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(215,208) scale(0.95) rotate(0)"><circle cx="6" cy="6" r="5.5" fill="none" stroke="var(--c4)" stroke-width="2.4"/><line x1="11" y1="6" x2="26" y2="6" stroke="var(--c4)" stroke-width="2.4"/><line x1="21" y1="6" x2="21" y2="11" stroke="var(--c4)" stroke-width="2.2"/><line x1="16" y1="6" x2="16" y2="10.5" stroke="var(--c4)" stroke-width="2.2"/></g><line x1="268" y1="192" x2="322" y2="192" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#q2)"/><g transform="translate(330,184)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--ink)"/><circle cx="37" cy="-21" r="2.2" fill="var(--ink)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--ink)"/><circle cx="19" cy="8" r="2" fill="var(--ink)" opacity=".45"/></g><line x1="378" y1="192" x2="432" y2="192" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#q2)"/><g transform="translate(440,170)"><rect x="0" y="0" width="34" height="46" rx="3" fill="var(--card)" stroke="var(--c3)" stroke-width="1.6"/><line x1="0" y1="15.3" x2="34" y2="15.3" stroke="var(--c3)" stroke-width="1.2"/><line x1="0" y1="30.6" x2="34" y2="30.6" stroke="var(--c3)" stroke-width="1.2"/><circle cx="7" cy="7.6" r="2" fill="var(--c3)"/><circle cx="7" cy="23" r="2" fill="var(--c3)"/><circle cx="7" cy="38.3" r="2" fill="var(--c3)"/><line x1="14" y1="7.6" x2="27" y2="7.6" stroke="var(--c3)" stroke-width="1.2" opacity=".5"/><line x1="14" y1="23" x2="27" y2="23" stroke="var(--c3)" stroke-width="1.2" opacity=".5"/><line x1="14" y1="38.3" x2="27" y2="38.3" stroke="var(--c3)" stroke-width="1.2" opacity=".5"/></g><text x="457" y="240" font-size="10" fill="var(--c3)" text-anchor="middle">認証サーバ</text><rect x="500" y="160" width="200" height="66" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/><text x="600" y="182" font-size="10.5" fill="var(--c3)" text-anchor="middle">1 人だけ止められる</text><text x="600" y="202" font-size="10.5" fill="var(--c3)" text-anchor="middle">記録も個人単位で残る</text><text x="110" y="242" font-size="10.5" fill="var(--c3)" text-anchor="middle">端末ごとに別の鍵が渡される</text><text x="350" y="272" font-size="10.5" fill="var(--muted)" text-anchor="middle">暗号の強さは同じ。違うのは「鍵をどう配るか」</text>
+</svg>
+<figcaption>パーソナルでは同じネットワークの他人に自分の通信を復号される余地も残る。エンタープライズは端末ごとに鍵が別なのでそこも塞がる。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.wi-fi.org/discover-wi-fi/security">Wi-Fi Alliance — Security</a></li>
+</ul>
+
+</main>
+</body>
+</html>

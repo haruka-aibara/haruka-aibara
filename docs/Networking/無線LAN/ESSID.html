@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESSID</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ESSID</h1>
+<p class="lede">電波は重なる。どれが自分のつなぐべきネットワークかを区別するための名前。</p>
+<h2>AP が複数あっても、名前が同じなら 1 つのネットワーク</h2>
+<p>オフィスやビルでは、隣の部屋の AP も他社の AP も電波が混ざって届く。端末はそこから<strong>どれが自分の入るべきネットワークか</strong>を選ぶ必要がある。その目印が ESSID——最大 32 文字のネットワーク名で、ビーコンに載って流れている。</p>
+<p>フロアが広ければ AP は複数台になるが、<strong>同じ ESSID を設定しておけば端末からは 1 つのネットワークに見える</strong>。歩いて電波が弱くなれば、端末は同じ ESSID の別の AP に自動で乗り換える。</p>
+
+<figure>
+<svg viewBox="0 0 700 244" role="img" aria-label="同じESSIDの2台のAPと別ESSIDのAPを電波の広がりで表した図">
+<defs><marker id="e1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker></defs><circle cx="165" cy="118" r="92" fill="var(--c1)" opacity=".12" stroke="var(--c1)" stroke-width="1.4" stroke-dasharray="5 4"/><circle cx="330" cy="118" r="92" fill="var(--c1)" opacity=".12" stroke="var(--c1)" stroke-width="1.4" stroke-dasharray="5 4"/><circle cx="580" cy="118" r="82" fill="var(--c2)" opacity=".12" stroke="var(--c2)" stroke-width="1.4" stroke-dasharray="5 4"/><text x="248" y="22" font-size="11.5" fill="var(--c1)" text-anchor="middle" font-weight="600">ESSID: office-wifi</text><text x="580" y="22" font-size="11.5" fill="var(--c2)" text-anchor="middle" font-weight="600">ESSID: cafe-free</text><g transform="translate(143,100)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--c1)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--c1)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--c1)"/><circle cx="37" cy="-21" r="2.2" fill="var(--c1)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--c1)"/><circle cx="19" cy="8" r="2" fill="var(--c1)" opacity=".45"/></g><text x="165" y="148" font-size="10" fill="var(--muted)" text-anchor="middle">BSSID …:01</text><g transform="translate(308,100)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--c1)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--c1)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--c1)"/><circle cx="37" cy="-21" r="2.2" fill="var(--c1)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--c1)"/><circle cx="19" cy="8" r="2" fill="var(--c1)" opacity=".45"/></g><text x="330" y="148" font-size="10" fill="var(--muted)" text-anchor="middle">BSSID …:02</text><g transform="translate(558,100)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--c2)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--c2)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--c2)"/><circle cx="37" cy="-21" r="2.2" fill="var(--c2)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--c2)"/><circle cx="19" cy="8" r="2" fill="var(--c2)" opacity=".45"/></g><text x="580" y="148" font-size="10" fill="var(--muted)" text-anchor="middle">別のネットワーク</text><g transform="translate(238,172) scale(0.8)"><circle cx="9" cy="6" r="5.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><path d="M0 28 a9 11 0 0 1 18 0 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/></g><line x1="200" y1="196" x2="300" y2="196" stroke="var(--c3)" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#e1)"/><text x="248" y="228" font-size="10.5" fill="var(--c3)" text-anchor="middle">歩いて電波が弱くなれば、同じ名前の AP に自動で乗り換わる</text>
+</svg>
+<figcaption>ESSID ＝ ネットワークの名前、BSSID ＝ AP 1 台ごとの識別子（実体はその AP の MAC アドレス）。「つながるのに遅い」を追うときは BSSID を見る。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>ESSID は認証の役には立たない。</strong>暗号化されずに流れているので、誰でも読めるし、同じ名前を名乗る偽の AP を立てることもできる。安全性を決めるのは暗号方式と合言葉のほう。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://standards.ieee.org/ieee/802.11/7028/">IEEE 802.11 — Wireless LAN MAC and PHY Specifications</a></li>
+</ul>
+
+</main>
+</body>
+</html>

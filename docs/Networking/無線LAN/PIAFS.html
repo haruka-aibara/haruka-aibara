@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PIAFS</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>PIAFS</h1>
+<p class="lede">PHS でデータ通信をするための規格。今は使われていないが、用語として出てくる。</p>
+<h2>携帯より安く、モデムより速い枠があった時代</h2>
+<p>1990 年代後半、外出先からインターネットにつなぐ手段は携帯電話か PHS だった。PHS は基地局を細かく置く方式で、そのぶん<strong>通信が安定していて料金も安い</strong>。そこに合わせて作られたデータ通信規格が PIAFS で、<strong>32kbps（のちに 2 回線束ねて 64kbps）</strong>を出した。当時の固定回線のモデム（56kbps）と同等で、モバイル通信としては速いほうだった。</p>
+
+<figure>
+<svg viewBox="0 0 700 236" role="img" aria-label="PHSの基地局を渡り歩きながら通信するPIAFSと年表">
+<defs><marker id="i1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker></defs><g transform="translate(70,20) scale(1.0)"><path d="M4 34 L11 4 M20 34 L13 4" stroke="var(--muted)" stroke-width="1.6" fill="none"/><line x1="7" y1="20" x2="17" y2="20" stroke="var(--muted)" stroke-width="1.4"/><circle cx="12" cy="3" r="2.4" fill="var(--muted)"/></g><g transform="translate(330,20) scale(1.0)"><path d="M4 34 L11 4 M20 34 L13 4" stroke="var(--c1)" stroke-width="1.6" fill="none"/><line x1="7" y1="20" x2="17" y2="20" stroke="var(--c1)" stroke-width="1.4"/><circle cx="12" cy="3" r="2.4" fill="var(--c1)"/></g><g transform="translate(590,20) scale(1.0)"><path d="M4 34 L11 4 M20 34 L13 4" stroke="var(--muted)" stroke-width="1.6" fill="none"/><line x1="7" y1="20" x2="17" y2="20" stroke="var(--muted)" stroke-width="1.4"/><circle cx="12" cy="3" r="2.4" fill="var(--muted)"/></g><path d="M103.3 44.9 A26 26 0 0 1 60.7 44.9" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.30"/><path d="M113.1 51.8 A38 38 0 0 1 50.9 51.8" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.23"/><path d="M363.3 44.9 A26 26 0 0 1 320.7 44.9" fill="none" stroke="var(--c1)" stroke-width="1.6" stroke-linecap="round" opacity="0.45"/><path d="M373.1 51.8 A38 38 0 0 1 310.9 51.8" fill="none" stroke="var(--c1)" stroke-width="1.6" stroke-linecap="round" opacity="0.35"/><path d="M623.3 44.9 A26 26 0 0 1 580.7 44.9" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.30"/><path d="M633.1 51.8 A38 38 0 0 1 570.9 51.8" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.23"/><g transform="translate(200,62) scale(0.9)"><circle cx="9" cy="6" r="5.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><path d="M0 28 a9 11 0 0 1 18 0 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/></g><path d="M140 84 Q245 44 350 84" fill="none" stroke="var(--c1)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#i1)"/><text x="350" y="112" font-size="10.5" fill="var(--c1)" text-anchor="middle">移動中も基地局を渡り歩いて接続を保つ</text><line x1="0" y1="150" x2="700" y2="150" stroke="var(--line)" stroke-width="1.5"/><circle cx="90" cy="150" r="5" fill="var(--muted)"/><circle cx="290" cy="150" r="6.5" fill="var(--c1)"/><circle cx="490" cy="150" r="5" fill="var(--muted)"/><circle cx="650" cy="150" r="5" fill="var(--stop)"/><text x="90" y="138" font-size="10" fill="var(--muted)" text-anchor="middle">1995 年ごろ</text><text x="90" y="172" font-size="10.5" fill="var(--muted)" text-anchor="middle">PHS サービス開始</text><text x="290" y="136" font-size="10.5" fill="var(--c1)" text-anchor="middle" font-weight="600">1997 年ごろ</text><text x="290" y="172" font-size="10.5" fill="var(--c1)" text-anchor="middle">PIAFS で 32kbps</text><text x="290" y="190" font-size="10.5" fill="var(--c1)" text-anchor="middle">のちに 2 回線束ねて 64kbps</text><text x="490" y="138" font-size="10" fill="var(--muted)" text-anchor="middle">2000 年代</text><text x="490" y="172" font-size="10.5" fill="var(--muted)" text-anchor="middle">携帯のデータ通信が高速化</text><text x="650" y="138" font-size="10" fill="var(--stop)" text-anchor="middle">2020 年</text><text x="650" y="172" font-size="10.5" fill="var(--stop)" text-anchor="middle">PHS サービス終了</text><text x="290" y="220" font-size="10.5" fill="var(--muted)" text-anchor="middle">当時の固定回線のモデム（56kbps）と同等で、持ち歩ける回線としては速いほうだった</text>
+</svg>
+<figcaption>役割は 3G 以降のデータ通信に完全に置き換わっており、現在は歴史上の用語。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.soumu.go.jp/johotsusintokei/whitepaper/">総務省 情報通信白書</a></li>
+</ul>
+
+</main>
+</body>
+</html>

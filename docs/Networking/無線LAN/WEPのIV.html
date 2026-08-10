@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WEP の IV</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>WEP の IV</h1>
+<p class="lede">24 ビットしかない使い捨ての値。これが WEP を壊した。</p>
+<h2>同じ鍵で暗号化し続けるとまずい</h2>
+<p>同じ鍵をそのまま使い回すと、同じ内容がいつも同じ暗号文になり、規則が見えてしまう。そこで暗号にはパケットごとに変える値を混ぜる。それが <strong>IV（初期化ベクトル）</strong> で、WEP では「設定した合言葉 ＋ IV」を鍵として使っていた。</p>
+<p>問題は IV の長さが <strong>24 ビット＝約 1,678 万通りしかない</strong>こと。しかも<strong>受け手が復号できるよう平文のまま一緒に送られる</strong>。混んだ回線では数時間で一周して同じ IV が再登場し、同じ IV のパケットを集めれば合言葉そのものを計算で求められる。</p>
+
+<figure>
+<svg viewBox="0 0 700 244" role="img" aria-label="24ビットのIVが一周して使い回されると鍵が復元される">
+<defs><marker id="w1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker></defs><text x="0" y="13" font-size="11.5" fill="var(--ink)" text-anchor="start" font-weight="600">1 パケットの中身</text><rect x="0" y="24" width="150" height="42" rx="5" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="1.5"/><text x="75" y="42" font-size="10.5" fill="var(--stop)" text-anchor="middle">IV（24 ビット）</text><text x="75" y="58" font-size="10" fill="var(--stop)" text-anchor="middle">暗号化されない</text><rect x="150" y="24" width="550" height="42" rx="5" fill="var(--lane)" stroke="var(--line)" stroke-width="1.4"/><g transform="translate(180,30) scale(0.8)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--muted)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--muted)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><text x="430" y="50" font-size="10.5" fill="var(--muted)" text-anchor="middle">暗号化された中身</text><text x="75" y="86" font-size="10.5" fill="var(--muted)" text-anchor="start">受け手が復号できるよう、そのまま送られる</text><circle cx="98" cy="176" r="42" fill="none" stroke="var(--lane)" stroke-width="15"/><path d="M98 134 A42 42 0 1 1 62 197" fill="none" stroke="var(--stop)" stroke-width="15" stroke-linecap="round"/><line x1="98" y1="176" x2="98" y2="140" stroke="var(--stop)" stroke-width="2.4" stroke-linecap="round"/><circle cx="98" cy="176" r="4" fill="var(--stop)"/><text x="98" y="234" font-size="10.5" fill="var(--stop)" text-anchor="middle">約 1,678 万通りで一周する</text><g transform="translate(220,150) scale(0.85)"><path d="M0 0 H14 L22 8 V28 H0 Z" fill="var(--card)" stroke="var(--stop)" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 0 V8 H22" fill="none" stroke="var(--stop)" stroke-width="1.4"/><line x1="5" y1="12" x2="17" y2="12" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="17" x2="17" y2="17" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="22" x2="17" y2="22" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/></g><g transform="translate(262,150) scale(0.85)"><path d="M0 0 H14 L22 8 V28 H0 Z" fill="var(--card)" stroke="var(--stop)" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 0 V8 H22" fill="none" stroke="var(--stop)" stroke-width="1.4"/><line x1="5" y1="12" x2="17" y2="12" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="17" x2="17" y2="17" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="22" x2="17" y2="22" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/></g><g transform="translate(304,150) scale(0.85)"><path d="M0 0 H14 L22 8 V28 H0 Z" fill="var(--card)" stroke="var(--stop)" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 0 V8 H22" fill="none" stroke="var(--stop)" stroke-width="1.4"/><line x1="5" y1="12" x2="17" y2="12" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="17" x2="17" y2="17" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="22" x2="17" y2="22" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/></g><g transform="translate(346,150) scale(0.85)"><path d="M0 0 H14 L22 8 V28 H0 Z" fill="var(--card)" stroke="var(--stop)" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 0 V8 H22" fill="none" stroke="var(--stop)" stroke-width="1.4"/><line x1="5" y1="12" x2="17" y2="12" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="17" x2="17" y2="17" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/><line x1="5" y1="22" x2="17" y2="22" stroke="var(--stop)" stroke-width="1.3" opacity=".6"/></g><text x="285" y="214" font-size="10.5" fill="var(--stop)" text-anchor="middle">同じ IV のパケットが溜まる</text><line x1="404" y1="164" x2="476" y2="164" stroke="var(--stop)" stroke-width="1.6" marker-end="url(#w1)"/><g transform="translate(492,158) scale(1.35) rotate(0)"><circle cx="6" cy="6" r="5.5" fill="none" stroke="var(--stop)" stroke-width="2.4"/><line x1="11" y1="6" x2="26" y2="6" stroke="var(--stop)" stroke-width="2.4"/><line x1="21" y1="6" x2="21" y2="11" stroke="var(--stop)" stroke-width="2.2"/><line x1="16" y1="6" x2="16" y2="10.5" stroke="var(--stop)" stroke-width="2.2"/></g><text x="560" y="214" font-size="10.5" fill="var(--stop)" text-anchor="middle">合言葉そのものが復元できる</text>
+</svg>
+<figcaption>通信を眺めているだけで鍵が割れるので、合言葉を長くしても意味がない。WEP は設定できても選んではいけない項目。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.wi-fi.org/discover-wi-fi/security">Wi-Fi Alliance — Security</a></li>
+</ul>
+
+</main>
+</body>
+</html>
