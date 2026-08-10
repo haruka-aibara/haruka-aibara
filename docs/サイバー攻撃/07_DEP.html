@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEP / NX — データ置き場のコードを実行させない</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DEP / NX — データ置き場のコードを実行させない</h1>
+<p class="lede">送り込んだコードにジャンプされても、そこが実行不可なら動かない。</p>
+
+<h2>入力として送り込まれたコードが、なぜ動いてしまうのか</h2>
+<p>古典的なバッファオーバーフロー攻撃は2段構えになっている。まず入力データとして<strong>機械語のコード（シェルコード）</strong>を送り込み、次にリターンアドレスをそのデータの番地に書き換えて、そこへ飛ばせる。うまくいけば攻撃者のコードがプログラムの権限で動く。</p>
+<p>成立している前提は「データを置いた場所を、CPU がコードとしても実行してくれる」こと。DEP（Data Execution Prevention。CPU 側の機能名から NX ビット、Linux では W^X とも呼ばれる）は、この前提を壊す。<strong>データ用の領域には「実行不可」の印を付けておき、そこへ飛んだ時点で CPU が拒否する。</strong></p>
+
+<figure>
+<svg viewBox="0 0 700 210" role="img" aria-label="メモリ領域ごとの実行可否とシェルコードが弾かれる様子">
+  <defs>
+    <marker id="dep-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+    <marker id="dep-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="dep-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+  </defs>
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">プロセスのメモリ</text>
+  <g font-size="11">
+    <rect x="0" y="24" width="330" height="32" rx="5" fill="var(--c3)"/>
+    <text x="16" y="45" fill="var(--on)">プログラムのコード</text>
+    <text x="314" y="45" fill="var(--on)" text-anchor="end">実行可</text>
+
+    <rect x="0" y="62" width="330" height="32" rx="5" fill="var(--c3)"/>
+    <text x="16" y="83" fill="var(--on)">共有ライブラリ</text>
+    <text x="314" y="83" fill="var(--on)" text-anchor="end">実行可</text>
+
+    <rect x="0" y="100" width="330" height="32" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="16" y="121" fill="var(--ink)">ヒープ（動的に確保したデータ）</text>
+    <text x="314" y="121" fill="var(--stop)" text-anchor="end">実行不可</text>
+
+    <rect x="0" y="138" width="330" height="32" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="16" y="159" fill="var(--ink)">スタック（ローカル変数）</text>
+    <text x="314" y="159" fill="var(--stop)" text-anchor="end">実行不可</text>
+  </g>
+
+  <rect x="392" y="24" width="308" height="60" rx="7" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="408" y="46" font-size="11" fill="var(--stop)">① 入力に混ぜてシェルコードを送り込む</text>
+  <text x="408" y="66" font-size="11" fill="var(--stop)">② リターンアドレスをその番地に書き換える</text>
+  <path d="M392 60 L360 60 L360 154 L338 154" fill="none" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#dep-stop)"/>
+
+  <rect x="392" y="104" width="308" height="66" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="408" y="126" font-size="11.5" font-weight="600" fill="var(--ink)">③ そこへ飛んだ瞬間</text>
+  <text x="408" y="146" font-size="11" fill="var(--muted)">CPU が「実行不可の領域」と判断して例外を出す</text>
+  <text x="408" y="162" font-size="11" fill="var(--muted)">→ コードは1命令も動かずプロセスが落ちる</text>
+
+  <text x="0" y="196" font-size="11" fill="var(--muted)">書き込める場所は実行できない、実行できる場所は書き込めない — これを分けるのが DEP の考え方</text>
+</svg>
+<figcaption>Windows では DEP、Linux や BSD では NX ビットの有効化として提供され、今のプラットフォームでは既定で有効。JIT コンパイラのように実行時にコードを生成するアプリだけが、明示的に「ここは実行可」と指定して領域を確保する。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>DEP だけでは足りない。</strong>新しいコードを送り込めないなら、<em>すでに実行可能な場所にあるコードの断片を繋いで</em>目的を果たす、という迂回手法（ROP）がある。この組み立てには各断片の正確な番地が必要になるので、番地を毎回変える <a href="08_ASLR.html">ASLR</a> と組み合わせて初めて実用的な防御になる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/memory/data-execution-prevention">Microsoft Learn — Data Execution Prevention</a></li>
+<li><a href="https://learn.microsoft.com/en-us/windows/win32/win7appqual/dep-nx-protection">Microsoft Learn — DEP/NX Protection</a></li>
+</ul>
+
+</main>
+</body>
+</html>

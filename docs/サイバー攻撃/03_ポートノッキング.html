@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ポートノッキング — 決めた順番でポートを叩いて開けさせる</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ポートノッキング — 決めた順番でポートを叩いて開けさせる</h1>
+<p class="lede">SSH を晒したくない。でも接続元の IP が固定できない。その折衷案として出てくる仕組み。</p>
+
+<h2>接続元 IP で絞れないときにどうするか</h2>
+<p>SSH をインターネットに向けて開けておくと、スキャンされて総当たりログインが延々と来る。素直な対策は接続元 IP での制限だが、外出先や自宅からつなぐ場合は IP が固定できない。</p>
+<p>そこで出てくるのが「<strong>普段はポートを閉じておき、正しい合図を出した相手にだけ開ける</strong>」というやり方。ポートノッキングでは、その合図を「決められた順番でポートに接続を試みること」で表現する。</p>
+
+<figure>
+<svg viewBox="0 0 700 150" role="img" aria-label="ポートノッキングの流れと盗聴されたときの問題">
+  <defs>
+    <marker id="pk-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+    <marker id="pk-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="pk-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+  </defs>
+  <rect x="0" y="10" width="66" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="33" y="30" font-size="10.5" fill="var(--ink)" text-anchor="middle">利用者</text>
+  <rect x="72" y="10" width="52" height="30" rx="5" fill="var(--c1)"/>
+  <text x="98" y="30" font-size="10.5" fill="var(--on)" text-anchor="middle">7000</text>
+  <rect x="130" y="10" width="52" height="30" rx="5" fill="var(--c1)"/>
+  <text x="156" y="30" font-size="10.5" fill="var(--on)" text-anchor="middle">8000</text>
+  <rect x="188" y="10" width="52" height="30" rx="5" fill="var(--c1)"/>
+  <text x="214" y="30" font-size="10.5" fill="var(--on)" text-anchor="middle">9000</text>
+  <line x1="244" y1="25" x2="272" y2="25" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#pk-ink)"/>
+  <rect x="278" y="10" width="250" height="30" rx="5" fill="var(--c3)"/>
+  <text x="403" y="30" font-size="10.5" fill="var(--on)" text-anchor="middle">FW が 22 番をこの送信元 IP にだけ開く</text>
+  <text x="72" y="58" font-size="10.5" fill="var(--muted)">↑ どのポートも閉じたまま。応答は返らないが、叩かれた事実はサーバ側で観測できる</text>
+
+  <rect x="0" y="76" width="700" height="62" rx="7" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="18" y="98" font-size="11.5" font-weight="600" fill="var(--stop)">経路上に盗聴者がいると</text>
+  <text x="18" y="118" font-size="11" fill="var(--muted)">叩いた順番（7000 → 8000 → 9000）はそのまま平文で見える</text>
+  <text x="18" y="134" font-size="11" fill="var(--muted)">→ 同じ順番を再生（リプレイ）すれば、盗聴者も同じように 22 番を開けられる</text>
+</svg>
+<figcaption>合図はポート番号の並びでしかないので、暗証番号を人前で入力しているのと変わらない。ノック列を長くしても、見られている限り安全にはならない。この弱点を暗号で塞いだのが <a href="04_SPA.html">SPA</a>。</figcaption>
+</figure>
+
+<h2>使うときに知っておくこと</h2>
+<ul>
+<li><strong>SSH の認証を置き換えるものではない。</strong>鍵認証はそのままに、その手前に1枚足すだけの多層防御。スキャンや総当たりの母数を減らす効果が主。</li>
+<li><strong>合図を出す側にも道具が要る。</strong>クライアント側で決まった順にポートを叩く必要があり、手元の環境を選ぶ。</li>
+<li><strong>パケットが落ちたり順番が入れ替わると開かない。</strong>回線品質が悪いと自分が入れなくなる。</li>
+</ul>
+<p>実装としては <code>knockd</code> が代表的。ただし新規に導入するなら、リプレイに耐える SPA のほうが選ばれる。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://github.com/jvinet/knock">jvinet/knock — A port-knocking daemon (knockd)</a></li>
+<li><a href="https://www.cipherdyne.org/fwknop/docs/SPA.html">Single Packet Authorization with fwknop（ポートノッキングとの比較）</a></li>
+</ul>
+
+</main>
+</body>
+</html>

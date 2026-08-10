@@ -165,5 +165,6 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **Slack**: `Slack/` 配下に `SlackとTeamsの比較.md`、`開発チームでのSlack活用.md`、`Slackワークフローの作り方.md` あり
 - **ADR×AI**: `ADR/ADRの要否をAIに判断させるリポジトリ設計.md` あり
 - **Trusted Advisor通知**: `Amazon Web Services/04_セキュリティ/検知と可視化/TrustedAdvisorアラートのSlack通知.md` あり
+- **サイバー攻撃の手法**: `サイバー攻撃/` 配下に 01〜14 を1手法1ファイルで執筆済み（CWE / ポートスキャン4種 / ポートノッキング / SPA / SSP / automatic fortification / DEP / ASLR / セッションフィクセーション / スニファ / プロミスキャスモード / WEP・WPA・ESSID / pass the hash / IP スプーフィング）。すべて図中心の HTML
 - **HTTP/2**: `Networking/HTTP2.html`。図中心 HTML 記事のリファレンス実装
 - **HTTP/3 と QUIC**: `Networking/HTTP3.html`
