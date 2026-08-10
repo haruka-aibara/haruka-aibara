@@ -1,10 +1,11 @@
 # trivy:ignore:GIT-0001
 # trivy:ignore:GIT-0003
 resource "github_repository" "this" {
-  name        = var.repository_name
-  description = var.description
-  visibility  = var.visibility
-  auto_init   = var.auto_init
+  name         = var.repository_name
+  description  = var.description
+  homepage_url = var.homepage_url
+  visibility   = var.visibility
+  auto_init    = var.auto_init
 
   has_issues = var.has_issues
   # Wikis are only available on private repositories with GitHub Pro or above.

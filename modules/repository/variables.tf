@@ -9,6 +9,12 @@ variable "description" {
   default     = ""
 }
 
+variable "homepage_url" {
+  description = "The website URL shown next to the repository description, e.g. a GitHub Pages site"
+  type        = string
+  default     = ""
+}
+
 variable "visibility" {
   description = "The visibility of the repository. Can be public or private"
   type        = string
