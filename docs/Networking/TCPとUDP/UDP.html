@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UDP</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>UDP</h1>
+<p class="lede">TCP から確認応答も再送も順序制御も取り去った、8 バイトだけのプロトコル。それでも使われる理由。</p>
+
+<h2>TCP の親切がコストになる場面</h2>
+<p>TCP は接続を確立し、届いたか確認し、順番を直し、混雑すれば速度を落とす。ありがたい機能だが、その全部に時間とメモリのコストがかかる。</p>
+<p>DNS の問い合わせを考えてみる。送る内容はドメイン名 1 つ、返ってくるのは IP アドレス 1 つ。<strong>本題は 1 往復で終わるのに、その前に 3 パケットの接続確立をするのは明らかに割に合わない。</strong>失敗したら問い合わせ直せばいい。</p>
+<p>そういう場面のために、UDP は<strong>「宛先アプリを識別する」以外の機能をほぼ持たない</strong>。ヘッダはわずか 8 バイト。</p>
+
+<figure>
+<svg viewBox="0 0 700 254" role="img" aria-label="UDPヘッダとTCPヘッダの構造比較。UDPは8バイト4フィールドのみ">
+<text x="20" y="22" font-size="12" fill="var(--ink)" font-weight="600">UDP ヘッダ — 8 バイト</text>
+<g font-size="10.5" text-anchor="middle" fill="var(--ink)">
+<rect x="20" y="32" width="330" height="34" fill="var(--c1)" opacity=".25"/>
+<rect x="20" y="32" width="330" height="34" fill="none" stroke="var(--c1)" stroke-width="1.5"/><text x="185" y="53">送信元ポート番号</text>
+<rect x="350" y="32" width="330" height="34" fill="var(--c1)" opacity=".25"/>
+<rect x="350" y="32" width="330" height="34" fill="none" stroke="var(--c1)" stroke-width="1.5"/><text x="515" y="53">宛先ポート番号</text>
+<rect x="20" y="66" width="330" height="34" fill="var(--lane)" stroke="var(--line)"/><text x="185" y="87">データ長</text>
+<rect x="350" y="66" width="330" height="34" fill="var(--lane)" stroke="var(--line)"/><text x="515" y="87">チェックサム</text>
+</g>
+<text x="350" y="120" font-size="10" fill="var(--muted)" text-anchor="middle">これだけ。順序番号も確認応答番号もフラグもウィンドウもない</text>
+
+<line x1="20" y1="138" x2="680" y2="138" stroke="var(--line)"/>
+<text x="20" y="162" font-size="12" fill="var(--ink)" font-weight="600">TCP ヘッダ — 20 バイト（比較）</text>
+<g font-size="9.5" text-anchor="middle" fill="var(--muted)">
+<rect x="20" y="172" width="330" height="20" fill="var(--lane)" stroke="var(--line)"/><text x="185" y="186">送信元ポート番号</text>
+<rect x="350" y="172" width="330" height="20" fill="var(--lane)" stroke="var(--line)"/><text x="515" y="186">宛先ポート番号</text>
+<rect x="20" y="192" width="660" height="20" fill="var(--c2)" opacity=".2"/>
+<rect x="20" y="192" width="660" height="20" fill="none" stroke="var(--c2)"/><text x="350" y="206" fill="var(--ink)">シーケンス番号</text>
+<rect x="20" y="212" width="660" height="20" fill="var(--c2)" opacity=".2"/>
+<rect x="20" y="212" width="660" height="20" fill="none" stroke="var(--c2)"/><text x="350" y="226" fill="var(--ink)">確認応答番号</text>
+<rect x="20" y="232" width="330" height="20" fill="var(--c2)" opacity=".2"/>
+<rect x="20" y="232" width="330" height="20" fill="none" stroke="var(--c2)"/><text x="185" y="246" fill="var(--ink)">フラグ・ヘッダ長</text>
+<rect x="350" y="232" width="330" height="20" fill="var(--c2)" opacity=".2"/>
+<rect x="350" y="232" width="330" height="20" fill="none" stroke="var(--c2)"/><text x="515" y="246" fill="var(--ink)">ウィンドウサイズ ほか</text>
+</g>
+</svg>
+<figcaption>色を付けた部分が UDP にないもの。信頼性のための情報は全部ここに入っていて、UDP はそれを持たないぶん軽い。</figcaption>
+</figure>
+
+<h2>使い分けの基準</h2>
+<table>
+<tr><th></th><th>TCP</th><th>UDP</th></tr>
+<tr><th>接続確立</th><td>3 ウェイハンドシェイク</td><td>なし（いきなり送る）</td></tr>
+<tr><th>到達保証</th><td>確認応答と再送で保証</td><td>なし</td></tr>
+<tr><th>順序保証</th><td>並べ直す</td><td>なし</td></tr>
+<tr><th>ヘッダ</th><td>20 バイト</td><td>8 バイト</td></tr>
+<tr><th>1 対多</th><td>できない</td><td>ブロードキャスト・マルチキャストが使える</td></tr>
+<tr><th>主な用途</th><td>Web・メール・ファイル転送・SSH</td><td>DNS・DHCP・音声/映像・SNMP・syslog・QUIC</td></tr>
+</table>
+<p>選ぶ基準は「欠けたら困るか」ではなく、<strong>「欠けたときに再送が間に合うか」</strong>。ライブ映像は欠けても困るが、再送が届くころには再生時刻を過ぎているので意味がない。だから UDP を選ぶ。</p>
+
+<div class="note">
+<p><strong>セキュリティ上の注意：</strong>UDP は接続確立がないため<strong>送信元 IP を詐称しやすい</strong>。これを悪用したのが反射増幅型 DDoS で、送信元を被害者の IP に偽って DNS や NTP に問い合わせを投げ、増幅された応答を被害者に集中させる。<br>
+自組織のサーバが踏み台にならないよう、DNS は<a href="../DNS/オープンリゾルバ.html">オープンリゾルバ</a>にしない、NTP の monlist を無効にする、といった設定が必要になる。詳しくは <a href="../../Cyber Attacks/15_DDoS_枯渇型と反射増幅型.html">DDoS 枯渇型と反射増幅型</a>。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc768">RFC 768 — User Datagram Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc9000">RFC 9000 — QUIC: A UDP-Based Multiplexed and Secure Transport</a></li>
+</ul>
+
+</main>
+</body>
+</html>

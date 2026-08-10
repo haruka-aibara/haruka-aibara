@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VXLAN</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>VXLAN</h1>
+<p class="lede">別のデータセンタにある VM を、同じ LAN にいるかのように扱いたい。L2 を L3 の上に載せる技術。</p>
+
+<h2>VLAN では足りなくなった 2 つの理由</h2>
+<p>ネットワークを論理的に分ける手段として VLAN がある。しかし仮想化・クラウドの規模では 2 つの壁にぶつかる。</p>
+<ul>
+<li><strong>数が足りない</strong> — VLAN ID は 12 ビットで最大 4094 個。テナントごとに割り当てるマルチテナント環境ではすぐ枯渇する</li>
+<li><strong>ルータを越えられない</strong> — VLAN は L2 の仕組みなので、L3 で分かれた別拠点にまたがれない。VM を別データセンタへライブマイグレーションすると IP が変わってしまう</li>
+</ul>
+<p><strong>VXLAN</strong> はこれを、<strong>イーサネットフレームを丸ごと UDP パケットの中に詰めて運ぶ</strong>ことで解決する。外側から見れば普通の IP 通信なので、ルータを何台越えても届く。中身を取り出せば元のフレームなので、両端の VM からは同じ L2 セグメントに見える。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="VXLANのカプセル化構造。元のイーサネットフレームがVXLANヘッダとUDP・IP・外側イーサネットで包まれる">
+<text x="20" y="22" font-size="12" fill="var(--ink)" font-weight="600">元のフレーム（VM が送ったもの）</text>
+<rect x="20" y="34" width="240" height="30" rx="4" fill="var(--c3)" opacity=".25"/>
+<rect x="20" y="34" width="240" height="30" rx="4" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="140" y="54" font-size="10.5" fill="var(--ink)" text-anchor="middle">Ether ヘッダ ＋ IP ＋ データ</text>
+<text x="272" y="54" font-size="10" fill="var(--muted)">これをそのまま「中身」として扱う</text>
+
+<text x="20" y="94" font-size="12" fill="var(--ink)" font-weight="600">VXLAN でカプセル化した後</text>
+<g font-size="9" text-anchor="middle">
+<rect x="20" y="106" width="98" height="46" rx="4" fill="var(--c2)" opacity=".25"/>
+<rect x="20" y="106" width="98" height="46" rx="4" fill="none" stroke="var(--c2)" stroke-width="1.4"/>
+<text x="69" y="124" fill="var(--ink)" font-size="10">外側 Ether</text><text x="69" y="140" fill="var(--muted)">物理 NW 用</text>
+
+<rect x="120" y="106" width="98" height="46" rx="4" fill="var(--c1)" opacity=".25"/>
+<rect x="120" y="106" width="98" height="46" rx="4" fill="none" stroke="var(--c1)" stroke-width="1.4"/>
+<text x="169" y="124" fill="var(--ink)" font-size="10">外側 IP</text><text x="169" y="140" fill="var(--muted)">VTEP → VTEP</text>
+
+<rect x="220" y="106" width="80" height="46" rx="4" fill="var(--c1)" opacity=".25"/>
+<rect x="220" y="106" width="80" height="46" rx="4" fill="none" stroke="var(--c1)" stroke-width="1.4"/>
+<text x="260" y="124" fill="var(--ink)" font-size="10">UDP</text><text x="260" y="140" fill="var(--muted)">宛先 4789</text>
+
+<rect x="302" y="106" width="110" height="46" rx="4" fill="var(--c4)" opacity=".3"/>
+<rect x="302" y="106" width="110" height="46" rx="4" fill="none" stroke="var(--c4)" stroke-width="1.6"/>
+<text x="357" y="124" fill="var(--ink)" font-size="10">VXLAN ヘッダ</text><text x="357" y="140" fill="var(--muted)">VNI（24 bit）</text>
+
+<rect x="414" y="106" width="266" height="46" rx="4" fill="var(--c3)" opacity=".25"/>
+<rect x="414" y="106" width="266" height="46" rx="4" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="547" y="124" fill="var(--ink)" font-size="9.5">元のイーサネットフレーム（丸ごと）</text><text x="547" y="140" fill="var(--muted)">中身は一切変更されない</text>
+</g>
+<text x="357" y="172" font-size="10" fill="var(--c4)" text-anchor="middle">VNI は 24 ビット ＝ 約 1677 万個。VLAN の 4094 個とは桁が違う</text>
+
+<line x1="20" y1="192" x2="680" y2="192" stroke="var(--line)"/>
+<text x="20" y="216" font-size="12" fill="var(--ink)" font-weight="600">物理ネットワークからは「ただの UDP 通信」に見える</text>
+<defs>
+<marker id="xa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+</defs>
+<g font-size="9.5" fill="var(--ink)" text-anchor="middle">
+<rect x="20" y="234" width="110" height="34" rx="5" fill="var(--c3)" opacity=".2"/>
+<rect x="20" y="234" width="110" height="34" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.4"/><text x="75" y="255">VM（拠点 A）</text>
+<rect x="180" y="234" width="90" height="34" rx="5" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/><text x="225" y="255">VTEP</text>
+<rect x="320" y="234" width="120" height="34" rx="5" fill="var(--lane)"/><text x="380" y="255" fill="var(--muted)">IP ネットワーク</text>
+<rect x="490" y="234" width="90" height="34" rx="5" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/><text x="535" y="255">VTEP</text>
+<rect x="598" y="234" width="82" height="34" rx="5" fill="var(--c3)" opacity=".2"/>
+<rect x="598" y="234" width="82" height="34" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.4"/><text x="639" y="255" font-size="9">VM（拠点 B）</text>
+</g>
+<g stroke="var(--c1)" stroke-width="1.3">
+<line x1="132" y1="251" x2="176" y2="251" marker-end="url(#xa)"/>
+<line x1="272" y1="251" x2="316" y2="251" marker-end="url(#xa)"/>
+<line x1="442" y1="251" x2="486" y2="251" marker-end="url(#xa)"/>
+<line x1="582" y1="251" x2="596" y2="251" marker-end="url(#xa)"/>
+</g>
+<text x="225" y="286" font-size="9" fill="var(--c4)" text-anchor="middle">包む</text>
+<text x="380" y="286" font-size="9" fill="var(--muted)" text-anchor="middle">中身を知らないまま中継</text>
+<text x="535" y="286" font-size="9" fill="var(--c4)" text-anchor="middle">開ける</text>
+</svg>
+<figcaption>物理ネットワーク側は VXLAN を理解する必要がない。「IP が通ればいい」ので、既存の設備をそのまま使いながら論理ネットワークだけを作り替えられるのが利点。</figcaption>
+</figure>
+
+<h2>導入時に必ず出てくる MTU の問題</h2>
+<p>カプセル化すると外側のヘッダ分だけパケットが大きくなる。VXLAN では外側 Ether + IP + UDP + VXLAN で <strong>50 バイト</strong>増える。</p>
+<p>VM が MTU 1500 のつもりで 1500 バイトのフレームを出すと、包んだ結果 1550 バイトになり、物理ネットワークの MTU 1500 を超えて分割か破棄が起きる。<strong>「小さい通信は通るのに、大きいデータの転送だけ固まる」</strong>という症状の典型的な原因がこれ。</p>
+<p>対策は 2 つ。物理ネットワーク側をジャンボフレーム（MTU 9000 など）にするか、VM 側の MTU を 1450 に下げる。データセンタ内なら前者を選べることが多い。</p>
+
+<div class="note">
+<p><strong>セキュリティ上の注意：</strong>VXLAN 自体に暗号化も認証もない。<strong>UDP 4789 に到達できる相手なら、任意の VNI を名乗ってフレームを注入できる</strong>。オーバーレイの下にある物理ネットワークを信頼できる範囲に閉じ、外部から 4789 に届かないようにするのが前提になる。拠点間をインターネット経由で結ぶ場合は IPsec を併用する。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7348">RFC 7348 — Virtual eXtensible Local Area Network (VXLAN)</a></li>
+<li><a href="https://standards.ieee.org/ieee/802.1Q/6844/">IEEE 802.1Q — VLAN</a></li>
+</ul>
+
+</main>
+</body>
+</html>

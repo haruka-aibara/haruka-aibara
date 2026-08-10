@@ -177,6 +177,13 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **DNS**: `Networking/DNS/` 配下に 1 トピック 1 ファイル（DNS / サーバの3つの役割 / DNS over TLS / ゾーン / ゾーン転送 / オープンリゾルバ）。DNSSEC・キャッシュポイズニングは `Cyber Attacks/19_カミンスキーアタックとDNSSEC.html` にある（重複記事を作らない）
 - **メール**: `Networking/メール/` 配下に 1 トピック 1 ファイル（SMTPとPOP3 / APOP / IMAP4 / POP before SMTP / SMTP-AUTH / SMTPS / 送信ドメイン認証 / SPF / DKIM / DMARC）
 - **HTTP 基礎**: `Networking/HTTP/` 配下に 1 トピック 1 ファイル（キープアライブ / URLエンコード / HTTPヘッダ / Cookieの属性 / WebDAV）。HTTP2・HTTP3・HSTS は `Networking/` 直下
+- **ネットワークの基礎**: `Networking/ネットワークの基礎/` 配下に 1 トピック 1 ファイル（パケット交換方式 / コネクション型通信 / コネクションレス型通信 / TCP-IP）
+- **イーサネット**: `Networking/イーサネット/` 配下に 1 トピック 1 ファイル（イーサネット / RJ45 / HDLC / コリジョンドメイン / ブロードキャストドメイン）
+- **ネットワーク機器**: `Networking/ネットワーク機器/` 配下に 1 トピック 1 ファイル（リピータ / 段数制限 / ブリッジ / ブリッジのMACフィルタリング機能 / スパニングツリー / スイッチングハブ / L4スイッチとL7スイッチ / プロトコルアナライザ）。攻撃者視点のスニファ・プロミスキャスモードは `Cyber Attacks/10`・`11` にある
+- **IP**: `Networking/IP/` 配下に 1 トピック 1 ファイル（IPパケット / IPヘッダの構成 / クラスレスサブネットマスク / IGMP / IPマスカレード）
+- **IPv6**: `Networking/IPv6/` 配下に 1 トピック 1 ファイル（IPv6 / 表記方法 / グローバルルーティングプレフィックス / インタフェースID / NDP / エニーキャスト）。DNS64・NAT64 は `Networking/DNS64とNAT64.md`
+- **TCP と UDP**: `Networking/TCPとUDP/` 配下に 1 トピック 1 ファイル（TCPのSYNとACK / TCPヘッダ / UDP / サブミッションポート / 動的割り当てのポート番号）
+- **ネットワーク仮想化**: `Networking/ネットワーク仮想化/` 配下に VXLAN / VTEP
 - **暗号**: `Cryptography/` 配下に 1 トピック 1 ファイル（CRYPTREC / DES / ハイブリッド方式 / 楕円曲線暗号 / Diffie-Hellman / 耐量子暗号PQC / MACとデジタル署名）。PQC の業務接点・クラウド対応状況は `Quantum Computing/` の記事にある
 - **認証**: `Authentication/` 配下に 1 トピック 1 ファイル（チャレンジレスポンス / S/KEY / 時刻同期方式 / ゼロ知識証明 / RADIUS / AAAフレームワーク / Kerberos / SAML / OAuth）。IEEE 802.1X は `Networking/無線LAN/` にある
 - **PKI**: `PKI/` 配下に `X.509証明書とは.md` と HTML 記事（PKIとは / CA・RA・IA・VA / 認証局の階層構造とルート証明書 / DV・OV・EV / CRLとOCSP / タイムスタンプとTSA / GPKI / XMLデジタル署名 / ASN.1）

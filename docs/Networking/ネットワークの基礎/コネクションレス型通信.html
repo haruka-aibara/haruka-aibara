@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>コネクションレス型通信</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>コネクションレス型通信</h1>
+<p class="lede">確実に届けようとするほど遅くなる。だから「届かなくていい」と割り切る通信がある。</p>
+
+<h2>再送が邪魔になる場面</h2>
+<p>ビデオ会議で音声のパケットが 1 つ落ちたとする。ここで送信側が再送してくれても、その音はもう再生時刻を過ぎている。遅れて届いた音声を挿し込むわけにはいかないので、再送されたデータは捨てるしかない。<strong>再送を待った分だけ会話が遅れるという損だけが残る。</strong></p>
+<p>こういう通信では、確認応答も再送も要らない。宛先を書いて投げるだけ、届いたかは気にしない——これがコネクションレス型通信。</p>
+
+<figure>
+<svg viewBox="0 0 700 236" role="img" aria-label="コネクション型は接続確立と確認応答が必要だが、コネクションレス型は送信のみで完結する">
+<defs>
+<marker id="l1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="l3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+</defs>
+<text x="175" y="20" font-size="12" fill="var(--ink)" text-anchor="middle" font-weight="600">コネクション型（TCP）</text>
+<line x1="70" y1="30" x2="70" y2="200" stroke="var(--line)" stroke-width="2"/>
+<line x1="280" y1="30" x2="280" y2="200" stroke="var(--line)" stroke-width="2"/>
+<line x1="70" y1="48" x2="276" y2="48" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#l1)"/>
+<text x="175" y="43" font-size="9" fill="var(--muted)" text-anchor="middle">接続要求</text>
+<line x1="280" y1="68" x2="74" y2="68" stroke="var(--c3)" stroke-width="1.3" marker-end="url(#l3)"/>
+<text x="175" y="63" font-size="9" fill="var(--muted)" text-anchor="middle">応答</text>
+<line x1="70" y1="88" x2="276" y2="88" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#l1)"/>
+<text x="175" y="83" font-size="9" fill="var(--muted)" text-anchor="middle">確認</text>
+<line x1="70" y1="116" x2="276" y2="116" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#l1)"/>
+<text x="175" y="111" font-size="9.5" fill="var(--ink)" text-anchor="middle">データ</text>
+<line x1="280" y1="136" x2="74" y2="136" stroke="var(--c3)" stroke-width="1.3" marker-end="url(#l3)"/>
+<text x="175" y="131" font-size="9" fill="var(--muted)" text-anchor="middle">確認応答</text>
+<line x1="70" y1="164" x2="276" y2="164" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#l1)"/>
+<text x="175" y="159" font-size="9" fill="var(--muted)" text-anchor="middle">切断</text>
+<text x="175" y="192" font-size="10" fill="var(--muted)" text-anchor="middle">データ 1 個を送るのに 6 往復分の手間</text>
+
+<line x1="350" y1="26" x2="350" y2="206" stroke="var(--line)" stroke-width="1" stroke-dasharray="4 4"/>
+
+<text x="525" y="20" font-size="12" fill="var(--ink)" text-anchor="middle" font-weight="600">コネクションレス型（UDP）</text>
+<line x1="420" y1="30" x2="420" y2="200" stroke="var(--line)" stroke-width="2"/>
+<line x1="630" y1="30" x2="630" y2="200" stroke="var(--line)" stroke-width="2"/>
+<line x1="420" y1="60" x2="626" y2="60" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#l1)"/>
+<text x="525" y="55" font-size="9.5" fill="var(--ink)" text-anchor="middle">データ</text>
+<line x1="420" y1="92" x2="626" y2="92" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#l1)"/>
+<text x="525" y="87" font-size="9.5" fill="var(--ink)" text-anchor="middle">データ</text>
+<line x1="420" y1="124" x2="560" y2="124" stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="572" y="129" font-size="13" fill="var(--stop)">✕</text>
+<text x="490" y="119" font-size="9.5" fill="var(--stop)" text-anchor="middle">消失しても</text>
+<text x="600" y="142" font-size="9" fill="var(--muted)" text-anchor="end">気づかない</text>
+<line x1="420" y1="164" x2="626" y2="164" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#l1)"/>
+<text x="525" y="159" font-size="9.5" fill="var(--ink)" text-anchor="middle">データ（次を送り続ける）</text>
+<text x="525" y="192" font-size="10" fill="var(--muted)" text-anchor="middle">往復待ちがないので途切れずに流せる</text>
+<text x="350" y="226" font-size="10.5" fill="var(--muted)" text-anchor="middle">1 パケットの欠落を「音の一瞬のノイズ」で済ませ、会話の遅延を避けるのが目的</text>
+</svg>
+<figcaption>UDP でも「届いたか」を確かめたい場合はアプリケーション側で作り込める。プロトコルが押しつけないぶん、必要な保証だけを選べるのがコネクションレス型の使いどころ。</figcaption>
+</figure>
+
+<h2>どこで使われているか</h2>
+<ul>
+<li><strong>音声・映像のリアルタイム通信</strong> — 遅延が品質そのもの</li>
+<li><strong>DNS の問い合わせ</strong> — 1 往復で終わる。接続確立のほうが本題より重い</li>
+<li><strong>DHCP</strong> — そもそも自分の IP が決まっていないので接続を張れない</li>
+<li><strong>ログ転送（syslog）・SNMP</strong> — 1 件落ちても運用が止まらない</li>
+</ul>
+<p>なお HTTP/3 は UDP の上に QUIC を載せ、信頼性の仕組みを自前で持つ形にしている（<code>Networking/HTTP3.html</code> 参照）。「コネクションレス ＝ 信頼性なし」ではなく、「保証をどこで作るかを選べる」ということ。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc768">RFC 768 — User Datagram Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc9000">RFC 9000 — QUIC: A UDP-Based Multiplexed and Secure Transport</a></li>
+</ul>
+
+</main>
+</body>
+</html>

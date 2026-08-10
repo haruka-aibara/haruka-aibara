@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>エニーキャスト</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>エニーキャスト</h1>
+<p class="lede">世界中の DNS サーバが同じ IP アドレスを名乗っている。それでも正しく届く理由。</p>
+
+<h2>「いちばん近いサーバに届いてほしい」</h2>
+<p>DNS のルートサーバや CDN のように、世界中から大量のアクセスを受けるサービスがある。日本からのアクセスがアメリカのサーバに飛べば遅いし、そこが落ちれば日本からも使えなくなる。</p>
+<p>解決策として、DNS で地域ごとに違う IP を返す方法もある。しかしそれは名前解決の時点での判断なので、キャッシュが効いていると切り替わらない。</p>
+<p><strong>エニーキャスト</strong>は発想が違う。<strong>複数のサーバに同じ IP アドレスを付け、経路制御（ルーティング）に「いちばん近い 1 台」を選ばせる。</strong>アドレスは 1 つなので、利用者側は何も意識しない。</p>
+
+<figure>
+<svg viewBox="0 0 700 320" role="img" aria-label="ユニキャスト・マルチキャスト・ブロードキャスト・エニーキャストの届き方の違い">
+<g font-size="9" text-anchor="middle">
+<text x="105" y="20" font-size="11" fill="var(--ink)" font-weight="600">ユニキャスト</text>
+<circle cx="40" cy="70" r="12" fill="var(--c1)" opacity=".4"/>
+<line x1="54" y1="70" x2="140" y2="70" stroke="var(--c1)" stroke-width="1.5"/>
+<rect x="144" y="34" width="34" height="22" rx="3" fill="var(--lane)"/><text x="161" y="49" fill="var(--muted)">×</text>
+<rect x="144" y="60" width="34" height="22" rx="3" fill="var(--c1)" opacity=".4"/><text x="161" y="75" fill="var(--ink)">○</text>
+<rect x="144" y="86" width="34" height="22" rx="3" fill="var(--lane)"/><text x="161" y="101" fill="var(--muted)">×</text>
+<text x="105" y="130" fill="var(--muted)">1 対 1</text>
+<text x="105" y="144" fill="var(--muted)">指定した 1 台に届く</text>
+
+<text x="285" y="20" font-size="11" fill="var(--ink)" font-weight="600">マルチキャスト</text>
+<circle cx="220" cy="70" r="12" fill="var(--c3)" opacity=".4"/>
+<line x1="234" y1="70" x2="320" y2="45" stroke="var(--c3)" stroke-width="1.5"/>
+<line x1="234" y1="70" x2="320" y2="97" stroke="var(--c3)" stroke-width="1.5"/>
+<rect x="324" y="34" width="34" height="22" rx="3" fill="var(--c3)" opacity=".4"/><text x="341" y="49" fill="var(--ink)">○</text>
+<rect x="324" y="60" width="34" height="22" rx="3" fill="var(--lane)"/><text x="341" y="75" fill="var(--muted)">×</text>
+<rect x="324" y="86" width="34" height="22" rx="3" fill="var(--c3)" opacity=".4"/><text x="341" y="101" fill="var(--ink)">○</text>
+<text x="285" y="130" fill="var(--muted)">1 対 多（グループ）</text>
+<text x="285" y="144" fill="var(--muted)">参加した全員に届く</text>
+
+<text x="500" y="20" font-size="11" fill="var(--ink)" font-weight="600">ブロードキャスト</text>
+<circle cx="435" cy="70" r="12" fill="var(--c2)" opacity=".4"/>
+<line x1="449" y1="70" x2="535" y2="45" stroke="var(--c2)" stroke-width="1.5"/>
+<line x1="449" y1="70" x2="535" y2="70" stroke="var(--c2)" stroke-width="1.5"/>
+<line x1="449" y1="70" x2="535" y2="97" stroke="var(--c2)" stroke-width="1.5"/>
+<rect x="539" y="34" width="34" height="22" rx="3" fill="var(--c2)" opacity=".4"/><text x="556" y="49" fill="var(--ink)">○</text>
+<rect x="539" y="60" width="34" height="22" rx="3" fill="var(--c2)" opacity=".4"/><text x="556" y="75" fill="var(--ink)">○</text>
+<rect x="539" y="86" width="34" height="22" rx="3" fill="var(--c2)" opacity=".4"/><text x="556" y="101" fill="var(--ink)">○</text>
+<text x="500" y="130" fill="var(--muted)">1 対 全（IPv6 では廃止）</text>
+<text x="500" y="144" fill="var(--muted)">同一セグメントの全員に届く</text>
+</g>
+
+<line x1="20" y1="164" x2="680" y2="164" stroke="var(--line)"/>
+<text x="20" y="188" font-size="12" fill="var(--ink)" font-weight="600">エニーキャスト — 同じアドレスの中から「最も近い 1 台」に届く</text>
+<defs>
+<marker id="ya" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c4)"/></marker>
+</defs>
+<g font-size="9.5" text-anchor="middle">
+<rect x="20" y="212" width="88" height="30" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.4"/>
+<text x="64" y="231" fill="var(--ink)">日本の利用者</text>
+<rect x="20" y="256" width="88" height="30" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.4"/>
+<text x="64" y="275" fill="var(--ink)">欧州の利用者</text>
+</g>
+<text x="180" y="234" font-size="10" fill="var(--muted)" text-anchor="middle">どちらも宛先は</text>
+<text x="180" y="250" font-size="10.5" fill="var(--ink)" text-anchor="middle" font-family="monospace">8.8.8.8</text>
+<text x="180" y="266" font-size="10" fill="var(--muted)" text-anchor="middle">と書くだけ</text>
+<line x1="112" y1="227" x2="256" y2="220" stroke="var(--c4)" stroke-width="1.5" marker-end="url(#ya)"/>
+<line x1="112" y1="271" x2="256" y2="278" stroke="var(--c4)" stroke-width="1.5" marker-end="url(#ya)"/>
+
+<g font-size="9.5" text-anchor="middle">
+<rect x="260" y="206" width="150" height="30" rx="5" fill="var(--c4)" opacity=".2"/>
+<rect x="260" y="206" width="150" height="30" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.4"/>
+<text x="335" y="225" fill="var(--ink)">東京のサーバ（8.8.8.8）</text>
+<rect x="260" y="264" width="150" height="30" rx="5" fill="var(--c4)" opacity=".2"/>
+<rect x="260" y="264" width="150" height="30" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.4"/>
+<text x="335" y="283" fill="var(--ink)">ロンドンのサーバ（8.8.8.8）</text>
+<rect x="260" y="235" width="150" height="28" rx="5" fill="var(--lane)"/>
+<text x="335" y="253" fill="var(--muted)">米国のサーバ（8.8.8.8）</text>
+</g>
+<text x="430" y="222" font-size="10.5" fill="var(--muted)">同じアドレスを複数拠点で広告し、</text>
+<text x="430" y="240" font-size="10.5" fill="var(--muted)">BGP の経路選択で最寄りが選ばれる。</text>
+<text x="430" y="266" font-size="10.5" fill="var(--muted)">1 拠点が落ちれば広告が消え、</text>
+<text x="430" y="284" font-size="10.5" fill="var(--muted)">自動的に次に近い拠点へ切り替わる</text>
+</svg>
+<figcaption>「近い」はネットワーク上の経路の短さで、地理的な距離とは一致しないことがある。経路が変わると接続先のサーバも変わりうる点が、次に述べる制約につながる。</figcaption>
+</figure>
+
+<h2>使いどころが限られる理由</h2>
+<p>経路が変わると<strong>途中で接続先のサーバが入れ替わる</strong>可能性がある。セッションを持たない通信なら問題ないが、ログイン状態を保つような通信では相性が悪い。</p>
+<p>このため、エニーキャストが向くのは次のような用途になる。</p>
+<ul>
+<li><strong>DNS</strong> — 1 往復で完結する。ルートサーバや <code>8.8.8.8</code> はこの方式</li>
+<li><strong>CDN のエッジ</strong> — 静的コンテンツ配信</li>
+<li><strong>DDoS の吸収</strong> — 攻撃トラフィックが世界中の拠点に分散するので、1 拠点に集中しない</li>
+</ul>
+<p>IPv6 では仕様としてエニーキャストが定義されている（IPv4 では BGP の運用で実現している）。IPv6 のアドレス種別は<strong>ユニキャスト・マルチキャスト・エニーキャストの 3 つ</strong>で、ブロードキャストは存在しない。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4291">RFC 4291 — IP Version 6 Addressing Architecture</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4786">RFC 4786 — Operation of Anycast Services</a></li>
+</ul>
+
+</main>
+</body>
+</html>

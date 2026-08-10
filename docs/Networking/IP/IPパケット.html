@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPパケット</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>IP パケット</h1>
+<p class="lede">LAN の外へ出るには、MAC アドレスでは足りない。世界中どこへでも届けるための単位。</p>
+
+<h2>MAC アドレスは「隣まで」しか使えない</h2>
+<p>イーサネットは同じネットワーク内の相手に MAC アドレスでフレームを届ける。だが世界中の機器の MAC アドレスを全ルータが覚えることはできないし、MAC アドレスには地理的・組織的な規則性がないので、「どっちの方向へ送ればいいか」を推測できない。</p>
+<p>そこで<strong>階層構造を持った住所を別に用意し、それを頼りに中継する</strong>。この住所が IP アドレスで、IP アドレスを書いて運ばれるデータの単位が IP パケット。</p>
+
+<figure>
+<svg viewBox="0 0 700 296" role="img" aria-label="IPパケットは変わらないまま、区間ごとにイーサネットフレームのMACアドレスだけが書き換わって中継される">
+<defs>
+<marker id="ia" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>
+</defs>
+<g font-size="10" fill="var(--ink)" text-anchor="middle">
+<rect x="20" y="40" width="80" height="34" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/><text x="60" y="61">PC-A</text>
+<rect x="240" y="40" width="80" height="34" rx="5" fill="var(--c4)" opacity=".2"/>
+<rect x="240" y="40" width="80" height="34" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.6"/><text x="280" y="61">ルータ1</text>
+<rect x="440" y="40" width="80" height="34" rx="5" fill="var(--c4)" opacity=".2"/>
+<rect x="440" y="40" width="80" height="34" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.6"/><text x="480" y="61">ルータ2</text>
+<rect x="620" y="40" width="60" height="34" rx="5" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/><text x="650" y="61">PC-B</text>
+</g>
+<g stroke="var(--muted)" stroke-width="1.3">
+<line x1="102" y1="57" x2="234" y2="57" marker-end="url(#ia)"/>
+<line x1="322" y1="57" x2="434" y2="57" marker-end="url(#ia)"/>
+<line x1="522" y1="57" x2="614" y2="57" marker-end="url(#ia)"/>
+</g>
+<text x="168" y="34" font-size="9.5" fill="var(--muted)" text-anchor="middle">区間 1</text>
+<text x="378" y="34" font-size="9.5" fill="var(--muted)" text-anchor="middle">区間 2</text>
+<text x="568" y="34" font-size="9.5" fill="var(--muted)" text-anchor="middle">区間 3</text>
+
+<text x="20" y="106" font-size="11.5" fill="var(--ink)" font-weight="600">区間ごとに書き換わるもの（イーサネットヘッダの MAC）</text>
+<g font-size="9" text-anchor="middle">
+<rect x="104" y="118" width="128" height="30" rx="4" fill="var(--c2)" opacity=".2"/>
+<rect x="104" y="118" width="128" height="30" rx="4" fill="none" stroke="var(--c2)"/>
+<text x="168" y="131" fill="var(--ink)">送信元 A / 宛先 ルータ1</text>
+<text x="168" y="143" fill="var(--muted)">MAC は毎回変わる</text>
+<rect x="314" y="118" width="128" height="30" rx="4" fill="var(--c2)" opacity=".2"/>
+<rect x="314" y="118" width="128" height="30" rx="4" fill="none" stroke="var(--c2)"/>
+<text x="378" y="131" fill="var(--ink)">送信元 R1 / 宛先 ルータ2</text>
+<text x="378" y="143" fill="var(--muted)">MAC は毎回変わる</text>
+<rect x="504" y="118" width="128" height="30" rx="4" fill="var(--c2)" opacity=".2"/>
+<rect x="504" y="118" width="128" height="30" rx="4" fill="none" stroke="var(--c2)"/>
+<text x="568" y="131" fill="var(--ink)" font-size="8.5">送信元 R2 / 宛先 PC-B</text>
+<text x="568" y="143" fill="var(--muted)">MAC は毎回変わる</text>
+</g>
+
+<text x="20" y="184" font-size="11.5" fill="var(--ink)" font-weight="600">最後まで変わらないもの（IP ヘッダ）</text>
+<rect x="104" y="196" width="528" height="34" rx="5" fill="var(--c3)" opacity=".2"/>
+<rect x="104" y="196" width="528" height="34" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.6"/>
+<text x="368" y="217" font-size="10.5" fill="var(--ink)" text-anchor="middle">送信元 IP = PC-A　／　宛先 IP = PC-B　（端から端まで同じ）</text>
+
+<text x="350" y="256" font-size="10.5" fill="var(--muted)" text-anchor="middle">＝ IP パケットは「封筒の中身」、イーサネットフレームは「区間ごとの配送伝票」</text>
+<text x="350" y="278" font-size="10.5" fill="var(--muted)" text-anchor="middle">ルータは伝票を貼り替えるだけで、中身の宛先には手を触れない</text>
+</svg>
+<figcaption>NAT やプロキシを挟むと、この「IP は変わらない」が崩れる。通信ログの送信元 IP が全部同じに見えるときは、途中でどこかが書き換えている。</figcaption>
+</figure>
+
+<h2>届く保証はない</h2>
+<p>IP は<strong>ベストエフォート</strong>で、次を保証しない。</p>
+<ul>
+<li><strong>到達</strong> — ルータが混雑していれば黙って捨てる</li>
+<li><strong>順序</strong> — 経路が分かれれば後から出たパケットが先に着く</li>
+<li><strong>重複しないこと</strong> — 同じパケットが 2 つ届くこともある</li>
+</ul>
+<p>これらを気にする通信は、上の層の TCP が面倒を見る。IP の仕事は「宛先の方向へ 1 歩進めること」だけ、と割り切られている。</p>
+
+<h2>大きすぎるパケットは分割される</h2>
+<p>経路上のリンクには通せる最大サイズ（MTU、イーサネットなら 1500 バイト）がある。それを超えるパケットは<strong>フラグメント化</strong>されて分割され、宛先で組み立て直される。</p>
+<p>ただし分割は効率が悪く、1 片でも欠ければ全体が無駄になる。そのため実運用では、経路上の最小 MTU を探って最初からそのサイズで送る（Path MTU Discovery）のが普通。VPN や VXLAN でヘッダが増えた環境で通信が詰まるのは、ここが噛み合っていないことが多い。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc791">RFC 791 — Internet Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1191">RFC 1191 — Path MTU Discovery</a></li>
+</ul>
+
+</main>
+</body>
+</html>
