@@ -22,6 +22,7 @@ module "haruka-aibara-public" {
 
   repository_name = "haruka-aibara-public"
   description     = "A repository for documenting everything I learn"
+  homepage_url    = "https://haruka-aibara.github.io/haruka-aibara-public/"
 
   topics = ["learning", "documentation"]
 }
