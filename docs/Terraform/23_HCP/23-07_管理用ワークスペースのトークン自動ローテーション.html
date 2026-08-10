@@ -223,7 +223,7 @@ resource "tfe_variable" "tfe_token" {
 </div>
 
 <h2>さらに上を狙うなら</h2>
-<p>Vault を運用しているなら、Vault の Terraform Cloud secrets engine で run ごとに短命トークンを発行し、Vault-backed Dynamic Credentials で受け取る構成にできる。HCP Terraform 側に静的シークレットが一切残らないという意味ではこれが最高形。ただし Vault というインフラが1つ増えるので、Vault がない環境では本記事の自己ローテーションが実質の最適解になる。</p>
+<p>Vault を運用しているなら、Vault の Terraform Cloud secrets engine で run ごとに短命トークンを発行し、Vault-backed Dynamic Credentials で受け取る構成にできる。HCP Terraform 側に静的シークレットが一切残らないという意味ではこれが最高形。ただし Vault というインフラが1つ増えるので、Vault がない環境では本記事の自己ローテーションが実質の最適解になる。Vault 構成の中身と、「ローテーションはいつ完了と言えるのか」という論点は <a href="23-08_ローテーションを1回のPRで完了させる.html">23-08</a> で扱う。</p>
 
 <h2>参考</h2>
 <ul>
