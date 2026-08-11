@@ -184,7 +184,7 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **IP**: `Networking/IP/` 配下に 1 トピック 1 ファイル（IPパケット / IPヘッダの構成 / クラスレスサブネットマスク / IGMP / IPマスカレード）
 - **IPv6**: `Networking/IPv6/` 配下に 1 トピック 1 ファイル（IPv6 / 表記方法 / グローバルルーティングプレフィックス / インタフェースID / NDP / エニーキャスト）。DNS64・NAT64 は `Networking/DNS64とNAT64.md`
 - **TCP と UDP**: `Networking/TCPとUDP/` 配下に 1 トピック 1 ファイル（TCPのSYNとACK / TCPヘッダ / UDP / サブミッションポート / 動的割り当てのポート番号）
-- **ネットワーク仮想化**: `Networking/ネットワーク仮想化/` 配下に VXLAN / VTEP
+- **ネットワーク仮想化**: `Networking/ネットワーク仮想化/` 配下に VXLAN / VTEP / VXLANをゼロから理解する（MAC・IP から積み上げる初学者向け。既存の VXLAN.html は要点まとめなので棲み分ける）
 - **VPN**: `Networking/VPN/` 配下に 1 トピック 1 ファイル（インターネットVPNとIP-VPN / トランスポートモードとトンネルモード / IPsec / IKE / PPTPとL2TP / SSL-VPN）
 - **暗号**: `Cryptography/` 配下に 1 トピック 1 ファイル（CRYPTREC / DES / ハイブリッド方式 / 楕円曲線暗号 / Diffie-Hellman / 耐量子暗号PQC / MACとデジタル署名）。Triple DES は `DES.html` に含まれる。PQC の業務接点・クラウド対応状況は `Quantum Computing/` の記事にある
 - **暗号利用モード**: `Cryptography/暗号利用モード/` 配下に 1 トピック 1 ファイル（ブロック暗号と暗号利用モード / ECB / CBC / OFB）
