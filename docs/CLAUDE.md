@@ -178,7 +178,7 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **Slack**: `Slack/` 配下に `SlackとTeamsの比較.md`、`開発チームでのSlack活用.md`、`Slackワークフローの作り方.md` あり
 - **ADR×AI**: `ADR/ADRの要否をAIに判断させるリポジトリ設計.md` あり
 - **Trusted Advisor通知**: `Amazon Web Services/04_セキュリティ/検知と可視化/TrustedAdvisorアラートのSlack通知.md` あり
-- **サイバー攻撃の手法**: `Cyber Attacks/` 配下に 01〜25 を1手法1ファイルで執筆済み（CWE / ポートスキャン4種 / ポートノッキング / SPA / SSP / automatic fortification / DEP / ASLR / セッションフィクセーション / スニファ / プロミスキャスモード / WEP・WPA・ESSID / pass the hash / IP スプーフィング / DDoS 各種 / DNS 水責め / EDoS・DeOS / XSS / DNSSEC / キルチェーン / RLO / BadNets / SSL・TLS ダウングレード / バージョンロールバック / POODLE）。すべて図中心の HTML。攻撃手法の記事はここに追加する（別ディレクトリを作らない）
+- **サイバー攻撃の手法**: `Cyber Attacks/` 配下に 01〜26 を1手法1ファイルで執筆済み（CWE / ポートスキャン4種 / ポートノッキング / SPA / SSP / automatic fortification / DEP / ASLR / セッションフィクセーション / スニファ / プロミスキャスモード / WEP・WPA・ESSID / pass the hash / IP スプーフィング / DDoS 各種 / DNS 水責め / EDoS・DeOS / XSS / DNSSEC / キルチェーン / RLO / BadNets / SSL・TLS ダウングレード / バージョンロールバック / POODLE / Web ビーコン）。すべて図中心の HTML。攻撃手法の記事はここに追加する（別ディレクトリを作らない）
 - **HTTP/2**: `Networking/HTTP2.html`。図中心 HTML 記事のリファレンス実装
 - **HTTP/3 と QUIC**: `Networking/HTTP3.html`
 - **HSTS**: `Networking/HSTS.html`
@@ -195,7 +195,8 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **IP**: `Networking/IP/` 配下に 1 トピック 1 ファイル（IPパケット / IPヘッダの構成 / クラスレスサブネットマスク / IGMP / IPマスカレード）
 - **IPv6**: `Networking/IPv6/` 配下に 1 トピック 1 ファイル（IPv6 / 表記方法 / グローバルルーティングプレフィックス / インタフェースID / NDP / エニーキャスト）。DNS64・NAT64 は `Networking/DNS64とNAT64.md`
 - **TCP と UDP**: `Networking/TCPとUDP/` 配下に 1 トピック 1 ファイル（TCPのSYNとACK / TCPヘッダ / UDP / サブミッションポート / 動的割り当てのポート番号）
-- **ネットワーク仮想化**: `Networking/ネットワーク仮想化/` 配下に VXLAN / VTEP
+- **ネットワーク仮想化**: `Networking/ネットワーク仮想化/` 配下に VXLAN / VTEP / VXLANをゼロから理解する（MAC・IP から積み上げる初学者向け。既存の VXLAN.html は要点まとめなので棲み分ける）
+- **VPN**: `Networking/VPN/` 配下に 1 トピック 1 ファイル（インターネットVPNとIP-VPN / トランスポートモードとトンネルモード / IPsec / IKE / PPTPとL2TP / SSL-VPN）
 - **暗号**: `Cryptography/` 配下に 1 トピック 1 ファイル（CRYPTREC / DES / ハイブリッド方式 / 楕円曲線暗号 / Diffie-Hellman / 耐量子暗号PQC / MACとデジタル署名）。Triple DES は `DES.html` に含まれる。PQC の業務接点・クラウド対応状況は `Quantum Computing/` の記事にある
 - **暗号利用モード**: `Cryptography/暗号利用モード/` 配下に 1 トピック 1 ファイル（ブロック暗号と暗号利用モード / ECB / CBC / OFB）
 - **認証**: `Authentication/` 配下に 1 トピック 1 ファイル（チャレンジレスポンス / S/KEY / 時刻同期方式 / ゼロ知識証明 / RADIUS / AAAフレームワーク / Kerberos / SAML / OAuth）。IEEE 802.1X は `Networking/無線LAN/` にある

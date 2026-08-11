@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IKE — ISAKMP SA、メインモード／アグレッシブモード、クイックモード</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>IKE — 鍵を手で配らないための仕組み</h1>
+<p class="lede">IPsec が動く前に走る交渉。なぜ2段階に分かれているのか。</p>
+
+<h2>何が問題なのか</h2>
+<p>IPsec は「どのアルゴリズムで、どの鍵で」の合意（SA）がないと1バイトも流れない。拠点が2つなら鍵を手で設定できなくもないが、その鍵をどうやって安全に相手へ渡すのか。そして鍵は定期的に替えたい——手作業では回らない。</p>
+<p>この交渉と鍵交換を自動でやるのが <strong>IKE（Internet Key Exchange）</strong>。UDP 500 で動く。</p>
+
+<h2>2段階になっている理由</h2>
+<p>鍵の交渉そのものを平文でやったら意味がない。そこで IKE はまず<strong>「交渉を守るための通信路」を1本作り</strong>、その中で本番の IPsec 用の鍵を決める。</p>
+<ul>
+<li><strong>フェーズ1</strong>：ISAKMP SA（IKE SA とも呼ぶ）を作る。双方向で1本</li>
+<li><strong>フェーズ2（クイックモード）</strong>：その中で IPsec SA を作る。片方向1本ずつなので計2本</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 224" role="img" aria-label="ISAKMP SAの中でIPsec SAが作られる入れ子構造">
+  <rect x="0" y="60" width="82" height="80" rx="6" fill="var(--c4)"/>
+  <text x="41" y="95" font-size="10" fill="var(--on)" text-anchor="middle">拠点A</text>
+  <text x="41" y="110" font-size="10" fill="var(--on)" text-anchor="middle">GW</text>
+  <rect x="618" y="60" width="82" height="80" rx="6" fill="var(--c4)"/>
+  <text x="659" y="95" font-size="10" fill="var(--on)" text-anchor="middle">拠点B</text>
+  <text x="659" y="110" font-size="10" fill="var(--on)" text-anchor="middle">GW</text>
+
+  <rect x="94" y="26" width="512" height="148" rx="10" fill="none" stroke="var(--c1)" stroke-width="2"/>
+  <text x="350" y="46" font-size="11.5" font-weight="600" fill="var(--c1)" text-anchor="middle">ISAKMP SA — フェーズ1で作る、双方向で1本</text>
+  <text x="350" y="61" font-size="9.5" fill="var(--muted)" text-anchor="middle">この中の通信は暗号化されている</text>
+
+  <rect x="118" y="72" width="464" height="36" rx="6" fill="var(--c3)"/>
+  <text x="350" y="88" font-size="10" fill="var(--on)" text-anchor="middle">IPsec SA ①　拠点A → 拠点B 方向</text>
+  <text x="350" y="102" font-size="9" fill="var(--on)" text-anchor="middle">SPI・鍵・アルゴリズム</text>
+  <rect x="118" y="116" width="464" height="36" rx="6" fill="var(--c2)"/>
+  <text x="350" y="132" font-size="10" fill="var(--on)" text-anchor="middle">IPsec SA ②　拠点B → 拠点A 方向</text>
+  <text x="350" y="146" font-size="9" fill="var(--on)" text-anchor="middle">SPI・鍵・アルゴリズム</text>
+  <text x="350" y="167" font-size="9.5" fill="var(--muted)" text-anchor="middle">↑ フェーズ2（クイックモード）で作られる</text>
+
+  <text x="0" y="200" font-size="9.5" fill="var(--muted)">実データはこの IPsec SA を使って ESP で暗号化されて流れる。ISAKMP SA は交渉と鍵の更新にしか使わない。</text>
+  <text x="0" y="216" font-size="9.5" fill="var(--muted)">寿命は別々に設定でき、ISAKMP SA（数時間）より IPsec SA（1時間程度）を短くするのが一般的。</text>
+</svg>
+<figcaption>2段階にしておくと、鍵の更新（リキー）のたびにフェーズ1をやり直さずに済む。フェーズ1は Diffie-Hellman と相手認証で重いので、ここを使い回せることが実運用では効いてくる。</figcaption>
+</figure>
+
+<h2>フェーズ1 — メインモードとアグレッシブモード</h2>
+<p>フェーズ1でやることは、①アルゴリズムの合意 ②Diffie-Hellman による鍵共有 ③相手が本物かの認証（事前共有鍵＝PSK または証明書）の3つ。この3つをどの順番で、何往復でやるかが2種類ある。</p>
+
+<figure>
+<svg viewBox="0 0 700 288" role="img" aria-label="メインモードとアグレッシブモードのメッセージ交換の比較">
+  <text x="20" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">メインモード（6メッセージ）</text>
+  <text x="30" y="34" font-size="9.5" fill="var(--muted)" text-anchor="middle">開始側</text>
+  <text x="300" y="34" font-size="9.5" fill="var(--muted)" text-anchor="middle">応答側</text>
+  <line x1="30" y1="42" x2="30" y2="240" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="300" y1="42" x2="300" y2="240" stroke="var(--line)" stroke-width="1.5"/>
+  <g font-size="9.5" text-anchor="middle">
+    <path d="M30 60 L296 60" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#r1)"/>
+    <text x="165" y="55" fill="var(--c2)">① アルゴリズムの提案</text>
+    <path d="M300 90 L34 90" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#l1)"/>
+    <text x="165" y="85" fill="var(--c2)">② 合意した内容</text>
+    <path d="M30 120 L296 120" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#r1)"/>
+    <text x="165" y="115" fill="var(--c2)">③ DH 公開値 ＋ 乱数</text>
+    <path d="M300 150 L34 150" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#l1)"/>
+    <text x="165" y="145" fill="var(--c2)">④ DH 公開値 ＋ 乱数</text>
+    <rect x="34" y="160" width="262" height="66" rx="6" fill="var(--c3)" opacity=".18"/>
+    <path d="M30 186 L296 186" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#r2)"/>
+    <text x="165" y="181" fill="var(--c3)">⑤ ID ＋ 認証</text>
+    <path d="M300 214 L34 214" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#l2)"/>
+    <text x="165" y="209" fill="var(--c3)">⑥ ID ＋ 認証</text>
+  </g>
+  <text x="165" y="256" font-size="9.5" fill="var(--c3)" text-anchor="middle">③④で鍵ができてから ID を送るので</text>
+  <text x="165" y="270" font-size="9.5" fill="var(--c3)" text-anchor="middle">⑤⑥は暗号化されている</text>
+
+  <text x="400" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">アグレッシブモード（3メッセージ）</text>
+  <text x="410" y="34" font-size="9.5" fill="var(--muted)" text-anchor="middle">開始側</text>
+  <text x="680" y="34" font-size="9.5" fill="var(--muted)" text-anchor="middle">応答側</text>
+  <line x1="410" y1="42" x2="410" y2="240" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="680" y1="42" x2="680" y2="240" stroke="var(--line)" stroke-width="1.5"/>
+  <g font-size="9.5" text-anchor="middle">
+    <path d="M410 60 L676 60" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#r1)"/>
+    <text x="545" y="55" fill="var(--c2)">① 提案 ＋ DH 公開値 ＋ ID</text>
+    <path d="M680 96 L414 96" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#l1)"/>
+    <text x="545" y="79" fill="var(--c2)">② 合意 ＋ DH 公開値 ＋ ID</text>
+    <text x="545" y="91" fill="var(--stop)">＋ 認証ハッシュ（平文）</text>
+    <path d="M410 126 L676 126" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#r1)"/>
+    <text x="545" y="121" fill="var(--c2)">③ 認証ハッシュ</text>
+  </g>
+  <rect x="414" y="150" width="262" height="76" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="545" y="170" font-size="9.5" fill="var(--stop)" text-anchor="middle">往復が減るぶん、ID と認証ハッシュが</text>
+  <text x="545" y="184" font-size="9.5" fill="var(--stop)" text-anchor="middle">暗号化される前に流れてしまう</text>
+  <text x="545" y="204" font-size="9.5" fill="var(--muted)" text-anchor="middle">→ 盗聴者はハッシュを持ち帰って、</text>
+  <text x="545" y="218" font-size="9.5" fill="var(--muted)" text-anchor="middle">事前共有鍵をオフラインで総当たりできる</text>
+  <defs>
+    <marker id="r1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="l1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M7 0 L0 3.5 L7 7 z" fill="var(--c2)"/></marker>
+    <marker id="r2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="l2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M7 0 L0 3.5 L7 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>アグレッシブモードが残っているのは、相手の IP アドレスが動的なとき（モバイル回線やフレッツの動的 IP など）に必要になるから。メインモードは相手を IP アドレスで識別してから事前共有鍵を引くため、IP が毎回変わる相手だと鍵を選べない。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>アグレッシブモード＋事前共有鍵の組み合わせは避ける</strong></p>
+<p>認証ハッシュが平文で観測できるので、辞書攻撃・総当たりでパスフレーズを割られうる。動的 IP の相手と繋ぐ必要があるなら、事前共有鍵をやめて<strong>証明書認証</strong>にする（ハッシュを割っても秘密鍵は手に入らない）。</p>
+</div>
+
+<h2>フェーズ2 — クイックモード</h2>
+<p>できあがった ISAKMP SA の中で、3メッセージで IPsec SA を作る。ここで決まるのは、どの範囲の通信を保護するか（送信元／宛先のネットワーク）と、ESP で使うアルゴリズムと鍵。方向ごとに1本ずつ、計2本の SA が生成され、以降の実データはこれで暗号化されて流れる。</p>
+<p>IPsec SA には寿命があり、切れる前にクイックモードだけを走らせて鍵を作り直す。フェーズ1はそのまま使い回すので、通信は途切れない。</p>
+
+<div class="note">
+<p><strong>ここまでの用語は IKEv1 のもの</strong></p>
+<p>「メインモード／アグレッシブモード／クイックモード」という区分があるのは IKEv1。後継の IKEv2 ではこの区分自体がなくなり、往復2回（4メッセージ）で接続が完了する。新規に組むなら IKEv2 を選ぶ。既存機器の設定画面で上の用語を見かけたら、それは IKEv1 で動いているということ。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2409.html">RFC 2409 - The Internet Key Exchange (IKE)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2408.html">RFC 2408 - Internet Security Association and Key Management Protocol (ISAKMP)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7296.html">RFC 7296 - Internet Key Exchange Protocol Version 2 (IKEv2)</a></li>
+</ul>
+
+</main>
+</body>
+</html>

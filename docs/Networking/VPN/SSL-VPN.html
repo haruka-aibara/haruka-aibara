@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSL-VPN — 443 番だけで通す VPN</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>SSL-VPN</h1>
+<p class="lede">出先から社内に入りたい。でも IPsec は通らない——を解決する方式。</p>
+
+<h2>何が問題なのか</h2>
+<p>IPsec の VPN は拠点間なら問題ない。両端に自分たちの装置があり、必要なポートを開けられるからだ。ところが、出張先のホテルや客先、公衆 Wi-Fi から社員のノート PC を繋ごうとすると急に詰まる。IPsec は UDP 500 と ESP（または UDP 4500）を通す必要があるが、外のネットワークでそこが塞がっていても、こちらからは何もできない。</p>
+<p>一方、どこでもまず開いているポートがある——HTTPS の <strong>TCP 443</strong>。Web が見える場所ならどこからでも繋がる。TLS の上に VPN を作ってしまおう、というのが SSL-VPN。</p>
+
+<figure>
+<svg viewBox="0 0 700 210" role="img" aria-label="IPsec VPNとSSL-VPNで外部ネットワークを越えられるかの違い">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">IPsec VPN — 専用のポートが必要</text>
+  <rect x="0" y="22" width="120" height="44" rx="6" fill="var(--lane)"/>
+  <text x="60" y="41" font-size="10" fill="var(--ink)" text-anchor="middle">ノート PC</text>
+  <text x="60" y="56" font-size="9" fill="var(--muted)" text-anchor="middle">出張先</text>
+  <rect x="150" y="22" width="170" height="44" rx="6" fill="var(--c2)" opacity=".85"/>
+  <text x="235" y="41" font-size="10" fill="var(--on)" text-anchor="middle">ホテル・客先のFW</text>
+  <text x="235" y="56" font-size="9" fill="var(--on)" text-anchor="middle">443 以外を絞っていることが多い</text>
+  <path d="M122 44 L146 44" stroke="var(--muted)" stroke-width="1.4"/>
+  <text x="330" y="40" font-size="18" fill="var(--stop)">✕</text>
+  <text x="352" y="40" font-size="10" fill="var(--stop)">UDP 500 / ESP / UDP 4500 が落とされると繋がらない</text>
+  <text x="352" y="58" font-size="9.5" fill="var(--muted)">相手のネットワークなので、こちらでは開けられない</text>
+
+  <text x="0" y="110" font-size="12.5" font-weight="600" fill="var(--ink)">SSL-VPN — HTTPS と同じ道を通る</text>
+  <rect x="0" y="120" width="120" height="44" rx="6" fill="var(--lane)"/>
+  <text x="60" y="139" font-size="10" fill="var(--ink)" text-anchor="middle">ノート PC</text>
+  <text x="60" y="154" font-size="9" fill="var(--muted)" text-anchor="middle">出張先</text>
+  <rect x="150" y="120" width="170" height="44" rx="6" fill="var(--c2)" opacity=".85"/>
+  <text x="235" y="139" font-size="10" fill="var(--on)" text-anchor="middle">ホテル・客先のFW</text>
+  <text x="235" y="154" font-size="9" fill="var(--on)" text-anchor="middle">443 は開いている</text>
+  <path d="M122 142 L146 142" stroke="var(--muted)" stroke-width="1.4"/>
+  <rect x="326" y="132" width="250" height="20" rx="10" fill="var(--c3)"/>
+  <text x="451" y="146" font-size="10" fill="var(--on)" text-anchor="middle">TLS（TCP 443）で通す</text>
+  <rect x="586" y="120" width="114" height="44" rx="6" fill="var(--c4)"/>
+  <text x="643" y="139" font-size="10" fill="var(--on)" text-anchor="middle">SSL-VPN 装置</text>
+  <text x="643" y="154" font-size="9" fill="var(--on)" text-anchor="middle">社内側</text>
+  <text x="0" y="196" font-size="9.5" fill="var(--muted)">見た目が普通の HTTPS と区別しにくいことが、そのまま「どこでも繋がる」という利点になっている。</text>
+</svg>
+<figcaption>SSL-VPN が広まったのは可搬性が理由で、暗号として IPsec より強いからではない。拠点どうしを固定で結ぶ用途では、いまも IPsec のほうが素直な選択肢。</figcaption>
+</figure>
+
+<h2>3つの方式 — どこまで届くかが違う</h2>
+<p>「SSL-VPN」と一括りにされるが、実現方法は3種類あり、社内のどこまで届くかが変わる。</p>
+
+<figure>
+<svg viewBox="0 0 700 244" role="img" aria-label="SSL-VPNの3方式で社内のどこまで到達できるかの比較">
+  <rect x="470" y="16" width="230" height="212" rx="8" fill="var(--lane)"/>
+  <text x="585" y="34" font-size="10.5" font-weight="600" fill="var(--ink)" text-anchor="middle">社内ネットワーク</text>
+  <rect x="486" y="44" width="198" height="26" rx="4" fill="var(--card)" stroke="var(--line)"/>
+  <text x="585" y="61" font-size="9.5" fill="var(--ink)" text-anchor="middle">社内 Web（グループウェア等）</text>
+  <rect x="486" y="76" width="198" height="26" rx="4" fill="var(--card)" stroke="var(--line)"/>
+  <text x="585" y="93" font-size="9.5" fill="var(--ink)" text-anchor="middle">メール・SSH など TCP アプリ</text>
+  <rect x="486" y="108" width="198" height="26" rx="4" fill="var(--card)" stroke="var(--line)"/>
+  <text x="585" y="125" font-size="9.5" fill="var(--ink)" text-anchor="middle">ファイルサーバ・業務システム</text>
+  <rect x="486" y="140" width="198" height="26" rx="4" fill="var(--card)" stroke="var(--line)"/>
+  <text x="585" y="157" font-size="9.5" fill="var(--ink)" text-anchor="middle">UDP を使うアプリ・独自プロトコル</text>
+
+  <text x="0" y="34" font-size="10.5" font-weight="600" fill="var(--c1)">① リバースプロキシ方式</text>
+  <text x="0" y="49" font-size="9" fill="var(--muted)">ブラウザだけでよい</text>
+  <path d="M150 45 L482 57" stroke="var(--c1)" stroke-width="2" marker-end="url(#m1)"/>
+
+  <text x="0" y="86" font-size="10.5" font-weight="600" fill="var(--c2)">② ポートフォワーディング方式</text>
+  <text x="0" y="101" font-size="9" fill="var(--muted)">小さなエージェントを配布する</text>
+  <path d="M180 97 L482 92" stroke="var(--c2)" stroke-width="2" marker-end="url(#m2)"/>
+  <path d="M180 97 L482 60" stroke="var(--c2)" stroke-width="2" opacity=".5" marker-end="url(#m2)"/>
+
+  <text x="0" y="150" font-size="10.5" font-weight="600" fill="var(--c3)">③ L2 フォワーディング方式</text>
+  <text x="0" y="165" font-size="9" fill="var(--muted)">クライアントソフトが仮想 NIC を作る</text>
+  <text x="0" y="180" font-size="9" fill="var(--muted)">IP レベルでそのまま通す</text>
+  <path d="M190 161 L482 124" stroke="var(--c3)" stroke-width="2" marker-end="url(#m3)"/>
+  <path d="M190 161 L482 153" stroke="var(--c3)" stroke-width="2" marker-end="url(#m3)"/>
+  <path d="M190 161 L482 92" stroke="var(--c3)" stroke-width="2" opacity=".5" marker-end="url(#m3)"/>
+  <path d="M190 161 L482 60" stroke="var(--c3)" stroke-width="2" opacity=".3" marker-end="url(#m3)"/>
+  <defs>
+    <marker id="m1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="m2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="m3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+  <text x="0" y="216" font-size="9.5" fill="var(--muted)">届く範囲が広いほど、端末に入れるものが増え、侵入されたときの影響も広がる。</text>
+  <text x="0" y="232" font-size="9.5" fill="var(--muted)">「全部通す」を既定にせず、業務に必要な範囲を選ぶのが本来の使い方。</text>
+</svg>
+<figcaption>SSL-VPN 装置として売られている製品の多くは3つとも備えていて、利用者グループごとに使い分けられる。委託先や短期の利用者にはリバースプロキシ方式だけ許可する、といった分け方ができる。</figcaption>
+</figure>
+
+<table>
+<tr><th>方式</th><th>端末に要るもの</th><th>使えるもの</th></tr>
+<tr><td>リバースプロキシ</td><td>ブラウザだけ</td><td>社内 Web アプリのみ</td></tr>
+<tr><td>ポートフォワーディング</td><td>小さなエージェント</td><td>指定した TCP アプリ</td></tr>
+<tr><td>L2 フォワーディング</td><td>クライアントソフト</td><td>ほぼ全部（IPsec に近い）</td></tr>
+</table>
+
+<h2>セキュリティ視点 — 装置そのものが標的になる</h2>
+<p>SSL-VPN 装置は、社内に入るための入口をインターネットに向けて常時公開している。しかも認証を通れば境界の内側に直接入れる。つまり<strong>この装置の脆弱性は、そのまま社内ネットワークへの侵入経路になる</strong>。ランサムウェア被害の初期侵入経路として、VPN 機器の既知脆弱性の悪用は毎年上位に来ている。</p>
+
+<div class="note">
+<p><strong>「TLS だから安全」ではない</strong></p>
+<p>TLS が守っているのは<strong>経路</strong>であって、装置そのものではない。守るべきは次の3点。</p>
+<ul>
+<li><strong>ファームウェアを速やかに当てる</strong>：脆弱性が公開されてから悪用が始まるまでが短い</li>
+<li><strong>多要素認証を必須にする</strong>：漏洩済みの ID とパスワードだけで入れる状態を残さない</li>
+<li><strong>棚卸しする</strong>：退職者・終了した委託先のアカウントが残っていないか。VPN のアカウントは消し忘れの定番</li>
+</ul>
+</div>
+
+<p>優先度を通すときの言い方——「VPN 装置のパッチは、社内サーバのパッチとは重みが違う。ここが破られると認証を経ずに社内ネットワークまで到達される」。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.cisa.gov/news-events/cybersecurity-advisories/aa21-110a">CISA AA21-110A - Exploitation of Pulse Connect Secure Vulnerabilities</a></li>
+<li><a href="https://www.npa.go.jp/publications/statistics/cybersecurity/index.html">警察庁 - サイバー空間をめぐる脅威の情勢等（ランサムウェアの感染経路）</a></li>
+<li><a href="https://www.cloudflare.com/ja-jp/learning/access-management/what-is-a-vpn/">Cloudflare - VPN とは</a></li>
+</ul>
+
+</main>
+</body>
+</html>
