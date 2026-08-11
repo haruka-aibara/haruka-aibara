@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPsec — AH と ESP、SA、SPD</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>IPsec — AH と ESP、SA、SPD</h1>
+<p class="lede">アプリを1行も変えずに、IP 層で暗号化と改ざん検知を足す仕組み。</p>
+
+<h2>何が問題なのか</h2>
+<p>IP には、中身を隠す仕組みも、途中で書き換えられたことを検知する仕組みもない。HTTPS で守れるのは HTTPS を喋るアプリだけで、社内の古い業務アプリや独自プロトコルはその外にいる。</p>
+<p><strong>アプリに手を入れず、その端末が出す通信をまとめて守りたい</strong>。アプリより下、IP 層に暗号を足すことで解決するのが IPsec。上のアプリからは何も変わって見えない。</p>
+
+<h2>AH と ESP — 実務は ESP 一択</h2>
+<p>IPsec には保護の方式が2つある。名前は並んで出てくるが、選ぶ余地はほぼない。</p>
+
+<figure>
+<svg viewBox="0 0 700 232" role="img" aria-label="AHとESPの保護範囲の比較">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">AH — 改ざん検知だけ。暗号化しない</text>
+  <g font-size="9.5" text-anchor="middle">
+    <rect x="20" y="20" width="120" height="32" rx="4" fill="var(--c1)"/><text x="80" y="40" fill="var(--on)">IP ヘッダ</text>
+    <rect x="142" y="20" width="100" height="32" rx="4" fill="var(--c2)"/><text x="192" y="40" fill="var(--on)">AH ヘッダ</text>
+    <rect x="244" y="20" width="110" height="32" rx="4" fill="var(--c4)"/><text x="299" y="40" fill="var(--on)">TCP ヘッダ</text>
+    <rect x="356" y="20" width="324" height="32" rx="4" fill="var(--c3)"/><text x="518" y="40" fill="var(--on)">データ（そのまま読める）</text>
+  </g>
+  <path d="M20 60 L20 66 L680 66 L680 60" fill="none" stroke="var(--c2)" stroke-width="1.4"/>
+  <text x="350" y="81" font-size="10" fill="var(--c2)" text-anchor="middle">認証（改ざん検知）の範囲 — IP ヘッダまで含む</text>
+  <text x="350" y="98" font-size="10" fill="var(--stop)" text-anchor="middle">↑ IP ヘッダを含むので、途中の NAT でアドレスが書き換わると検証に失敗する</text>
+
+  <text x="0" y="134" font-size="12.5" font-weight="600" fill="var(--ink)">ESP — 暗号化＋改ざん検知</text>
+  <g font-size="9.5" text-anchor="middle">
+    <rect x="20" y="142" width="110" height="32" rx="4" fill="var(--c1)"/><text x="75" y="162" fill="var(--on)">IP ヘッダ</text>
+    <rect x="132" y="142" width="86" height="32" rx="4" fill="var(--c2)"/><text x="175" y="162" fill="var(--on)">ESP ヘッダ</text>
+    <rect x="220" y="142" width="100" height="32" rx="4" fill="var(--c4)"/><text x="270" y="162" fill="var(--on)">TCP ヘッダ</text>
+    <rect x="322" y="142" width="196" height="32" rx="4" fill="var(--c3)"/><text x="420" y="162" fill="var(--on)">データ</text>
+    <rect x="520" y="142" width="80" height="32" rx="4" fill="var(--c2)" opacity=".7"/><text x="560" y="162" fill="var(--on)">トレーラ</text>
+    <rect x="602" y="142" width="78" height="32" rx="4" fill="var(--c2)" opacity=".45"/><text x="641" y="162" fill="var(--on)">認証値</text>
+  </g>
+  <path d="M220 182 L220 188 L598 188 L598 182" fill="none" stroke="var(--stop)" stroke-width="1.4"/>
+  <text x="409" y="203" font-size="10" fill="var(--stop)" text-anchor="middle">暗号化される範囲</text>
+  <path d="M132 210 L132 216 L598 216 L598 210" fill="none" stroke="var(--c2)" stroke-width="1.4"/>
+  <text x="365" y="230" font-size="10" fill="var(--c2)" text-anchor="middle">認証の範囲（IP ヘッダは含まない）</text>
+</svg>
+<figcaption>ESP が IP ヘッダを認証対象から外しているのは仕様上の割り切りで、結果として NAT を越えられる。AH が実質使われなくなったのは暗号化しないからだけでなく、NAT の普及と相性が悪かったことが大きい。</figcaption>
+</figure>
+
+<table>
+<tr><th></th><th>AH</th><th>ESP</th></tr>
+<tr><td>暗号化</td><td>しない</td><td>する</td></tr>
+<tr><td>改ざん検知</td><td>する（IP ヘッダ含む）</td><td>する（IP ヘッダ除く）</td></tr>
+<tr><td>NAT 越え</td><td>できない</td><td>できる（後述の NAT-T が要る）</td></tr>
+<tr><td>実務</td><td>使わない</td><td>これを使う</td></tr>
+</table>
+
+<h2>SA — 合意は片方向ごとに1本</h2>
+<p>暗号化するには、相手と「どのアルゴリズムで、どの鍵で」を合意しておく必要がある。この合意の単位が <strong>SA（Security Association）</strong>。</p>
+<p>SA は<strong>片方向</strong>にしか効かない。A→B と B→A で別々の SA、つまり普通の双方向通信には SA が2本要る。どの SA を使うかはパケット内の <strong>SPI</strong>（32 ビットの番号）で識別し、受信側は SPI から自分の SA 一覧（<strong>SAD</strong>）を引いて復号する。</p>
+
+<h2>SPD — どの通信を IPsec に通すか</h2>
+<p>すべての通信を暗号化したいわけではない。<strong>SPD（Security Policy Database）</strong> は、送信元／宛先アドレスやポートの条件ごとに、次の3つのどれかを決めるルール表。</p>
+<ul>
+<li><strong>PROTECT</strong>：IPsec で保護して送る</li>
+<li><strong>BYPASS</strong>：素通しする（IPsec を掛けずにそのまま）</li>
+<li><strong>DISCARD</strong>：捨てる</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 236" role="img" aria-label="送信パケットがSPDとSADを経て処理される流れ">
+  <rect x="0" y="92" width="88" height="44" rx="6" fill="var(--lane)"/>
+  <text x="44" y="112" font-size="10" fill="var(--ink)" text-anchor="middle">送信する</text>
+  <text x="44" y="126" font-size="10" fill="var(--ink)" text-anchor="middle">パケット</text>
+  <path d="M90 114 L116 114" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#a)"/>
+  <defs><marker id="a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+
+  <rect x="120" y="46" width="150" height="138" rx="8" fill="var(--card)" stroke="var(--c4)" stroke-width="1.6"/>
+  <text x="195" y="66" font-size="11" font-weight="600" fill="var(--ink)" text-anchor="middle">SPD</text>
+  <text x="195" y="80" font-size="9" fill="var(--muted)" text-anchor="middle">条件に一致する行を探す</text>
+  <rect x="132" y="90" width="126" height="26" rx="4" fill="var(--c3)"/>
+  <text x="195" y="107" font-size="9.5" fill="var(--on)" text-anchor="middle">10.0.2.0/24 宛 → 保護</text>
+  <rect x="132" y="120" width="126" height="26" rx="4" fill="var(--c1)" opacity=".8"/>
+  <text x="195" y="137" font-size="9.5" fill="var(--on)" text-anchor="middle">53/udp → 素通し</text>
+  <rect x="132" y="150" width="126" height="26" rx="4" fill="var(--stop)" opacity=".8"/>
+  <text x="195" y="167" font-size="9.5" fill="var(--on)" text-anchor="middle">それ以外 → 破棄</text>
+
+  <path d="M272 103 L306 103" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#b)"/>
+  <path d="M272 133 L306 133" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#c)"/>
+  <path d="M272 163 L306 163" stroke="var(--stop)" stroke-width="1.4" marker-end="url(#d)"/>
+  <defs>
+    <marker id="b" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="c" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="d" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--stop)"/></marker>
+  </defs>
+
+  <rect x="310" y="84" width="160" height="40" rx="6" fill="var(--c3)"/>
+  <text x="390" y="100" font-size="9.5" fill="var(--on)" text-anchor="middle">SAD から SA を取り出す</text>
+  <text x="390" y="115" font-size="9.5" fill="var(--on)" text-anchor="middle">（鍵とアルゴリズム）</text>
+  <path d="M472 104 L498 104" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#b)"/>
+  <rect x="502" y="84" width="198" height="40" rx="6" fill="var(--c2)"/>
+  <text x="601" y="100" font-size="9.5" fill="var(--on)" text-anchor="middle">ESP で暗号化し、SPI を付けて</text>
+  <text x="601" y="115" font-size="9.5" fill="var(--on)" text-anchor="middle">送信</text>
+
+  <text x="312" y="137" font-size="9.5" fill="var(--muted)">平文のまま送信する</text>
+  <text x="312" y="167" font-size="9.5" fill="var(--muted)">破棄する</text>
+
+  <text x="0" y="212" font-size="9.5" fill="var(--muted)">受信側は逆向き：パケットの SPI から SAD を引いて SA を特定し、復号・検証したうえで、</text>
+  <text x="0" y="228" font-size="9.5" fill="var(--muted)">その通信が本当に保護されているべきものだったかを SPD で確かめる。</text>
+</svg>
+<figcaption>SPD は上から順に評価される点でファイアウォールのルール表とよく似ている。「VPN 越しに通したい通信」を書き忘れると DISCARD 側に落ちて無言で消えるため、疎通しないときは暗号設定より先に SPD（機器によっては「暗号化対象トラフィック」「interesting traffic」という名前）を見る。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>NAT の下では ESP がそのまま通らない</strong></p>
+<p>ESP は TCP/UDP のポート番号を持たないので、NAT 機器がポート変換で複数端末を区別できない。そのため ESP を UDP 4500 に包み直す <strong>NAT-T</strong> が使われる。多くの機器は NAT の有無を自動検出して切り替えるが、途中のファイアウォールで UDP 500 と UDP 4500 を開けておく必要がある。</p>
+</div>
+
+<p>なお、鍵そのものは手で設定するものではなく、<a href="IKE.html">IKE</a> が自動で交換する。守る範囲（トランスポート／トンネル）の違いは<a href="トランスポートモードとトンネルモード.html">別記事</a>にまとめてある。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4301.html">RFC 4301 - Security Architecture for the Internet Protocol</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4302.html">RFC 4302 - IP Authentication Header</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4303.html">RFC 4303 - IP Encapsulating Security Payload (ESP)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc3948.html">RFC 3948 - UDP Encapsulation of IPsec ESP Packets</a></li>
+</ul>
+
+</main>
+</body>
+</html>
