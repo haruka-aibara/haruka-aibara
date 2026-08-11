@@ -1,727 +1,146 @@
-<title>UPnP — 誰でもルータに穴を開けられる仕組み</title>
-
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UPnP を図で理解する</title>
 <style>
-  :root {
-    --ground: #eceff0;
-    --surface: #ffffff;
-    --surface-2: #f5f8f8;
-    --ink: #101a1d;
-    --ink-soft: #4c5c62;
-    --line: #d2d9db;
-    --line-soft: #e3e8e9;
-    --accent: #0a6b76;
-    --accent-soft: #e0eff0;
-    --alert: #9a3a23;
-    --alert-soft: #f7e8e3;
-
-    --display: "Hiragino Mincho ProN", "Yu Mincho", YuMincho, "Noto Serif JP", "Source Han Serif JP", serif;
-    --body: "Hiragino Kaku Gothic ProN", "Yu Gothic", YuGothic, "Noto Sans JP", Meiryo, system-ui, sans-serif;
-    --mono: ui-monospace, SFMono-Regular, Menlo, "Cascadia Mono", Consolas, monospace;
-
-    --measure: 40rem;
-    --wide: 54rem;
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
   }
-
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --ground: #0c1214;
-      --surface: #141d20;
-      --surface-2: #182226;
-      --ink: #e2e9ea;
-      --ink-soft: #98a9ae;
-      --line: #2a373b;
-      --line-soft: #202b2e;
-      --accent: #59c4ce;
-      --accent-soft: #102e33;
-      --alert: #e08b71;
-      --alert-soft: #32201b;
-    }
-  }
-
-  :root[data-theme="dark"] {
-    --ground: #0c1214;
-    --surface: #141d20;
-    --surface-2: #182226;
-    --ink: #e2e9ea;
-    --ink-soft: #98a9ae;
-    --line: #2a373b;
-    --line-soft: #202b2e;
-    --accent: #59c4ce;
-    --accent-soft: #102e33;
-    --alert: #e08b71;
-    --alert-soft: #32201b;
-  }
-
-  body {
-    background: var(--ground);
-    color: var(--ink);
-    font-family: var(--body);
-    font-size: 16px;
-    line-height: 1.85;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  .page {
-    max-width: var(--wide);
-    margin: 0 auto;
-    padding: 0 1.5rem 6rem;
-    display: flex;
-    flex-direction: column;
-    gap: 3.25rem;
-  }
-
-  /* ---- hero ---- */
-
-  .hero {
-    padding: 4.5rem 0 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 2.75rem;
-  }
-
-  .eyebrow {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--accent);
-    line-height: 1.4;
-  }
-
-  h1 {
-    font-family: var(--display);
-    font-size: clamp(2.1rem, 5.5vw, 3.1rem);
-    line-height: 1.3;
-    font-weight: 600;
-    text-wrap: balance;
-    letter-spacing: 0.01em;
-  }
-
-  .lede {
-    max-width: var(--measure);
-    font-size: 1.06rem;
-    color: var(--ink-soft);
-  }
-
-  /* ---- sections ---- */
-
-  section {
-    display: flex;
-    flex-direction: column;
-    gap: 1.1rem;
-  }
-
-  h2 {
-    font-family: var(--display);
-    font-size: 1.5rem;
-    font-weight: 600;
-    line-height: 1.5;
-    text-wrap: balance;
-    padding-top: 0.5rem;
-    border-top: 2px solid var(--ink);
-    max-width: var(--wide);
-  }
-
-  h3 {
-    font-family: var(--body);
-    font-size: 1rem;
-    font-weight: 700;
-    line-height: 1.6;
-    margin-top: 0.75rem;
-    color: var(--accent);
-  }
-
-  p, li {
-    max-width: var(--measure);
-  }
-
-  ul, ol {
-    display: flex;
-    flex-direction: column;
-    gap: 0.55rem;
-    padding-left: 1.35rem;
-  }
-
-  li::marker { color: var(--ink-soft); }
-
-  strong { font-weight: 700; }
-
-  code {
-    font-family: var(--mono);
-    font-size: 0.88em;
-    background: var(--surface-2);
-    border: 1px solid var(--line-soft);
-    border-radius: 3px;
-    padding: 0.05em 0.35em;
-    word-break: break-word;
-  }
-
-  /* ---- ordered protocol stack ---- */
-
-  .stack {
-    list-style: none;
-    padding: 0;
-    counter-reset: step;
-    max-width: var(--measure);
-    gap: 0;
-  }
-
-  .stack li {
-    counter-increment: step;
-    display: grid;
-    grid-template-columns: 2.4rem 1fr;
-    gap: 0.9rem;
-    padding: 0.85rem 0;
-    border-bottom: 1px solid var(--line-soft);
-    max-width: none;
-    line-height: 1.7;
-  }
-
-  .stack li::before {
-    content: counter(step, decimal-leading-zero);
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    color: var(--accent);
-    letter-spacing: 0.05em;
-    padding-top: 0.3rem;
-  }
-
-  .stack b {
-    display: block;
-    font-weight: 700;
-  }
-
-  .stack span {
-    color: var(--ink-soft);
-    font-size: 0.94rem;
-  }
-
-  /* ---- code blocks ---- */
-
-  pre {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-left: 3px solid var(--accent);
-    padding: 1rem 1.15rem;
-    overflow-x: auto;
-    font-size: 0.82rem;
-    line-height: 1.75;
-    max-width: var(--wide);
-  }
-
-  pre code {
-    background: none;
-    border: none;
-    padding: 0;
-    font-size: 1em;
-    white-space: pre;
-  }
-
-  .caption {
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-    max-width: var(--measure);
-  }
-
-  /* ---- figures ---- */
-
-  figure {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 1.4rem 1.2rem 1.1rem;
-    overflow-x: auto;
-  }
-
-  figure svg {
-    display: block;
-    width: 100%;
-    min-width: 480px;
-    max-width: 100%;
-    height: auto;
-    color: var(--ink-soft);
-  }
-
-  figcaption {
-    font-size: 0.85rem;
-    color: var(--ink-soft);
-    line-height: 1.7;
-  }
-
-  .f-accent { fill: var(--accent); }
-  .s-accent { stroke: var(--accent); }
-  .f-alert { fill: var(--alert); }
-  .s-alert { stroke: var(--alert); }
-
-  /* ---- tables ---- */
-
-  .table-wrap { overflow-x: auto; }
-
-  table {
-    border-collapse: collapse;
-    width: 100%;
-    min-width: 32rem;
-    font-size: 0.93rem;
-    background: var(--surface);
-  }
-
-  th, td {
-    text-align: left;
-    vertical-align: top;
-    padding: 0.7rem 0.9rem;
-    border-bottom: 1px solid var(--line-soft);
-    line-height: 1.7;
-  }
-
-  thead th {
-    font-size: 0.74rem;
-    font-family: var(--mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-    border-bottom: 1px solid var(--line);
-    white-space: nowrap;
-  }
-
-  tbody tr:last-child td { border-bottom: none; }
-
-  /* ---- callout ---- */
-
-  .callout {
-    background: var(--alert-soft);
-    border-left: 3px solid var(--alert);
-    padding: 1rem 1.2rem;
-    max-width: var(--wide);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .callout p { max-width: none; font-size: 0.95rem; }
-
-  .callout .label {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--alert);
-  }
-
-  /* ---- references ---- */
-
-  .refs { list-style: none; padding: 0; gap: 0.65rem; }
-
-  .refs li {
-    max-width: var(--wide);
-    padding-left: 1rem;
-    border-left: 1px solid var(--line);
-    font-size: 0.92rem;
-    line-height: 1.65;
-  }
-
-  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
-  a:hover { text-decoration-style: dotted; }
-  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
-
-  .foot {
-    font-size: 0.82rem;
-    color: var(--ink-soft);
-    border-top: 1px solid var(--line);
-    padding-top: 1.25rem;
-    max-width: var(--wide);
-  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
 </style>
+</head>
+<body>
+<main>
 
-<div class="page">
+<h1>UPnP — 誰も申請していないのにポートが開いている</h1>
+<p class="lede">機器が自分でルータに穴を開ける仕組み。便利さと引き換えに何を渡しているか。</p>
 
-  <header class="hero">
-    <div class="eyebrow">Networking / セキュリティ</div>
-    <h1>UPnP — 誰でもルータに穴を開けられる仕組み</h1>
-    <p class="lede">
-      NAT の内側は外から繋がらない。その不便さを解消するために「LAN 内のアプリがルータに自分でポートを開けさせる」仕組みが作られた。
-      それが UPnP IGD で、設計上そこには認証がない。NAT が偶然もたらしていた防御を、LAN 内の任意のプロセスが人間の承認なしに剥がせる、というのがこのプロトコルの本質。
-    </p>
-  </header>
+<h2>何が問題なのか</h2>
+<p>NAT の内側にいる端末は、外から接続を受けられない。ゲーム機や P2P アプリ、一部のビデオ会議は「外から着信を受ける」必要があるので、本来ならルータでポート開放の設定をしなければならない。<strong>ところが実際には、何も設定していないのに動く。</strong></p>
+<p>誰がポートを開けたのか。アプリ自身が、ルータに「このポートを自分宛に転送してくれ」と頼んで開けさせている。この頼み方の仕組みが <strong>UPnP</strong>（Universal Plug and Play）、正確にはその中の <strong>IGD</strong>（Internet Gateway Device）という機能。つまり<strong>LAN 内の端末が、管理者を通さずに NAT の穴を作れる</strong>。</p>
 
-  <section>
-    <h2>どんな場面で必要になるか</h2>
-    <p>
-      家庭やオフィスのルータは NAT（IP マスカレード）を挟んでいる。内側から外への通信は問題ないが、<strong>外から内への着信は受けられない</strong>。
-      ルータのグローバル IP 宛に届いたパケットを、どの内部ホストへ渡せばいいか分からないからだ。
-    </p>
-    <p>ところが「外からの着信」を必要とするアプリは昔からある。</p>
-    <ul>
-      <li>オンラインゲームで自分がホストになる、対戦相手から直接繋いでもらう</li>
-      <li>P2P ファイル共有、ビデオ会議や VoIP の直接接続（リレーサーバを経由したくない）</li>
-      <li>宅内の NAS・IP カメラ・録画機を外出先から見る</li>
-    </ul>
-    <p>
-      解決策は本来「ルータの管理画面に入ってポートフォワーディングを手で設定する」。
-      だが一般利用者にこれを求めるのは現実的ではないし、アプリごとにポート番号も変わる。
-      そこで <strong>アプリが自分でルータに「このポートを開けてくれ」と頼む</strong> 仕組みが用意された。それが UPnP の IGD（Internet Gateway Device）機能だ。
-    </p>
-  </section>
+<h2>3 ステップで「探して・調べて・命令する」</h2>
 
-  <section>
-    <h2>UPnP は何のプロトコルか</h2>
-    <p>
-      UPnP（Universal Plug and Play）は、もともと <strong>LAN 内の機器を設定なしで発見・制御する</strong> ための仕様群だ。
-      ルータだけの話ではなく、プリンタ、NAS、メディアサーバ（DLNA）、テレビなども対象になる。
-      1999 年に UPnP Forum が策定し、同フォーラムは 2016 年に解散、仕様は現在 OCF（Open Connectivity Foundation）が引き継いでいる。
-    </p>
-    <p>UPnP は次の 6 段階で構成される。この順序自体が機器とやり取りする手順になっている。</p>
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="UPnPの3段階。SSDPでの発見、XMLでの機能取得、SOAPでのポートマッピング要求">
+  <rect x="8" y="30" width="150" height="180" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="83" y="52" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">PC 上のアプリ</text>
+  <rect x="520" y="30" width="170" height="180" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="605" y="52" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">ルータ（IGD）</text>
 
-    <ol class="stack">
-      <li><span><b>アドレッシング</b>DHCP でアドレスを取る。DHCP がなければ Auto-IP（169.254.0.0/16）で自分に割り当てる</span></li>
-      <li><span><b>ディスカバリ</b>SSDP（UDP 1900、マルチキャスト 239.255.255.250）で「そこに誰かいるか」を探す</span></li>
-      <li><span><b>ディスクリプション</b>見つけた機器から HTTP でデバイス記述 XML を取得し、使えるサービスと制御 URL を知る</span></li>
-      <li><span><b>コントロール</b>SOAP（HTTP POST）でアクションを呼ぶ。<code>AddPortMapping</code> はここ</span></li>
-      <li><span><b>イベンティング</b>GENA の <code>SUBSCRIBE</code> で状態変化の通知を購読する</span></li>
-      <li><span><b>プレゼンテーション</b>機器がブラウザ向けの管理画面を提供する</span></li>
-    </ol>
+  <g font-size="11">
+    <path d="M158 82 L518 82" stroke="var(--c1)" stroke-width="1.8" fill="none" marker-end="url(#u1)"/>
+    <text x="338" y="76" fill="var(--c1)" text-anchor="middle" font-weight="600">① 発見：SSDP（UDP 1900 マルチキャスト）</text>
+    <text x="338" y="96" fill="var(--muted)" text-anchor="middle">「この LAN にゲートウェイはいますか」</text>
 
-    <figure>
-      <svg viewBox="0 0 780 360" role="img" aria-label="コントロールポイントがSSDPでルータを発見し、デバイス記述XMLを取得し、SOAPでポート開放を要求するまでの6往復のやり取り">
-        <defs>
-          <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-          </marker>
-          <marker id="ar1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path class="f-accent" d="M 0 0 L 10 5 L 0 10 z"></path>
-          </marker>
-        </defs>
+    <path d="M518 128 L160 128" stroke="var(--c3)" stroke-width="1.8" fill="none" marker-end="url(#u2)"/>
+    <text x="338" y="122" fill="var(--c3)" text-anchor="middle" font-weight="600">② 機能取得：HTTP で XML を返す</text>
+    <text x="338" y="142" fill="var(--muted)" text-anchor="middle">「私はこの URL でこの操作を受け付けます」</text>
 
-        <rect x="20" y="10" width="200" height="36" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
-        <text x="120" y="33" text-anchor="middle" font-size="13" fill="currentColor">コントロールポイント（アプリ）</text>
-        <rect x="560" y="10" width="200" height="36" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
-        <text x="660" y="33" text-anchor="middle" font-size="13" fill="currentColor">ルータ（IGD）</text>
+    <path d="M158 178 L518 178" stroke="var(--c2)" stroke-width="1.8" fill="none" marker-end="url(#u3)"/>
+    <text x="338" y="172" fill="var(--c2)" text-anchor="middle" font-weight="600">③ 実行：SOAP で AddPortMapping</text>
+    <text x="338" y="192" fill="var(--muted)" text-anchor="middle">「外部 12345 番を 192.168.1.20:12345 へ」</text>
+  </g>
 
-        <line x1="120" y1="46" x2="120" y2="340" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4"></line>
-        <line x1="660" y1="46" x2="660" y2="340" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4"></line>
+  <rect x="530" y="196" width="150" height="0" fill="none"/>
+  <text x="8" y="228" font-size="11" fill="var(--stop)" font-weight="600">③ に認証はない。LAN 内にいること自体が「許可された」ことの証明として扱われる。</text>
+  <defs>
+    <marker id="u1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="u2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="u3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+  </defs>
+</svg>
+<figcaption>UPnP は 1990 年代末の家庭 LAN を前提に設計された。「家の中の機器は信頼できる」という前提があり、そこに認証を置かなかった。<a href="SOAP.html">SOAP</a> や HTTP といった Web の技術をそのまま使っているので、実装も簡単だった。</figcaption>
+</figure>
 
-        <text x="390" y="78" text-anchor="middle" font-size="12" fill="currentColor">① M-SEARCH（UDP マルチキャスト 1900）</text>
-        <line x1="130" y1="90" x2="650" y2="90" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"></line>
+<h2>その前提が崩れると何が起きるか</h2>
+<p>「LAN 内にいれば信頼できる」は、LAN 内の 1 台がマルウェアに感染した瞬間に崩れる。マルウェアは同じ手順を踏むだけで、<strong>自分宛のポートを外向きに開ける</strong>。境界のファイアウォールを迂回するのではなく、正規の機能で穴を開けさせるので、ルータのログにも異常として残らない。</p>
 
-        <text x="390" y="122" text-anchor="middle" font-size="12" fill="currentColor">② 200 OK ＋ LOCATION ヘッダ</text>
-        <line x1="650" y1="134" x2="130" y2="134" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"></line>
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="マルウェアがUPnPで自分宛のポートマッピングを追加し、外部から直接到達可能になる図">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">本来ブロックされるはずの外部からの着信が通る</text>
 
-        <text x="390" y="166" text-anchor="middle" font-size="12" fill="currentColor">③ GET rootDesc.xml（HTTP）</text>
-        <line x1="130" y1="178" x2="650" y2="178" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"></line>
+  <rect x="8" y="40" width="130" height="120" rx="8" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="73" y="62" font-size="11.5" fill="var(--muted)" text-anchor="middle">インターネット</text>
+  <rect x="24" y="80" width="98" height="30" rx="5" fill="var(--stop)"/>
+  <text x="73" y="100" font-size="11" fill="var(--on)" text-anchor="middle">攻撃者</text>
 
-        <text x="390" y="210" text-anchor="middle" font-size="12" fill="currentColor">④ デバイス記述 XML（制御 URL）</text>
-        <line x1="650" y1="222" x2="130" y2="222" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"></line>
+  <rect x="250" y="40" width="90" height="120" rx="8" fill="var(--c1)"/>
+  <text x="295" y="90" font-size="11.5" fill="var(--on)" text-anchor="middle">ルータ</text>
+  <text x="295" y="110" font-size="11.5" fill="var(--on)" text-anchor="middle">NAT</text>
 
-        <text class="f-accent" x="390" y="254" text-anchor="middle" font-size="12">⑤ SOAP AddPortMapping（HTTP POST）</text>
-        <line class="s-accent" x1="130" y1="266" x2="650" y2="266" stroke-width="2.2" marker-end="url(#ar1a)"></line>
+  <rect x="450" y="40" width="240" height="120" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="570" y="62" font-size="11.5" fill="var(--muted)" text-anchor="middle">社内 LAN</text>
+  <rect x="480" y="80" width="180" height="34" rx="5" fill="var(--c2)"/>
+  <text x="570" y="102" font-size="11" fill="var(--on)" text-anchor="middle">感染した端末（192.168.1.20）</text>
 
-        <text x="390" y="298" text-anchor="middle" font-size="12" fill="currentColor">⑥ 200 OK（ポート開放完了）</text>
-        <line x1="650" y1="310" x2="130" y2="310" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar1)"></line>
-      </svg>
-      <figcaption>①②がディスカバリ、③④がディスクリプション、⑤⑥がコントロール。⑤の一往復だけで NAT に外向きの入口ができる。</figcaption>
-    </figure>
+  <path d="M480 130 L340 130" stroke="var(--c2)" stroke-width="1.8" fill="none" marker-end="url(#p1)"/>
+  <text x="410" y="148" font-size="10.5" fill="var(--c2)" text-anchor="middle">UPnP で</text>
+  <text x="410" y="162" font-size="10.5" fill="var(--c2)" text-anchor="middle">ポート開放を要求</text>
 
-    <h3>① ディスカバリ：M-SEARCH を投げる</h3>
-    <p>SSDP は HTTP に似た文法を UDP に載せたもの（HTTPU）。ルータを探すときはこう投げる。</p>
-<pre><code>M-SEARCH * HTTP/1.1
-HOST: 239.255.255.250:1900
-MAN: "ssdp:discover"
-MX: 2
-ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1</code></pre>
-    <p>応答はユニキャストで返り、<code>LOCATION</code> にデバイス記述 XML の URL が入っている。</p>
-<pre><code>HTTP/1.1 200 OK
-CACHE-CONTROL: max-age=1800
-LOCATION: http://192.168.1.1:5000/rootDesc.xml
-ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1
-USN: uuid:2f402f80-da50-11e1-9b23-001788102201::urn:schemas-upnp-org:device:InternetGatewayDevice:1</code></pre>
-    <p class="caption">機器側から <code>NOTIFY</code> を定期的にマルチキャストして自分の存在を広告する方向もある（ssdp:alive / ssdp:byebye）。</p>
+  <path d="M138 95 L248 95" stroke="var(--stop)" stroke-width="2" fill="none" marker-end="url(#p2)"/>
+  <path d="M342 95 L478 95" stroke="var(--stop)" stroke-width="2" fill="none" marker-end="url(#p2)"/>
+  <text x="190" y="86" font-size="10.5" fill="var(--stop)">着信</text>
+  <text x="360" y="86" font-size="10.5" fill="var(--stop)">そのまま転送</text>
 
-    <h3>④ コントロール：ポートを開けさせる</h3>
-    <p>
-      デバイス記述 XML から <code>WANIPConnection</code> サービスの制御 URL を取り出し、SOAP で <code>AddPortMapping</code> を呼ぶ。これだけで穴が開く。
-    </p>
-<pre><code>POST /ctl/IPConn HTTP/1.1
-HOST: 192.168.1.1:5000
-CONTENT-TYPE: text/xml; charset="utf-8"
-SOAPACTION: "urn:schemas-upnp-org:service:WANIPConnection:1#AddPortMapping"
+  <text x="8" y="186" font-size="11" fill="var(--muted)">外向き通信だけを許していたつもりが、内側から開けられた穴で双方向になる。遠隔操作の受け口や、踏み台の待ち受けに使われる。</text>
+  <defs>
+    <marker id="p1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="p2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--stop)"/></marker>
+  </defs>
+</svg>
+<figcaption>もう 1 つの典型が、UPnP/SSDP を<strong>WAN 側に晒してしまっている</strong>ルータ。UDP 1900 番への小さな問い合わせに対して大きな応答を返すため、送信元を詐称した SSDP リフレクション攻撃の増幅器として使われる（<a href="../Cyber Attacks/15_DDoS_枯渇型と反射増幅型.html">反射増幅型 DDoS</a>）。設定ミスと古いファームウェアの組み合わせで、いまも大量に残っている。</figcaption>
+</figure>
 
-&lt;s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"&gt;
-  &lt;s:Body&gt;
-    &lt;u:AddPortMapping xmlns:u="urn:schemas-upnp-org:service:WANIPConnection:1"&gt;
-      &lt;NewRemoteHost&gt;&lt;/NewRemoteHost&gt;
-      &lt;NewExternalPort&gt;51413&lt;/NewExternalPort&gt;
-      &lt;NewProtocol&gt;TCP&lt;/NewProtocol&gt;
-      &lt;NewInternalPort&gt;51413&lt;/NewInternalPort&gt;
-      &lt;NewInternalClient&gt;192.168.1.42&lt;/NewInternalClient&gt;
-      &lt;NewEnabled&gt;1&lt;/NewEnabled&gt;
-      &lt;NewPortMappingDescription&gt;my app&lt;/NewPortMappingDescription&gt;
-      &lt;NewLeaseDuration&gt;0&lt;/NewLeaseDuration&gt;
-    &lt;/u:AddPortMapping&gt;
-  &lt;/s:Body&gt;
-&lt;/s:Envelope&gt;</code></pre>
-    <p class="caption">
-      <code>NewLeaseDuration</code> が 0 は「無期限」。多くの実装がこれを受け入れるため、一度開いた穴はルータを再起動するまで残る。
-      <code>GetExternalIPAddress</code> でグローバル IP も聞ける。
-    </p>
-  </section>
+<h2>どうするか</h2>
+<ul>
+<li><strong>業務ネットワークのルータでは UPnP を無効にする。</strong>外部からの着信が必要なら、申請を受けて管理者が明示的にポート開放する。何が開いているかを管理者が把握できる状態を保つ、というだけの話。</li>
+<li><strong>WAN 側の UDP 1900 を閉じる。</strong>外向けに UPnP/SSDP が応答していないか、外部から確認する。</li>
+<li><strong>家庭・小規模拠点では止められないこともある。</strong>その場合はルータの管理画面でポートマッピング一覧を定期的に見て、身に覚えのない転送設定がないかを確認する。</li>
+</ul>
 
-  <section>
-    <h2>問題は「認証がない」こと</h2>
-    <p>
-      UPnP には認証も承認もない。<strong>LAN 内から届いた SOAP 要求は、誰が出したものでも受け入れる</strong> という前提で設計されている。
-      「LAN の内側は信頼できる」という 1999 年当時の割り切りだ。
-    </p>
-    <p>
-      つまり、利用者が意図してインストールしたゲームと、メール添付から入り込んだマルウェアは、ルータから見て完全に同じ要求を出す。
-      ルータには両者を区別する材料がなく、記録も残さず、利用者に確認もしない。
-    </p>
-
-    <figure>
-      <svg viewBox="0 0 800 320" role="img" aria-label="正規アプリとマルウェアが同じAddPortMapping要求を出し、ルータがどちらも受け入れて外部からの着信を内部へ転送する図">
-        <defs>
-          <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-          </marker>
-        </defs>
-
-        <text x="90" y="30" text-anchor="middle" font-size="12" fill="currentColor">LAN 内のホスト</text>
-
-        <rect class="s-accent" x="10" y="70" width="160" height="58" fill="none" stroke-width="1.4"></rect>
-        <text class="f-accent" x="90" y="94" text-anchor="middle" font-size="13">正規アプリ</text>
-        <text x="90" y="114" text-anchor="middle" font-size="11" fill="currentColor">192.168.1.42</text>
-
-        <rect class="s-alert" x="10" y="190" width="160" height="58" fill="none" stroke-width="1.4"></rect>
-        <text class="f-alert" x="90" y="214" text-anchor="middle" font-size="13">マルウェア</text>
-        <text x="90" y="234" text-anchor="middle" font-size="11" fill="currentColor">192.168.1.77</text>
-
-        <text x="250" y="84" text-anchor="middle" font-size="11" fill="currentColor">AddPortMapping</text>
-        <text x="250" y="98" text-anchor="middle" font-size="11" fill="currentColor">TCP 51413 → 自分</text>
-        <line x1="170" y1="110" x2="330" y2="110" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"></line>
-
-        <text x="250" y="204" text-anchor="middle" font-size="11" fill="currentColor">AddPortMapping</text>
-        <text x="250" y="218" text-anchor="middle" font-size="11" fill="currentColor">TCP 3389 → 自分</text>
-        <line x1="170" y1="230" x2="330" y2="230" stroke="currentColor" stroke-width="1.4" marker-end="url(#ar2)"></line>
-
-        <rect x="330" y="40" width="180" height="240" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
-        <text x="420" y="66" text-anchor="middle" font-size="13" fill="currentColor">ルータ（IGD）</text>
-        <text x="420" y="86" text-anchor="middle" font-size="11" fill="currentColor">ポートマッピング表</text>
-
-        <rect class="s-accent" x="350" y="100" width="140" height="34" fill="none" stroke-width="1"></rect>
-        <text class="f-accent" x="420" y="122" text-anchor="middle" font-size="11">TCP 51413 → .42</text>
-
-        <rect class="s-alert" x="350" y="146" width="140" height="34" fill="none" stroke-width="1"></rect>
-        <text class="f-alert" x="420" y="168" text-anchor="middle" font-size="11">TCP 3389 → .77</text>
-
-        <text x="420" y="216" text-anchor="middle" font-size="11" fill="currentColor">認証なし</text>
-        <text x="420" y="234" text-anchor="middle" font-size="11" fill="currentColor">承認なし</text>
-        <text x="420" y="252" text-anchor="middle" font-size="11" fill="currentColor">通知なし</text>
-
-        <text x="565" y="146" text-anchor="middle" font-size="11" fill="currentColor">着信を</text>
-        <text x="565" y="160" text-anchor="middle" font-size="11" fill="currentColor">内部へ転送</text>
-        <line x1="620" y1="176" x2="510" y2="176" stroke="currentColor" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ar2)"></line>
-
-        <rect x="620" y="120" width="170" height="80" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
-        <text x="705" y="166" text-anchor="middle" font-size="13" fill="currentColor">インターネット</text>
-      </svg>
-      <figcaption>ルータに届く 2 つの要求は形式上まったく同じ。区別する仕組みがないので、どちらのマッピングも作られる。</figcaption>
-    </figure>
-
-    <p>ここから派生する被害は、大きく 3 方向ある。</p>
-
-    <h3>1. LAN 内のマルウェアが自分で入口を作る</h3>
-    <p>
-      感染ホストが自分の RDP や SMB、あるいは仕込んだバックドアを外部公開できる。
-      利用者は「ルータで何も設定していないから外からは繋がらないはず」と思っているので、この状態に気づく機会がない。
-      C2 サーバへのアウトバウンド通信を監視していても、開いた入口そのものは検知に引っかからない。
-    </p>
-
-    <h3>2. WAN 側に UPnP が露出したルータが大量にある</h3>
-    <p>
-      SSDP や UPnP の HTTP は本来 LAN 側インターフェースだけで待ち受けるべきものだ。ところが実装バグや初期設定の誤りで WAN 側にも応答する製品が大量に出回った。
-      2013 年の Rapid7 の調査では、インターネットから UPnP のディスカバリに応答する機器が約 8,100 万台、
-      そのうち約 1,700 万台は UPnP のサービス制御まで外部から可能だった。
-      加えて UPnP SDK の <code>libupnp</code> にはバッファオーバーフローによるリモートコード実行の脆弱性があり（VU#922681）、多数の製品が影響を受けた。
-    </p>
-    <p>
-      2018 年に Akamai が報告した <strong>UPnProxy</strong> は、この露出を突いて外部からポートマッピングを注入し、
-      感染ルータを匿名プロキシとして中継に使うものだった。約 480 万台が SSDP に応答し、うち約 6.5 万台に実際に不正なマッピングが注入されていた。
-    </p>
-
-    <h3>3. SSDP リフレクション（増幅 DDoS）の踏み台になる</h3>
-    <p>
-      UDP は送信元 IP を詐称できる。攻撃者が被害者の IP を送信元に偽装した小さな <code>M-SEARCH</code> を、露出した UPnP 機器へばらまくと、
-      機器はサービス一覧を含む大きな応答を被害者に返す。増幅率は最大で約 30 倍とされる。
-    </p>
-
-    <figure>
-      <svg viewBox="0 0 780 290" role="img" aria-label="攻撃者が送信元IPを被害者に詐称したM-SEARCHを露出UPnP機器に送り、機器が増幅した応答を被害者に返すSSDPリフレクション攻撃の図">
-        <defs>
-          <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-          </marker>
-          <marker id="ar3a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
-            <path class="f-alert" d="M 0 0 L 10 5 L 0 10 z"></path>
-          </marker>
-        </defs>
-
-        <rect x="10" y="110" width="150" height="60" fill="none" stroke="currentColor" stroke-width="1.4"></rect>
-        <text x="85" y="146" text-anchor="middle" font-size="13" fill="currentColor">攻撃者</text>
-
-        <text x="390" y="26" text-anchor="middle" font-size="12" fill="currentColor">インターネットに露出した UPnP 機器</text>
-        <rect x="300" y="40" width="180" height="42" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
-        <rect x="300" y="118" width="180" height="42" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
-        <rect x="300" y="196" width="180" height="42" fill="none" stroke="currentColor" stroke-width="1.2"></rect>
-        <text x="390" y="67" text-anchor="middle" font-size="11" fill="currentColor">家庭用ルータ</text>
-        <text x="390" y="145" text-anchor="middle" font-size="11" fill="currentColor">NAS / IP カメラ</text>
-        <text x="390" y="223" text-anchor="middle" font-size="11" fill="currentColor">メディアサーバ</text>
-
-        <line x1="160" y1="134" x2="298" y2="66" stroke="currentColor" stroke-width="1" marker-end="url(#ar3)"></line>
-        <line x1="160" y1="140" x2="298" y2="140" stroke="currentColor" stroke-width="1" marker-end="url(#ar3)"></line>
-        <line x1="160" y1="146" x2="298" y2="214" stroke="currentColor" stroke-width="1" marker-end="url(#ar3)"></line>
-
-        <line class="s-alert" x1="482" y1="66" x2="618" y2="134" stroke-width="3.4" marker-end="url(#ar3a)"></line>
-        <line class="s-alert" x1="482" y1="140" x2="618" y2="140" stroke-width="3.4" marker-end="url(#ar3a)"></line>
-        <line class="s-alert" x1="482" y1="214" x2="618" y2="146" stroke-width="3.4" marker-end="url(#ar3a)"></line>
-
-        <rect class="s-alert" x="620" y="110" width="150" height="60" fill="none" stroke-width="1.4"></rect>
-        <text class="f-alert" x="695" y="146" text-anchor="middle" font-size="13">被害者</text>
-
-        <line x1="20" y1="266" x2="60" y2="266" stroke="currentColor" stroke-width="1"></line>
-        <text x="70" y="270" font-size="11" fill="currentColor">M-SEARCH（送信元 IP を被害者に詐称）</text>
-        <line class="s-alert" x1="380" y1="266" x2="420" y2="266" stroke-width="3.4"></line>
-        <text x="430" y="270" font-size="11" fill="currentColor">応答：最大で約 30 倍に増幅</text>
-      </svg>
-      <figcaption>攻撃者は被害者に一切パケットを送らない。トラフィックは正規の UPnP 機器から届くため、送信元での遮断が効きにくい。</figcaption>
-    </figure>
-
-    <div class="callout">
-      <div class="label">CVE-2020-12695（CallStranger）</div>
-      <p>
-        2020 年に見つかった UPnP 仕様そのものの欠陥。イベンティングの <code>SUBSCRIBE</code> にある <code>Callback</code> ヘッダに任意の URL を指定でき、
-        機器がそこへ通知を送ってしまう。結果として、外部から機器を踏み台にした <strong>内部ネットワークのポートスキャン</strong>、
-        <strong>データの持ち出し（DLP 回避）</strong>、<strong>増幅 DDoS</strong> が成立する。仕様レベルの問題のため、対策はベンダーのファームウェア更新待ちになった。
-      </p>
-    </div>
-  </section>
-
-  <section>
-    <h2>では、どうするか</h2>
-    <p>
-      対策の第一手は単純で、<strong>ルータの UPnP を無効にする</strong>。必要なポート開放は手動で設定する。
-      これで「アプリが勝手に開ける」経路は消える。ゲーム機など UPnP 前提の機器がある場合だけ、対象を絞って有効化する。
-    </p>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>対象</th><th>やること</th><th>効くのは</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>ルータ（家庭・小規模拠点）</td>
-            <td>UPnP / IGD を無効化。必要なものだけ手動ポートフォワード</td>
-            <td>LAN 内マルウェアによる無断ポート開放</td>
-          </tr>
-          <tr>
-            <td>WAN 側インターフェース</td>
-            <td>UDP 1900（SSDP）と UPnP の HTTP ポートを遮断。外部から届いていないかを確認する</td>
-            <td>UPnProxy、外部からのマッピング注入、リフレクション踏み台化</td>
-          </tr>
-          <tr>
-            <td>企業ネットワーク</td>
-            <td>UPnP は使わない前提にする。239.255.255.250 のマルチキャストをセグメント間で通さない</td>
-            <td>機器の意図しない相互発見、内部からの探索</td>
-          </tr>
-          <tr>
-            <td>機器のファームウェア</td>
-            <td><code>libupnp</code> / <code>MiniUPnPd</code> 由来の脆弱性を含むため更新を追う</td>
-            <td>リモートコード実行、CallStranger</td>
-          </tr>
-          <tr>
-            <td>アプリ側の設計</td>
-            <td>着信を必要としない構成にする（アウトバウンド接続 + リレー、WebRTC の ICE/TURN 等）</td>
-            <td>そもそもポート開放を不要にする</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <p>
-      なお UPnP IGD:2 では、コントロールポイントが <strong>自分以外の内部ホスト宛のマッピングを作れない</strong> よう制限が入った。
-      同種の目的には NAT-PMP（RFC 6886）や PCP（RFC 6887）という後発のプロトコルもあるが、
-      いずれも「LAN 内は信頼できる」という前提は大きくは変わっていない。根本的には IPv6 + 明示的なファイアウォールポリシーに寄せるほうが筋が良い。
-    </p>
-  </section>
-
-  <section>
-    <h2>ビジネス側にどう伝えるか</h2>
-    <p>「UPnP を無効化しましょう」だけでは、なぜ今それをやるのかが伝わらない。何が起きるかを言い換える。</p>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>技術的な言い方</th><th>意思決定者に伝わる言い方</th></tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>ルータの UPnP を無効化する</td>
-            <td>今の設定だと、社内 PC がマルウェアに感染したとき、そのマルウェア自身が社外からの入口を作れてしまう。ルータの設定変更を人が承認する手順を回避されている状態です</td>
-          </tr>
-          <tr>
-            <td>WAN 側で SSDP を遮断する</td>
-            <td>自社の回線が、他社を狙った DDoS 攻撃の踏み台として使われる可能性があります。加害者側として名前が出ます</td>
-          </tr>
-          <tr>
-            <td>ポート開放は手動運用にする</td>
-            <td>外部に公開している入口の一覧を、人が把握できる状態に戻すということです</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <section>
-    <h2>まとめ</h2>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th>項目</th><th>内容</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>目的</td><td>LAN 内の機器を設定なしで発見・制御する。ルータ向けの IGD では動的なポート開放</td></tr>
-          <tr><td>ディスカバリ</td><td>SSDP：UDP 1900、マルチキャスト 239.255.255.250、M-SEARCH / NOTIFY</td></tr>
-          <tr><td>制御</td><td>SOAP over HTTP。<code>AddPortMapping</code> / <code>DeletePortMapping</code> / <code>GetExternalIPAddress</code></td></tr>
-          <tr><td>設計上の弱点</td><td>認証がない。LAN 内からの要求はすべて信頼する</td></tr>
-          <tr><td>代表的な悪用</td><td>マルウェアによる無断ポート開放、UPnProxy、SSDP リフレクション DDoS、CallStranger</td></tr>
-          <tr><td>基本の対策</td><td>UPnP の無効化、WAN 側での UDP 1900 遮断、ファームウェア更新</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>
-      UPnP は「使いやすさのために認証を省いた」プロトコルの典型例だ。
-      NAT はセキュリティ機能として設計されたものではないが、事実上の防御として機能してきた。UPnP はその防御を、内側からなら誰でも外せるようにする。
-      そう捉えると、無効化がなぜ定番の推奨なのかが腑に落ちる。
-    </p>
-  </section>
-
-  <section>
-    <h2>参考</h2>
-    <ul class="refs">
-      <li><a href="https://openconnectivity.org/developer/specifications/upnp-resources/upnp/">OCF — UPnP Standards &amp; Architecture</a></li>
-      <li><a href="https://openconnectivity.org/upnp-specs/UPnP-arch-DeviceArchitecture-v2.0-20200417.pdf">UPnP Device Architecture 2.0（2020-04-17）</a></li>
-      <li><a href="https://www.rapid7.com/blog/post/2013/01/29/security-flaws-in-universal-plug-and-play-unplug-dont-play/">Rapid7 — Security Flaws in Universal Plug and Play: Unplug, Don't Play</a></li>
-      <li><a href="https://www.cisa.gov/news-events/alerts/2013/01/29/cert-releases-upnp-security-advisory">CISA — CERT Releases UPnP Security Advisory</a></li>
-      <li><a href="https://www.kb.cert.org/vuls/id/922681">CERT/CC VU#922681 — Portable SDK for UPnP Devices (libupnp) contains multiple buffer overflows in SSDP</a></li>
-      <li><a href="https://www.cisa.gov/news-events/alerts/2014/01/17/udp-based-amplification-attacks">CISA Alert (TA14-017A) — UDP-Based Amplification Attacks</a></li>
-      <li><a href="https://www.akamai.com/site/en/documents/research-paper/upnproxy-blackhat-proxies-via-nat-injections-white-paper.pdf">Akamai — UPnProxy: Blackhat Proxies via NAT Injections</a></li>
-      <li><a href="https://www.callstranger.com/">CallStranger (CVE-2020-12695)</a> / <a href="https://nvd.nist.gov/vuln/detail/CVE-2020-12695">NVD — CVE-2020-12695</a></li>
-      <li><a href="https://datatracker.ietf.org/doc/html/rfc6886">RFC 6886 — NAT Port Mapping Protocol (NAT-PMP)</a></li>
-      <li><a href="https://datatracker.ietf.org/doc/html/rfc6887">RFC 6887 — Port Control Protocol (PCP)</a></li>
-    </ul>
-  </section>
-
-  <p class="foot">セキスペ わかったつもりメモ 第6章「UPnP（p.535）」からの派生記事。</p>
-
+<div class="note">
+<p><strong>「UPnP を切ると何が動かなくなるか」を先に確認する</strong></p>
+<p>一律に無効化すると、ゲーム機・IP カメラ・一部の会議システムが繋がらなくなって差し戻される。無効化を提案するときは、その拠点で UPnP に依存している機器を洗い出し、代替（固定のポート開放、あるいは外向き通信だけで成立するクラウド経由の構成）とセットで出す。「危ないので切る」だけでは通らない。</p>
 </div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://openconnectivity.org/developer/specifications/upnp-resources/upnp/">UPnP Device Architecture / IGD 仕様（Open Connectivity Foundation）</a></li>
+<li><a href="https://www.kb.cert.org/vuls/id/357851">CERT/CC VU#357851 - UPnP requests accepted over router WAN interfaces</a></li>
+<li><a href="https://www.jpcert.or.jp/at/2014/at140026.html">JPCERT/CC - SSDP を用いた DDoS 攻撃に関する注意喚起</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-12695">CVE-2020-12695（CallStranger）- UPnP SUBSCRIBE の悪用</a></li>
+</ul>
+
+</main>
+</body>
+</html>

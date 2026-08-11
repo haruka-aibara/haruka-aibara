@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSL/TLS が TCP 上で動作する理由を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>SSL/TLS が TCP 上で動作する理由</h1>
+<p class="lede">「UDP ではだめなのか」に答えられると、DTLS も QUIC も繋がって理解できる。</p>
+
+<h2>何が問題なのか</h2>
+<p>TLS は「トランスポート層セキュリティ」という名前のとおり、トランスポート層の<strong>上</strong>に乗る。実際に使われるのはほぼ TCP の上で、UDP の上に直接乗せることはできない。なぜか。「TCP のほうが信頼性が高いから」で終わらせると、では DTLS は何をして UDP 上で成立させたのか、QUIC はなぜ TCP をやめられたのかが説明できなくなる。</p>
+<p>答えは、<strong>TLS 自身が「順序どおり・欠けなく届くこと」を前提に作られていて、その前提を自分では回復できない</strong>から。</p>
+
+<figure>
+<svg viewBox="0 0 700 220" role="img" aria-label="TLSレコードがTCPのペイロードとして運ばれる階層構造">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">TLS は「TCP の中身」でしかない</text>
+
+  <rect x="8" y="30" width="684" height="36" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="24" y="53" font-size="11.5" fill="var(--ink)">アプリケーション（HTTP など）</text>
+  <text x="600" y="53" font-size="10.5" fill="var(--muted)" text-anchor="middle">平文を渡すだけ</text>
+
+  <rect x="30" y="72" width="640" height="48" rx="6" fill="var(--c4)"/>
+  <text x="46" y="92" font-size="11.5" fill="var(--on)" font-weight="600">TLS レコード層</text>
+  <text x="46" y="110" font-size="10.5" fill="var(--on)">アプリのデータをレコード単位に区切り、暗号化して MAC を付ける</text>
+
+  <rect x="52" y="126" width="596" height="48" rx="6" fill="var(--c1)"/>
+  <text x="68" y="146" font-size="11.5" fill="var(--on)" font-weight="600">TCP</text>
+  <text x="68" y="164" font-size="10.5" fill="var(--on)">再送・並べ替え・重複排除。TLS レコードはただのバイト列として運ばれる</text>
+
+  <rect x="74" y="180" width="552" height="32" rx="6" fill="var(--c3)"/>
+  <text x="90" y="201" font-size="11.5" fill="var(--on)" font-weight="600">IP</text>
+
+  <text x="660" y="150" font-size="10.5" fill="var(--muted)" text-anchor="end"></text>
+</svg>
+<figcaption>TLS 自身はポート番号を持たない。HTTPS の 443 番は TCP のポートで、そこで話される中身が TLS というだけ。だからアプリケーション側は、平文のソケットを TLS のソケットに差し替えるだけで暗号化できる——<a href="../Networking/HTTP2.html">HTTP</a> や SMTP、IMAP が同じ仕組みを使い回せているのはこの構造のおかげ。</figcaption>
+</figure>
+
+<h2>1 バイト欠けると、そのレコードは復号できない</h2>
+<p>TLS は、アプリから受け取ったデータを<strong>レコード</strong>という単位に区切り、暗号化して <a href="../Cryptography/MACとデジタル署名.html">MAC</a>（改ざん検知用の値）を付けて送り出す。受信側はレコードを丸ごと揃えてから復号し、MAC を検証する。</p>
+<p>ここで、パケットが 1 つ失われたり順番が入れ替わったりすると何が起きるか。レコードのバイト列が欠けるので<strong>復号できない</strong>。無理に復号しても MAC が合わない。そして TLS には、MAC が合わなかったときの選択肢が<strong>「接続を切る」しかない</strong>。改ざんされたのか単に届いていないのかを、TLS からは区別できないからだ。</p>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="TCPが並べ替えと再送を吸収してからTLSに渡す様子と、UDPで直接渡した場合の破綻">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">TCP がある場合／ない場合</text>
+
+  <text x="8" y="42" font-size="11.5" fill="var(--c3)" font-weight="600">TCP の上</text>
+  <g font-size="10.5">
+    <rect x="8" y="52" width="60" height="26" rx="4" fill="var(--c1)"/><text x="38" y="70" fill="var(--on)" text-anchor="middle">1</text>
+    <rect x="72" y="52" width="60" height="26" rx="4" fill="var(--lane)" stroke="var(--stop)" stroke-dasharray="3 2"/><text x="102" y="70" fill="var(--stop)" text-anchor="middle">2 喪失</text>
+    <rect x="136" y="52" width="60" height="26" rx="4" fill="var(--c1)"/><text x="166" y="70" fill="var(--on)" text-anchor="middle">3</text>
+  </g>
+  <path d="M200 65 L246 65" stroke="var(--muted)" stroke-width="1.5" fill="none" marker-end="url(#t1)"/>
+  <rect x="250" y="48" width="160" height="34" rx="5" fill="var(--c1)"/>
+  <text x="330" y="70" font-size="10.5" fill="var(--on)" text-anchor="middle">TCP が再送・並べ替え</text>
+  <path d="M412 65 L458 65" stroke="var(--muted)" stroke-width="1.5" fill="none" marker-end="url(#t1)"/>
+  <rect x="462" y="48" width="230" height="34" rx="5" fill="var(--c3)"/>
+  <text x="577" y="70" font-size="10.5" fill="var(--on)" text-anchor="middle">TLS には隙間のないバイト列だけが届く</text>
+
+  <line x1="8" y1="104" x2="692" y2="104" stroke="var(--line)"/>
+
+  <text x="8" y="130" font-size="11.5" fill="var(--stop)" font-weight="600">UDP に直接乗せた場合</text>
+  <g font-size="10.5">
+    <rect x="8" y="140" width="60" height="26" rx="4" fill="var(--c1)"/><text x="38" y="158" fill="var(--on)" text-anchor="middle">1</text>
+    <rect x="72" y="140" width="60" height="26" rx="4" fill="var(--lane)" stroke="var(--stop)" stroke-dasharray="3 2"/><text x="102" y="158" fill="var(--stop)" text-anchor="middle">2 喪失</text>
+    <rect x="136" y="140" width="60" height="26" rx="4" fill="var(--c1)"/><text x="166" y="158" fill="var(--on)" text-anchor="middle">3</text>
+  </g>
+  <path d="M200 153 L246 153" stroke="var(--stop)" stroke-width="1.5" fill="none" marker-end="url(#t2)"/>
+  <rect x="250" y="136" width="160" height="34" rx="5" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="330" y="158" font-size="10.5" fill="var(--stop)" text-anchor="middle">誰も埋めてくれない</text>
+  <path d="M412 153 L458 153" stroke="var(--stop)" stroke-width="1.5" fill="none" marker-end="url(#t2)"/>
+  <rect x="462" y="136" width="230" height="34" rx="5" fill="var(--stop)"/>
+  <text x="577" y="158" font-size="10.5" fill="var(--on)" text-anchor="middle">復号失敗 → MAC 不一致 → 切断</text>
+
+  <text x="8" y="200" font-size="11" fill="var(--muted)">TLS は暗号の仕事に専念していて、再送も並べ替えも自分では持っていない。「届いたものは正しい順で完全である」という</text>
+  <text x="8" y="216" font-size="11" fill="var(--muted)">前提を下位層に丸投げすることで、レコード層をこれだけ単純に保っている。その前提を提供できる相手が TCP だった、という順序。</text>
+  <text x="8" y="234" font-size="11" fill="var(--muted)">TCP の 3 ウェイハンドシェイクが終わってから TLS ハンドシェイクが始まるのも、この依存関係の表れ。</text>
+  <defs>
+    <marker id="t1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="t2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--stop)"/></marker>
+  </defs>
+</svg>
+<figcaption>逆に言えば、TCP でなければならないわけではない。必要なのは「順序どおり・欠けなく・重複なく」という性質であって、それを満たす層なら何でもよい。</figcaption>
+</figure>
+
+<h2>UDP でやるなら、TCP の仕事を自分で持つことになる</h2>
+<p>音声や映像、DNS のように「多少落ちてもいいから速く」という通信では、TCP の再送はむしろ邪魔になる。それでも暗号化はしたい。そこで作られたのが <a href="DTLS.html">DTLS</a> で、やったことは<strong>TLS が TCP に任せていた部分を、TLS 側に作り直す</strong>ことだった。各レコードに明示的なシーケンス番号を持たせて 1 つずつ独立に復号できるようにし、ハンドシェイクだけは順序と完全性が必須なので専用の再送とフラグメント処理を用意した。</p>
+<p>同じ発想をさらに進めたのが QUIC で、こちらは TCP をやめて UDP の上に再送・順序制御・暗号化をまとめて実装した。TCP と TLS で別々だったハンドシェイクを 1 つに統合できたので、接続確立の往復が減っている（<a href="../Networking/HTTP3.html">HTTP/3 と QUIC</a>）。</p>
+
+<div class="note">
+<p><strong>TCP を挟むことの代償</strong></p>
+<p>TCP が順序を保証するということは、<strong>1 つのパケットが失われると、その後ろに届いているデータも渡してもらえない</strong>ということでもある（ヘッドオブラインブロッキング）。TLS レコードは複数の TCP セグメントにまたがるので、影響はさらに大きくなる。「信頼できる下位層に任せる」という設計は単純さと引き換えに、この待ちを受け入れている。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9147">RFC 9147 - The Datagram Transport Layer Security (DTLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9000">RFC 9000 - QUIC: A UDP-Based Multiplexed and Secure Transport</a></li>
+</ul>
+
+</main>
+</body>
+</html>
