@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>syslog と rsyslog / syslog-ng</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>syslog と rsyslog / syslog-ng</h1>
+<p class="lede">ログが各サーバの中にしか無いと、調べたいときには消えている。それを一箇所に集めるのが syslog の仕事。</p>
+
+<h2>「あのとき何が起きたか」を後から調べられるか</h2>
+<p>サーバが 1 台なら <code>/var/log</code> を見れば済む。台数が増えると事情が変わる。障害の切り分けで何台も SSH して回ることになるし、ログはローテーションで消える。さらに厄介なのは、<strong>侵入されたサーバのログは、侵入者に消される</strong>こと。手元にしか無い記録は証拠にならない。</p>
+<p>syslog は「ログを書いたホストの外へ転送し、別のホストに保存する」ための仕組み。1980 年代から使われている枠組みで、いまも Linux・ネットワーク機器・アプライアンスがほぼ共通して喋れる数少ない共通語になっている。</p>
+
+<figure>
+<svg viewBox="0 0 700 252" role="img" aria-label="ログを各サーバに置いたままの構成と、syslog サーバへ集約した構成の比較">
+<defs>
+<marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+</defs>
+<text x="170" y="22" font-size="12" fill="var(--c2)" text-anchor="middle" font-weight="600">集約しない</text>
+<text x="530" y="22" font-size="12" fill="var(--c1)" text-anchor="middle" font-weight="600">集約する</text>
+<rect x="15" y="34" width="310" height="176" rx="10" fill="var(--lane)"/>
+<rect x="375" y="34" width="310" height="176" rx="10" fill="var(--lane)"/>
+
+<rect x="38" y="54" width="120" height="34" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="98" y="76" font-size="11" fill="var(--ink)" text-anchor="middle">web01 /var/log</text>
+<rect x="38" y="105" width="120" height="34" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="98" y="127" font-size="11" fill="var(--ink)" text-anchor="middle">db01 /var/log</text>
+<rect x="38" y="156" width="120" height="34" rx="6" fill="var(--card)" stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="5 4"/>
+<text x="98" y="172" font-size="11" fill="var(--ink)" text-anchor="middle">lb01 /var/log</text>
+<text x="98" y="185" font-size="9.5" fill="var(--stop)" text-anchor="middle">侵入者に消された</text>
+<rect x="228" y="105" width="76" height="34" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="266" y="127" font-size="11" fill="var(--ink)" text-anchor="middle">運用者</text>
+<line x1="228" y1="118" x2="162" y2="75" stroke="var(--c2)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m2)"/>
+<line x1="228" y1="122" x2="162" y2="122" stroke="var(--c2)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m2)"/>
+<line x1="228" y1="126" x2="162" y2="168" stroke="var(--c2)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#m2)"/>
+<text x="170" y="230" font-size="10.5" fill="var(--muted)" text-anchor="middle">1 台ずつ入って見る。消えたら復元できない</text>
+
+<rect x="396" y="54" width="112" height="34" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="452" y="76" font-size="11" fill="var(--ink)" text-anchor="middle">web01</text>
+<rect x="396" y="105" width="112" height="34" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="452" y="127" font-size="11" fill="var(--ink)" text-anchor="middle">db01</text>
+<rect x="396" y="156" width="112" height="34" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="452" y="178" font-size="11" fill="var(--ink)" text-anchor="middle">lb01</text>
+<line x1="508" y1="71" x2="576" y2="110" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#m1)"/>
+<line x1="508" y1="122" x2="576" y2="122" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#m1)"/>
+<line x1="508" y1="173" x2="576" y2="134" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#m1)"/>
+<rect x="580" y="92" width="90" height="60" rx="6" fill="var(--c1)" opacity=".12"/>
+<rect x="580" y="92" width="90" height="60" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="625" y="117" font-size="11" fill="var(--ink)" text-anchor="middle">ログ</text>
+<text x="625" y="134" font-size="11" fill="var(--ink)" text-anchor="middle">サーバ</text>
+<text x="530" y="230" font-size="10.5" fill="var(--muted)" text-anchor="middle">横断検索できる。書き込み専用なので消されにくい</text>
+</svg>
+<figcaption>集約先は「送られてきたものを追記するだけ」にしておくと、侵害されたホストからは過去ログを触れない。監査ログの保全は、この一方向性が担保している。</figcaption>
+</figure>
+
+<h2>アプリは「どこに書くか」を知らない</h2>
+<p>syslog の設計で一番効いているのはここ。ログを出す側は、出力先のファイル名も転送先の IP も指定しない。<strong>ファシリティ（どの種類のログか）とプライオリティ（どれくらい重大か）のラベルを付けて投げるだけ</strong>で、行き先の判断は受け取る側（rsyslog / syslog-ng）の設定に任せる。だから「認証ログだけ別ファイルに」「err 以上だけ集約先へ」といった変更を、アプリに手を入れずに設定だけで実現できる。</p>
+
+<figure>
+<svg viewBox="0 0 700 262" role="img" aria-label="ファシリティとプライオリティのラベルを見てデーモンが出力先を振り分ける流れ">
+<defs>
+<marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c4)"/></marker>
+<marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+</defs>
+<text x="95" y="22" font-size="11" fill="var(--muted)" text-anchor="middle">ログを出す側</text>
+<text x="350" y="22" font-size="11" fill="var(--muted)" text-anchor="middle">rsyslog / syslog-ng</text>
+<text x="600" y="22" font-size="11" fill="var(--muted)" text-anchor="middle">出力先</text>
+
+<rect x="15" y="42" width="165" height="44" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="97" y="62" font-size="11" fill="var(--ink)" text-anchor="middle">sshd</text>
+<text x="97" y="78" font-size="10.5" fill="var(--c4)" text-anchor="middle">authpriv . info</text>
+<rect x="15" y="103" width="165" height="44" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="97" y="123" font-size="11" fill="var(--ink)" text-anchor="middle">cron</text>
+<text x="97" y="139" font-size="10.5" fill="var(--c4)" text-anchor="middle">cron . notice</text>
+<rect x="15" y="164" width="165" height="44" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="97" y="184" font-size="11" fill="var(--ink)" text-anchor="middle">カーネル</text>
+<text x="97" y="200" font-size="10.5" fill="var(--c4)" text-anchor="middle">kern . err</text>
+
+<line x1="180" y1="64" x2="246" y2="90" stroke="var(--c4)" stroke-width="1.3" marker-end="url(#m3)"/>
+<line x1="180" y1="125" x2="246" y2="125" stroke="var(--c4)" stroke-width="1.3" marker-end="url(#m3)"/>
+<line x1="180" y1="186" x2="246" y2="160" stroke="var(--c4)" stroke-width="1.3" marker-end="url(#m3)"/>
+
+<rect x="250" y="52" width="200" height="146" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="350" y="74" font-size="11" fill="var(--ink)" text-anchor="middle" font-weight="600">ラベルを見て振り分け</text>
+<text x="266" y="102" font-size="10.5" fill="var(--muted)">authpriv.*  → secure</text>
+<text x="266" y="126" font-size="10.5" fill="var(--muted)">cron.*      → cron</text>
+<text x="266" y="150" font-size="10.5" fill="var(--muted)">*.err       → 集約先へ</text>
+<text x="266" y="176" font-size="10.5" fill="var(--muted)">*.info      → messages</text>
+
+<line x1="450" y1="100" x2="516" y2="72" stroke="var(--c3)" stroke-width="1.3" marker-end="url(#m4)"/>
+<line x1="450" y1="125" x2="516" y2="125" stroke="var(--c3)" stroke-width="1.3" marker-end="url(#m4)"/>
+<line x1="450" y1="152" x2="516" y2="180" stroke="var(--c3)" stroke-width="1.3" marker-end="url(#m4)"/>
+<rect x="520" y="50" width="165" height="40" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+<text x="602" y="75" font-size="10.5" fill="var(--ink)" text-anchor="middle">/var/log/secure</text>
+<rect x="520" y="105" width="165" height="40" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+<text x="602" y="130" font-size="10.5" fill="var(--ink)" text-anchor="middle">/var/log/cron</text>
+<rect x="520" y="160" width="165" height="40" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+<text x="602" y="185" font-size="10.5" fill="var(--ink)" text-anchor="middle">ログサーバ（TCP 514）</text>
+
+<text x="350" y="240" font-size="10.5" fill="var(--muted)" text-anchor="middle">1 本のログが複数の出力先に行ってもよい（secure に書きつつ集約先にも送る）</text>
+</svg>
+<figcaption>ラベルは 2 つの数値としてメッセージ先頭に埋め込まれる（PRI ＝ ファシリティ × 8 ＋ プライオリティ）。<code>&lt;86&gt;</code> なら authpriv(10)×8＋info(6)。</figcaption>
+</figure>
+
+<h3>ファシリティとプライオリティ</h3>
+<p>ファシリティは <code>auth</code> / <code>authpriv</code> / <code>cron</code> / <code>daemon</code> / <code>kern</code> / <code>mail</code> / <code>syslog</code> / <code>user</code> など。自作アプリには <code>local0</code>〜<code>local7</code> が空けてあるので、そこを割り当てて使う。</p>
+<p>プライオリティ（＝severity）は 8 段階。設定で <code>.warning</code> と書くと<strong>「warning 以上」</strong>、つまり数値の小さい側すべてが対象になる。</p>
+
+<table>
+<tr><th>値</th><th>名前</th><th>だいたいの意味</th></tr>
+<tr><td>0</td><td>emerg</td><td>システムが使用不能</td></tr>
+<tr><td>1</td><td>alert</td><td>即座に対応が必要</td></tr>
+<tr><td>2</td><td>crit</td><td>致命的</td></tr>
+<tr><td>3</td><td>err</td><td>エラー</td></tr>
+<tr><td>4</td><td>warning</td><td>警告</td></tr>
+<tr><td>5</td><td>notice</td><td>正常だが注意すべき事象</td></tr>
+<tr><td>6</td><td>info</td><td>通常の情報</td></tr>
+<tr><td>7</td><td>debug</td><td>デバッグ用</td></tr>
+</table>
+
+<h2>いまのメッセージの通り道</h2>
+<p>systemd のディストリビューションでは、アプリの出力をまず <code>systemd-journald</code> が受け取る。<code>journalctl</code> で読めるのはこれ。rsyslog はそこから取り出して、テキストファイルへの書き出しと外部への転送を担当する、という分担になっている。</p>
+
+<figure>
+<svg viewBox="0 0 700 226" role="img" aria-label="アプリからjournald、rsyslogを経てローカルファイルとログサーバへ流れる経路">
+<defs>
+<marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+</defs>
+<rect x="14" y="80" width="98" height="48" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.3"/>
+<text x="63" y="100" font-size="11" fill="var(--ink)" text-anchor="middle">アプリ</text>
+<text x="63" y="116" font-size="9.5" fill="var(--muted)" text-anchor="middle">syslog(3) / logger</text>
+<line x1="112" y1="104" x2="158" y2="104" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#m5)"/>
+<text x="135" y="94" font-size="9" fill="var(--muted)" text-anchor="middle">/dev/log</text>
+
+<rect x="162" y="76" width="140" height="56" rx="6" fill="var(--card)" stroke="var(--c4)" stroke-width="1.6"/>
+<text x="232" y="97" font-size="11" fill="var(--ink)" text-anchor="middle">systemd-journald</text>
+<text x="232" y="114" font-size="9.5" fill="var(--c4)" text-anchor="middle">journalctl で読む</text>
+<text x="232" y="150" font-size="9.5" fill="var(--muted)" text-anchor="middle">既定では再起動で消える設定も</text>
+
+<line x1="302" y1="104" x2="348" y2="104" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#m5)"/>
+<text x="325" y="94" font-size="9" fill="var(--muted)" text-anchor="middle">imjournal</text>
+
+<rect x="352" y="72" width="150" height="64" rx="6" fill="var(--c1)" opacity=".12"/>
+<rect x="352" y="72" width="150" height="64" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="427" y="98" font-size="11.5" fill="var(--ink)" text-anchor="middle">rsyslog</text>
+<text x="427" y="116" font-size="9.5" fill="var(--muted)" text-anchor="middle">syslog-ng でも同じ位置</text>
+
+<line x1="502" y1="94" x2="546" y2="60" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#m5)"/>
+<line x1="502" y1="116" x2="546" y2="152" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#m5)"/>
+<rect x="550" y="34" width="136" height="42" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+<text x="618" y="52" font-size="10.5" fill="var(--ink)" text-anchor="middle">/var/log/*.log</text>
+<text x="618" y="67" font-size="9.5" fill="var(--muted)" text-anchor="middle">logrotate で世代管理</text>
+<rect x="550" y="130" width="136" height="46" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+<text x="618" y="149" font-size="10.5" fill="var(--ink)" text-anchor="middle">ログサーバ</text>
+<text x="618" y="164" font-size="9.5" fill="var(--muted)" text-anchor="middle">TCP 514 / TLS 6514</text>
+</svg>
+<figcaption>ネットワーク機器やアプライアンスは journald を経由せず、直接 514 番へ送ってくる。集約サーバは両方を受ける立場になる。</figcaption>
+</figure>
+
+<h2>rsyslog の設定</h2>
+<p>本体は <code>/etc/rsyslog.conf</code>、追加分は <code>/etc/rsyslog.d/*.conf</code>。ファイル名の数字順に読まれるので、<strong>自分の設定は <code>/etc/rsyslog.d/</code> に置く</strong>。本体を直接編集するとパッケージ更新で衝突する。</p>
+
+<h3>どこに書くかを決める（送る側）</h3>
+<pre><code># /etc/rsyslog.conf（抜粋）
+# 「ファシリティ.プライオリティ  出力先」の 1 行が 1 ルール
+
+# info 以上を messages へ。ただし mail/authpriv/cron は除く（none ＝ 対象外）
+*.info;mail.none;authpriv.none;cron.none    /var/log/messages
+
+# 認証系だけ別ファイルに
+authpriv.*                                  /var/log/secure
+
+# 自作アプリを local0 に割り当てた場合
+local0.*                                    /var/log/myapp.log</code></pre>
+
+<h3>集約サーバへ転送する</h3>
+<pre><code># /etc/rsyslog.d/60-forward.conf
+*.* action(type="omfwd"
+           target="10.0.0.5" port="514" protocol="tcp"
+           # 送信先が落ちている間はディスクに退避して、復旧後に送り直す
+           queue.type="linkedList"
+           queue.filename="fwd-central"
+           queue.maxDiskSpace="1g"
+           queue.saveOnShutdown="on"
+           action.resumeRetryCount="-1")</code></pre>
+<p>古い書き方の <code>*.* @@10.0.0.5:514</code>（<code>@@</code> ＝ TCP、<code>@</code> ＝ UDP）も動くが、キューが付かないので送信先が落ちた瞬間からログが落ちる。新規に書くなら <code>action()</code> 形式にする。</p>
+
+<h3>受け取る側</h3>
+<pre><code># /etc/rsyslog.d/10-receive.conf
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+# ホスト名／プログラム名ごとにファイルを分ける
+template(name="PerHost" type="string"
+         string="/var/log/remote/%HOSTNAME%/%PROGRAMNAME%.log")
+
+if $fromhost-ip != "127.0.0.1" then {
+    action(type="omfile" dynaFile="PerHost" createDirs="on")
+    stop   # ここで打ち切らないとローカルの messages にも混ざる
+}</code></pre>
+
+<p>構文チェックは <code>rsyslogd -N1</code>。反映は <code>systemctl restart rsyslog</code>。</p>
+
+<h2>syslog-ng の設定</h2>
+<p>やることは同じで、書き方の思想が違う。rsyslog が「1 行 1 ルール」なのに対し、syslog-ng は<strong>入口（source）・条件（filter）・出口（destination）を別々に定義して、<code>log</code> 文で組み合わせる</strong>。部品を使い回せるので、経路が増えるほど読みやすくなる。設定は <code>/etc/syslog-ng/syslog-ng.conf</code> と <code>/etc/syslog-ng/conf.d/*.conf</code>。</p>
+
+<pre><code>@version: 4.5
+
+source s_local  { system(); internal(); };          # ローカルのログを受ける
+filter f_auth   { facility(auth, authpriv); };
+filter f_err    { level(err..emerg); };             # err 以上
+
+destination d_auth    { file("/var/log/auth.log"); };
+destination d_central { syslog("10.0.0.5" transport("tcp") port(514)); };
+
+log { source(s_local); filter(f_auth); destination(d_auth); };
+log { source(s_local); filter(f_err);  destination(d_central); };</code></pre>
+
+<pre><code># 受け取る側
+source s_net { syslog(transport("tcp") port(514)); };
+destination d_perhost {
+    file("/var/log/remote/${HOST}/${PROGRAM}.log" create-dirs(yes));
+};
+log { source(s_net); destination(d_perhost); };</code></pre>
+
+<p>構文チェックは <code>syslog-ng --syntax-only</code>。</p>
+
+<table>
+<tr><th></th><th>rsyslog</th><th>syslog-ng</th></tr>
+<tr><td>既定採用</td><td>RHEL 系・Ubuntu の多く</td><td>SUSE 系ほか。他は追加インストール</td></tr>
+<tr><td>設定の形</td><td>1 行 1 ルール（＋<code>action()</code> 形式）</td><td>source / filter / destination の組み合わせ</td></tr>
+<tr><td>向いている場面</td><td>既定のまま少し足す</td><td>経路や加工が多く、構造化して管理したい</td></tr>
+</table>
+<p>どちらも UDP/TCP/TLS 転送・ディスクキュー・ファイル分割はできる。入っているほうを使えばよく、乗り換える理由になるほどの機能差は普通の用途では出ない。</p>
+
+<div class="note">
+<p><strong>UDP のままにしない。</strong> 514/UDP は再送も到達確認もなく、送信元 IP の詐称も容易。「攻撃者が偽のログを流し込んで本物を埋める」が成立する。集約は TCP を既定にし、拠点をまたぐ・監査に使うなら TLS（6514）にする。</p>
+</div>
+
+<h2>動作確認</h2>
+<pre><code># 任意のファシリティ・プライオリティでテストログを流す
+logger -p local0.err "test message from $(hostname)"
+
+# 受け取れているか集約サーバ側で確認
+tail -f /var/log/remote/web01/root.log</code></pre>
+<p>集約先に届かないときの確認順は、<code>ss -lntup | grep 514</code>（受信側が待ち受けているか）→ ファイアウォール／セキュリティグループ → SELinux（<code>semanage port -l | grep syslog</code>）。設定ミスより経路で止まっていることのほうが多い。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5424">RFC 5424 — The Syslog Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3164">RFC 3164 — The BSD syslog Protocol</a></li>
+<li><a href="https://www.rsyslog.com/doc/configuration/index.html">rsyslog — Configuration</a></li>
+<li><a href="https://syslog-ng.github.io/admin-guide/">syslog-ng Open Source Edition — Administration Guide</a></li>
+<li><a href="https://www.freedesktop.org/software/systemd/man/latest/systemd-journald.service.html">systemd-journald.service — freedesktop.org</a></li>
+</ul>
+
+</main>
+</body>
+</html>
