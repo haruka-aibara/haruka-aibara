@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTTP ヘッダ</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>HTTP ヘッダ</h1>
+<p class="lede">ブラウザとサーバは、本文を渡す前にまず「この通信の取扱説明」を交換している。それがヘッダ。トラブル調査で開発者ツールを開いたとき最初に読む場所でもある。</p>
+
+<h2>本文の前に付く「メタ情報」</h2>
+<p>HTML や JSON を送るだけなら本文だけでよさそうだが、実際には「どのホスト宛てか」「本文は何の形式でどのくらいの長さか」「キャッシュしていいか」といった、<strong>本文の外側の情報</strong>がないと双方が正しく処理できない。これを <code>名前: 値</code> の行の並びで先頭に付けるのが HTTP ヘッダ。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="HTTPリクエストとレスポンスの構造。開始行、ヘッダ、空行、ボディの順に並ぶ">
+<text x="185" y="26" font-size="11.5" fill="var(--c1)" text-anchor="middle" font-weight="600">リクエスト</text>
+<rect x="40" y="38" width="290" height="34" rx="6" fill="var(--c1)" opacity=".16"/>
+<text x="54" y="59" font-size="10.5" fill="var(--ink)">GET /index.html HTTP/1.1　← 開始行</text>
+<rect x="40" y="76" width="290" height="96" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="54" y="97" font-size="10.5" fill="var(--ink)">Host: example.jp</text>
+<text x="54" y="117" font-size="10.5" fill="var(--ink)">User-Agent: Mozilla/5.0 …</text>
+<text x="54" y="137" font-size="10.5" fill="var(--ink)">Accept-Language: ja</text>
+<text x="54" y="157" font-size="10.5" fill="var(--ink)">Cookie: session=abc123</text>
+<text x="344" y="128" font-size="10" fill="var(--c1)">← ヘッダ</text>
+<rect x="40" y="176" width="290" height="22" rx="6" fill="var(--lane)"/>
+<text x="185" y="191" font-size="9.5" fill="var(--muted)" text-anchor="middle">空行（ここでヘッダ終わり）</text>
+<rect x="40" y="202" width="290" height="40" rx="6" fill="var(--card)" stroke="var(--line)" stroke-width="1.4" stroke-dasharray="5 4"/>
+<text x="185" y="226" font-size="10" fill="var(--muted)" text-anchor="middle">ボディ（GET では通常なし）</text>
+<text x="515" y="26" font-size="11.5" fill="var(--c3)" text-anchor="middle" font-weight="600">レスポンス</text>
+<rect x="370" y="38" width="290" height="34" rx="6" fill="var(--c3)" opacity=".16"/>
+<text x="384" y="59" font-size="10.5" fill="var(--ink)">HTTP/1.1 200 OK　← 開始行（状態行）</text>
+<rect x="370" y="76" width="290" height="96" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.6"/>
+<text x="384" y="97" font-size="10.5" fill="var(--ink)">Content-Type: text/html; charset=utf-8</text>
+<text x="384" y="117" font-size="10.5" fill="var(--ink)">Content-Length: 5120</text>
+<text x="384" y="137" font-size="10.5" fill="var(--ink)">Cache-Control: max-age=3600</text>
+<text x="384" y="157" font-size="10.5" fill="var(--ink)">Set-Cookie: session=abc123; Secure</text>
+<rect x="370" y="176" width="290" height="22" rx="6" fill="var(--lane)"/>
+<text x="515" y="191" font-size="9.5" fill="var(--muted)" text-anchor="middle">空行</text>
+<rect x="370" y="202" width="290" height="40" rx="6" fill="var(--card)" stroke="var(--line)" stroke-width="1.4"/>
+<text x="515" y="226" font-size="10" fill="var(--muted)" text-anchor="middle">ボディ（HTML 本体）</text>
+<text x="350" y="278" font-size="10" fill="var(--muted)" text-anchor="middle">構造はどちらも同じ：開始行 → ヘッダ → 空行 → ボディ。ヘッダは何行でも並べられる</text>
+</svg>
+<figcaption>図中のヘッダは代表例。<code>Host</code> は 1 台のサーバで複数サイトを同居させるために必須、<code>Content-Type</code> はボディの解釈方法、<code>Cache-Control</code> は再利用の可否を伝える。</figcaption>
+</figure>
+
+<h2>よく出てくるヘッダ</h2>
+<table>
+<tr><th>ヘッダ</th><th>方向</th><th>役割</th></tr>
+<tr><td><code>Host</code></td><td>リクエスト</td><td>どのサイト宛てか（名前ベースのバーチャルホストの選別）</td></tr>
+<tr><td><code>User-Agent</code></td><td>リクエスト</td><td>ブラウザ・クライアントの自己申告</td></tr>
+<tr><td><code>Referer</code></td><td>リクエスト</td><td>どのページから遷移してきたか</td></tr>
+<tr><td><code>Content-Type</code></td><td>両方</td><td>ボディの形式（<code>text/html</code>、<code>application/json</code> など）</td></tr>
+<tr><td><code>Location</code></td><td>レスポンス</td><td>リダイレクト先（3xx とセット）</td></tr>
+<tr><td><code>Set-Cookie</code></td><td>レスポンス</td><td>ブラウザに Cookie を保存させる → <a href="Cookieの属性.html">Cookie の属性</a></td></tr>
+</table>
+<p>セキュリティ関連のレスポンスヘッダ（<code>Strict-Transport-Security</code> など）はそれぞれ独立した仕組みなので、この表には含めていない。HSTS は<a href="../HSTS.html">別記事</a>にある。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc9110">RFC 9110 — HTTP Semantics</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Reference/Headers">MDN — HTTP ヘッダー</a></li>
+</ul>
+
+</main>
+</body>
+</html>

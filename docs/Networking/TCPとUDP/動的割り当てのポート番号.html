@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>動的割り当てのポート番号</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>動的割り当てのポート番号</h1>
+<p class="lede">サーバのポートは 443 と決まっている。ではクライアント側のポート番号は誰が決めているのか。</p>
+
+<h2>通信には「両側」のポート番号が要る</h2>
+<p>ブラウザで Web サイトを見るとき、宛先ポートが 443 なのは分かる。しかし応答を返してもらうには、<strong>クライアント側にも受け取り口としてのポート番号が必要</strong>。しかもタブを 3 つ開けば 3 本の通信が同時に走るので、全部違う番号でなければ区別できない。</p>
+<p>この番号は OS が接続のたびに空いているものを自動で選ぶ。これが<strong>動的割り当てのポート番号（エフェメラルポート）</strong>。通信が終われば解放され、また別の接続で再利用される。</p>
+
+<figure>
+<svg viewBox="0 0 700 288" role="img" aria-label="ポート番号の3つの範囲と、クライアント側が動的ポートを使って複数の接続を区別する様子">
+<text x="20" y="22" font-size="12" fill="var(--ink)" font-weight="600">ポート番号の 3 つの区分（0〜65535）</text>
+<rect x="20" y="34" width="130" height="40" rx="5" fill="var(--c2)" opacity=".25"/>
+<rect x="20" y="34" width="130" height="40" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="85" y="52" font-size="10.5" fill="var(--ink)" text-anchor="middle">0 〜 1023</text>
+<text x="85" y="67" font-size="9" fill="var(--muted)" text-anchor="middle">ウェルノウン</text>
+
+<rect x="154" y="34" width="260" height="40" rx="5" fill="var(--c4)" opacity=".25"/>
+<rect x="154" y="34" width="260" height="40" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.5"/>
+<text x="284" y="52" font-size="10.5" fill="var(--ink)" text-anchor="middle">1024 〜 49151</text>
+<text x="284" y="67" font-size="9" fill="var(--muted)" text-anchor="middle">登録済み（IANA に申請して割り当てられたもの）</text>
+
+<rect x="418" y="34" width="262" height="40" rx="5" fill="var(--c3)" opacity=".25"/>
+<rect x="418" y="34" width="262" height="40" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="549" y="52" font-size="10.5" fill="var(--ink)" text-anchor="middle">49152 〜 65535</text>
+<text x="549" y="67" font-size="9" fill="var(--muted)" text-anchor="middle">動的・私用（IANA の定める本来の範囲）</text>
+
+<text x="85" y="94" font-size="9" fill="var(--c2)" text-anchor="middle">80, 443, 22, 25 など</text>
+<text x="284" y="94" font-size="9" fill="var(--c4)" text-anchor="middle">3306(MySQL), 5432(PostgreSQL) など</text>
+
+<line x1="20" y1="112" x2="680" y2="112" stroke="var(--line)"/>
+<text x="20" y="136" font-size="12" fill="var(--ink)" font-weight="600">同じサーバへの 3 本の接続を、クライアント側のポートで区別する</text>
+<g font-size="9.5" fill="var(--ink)" text-anchor="middle">
+<rect x="20" y="152" width="150" height="94" rx="7" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="95" y="172" font-size="10.5">クライアント</text>
+<rect x="34" y="182" width="122" height="20" rx="3" fill="var(--c3)" opacity=".25"/><text x="95" y="196">タブ1 → :51234</text>
+<rect x="34" y="206" width="122" height="20" rx="3" fill="var(--c3)" opacity=".25"/><text x="95" y="220">タブ2 → :51235</text>
+<rect x="34" y="230" width="122" height="12" rx="3" fill="var(--c3)" opacity=".25"/>
+</g>
+<g stroke="var(--c1)" stroke-width="1.3">
+<line x1="174" y1="192" x2="440" y2="185"/>
+<line x1="174" y1="216" x2="440" y2="199"/>
+</g>
+<rect x="444" y="168" width="150" height="48" rx="7" fill="var(--c2)" opacity=".2"/>
+<rect x="444" y="168" width="150" height="48" rx="7" fill="none" stroke="var(--c2)" stroke-width="1.6"/>
+<text x="519" y="188" font-size="10.5" fill="var(--ink)" text-anchor="middle">サーバ</text>
+<text x="519" y="205" font-size="10" fill="var(--muted)" text-anchor="middle">宛先はどれも :443</text>
+
+<text x="350" y="266" font-size="10.5" fill="var(--muted)" text-anchor="middle">通信を一意に決めるのは「送信元 IP・送信元ポート・宛先 IP・宛先ポート・プロトコル」の 5 つ組</text>
+<text x="350" y="284" font-size="10.5" fill="var(--muted)" text-anchor="middle">サーバ側のポートが同じでも、クライアント側のポートが違えば別の通信として扱える</text>
+</svg>
+<figcaption>この 5 つ組を「5 タプル」と呼ぶ。ファイアウォールのログや <code>ss</code> / <code>netstat</code> の出力は、これを 1 行ずつ並べたもの。</figcaption>
+</figure>
+
+<h2>実際の範囲は IANA の定義どおりではない</h2>
+<p>IANA は動的ポートを <strong>49152〜65535</strong> と定めているが、<strong>実際の OS はこれに従っていないことが多い</strong>。1024 番以降の任意のポートを使う実装が普通で、確認や変更ができる。</p>
+<table>
+<tr><th>OS</th><th>既定の範囲</th><th>確認方法</th></tr>
+<tr><td>Linux</td><td>32768〜60999</td><td><code>sysctl net.ipv4.ip_local_port_range</code></td></tr>
+<tr><td>Windows</td><td>49152〜65535</td><td><code>netsh int ipv4 show dynamicport tcp</code></td></tr>
+<tr><td>macOS</td><td>49152〜65535</td><td><code>sysctl net.inet.ip.portrange</code></td></tr>
+</table>
+<p>Linux の範囲が 1024 番台まで下がっていないのは、そこに登録済みポートを使うサービスがあるため。ただし「49152 未満は使われない」と前提を置くと、Linux では成り立たない。</p>
+
+<div class="note">
+<p><strong>ハマりどころ：</strong>短時間に大量の接続を開閉するサーバでは、この範囲を使い切って新規接続に失敗することがある（ポート枯渇）。<br>
+特に <a href="../IP/IPマスカレード.html">IP マスカレード</a> や NAT ゲートウェイの背後では、<strong>配下の全端末が 1 つのグローバル IP のポート範囲を共有する</strong>ので枯渇しやすい。AWS の NAT ゲートウェイで <code>ErrorPortAllocation</code> メトリクスを監視するのはこのため。対策はコネクションの再利用（キープアライブ）か、接続元 IP を増やすこと。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml">IANA — Service Name and Transport Protocol Port Number Registry</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6335">RFC 6335 — Internet Assigned Numbers Authority Procedures for Port Numbers</a></li>
+</ul>
+
+</main>
+</body>
+</html>

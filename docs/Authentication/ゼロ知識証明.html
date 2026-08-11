@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ゼロ知識証明を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>ゼロ知識証明 — 中身を見せずに「知っている」ことだけを示す</h1>
+<p class="lede">パスワードを渡さない、年齢を明かさずに成人であることだけ示す。そういう証明のやり方。</p>
+
+<h2>何が問題なのか</h2>
+<p>「知っていること」を証明する一番簡単な方法は、それを相手に見せることだ。パスワード認証はまさにこれで、<strong>証明のために秘密そのものを相手に預けている</strong>。相手が信用できない、あるいは相手が漏洩したら終わり、という前提が最初から組み込まれている。</p>
+<p>同じことは属性の証明でも起きる。「20歳以上である」ことを示すために免許証を見せると、生年月日も住所も本籍も相手に渡ってしまう。<strong>必要な結論だけを伝えて、それ以外は何も渡さない</strong>——これを数学的に成立させるのがゼロ知識証明。</p>
+
+<h2>洞窟のたとえ</h2>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="ゼロ知識証明を説明する洞窟のたとえ">
+  <g>
+    <path d="M100 40 A 90 90 0 1 0 100 200" fill="none" stroke="var(--line)" stroke-width="14"/>
+    <line x1="100" y1="40" x2="100" y2="200" stroke="var(--line)" stroke-width="14"/>
+    <rect x="176" y="104" width="14" height="32" rx="3" fill="var(--stop)"/>
+    <text x="200" y="118" font-size="11" fill="var(--stop)">扉</text>
+    <text x="200" y="134" font-size="10.5" fill="var(--muted)">合言葉がないと開かない</text>
+    <text x="60" y="36" font-size="11" fill="var(--c1)" text-anchor="middle">A 側</text>
+    <text x="60" y="216" font-size="11" fill="var(--c4)" text-anchor="middle">B 側</text>
+    <circle cx="60" cy="120" r="9" fill="var(--c3)"/>
+    <text x="20" y="124" font-size="10.5" fill="var(--c3)">入口</text>
+  </g>
+  <g font-size="11.5">
+    <text x="300" y="46" font-weight="600" fill="var(--ink)">手順</text>
+    <text x="300" y="72" fill="var(--ink)">① 証明する人が、A か B のどちらかから中へ入る</text>
+    <text x="300" y="96" fill="var(--muted)">（見ている人には、どちらから入ったか分からない）</text>
+    <text x="300" y="126" fill="var(--ink)">② 見ている人が「A から出てきて」と指定する</text>
+    <text x="300" y="156" fill="var(--ink)">③ 指定された側から出てこられれば1回成功</text>
+    <text x="300" y="186" fill="var(--c3)" font-weight="600">④ ①〜③を何十回も繰り返す</text>
+    <text x="300" y="212" fill="var(--muted)">合言葉を知らなければ、毎回 1/2 の賭けに勝ち続ける</text>
+    <text x="300" y="232" fill="var(--muted)">必要がある。20回続けば偶然の確率は100万分の1。</text>
+  </g>
+</svg>
+<figcaption>1回では証明にならず、繰り返しによって「偶然ではない」ところまで確率を詰めるのが、この種の証明の作法。見ている人が最後まで知るのは「この人は合言葉を知っている」ということだけで、合言葉そのものは何も伝わっていない。</figcaption>
+</figure>
+
+<h2>満たすべき3つの性質</h2>
+<ul>
+<li><strong>完全性</strong>：本当に知っているなら、証明は必ず通る。</li>
+<li><strong>健全性</strong>：知らないのに通せる確率は、繰り返せば無視できるほど小さくなる。</li>
+<li><strong>ゼロ知識性</strong>：検証する側は「正しい」という事実以外に何も得られない。やり取りの記録を第三者に見せても、その第三者は何も学べない。</li>
+</ul>
+
+<h2>どこで実際に使われているか</h2>
+<p>認証プロトコルとして日常的に使われているわけではない。<a href="チャレンジレスポンス認証.html">チャレンジレスポンス認証</a>や公開鍵による認証はゼロ知識証明<strong>ではない</strong>（秘密を使った計算結果を渡すので、厳密には情報が出ている）が、実務ではそれで十分だからだ。</p>
+<p>ゼロ知識証明が効いてくるのは、<strong>証明の対象が「知識」ではなく「複雑な計算が正しく行われたこと」</strong>になる場面。</p>
+<ul>
+<li><strong>ブロックチェーン</strong>：送金額や残高を秘匿したまま、取引が正当であることだけを検証する。まとめて検証する用途（zk-Rollup）も同じ技術。</li>
+<li><strong>デジタルID</strong>：生年月日を渡さずに「18歳以上」だけを示す、といった属性の選択的開示。</li>
+<li><strong>プライバシー保護の通信</strong>：「有効な利用者である」ことだけを示し、誰かは伝えない（Privacy Pass など）。</li>
+</ul>
+<p>いずれも、やり取りを繰り返さずに1回で証明を渡せる<strong>非対話型</strong>の方式（zk-SNARK など）が土台になっている。</p>
+
+<div class="note">
+<p><strong>「秘密を渡さない」だけでは安全にならない</strong></p>
+<p>ゼロ知識証明が守るのは秘密の中身であって、<strong>証明を横取りされること</strong>ではない。攻撃者が経路に割り込んで証明のやり取りを中継すれば、そのまま本物として振る舞える。この点はワンタイムパスワードと同じで、通信路の保護（TLS）と組み合わせて初めて成立する。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://dl.acm.org/doi/10.1145/22145.22178">The Knowledge Complexity of Interactive Proof-Systems（Goldwasser, Micali, Rackoff）</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9576.html">RFC 9576 - The Privacy Pass Architecture</a></li>
+<li><a href="https://www.w3.org/TR/vc-data-model-2.0/">W3C - Verifiable Credentials Data Model 2.0</a></li>
+</ul>
+
+</main>
+</body>
+</html>

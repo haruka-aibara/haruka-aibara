@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRL と OCSP を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>CRL と OCSP — 期限内なのに無効になった証明書をどう伝えるか</h1>
+<p class="lede">秘密鍵が漏れた証明書は取り消される。その事実を、世界中の検証者にどう届けるか。</p>
+
+<h2>何が問題なのか</h2>
+<p>証明書には有効期限が書いてある。だが期限より前に無効にしたい事態が起きる——<strong>サーバの秘密鍵が漏れた</strong>、<strong>誤って発行した</strong>、<strong>社員が退職して従業員証明書を止めたい</strong>。</p>
+<p>ここで困るのは、証明書が<strong>署名された時点で完結した文書</strong>だということ。中身に「無効になりました」と書き足すことはできない。取り消した事実は、証明書の外側で伝えるしかない。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="CRLとOCSPで失効情報を確認する方法の違い">
+  <g>
+    <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--c2)">CRL — 失効した証明書の一覧をまとめて配る</text>
+    <rect x="8" y="26" width="150" height="70" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="83" y="50" font-size="11" fill="var(--ink)" text-anchor="middle">検証する側</text>
+    <text x="83" y="70" font-size="10.5" fill="var(--muted)" text-anchor="middle">ブラウザ・</text>
+    <text x="83" y="86" font-size="10.5" fill="var(--muted)" text-anchor="middle">アプリケーション</text>
+    <path d="M162 61 L268 61" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#y1)"/>
+    <text x="215" y="52" font-size="10" fill="var(--muted)" text-anchor="middle">定期取得</text>
+    <rect x="272" y="26" width="180" height="70" rx="6" fill="var(--c2)"/>
+    <text x="362" y="50" font-size="11" fill="var(--on)" text-anchor="middle">失効リスト（CRL）</text>
+    <text x="362" y="70" font-size="10.5" fill="var(--on)" opacity=".9" text-anchor="middle">失効した証明書の番号が</text>
+    <text x="362" y="86" font-size="10.5" fill="var(--on)" opacity=".9" text-anchor="middle">ずらりと並ぶ／CA が署名</text>
+    <text x="470" y="46" font-size="10.5" fill="var(--stop)">◯ 一度取れば何度でも照合できる</text>
+    <text x="470" y="66" font-size="10.5" fill="var(--stop)">✕ 大きくなる（数 MB になることも）</text>
+    <text x="470" y="86" font-size="10.5" fill="var(--stop)">✕ 次の配布まで最新でない</text>
+  </g>
+  <line x1="8" y1="118" x2="692" y2="118" stroke="var(--line)"/>
+  <g>
+    <text x="8" y="142" font-size="12.5" font-weight="600" fill="var(--c3)">OCSP — 1枚ずつその場で問い合わせる</text>
+    <rect x="8" y="154" width="150" height="70" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="83" y="186" font-size="11" fill="var(--ink)" text-anchor="middle">検証する側</text>
+    <text x="83" y="206" font-size="10.5" fill="var(--muted)" text-anchor="middle">接続のたびに聞く</text>
+    <path d="M162 178 L268 178" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#y2)"/>
+    <text x="215" y="170" font-size="10" fill="var(--c3)" text-anchor="middle">この1枚は有効？</text>
+    <path d="M268 200 L162 200" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#y3)"/>
+    <text x="215" y="216" font-size="10" fill="var(--c3)" text-anchor="middle">有効／失効／不明</text>
+    <rect x="272" y="154" width="180" height="70" rx="6" fill="var(--c3)"/>
+    <text x="362" y="186" font-size="11" fill="var(--on)" text-anchor="middle">OCSP レスポンダ</text>
+    <text x="362" y="206" font-size="10.5" fill="var(--on)" opacity=".9" text-anchor="middle">＝ 検証局（VA）</text>
+    <text x="470" y="174" font-size="10.5" fill="var(--stop)">◯ 軽い・その時点の情報が得られる</text>
+    <text x="470" y="194" font-size="10.5" fill="var(--stop)">✕ 応答がないと判断できない</text>
+    <text x="470" y="214" font-size="10.5" fill="var(--stop)">✕ 誰がどこを見ているかが CA に伝わる</text>
+  </g>
+  <text x="8" y="256" font-size="11" fill="var(--muted)">どちらも CA の署名が付いた文書として配られるので、途中で書き換えられても検知できる。</text>
+  <defs>
+    <marker id="y1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="y2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="y3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>OCSP はプライバシー上の問題も抱えている。ブラウザが証明書ごとに問い合わせるということは、CA 側に「誰がいつどのサイトを見たか」が渡るということ。この点も後述の変化の一因になった。</figcaption>
+</figure>
+
+<h2>「応答がないとき」をどう扱うかが難所</h2>
+<p>OCSP レスポンダに繋がらなかったら、接続を止めるべきか、通すべきか。</p>
+<p>止める（hard-fail）と、レスポンダが落ちただけで<strong>世界中のサイトが見られなくなる</strong>。通す（soft-fail）と、攻撃者は<strong>レスポンダへの通信を遮断するだけで失効チェックを無効化できる</strong>。<br>
+実際のブラウザは soft-fail を選んできた。つまり<strong>失効チェックは攻撃者に止められる程度のものでしかない</strong>——これが長年の実情。</p>
+
+<h2>だから実装は別の方向へ動いた</h2>
+<ul>
+<li><strong>OCSP ステープリング</strong>：サーバがあらかじめ OCSP レスポンダから「有効」の署名付き応答をもらっておき、TLS ハンドシェイクで一緒に渡す。検証側は問い合わせ不要になり、プライバシーの問題も消える。</li>
+<li><strong>有効期間の短縮</strong>：そもそも証明書が短命なら、失効の出番自体が減る。サーバ証明書の有効期間が年々短くなっているのはこの流れによるもの。</li>
+<li><strong>ブラウザ独自の配布</strong>：主要ブラウザは、重要な失効情報を圧縮して自前の更新機構で配る方式（CRLSets、CRLite など）に移行している。</li>
+</ul>
+<p>近年は OCSP そのものを縮小する方向が業界の合意になっており、CA/Browser Forum の要件でも OCSP は必須ではなくなった。<strong>「失効を後から伝えるのは難しいので、短命な証明書で自動更新する」</strong>という設計に置き換わってきている。</p>
+
+<div class="note">
+<p><strong>閉じたネットワークでの落とし穴</strong></p>
+<p>インターネットに出られないサーバやクライアント端末で、証明書の検証時に CRL や OCSP を取りに行こうとして<strong>タイムアウトするまで数十秒固まる</strong>という事象がよく起きる。原因は失効確認の通信がプロキシで止まっていること。証明書の設定を疑う前に、失効情報の取得先（証明書に書かれている CDP／AIA の URL）に到達できるかを確認する。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5280.html">RFC 5280 - Internet X.509 PKI Certificate and CRL Profile</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6960.html">RFC 6960 - X.509 Internet PKI Online Certificate Status Protocol (OCSP)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6961.html">RFC 6961 - TLS Multiple Certificate Status Request Extension（ステープリング）</a></li>
+<li><a href="https://cabforum.org/working-groups/server/baseline-requirements/documents/">CA/Browser Forum - Baseline Requirements</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ハイブリッド方式を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ハイブリッド方式 — なぜ本文は AES で、RSA は鍵にしか使わないのか</h1>
+<p class="lede">共通鍵暗号の速さと、公開鍵暗号の「鍵を配れる」性質を組み合わせる。TLS も S/MIME も KMS もこの形。</p>
+
+<h2>何が問題なのか</h2>
+<p>「公開鍵暗号で通信を暗号化している」という説明をよく見る。しかし実際に数MBのデータを RSA で暗号化しているシステムは存在しない。<strong>できない</strong>からだ。かといって共通鍵暗号だけでも成立しない。両方に、単独では埋められない欠点がある。</p>
+
+<figure>
+<svg viewBox="0 0 700 210" role="img" aria-label="共通鍵暗号と公開鍵暗号の得意不得意の比較">
+  <g>
+    <rect x="8" y="8" width="332" height="192" rx="10" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="26" y="34" font-size="13" font-weight="600" fill="var(--c1)">共通鍵暗号（AES など）</text>
+    <text x="26" y="62" font-size="11.5" fill="var(--ink)">速い　大きなデータをそのまま暗号化できる</text>
+    <rect x="26" y="76" width="290" height="22" rx="4" fill="var(--c1)" opacity=".25"/>
+    <rect x="26" y="76" width="270" height="22" rx="4" fill="var(--c1)"/>
+    <text x="34" y="92" font-size="10.5" fill="var(--on)">処理速度：数 GB/秒</text>
+    <text x="26" y="130" font-size="11.5" font-weight="600" fill="var(--stop)">✕ 同じ鍵を相手も持っていないと使えない</text>
+    <text x="26" y="152" font-size="11" fill="var(--muted)">その鍵をどうやって安全に渡すのか？</text>
+    <text x="26" y="172" font-size="11" fill="var(--muted)">= 鍵配送問題。相手が増えるほど鍵の数も</text>
+    <text x="26" y="190" font-size="11" fill="var(--muted)">爆発する。</text>
+  </g>
+  <g>
+    <rect x="360" y="8" width="332" height="192" rx="10" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/>
+    <text x="378" y="34" font-size="13" font-weight="600" fill="var(--c4)">公開鍵暗号（RSA など）</text>
+    <text x="378" y="62" font-size="11.5" fill="var(--ink)">公開鍵は誰に配ってもよい　鍵配送問題がない</text>
+    <rect x="378" y="76" width="290" height="22" rx="4" fill="var(--c4)" opacity=".25"/>
+    <rect x="378" y="76" width="14" height="22" rx="4" fill="var(--c4)"/>
+    <text x="400" y="92" font-size="10.5" fill="var(--ink)">処理速度：共通鍵の数百〜数千分の1</text>
+    <text x="378" y="130" font-size="11.5" font-weight="600" fill="var(--stop)">✕ 遅い　しかも扱えるサイズが鍵長以下</text>
+    <text x="378" y="152" font-size="11" fill="var(--muted)">RSA 2048 で一度に暗号化できるのは</text>
+    <text x="378" y="172" font-size="11" fill="var(--muted)">200 バイト強。数 MB のファイルは</text>
+    <text x="378" y="190" font-size="11" fill="var(--muted)">そもそも入らない。</text>
+  </g>
+</svg>
+<figcaption>速度差はアルゴリズムの中身に由来する。共通鍵暗号はビット演算とテーブル引きの繰り返しで CPU 命令にも載っているのに対し、公開鍵暗号は数千ビットの整数のべき乗剰余を計算する。桁違いになるのは避けられない。</figcaption>
+</figure>
+
+<h2>組み合わせる</h2>
+<p>答えは単純で、<strong>データ本体は共通鍵で暗号化し、その共通鍵だけを公開鍵で暗号化して一緒に送る</strong>。公開鍵暗号が扱えるのは数百バイトだが、AES の鍵は 32 バイトなので余裕で収まる。</p>
+
+<figure>
+<svg viewBox="0 0 700 252" role="img" aria-label="ハイブリッド方式でデータと鍵をそれぞれ暗号化して送る流れ">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">送信側</text>
+  <g>
+    <rect x="8" y="26" width="150" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="83" y="48" font-size="11.5" fill="var(--ink)" text-anchor="middle">データ本体（大）</text>
+    <rect x="8" y="76" width="150" height="34" rx="5" fill="var(--c3)"/>
+    <text x="83" y="98" font-size="11.5" fill="var(--on)" text-anchor="middle">使い捨ての共通鍵</text>
+    <text x="8" y="128" font-size="10.5" fill="var(--muted)">毎回ランダムに生成する</text>
+
+    <path d="M158 43 L214 43" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h1)"/>
+    <path d="M83 76 L83 66 L200 66 L200 50" stroke="var(--c3)" stroke-width="1.5" fill="none" marker-end="url(#h2)"/>
+    <rect x="216" y="26" width="150" height="34" rx="5" fill="var(--c1)"/>
+    <text x="291" y="48" font-size="11.5" fill="var(--on)" text-anchor="middle">AES で暗号化</text>
+
+    <path d="M158 93 L214 93" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h1)"/>
+    <rect x="216" y="76" width="150" height="34" rx="5" fill="var(--c4)"/>
+    <text x="291" y="98" font-size="11.5" fill="var(--on)" text-anchor="middle">相手の公開鍵で暗号化</text>
+
+    <rect x="404" y="18" width="180" height="100" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="5 4"/>
+    <text x="494" y="38" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">まとめて送る</text>
+    <rect x="418" y="48" width="152" height="26" rx="4" fill="var(--c1)"/>
+    <text x="494" y="66" font-size="10.5" fill="var(--on)" text-anchor="middle">暗号化されたデータ本体</text>
+    <rect x="418" y="82" width="152" height="26" rx="4" fill="var(--c4)"/>
+    <text x="494" y="100" font-size="10.5" fill="var(--on)" text-anchor="middle">暗号化された共通鍵</text>
+    <path d="M366 43 L402 55" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h1)"/>
+    <path d="M366 93 L402 93" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h1)"/>
+  </g>
+
+  <line x1="8" y1="140" x2="692" y2="140" stroke="var(--line)"/>
+  <text x="8" y="164" font-size="12.5" font-weight="600" fill="var(--ink)">受信側</text>
+  <g>
+    <rect x="8" y="176" width="176" height="30" rx="5" fill="var(--c4)"/>
+    <text x="96" y="196" font-size="11" fill="var(--on)" text-anchor="middle">暗号化された共通鍵</text>
+    <path d="M184 191 L228 191" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h1)"/>
+    <rect x="230" y="176" width="176" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="318" y="196" font-size="11" fill="var(--ink)" text-anchor="middle">自分の秘密鍵で復号</text>
+    <path d="M406 191 L450 191" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h1)"/>
+    <rect x="452" y="176" width="140" height="30" rx="5" fill="var(--c3)"/>
+    <text x="522" y="196" font-size="11" fill="var(--on)" text-anchor="middle">共通鍵が手に入る</text>
+    <text x="8" y="234" font-size="11.5" fill="var(--ink)">→ その共通鍵でデータ本体を復号する。秘密鍵を持つ受信者以外は共通鍵を取り出せないので、本体も読めない。</text>
+  </g>
+  <defs>
+    <marker id="h1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="h2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>共通鍵を毎回作り直すのがポイント。1回分の通信でしか使わない鍵（セッション鍵）にしておけば、1つ漏れても被害がその1回に閉じる。宛先が複数いる場合は、同じ共通鍵を宛先ごとの公開鍵で暗号化したものを人数分添付すればよく、本体は1つで済む。</figcaption>
+</figure>
+
+<h2>どこで使われているか</h2>
+<ul>
+<li><strong>TLS</strong>：ハンドシェイクで共通鍵を用意し、以降のデータは AES で流す。証明書と公開鍵はこの最初の部分にしか使わない。</li>
+<li><strong>S/MIME・PGP</strong>：メール本文は共通鍵で暗号化し、その鍵を受信者ごとの公開鍵で包む。宛先が3人なら包みが3つ添付される。</li>
+<li><strong>AWS KMS のエンベロープ暗号化</strong>：S3 などのデータはデータキー（AES）で暗号化し、そのデータキーを KMS のキーで暗号化して一緒に保存する。<strong>KMS が大きなデータを直接暗号化しない</strong>のは、公開鍵かどうかとは別に、この構図の利点（鍵の管理場所とデータの置き場所を分けられる）を取っているため。</li>
+</ul>
+
+<h2>いまの TLS は「配送」ではなく「共有」</h2>
+<p>古い TLS は上図そのままで、クライアントが作った共通鍵の素をサーバの RSA 公開鍵で暗号化して送っていた。この形には弱点がある——通信を記録しておき、後からサーバの秘密鍵を入手すれば、<strong>過去の通信をまとめて復号できる</strong>。そのため TLS 1.3 では鍵交換を <strong>ECDHE</strong> に統一し、共通鍵は送るのではなく双方の計算で作り出す形になった。組み合わせるという発想は同じだが、鍵の作り方が違う。</p>
+
+<div class="note">
+<p><strong>「ハイブリッド」という語のもう一つの用法</strong></p>
+<p>耐量子暗号の文脈で言う「ハイブリッド」は、この記事の話ではなく<strong>従来の鍵交換（X25519）と耐量子アルゴリズム（ML-KEM）を併用し、どちらか一方が破られても安全を保つ</strong>方式を指す。同じ言葉で別のものを指しているので、文脈を確認してから読む。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8551.html">RFC 8551 - S/MIME Version 4.0 Message Specification</a></li>
+<li><a href="https://docs.aws.amazon.com/ja_jp/kms/latest/developerguide/concepts.html#enveloping">AWS KMS - エンベロープ暗号化</a></li>
+</ul>
+
+</main>
+</body>
+</html>

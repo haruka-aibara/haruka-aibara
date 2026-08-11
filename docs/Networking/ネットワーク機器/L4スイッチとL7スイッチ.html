@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L4スイッチとL7スイッチ</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>L4 スイッチと L7 スイッチ</h1>
+<p class="lede">「どのサーバに振り分けるか」を、何を見て決めるか。負荷分散装置の 2 つの立ち位置。</p>
+
+<h2>サーバを増やしたら、振り分ける人が必要になる</h2>
+<p>Web サーバ 1 台では処理しきれなくなったので 3 台に増やした。しかし利用者は 1 つの URL にアクセスしてくる。<strong>誰かが手前に立って、リクエストを 3 台に配る必要がある</strong>。これが負荷分散装置（ロードバランサ）で、判断材料をどこまで見るかで L4 と L7 に分かれる。</p>
+
+<figure>
+<svg viewBox="0 0 700 320" role="img" aria-label="L4スイッチはIPアドレスとポート番号だけを見て振り分け、L7スイッチはHTTPの中身まで見て振り分ける">
+<defs>
+<marker id="na" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="nb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c4)"/></marker>
+</defs>
+<text x="20" y="22" font-size="12" fill="var(--ink)" font-weight="600">L4 スイッチ — IP とポート番号だけを見る</text>
+<rect x="20" y="34" width="150" height="46" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="95" y="53" font-size="10" fill="var(--ink)" text-anchor="middle">パケット</text>
+<text x="95" y="70" font-size="9" fill="var(--muted)" text-anchor="middle">宛先 :443 とだけ分かる</text>
+<line x1="174" y1="57" x2="216" y2="57" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#na)"/>
+<rect x="222" y="34" width="118" height="46" rx="6" fill="var(--c1)" opacity=".18"/>
+<rect x="222" y="34" width="118" height="46" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="281" y="53" font-size="11" fill="var(--ink)" text-anchor="middle">L4 スイッチ</text>
+<text x="281" y="70" font-size="9" fill="var(--c1)" text-anchor="middle">順番に配る・接続数で配る</text>
+<g font-size="9.5" fill="var(--ink)" text-anchor="middle">
+<rect x="420" y="20" width="110" height="24" rx="4" fill="var(--card)" stroke="var(--line)"/><text x="475" y="36">Web サーバ 1</text>
+<rect x="420" y="48" width="110" height="24" rx="4" fill="var(--card)" stroke="var(--line)"/><text x="475" y="64">Web サーバ 2</text>
+<rect x="420" y="76" width="110" height="24" rx="4" fill="var(--card)" stroke="var(--line)"/><text x="475" y="92">Web サーバ 3</text>
+</g>
+<line x1="342" y1="50" x2="416" y2="32" stroke="var(--c1)" stroke-width="1.2" marker-end="url(#na)"/>
+<line x1="342" y1="57" x2="416" y2="60" stroke="var(--c1)" stroke-width="1.2" marker-end="url(#na)"/>
+<line x1="342" y1="66" x2="416" y2="88" stroke="var(--c1)" stroke-width="1.2" marker-end="url(#na)"/>
+<text x="560" y="62" font-size="10" fill="var(--muted)">中身を見ないので速い</text>
+
+<line x1="20" y1="122" x2="680" y2="122" stroke="var(--line)"/>
+
+<text x="20" y="150" font-size="12" fill="var(--ink)" font-weight="600">L7 スイッチ — HTTP の中身まで読む</text>
+<rect x="20" y="162" width="150" height="62" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="95" y="181" font-size="10" fill="var(--ink)" text-anchor="middle">HTTP リクエスト</text>
+<text x="95" y="198" font-size="9" fill="var(--muted)" text-anchor="middle">GET /api/orders</text>
+<text x="95" y="214" font-size="9" fill="var(--muted)" text-anchor="middle">Host: shop.example</text>
+<line x1="174" y1="192" x2="216" y2="192" stroke="var(--c4)" stroke-width="1.4" marker-end="url(#nb)"/>
+<rect x="222" y="162" width="118" height="62" rx="6" fill="var(--c4)" opacity=".18"/>
+<rect x="222" y="162" width="118" height="62" rx="6" fill="none" stroke="var(--c4)" stroke-width="1.7"/>
+<text x="281" y="184" font-size="11" fill="var(--ink)" text-anchor="middle">L7 スイッチ</text>
+<text x="281" y="202" font-size="9" fill="var(--c4)" text-anchor="middle">URL・Host・Cookie</text>
+<text x="281" y="216" font-size="9" fill="var(--c4)" text-anchor="middle">を見て判断</text>
+<g font-size="9.5" fill="var(--ink)" text-anchor="middle">
+<rect x="420" y="150" width="130" height="24" rx="4" fill="var(--c3)" opacity=".2"/><text x="485" y="166">/api/* → API サーバ</text>
+<rect x="420" y="180" width="130" height="24" rx="4" fill="var(--c3)" opacity=".2"/><text x="485" y="196">/img/* → 画像サーバ</text>
+<rect x="420" y="210" width="130" height="24" rx="4" fill="var(--c3)" opacity=".2"/><text x="485" y="226">それ以外 → Web</text>
+</g>
+<line x1="342" y1="180" x2="416" y2="162" stroke="var(--c4)" stroke-width="1.2" marker-end="url(#nb)"/>
+<line x1="342" y1="192" x2="416" y2="192" stroke="var(--c4)" stroke-width="1.2" marker-end="url(#nb)"/>
+<line x1="342" y1="204" x2="416" y2="222" stroke="var(--c4)" stroke-width="1.2" marker-end="url(#nb)"/>
+<text x="580" y="186" font-size="10" fill="var(--muted)">用途別に</text>
+<text x="580" y="202" font-size="10" fill="var(--muted)">振り分けられる</text>
+
+<text x="350" y="264" font-size="10.5" fill="var(--muted)" text-anchor="middle">L7 は中身を読む必要があるので、暗号化されていれば TLS をいったん解く（TLS 終端）</text>
+<text x="350" y="286" font-size="10.5" fill="var(--muted)" text-anchor="middle">＝ サーバ証明書の管理場所が L7 スイッチ側になる。証明書更新の運用がここに移る</text>
+<text x="350" y="308" font-size="10.5" fill="var(--muted)" text-anchor="middle">同時に、ここで WAF や認証を挟むこともできるようになる</text>
+</svg>
+<figcaption>L4 / L7 という名前は OSI 参照モデルの層番号から来ている。L4 ＝ トランスポート層（TCP/UDP のポート番号まで）、L7 ＝ アプリケーション層（HTTP の中身まで）。</figcaption>
+</figure>
+
+<h2>使い分け</h2>
+<table>
+<tr><th></th><th>L4 スイッチ</th><th>L7 スイッチ</th></tr>
+<tr><th>判断材料</th><td>IP アドレス・ポート番号</td><td>URL・Host ヘッダ・Cookie など</td></tr>
+<tr><th>できること</th><td>台数分の負荷分散、死活監視</td><td>パスによる振り分け、セッション固定、TLS 終端、WAF 連携</td></tr>
+<tr><th>処理コスト</th><td>低い</td><td>高い（中身を解析するため）</td></tr>
+</table>
+<p>AWS でいえば <strong>NLB が L4</strong>、<strong>ALB が L7</strong> にあたる。単純に台数を並べたいだけなら NLB、マイクロサービスをパスで振り分けたり WAF を挟んだりするなら ALB、という選択になる。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/elasticloadbalancing/latest/userguide/what-is-load-balancing.html">Elastic Load Balancing とは — AWS ドキュメント</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc9110">RFC 9110 — HTTP Semantics</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ASN.1 を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>ASN.1 — 証明書の中身がどう並んでいるかを決めている記法</h1>
+<p class="lede">データ構造の定義と、それをバイト列にする規則。証明書・LDAP・SNMP の裏側で使われている。</p>
+
+<h2>何が問題なのか</h2>
+<p>証明書を <code>openssl x509 -text</code> で開くと、発行者・有効期限・公開鍵といった項目がきれいに並んでいる。だがファイルの中身はバイナリで、そのままでは読めない。<strong>どこからどこまでがどの項目なのか</strong>を、機種も言語も違う実装どうしが同じように解釈できなければならない。</p>
+<p>これを決めているのが ASN.1（Abstract Syntax Notation One）。<strong>データの構造を書く言語</strong>と、<strong>それをバイト列に変換する規則</strong>の2つから成る。</p>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="ASN.1の定義からDER・PEMになるまで">
+  <rect x="8" y="20" width="210" height="106" rx="8" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="24" y="42" font-size="11.5" font-weight="600" fill="var(--c1)">① ASN.1 の定義</text>
+  <text x="24" y="64" font-size="10" fill="var(--ink)" font-family="monospace">Certificate ::= SEQUENCE {</text>
+  <text x="24" y="80" font-size="10" fill="var(--ink)" font-family="monospace">  version    INTEGER,</text>
+  <text x="24" y="96" font-size="10" fill="var(--ink)" font-family="monospace">  serial     INTEGER,</text>
+  <text x="24" y="112" font-size="10" fill="var(--ink)" font-family="monospace">  ... }</text>
+
+  <path d="M222 72 L262 72" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#n1)"/>
+  <text x="242" y="62" font-size="10" fill="var(--muted)" text-anchor="middle">DER</text>
+
+  <rect x="266" y="20" width="210" height="106" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+  <text x="282" y="42" font-size="11.5" font-weight="600" fill="var(--c2)">② バイト列（DER）</text>
+  <text x="282" y="66" font-size="10" fill="var(--ink)" font-family="monospace">30 82 03 A1 02 01 02 ...</text>
+  <text x="282" y="88" font-size="10.5" fill="var(--muted)">項目ごとに</text>
+  <text x="282" y="104" font-size="10.5" fill="var(--muted)">「種類・長さ・値」の3点セット</text>
+
+  <path d="M480 72 L520 72" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#n1)"/>
+  <text x="500" y="62" font-size="10" fill="var(--muted)" text-anchor="middle">Base64</text>
+
+  <rect x="524" y="20" width="168" height="106" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="540" y="42" font-size="11.5" font-weight="600" fill="var(--c3)">③ PEM</text>
+  <text x="540" y="64" font-size="9" fill="var(--ink)" font-family="monospace">-----BEGIN CERT...</text>
+  <text x="540" y="80" font-size="9" fill="var(--ink)" font-family="monospace">MIIDoTCCAomgAwIB</text>
+  <text x="540" y="96" font-size="9" fill="var(--ink)" font-family="monospace">-----END CERT...</text>
+  <text x="540" y="116" font-size="10" fill="var(--muted)">テキストで扱える形</text>
+
+  <text x="8" y="160" font-size="12.5" font-weight="600" fill="var(--ink)">DER の1項目の並び方（TLV）</text>
+  <rect x="8" y="172" width="120" height="34" rx="5" fill="var(--c1)"/>
+  <text x="68" y="194" font-size="11" fill="var(--on)" text-anchor="middle">タグ（種類）</text>
+  <rect x="136" y="172" width="120" height="34" rx="5" fill="var(--c2)"/>
+  <text x="196" y="194" font-size="11" fill="var(--on)" text-anchor="middle">長さ</text>
+  <rect x="264" y="172" width="300" height="34" rx="5" fill="var(--c3)"/>
+  <text x="414" y="194" font-size="11" fill="var(--on)" text-anchor="middle">値（中に TLV が入れ子になることもある）</text>
+  <text x="8" y="230" font-size="11" fill="var(--muted)">長さが先に来るので、パーサは中身を見ずに読み飛ばせる。逆に長さの検証を怠ると、</text>
+  <text x="8" y="248" font-size="11" fill="var(--muted)">境界を越えて読むバグ（バッファオーバーリード）に直結する。</text>
+  <defs><marker id="n1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>証明書ファイルの拡張子（.der / .pem / .crt / .cer）は、この②と③のどちらかを指していることがほとんど。中身は同じで、テキストにするか生のバイト列にするかの違いしかない。変換は <code>openssl x509 -inform der -outform pem</code> でできる。</figcaption>
+</figure>
+
+<h2>なぜ DER なのか</h2>
+<p>ASN.1 のバイト列化には複数の規則がある。基本の BER は書き方に自由度があり、<strong>同じ内容から複数の異なるバイト列が作れてしまう</strong>。証明書ではこれが致命的になる——署名はバイト列に対して計算されるので、表現がぶれると検証できない。</p>
+<p>そこで使われるのが DER（Distinguished Encoding Rules）。BER から自由度を取り除き、<strong>ある内容に対する表現をただ1つに定めた</strong>もの。署名を扱うデータ形式が DER を要求するのはこのため。</p>
+
+<h2>どこで出会うか</h2>
+<ul>
+<li><strong>X.509 証明書・CRL・PKCS 系</strong>：構造はすべて ASN.1 で定義されている</li>
+<li><strong>LDAP・SNMP・Kerberos</strong>：プロトコルのメッセージ定義に使われる</li>
+<li><strong>通信分野</strong>：携帯通信の規格など、古くから使われている領域が広い</li>
+</ul>
+<p>普段は意識しなくてよい。<strong>証明書が読めない・形式が違うと言われたとき</strong>に、この階層のどこで詰まっているのかを切り分けられれば十分。</p>
+
+<div class="note">
+<p><strong>パーサは攻撃対象になりやすい</strong></p>
+<p>ASN.1 のパーサは、長さと入れ子を扱う複雑な処理を通信の入口で行う。ここに細工したデータを送る攻撃は古くからあり、証明書の解析処理に起因する深刻な脆弱性が繰り返し報告されてきた。<strong>自前で ASN.1 を解析するコードを書かない</strong>のが唯一の実務的な結論で、書かれているのを見つけたらそれ自体をリスクとして扱う。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.itu.int/ITU-T/recommendations/rec.aspx?rec=X.680">ITU-T X.680 - Abstract Syntax Notation One (ASN.1)</a></li>
+<li><a href="https://www.itu.int/ITU-T/recommendations/rec.aspx?rec=X.690">ITU-T X.690 - BER, CER and DER</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5280.html">RFC 5280 - Internet X.509 PKI Certificate and CRL Profile</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>送信ドメイン認証</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>送信ドメイン認証</h1>
+<p class="lede">SMTP では差出人を自由に名乗れる。フィッシングメールが実在の会社を名乗れてしまう根本原因はここにある。「本当にそのドメインから来たのか」を受信側が検証する仕組みの総称。</p>
+
+<h2>メールには差出人が 2 つある</h2>
+<p>SMTP は差出人の申告を一切検証しない。しかも差出人は 2 か所にあり、<strong>それぞれ別々に、自由に書ける</strong>。</p>
+<ul>
+<li><strong>エンベロープ From</strong> — SMTP のやりとり（<code>MAIL FROM</code>）で申告される配送用の差出人。エラー返送先。受信者には通常見えない</li>
+<li><strong>ヘッダ From</strong> — メール本文のヘッダに書かれた差出人。<strong>メールソフトに表示されるのはこちら</strong></li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="封筒の差出人がエンベロープFrom、便箋の差出人がヘッダFrom。受信者に見えるのは便箋の方で、どちらも自由に書ける">
+<path d="M60 60 L300 60 L300 200 L60 200 Z" fill="var(--lane)" stroke="var(--ink)" stroke-width="1.6"/>
+<path d="M60 60 L180 130 L300 60" fill="none" stroke="var(--ink)" stroke-width="1.4"/>
+<text x="180" y="166" font-size="10.5" fill="var(--ink)" text-anchor="middle">封筒 ＝ エンベロープ From</text>
+<text x="180" y="186" font-size="9.5" fill="var(--muted)" text-anchor="middle">配送とエラー返送に使う。受信者には見えない</text>
+<rect x="390" y="48" width="250" height="164" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/>
+<line x1="410" y1="84" x2="620" y2="84" stroke="var(--line)" stroke-width="1.4"/>
+<text x="410" y="74" font-size="10.5" fill="var(--stop)">From: security@bank.example</text>
+<line x1="410" y1="112" x2="620" y2="112" stroke="var(--line)" stroke-width="1.4"/>
+<line x1="410" y1="136" x2="620" y2="136" stroke="var(--line)" stroke-width="1.4"/>
+<line x1="410" y1="160" x2="560" y2="160" stroke="var(--line)" stroke-width="1.4"/>
+<text x="515" y="192" font-size="10.5" fill="var(--ink)" text-anchor="middle">便箋 ＝ ヘッダ From</text>
+<text x="515" y="208" font-size="9.5" fill="var(--muted)" text-anchor="middle" transform="translate(0,-2)">メールソフトが表示するのはこちら</text>
+<text x="350" y="238" font-size="10.5" fill="var(--stop)" text-anchor="middle">どちらも検証なしで自由に書けるので、実在の銀行を名乗ったメールを誰でも作れてしまう</text>
+</svg>
+<figcaption>手紙にたとえると、封筒の差出人と便箋の署名が別々に書ける状態。攻撃者は表示される「便箋」側に有名企業を書く。</figcaption>
+</figure>
+
+<h2>3 つの仕組みで裏を取る</h2>
+<p>送信ドメイン認証は、受信サーバが DNS を使って差出人の裏を取る仕組みで、役割の違う 3 つを組み合わせる。</p>
+<table>
+<tr><th>仕組み</th><th>確かめること</th><th>方法</th></tr>
+<tr><td><a href="SPF.html">SPF</a></td><td>正規のサーバ（IP）から送られたか</td><td>送信元 IP を DNS の申告と照合</td></tr>
+<tr><td><a href="DKIM.html">DKIM</a></td><td>正規の送信者が署名し、改ざんされていないか</td><td>電子署名を DNS の公開鍵で検証</td></tr>
+<tr><td><a href="DMARC.html">DMARC</a></td><td>表示されるヘッダ From と整合するか・失格をどう扱うか</td><td>ポリシーを DNS で公開</td></tr>
+</table>
+<p>SPF と DKIM が個別の検証手段、DMARC がそれらを「受信者に見えるヘッダ From」に結び付けて全体を束ねる、という関係になっている。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7208">RFC 7208 — Sender Policy Framework (SPF)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6376">RFC 6376 — DomainKeys Identified Mail (DKIM) Signatures</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7489">RFC 7489 — Domain-based Message Authentication, Reporting, and Conformance (DMARC)</a></li>
+<li><a href="https://support.google.com/a/answer/81126">Google — メール送信者のガイドライン</a></li>
+</ul>
+
+</main>
+</body>
+</html>

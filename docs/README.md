@@ -1,5 +1,7 @@
 dumping everything i learn here.
 
+browse it here: https://haruka-aibara.github.io/haruka-aibara-public/
+
 code snippets, tech concepts, random discoveries, and whatever else i pick up.
 
 just a place to throw knowledge for future reference.

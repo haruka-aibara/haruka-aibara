@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HCP Terraform を管理するワークスペースのトークンを自動ローテーションする</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c3:#5f8248; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c3:#77a05c; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.75rem;line-height:1.4;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;overflow-x:auto;font-size:.85rem;line-height:1.6}
+pre code{background:none;padding:0}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>HCP Terraform を管理するワークスペースのトークンを自動ローテーションする</h1>
+<p class="lede">組織で一番強い権限を持つトークンほど、無期限発行して貼りっぱなしになりがち。ワークスペース自身に次のトークンを作らせて、人の手を初回の1回だけにする。</p>
+
+<h2>何が問題なのか</h2>
+<p>ワークスペース・チーム・Variable Set の作成を tfe プロバイダでコード化した「管理用ワークスペース」（workspace-of-workspaces）を作ると、手動管理が1つだけ残る。管理用ワークスペース自身が HCP Terraform の API を叩くための <code>TFE_TOKEN</code> だ。</p>
+<p>AWS 側の認証は Dynamic Credentials（OIDC）で静的キーをなくせるのに、tfe プロバイダには執筆時点で OIDC 相当の仕組みがない。結果、「全ワークスペースを作り替えられる最強のトークン」が、無期限で発行されて変数にベタ貼りされたまま、という一番危ない状態になりやすい。</p>
+<p>解決の軸は「管理用ワークスペースに、自分の次のトークンを作らせる」。tfe プロバイダは HCP Terraform 自身を操作できるので、トークンの発行も変数への書き戻しも Terraform リソースとして書ける。ループを閉じれば、人がトークンに触るのは初回のブートストラップだけになる。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="管理用ワークスペースが自分の次のトークンを作って書き戻すループ">
+  <defs>
+    <marker id="ah1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+
+  <rect x="10" y="70" width="185" height="110" rx="10" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="102" y="94" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">Variable Set</text>
+  <rect x="26" y="106" width="153" height="28" rx="5" fill="var(--lane)"/>
+  <text x="102" y="125" font-size="11" fill="var(--ink)" text-anchor="middle">TFE_TOKEN = A</text>
+  <text x="102" y="162" font-size="10.5" fill="var(--muted)" text-anchor="middle">sensitive な環境変数</text>
+
+  <rect x="270" y="70" width="165" height="110" rx="10" fill="var(--card)" stroke="var(--c1)" stroke-width="1.8"/>
+  <text x="352" y="100" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">管理用ワークスペース</text>
+  <text x="352" y="120" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">の run</text>
+  <text x="352" y="150" font-size="10.5" fill="var(--muted)" text-anchor="middle">plan / apply</text>
+
+  <rect x="510" y="70" width="180" height="110" rx="10" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="600" y="94" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">HCP Terraform 組織</text>
+  <rect x="526" y="106" width="148" height="24" rx="5" fill="var(--c1)"/>
+  <text x="600" y="122" font-size="10.5" fill="var(--on)" text-anchor="middle">チームトークン A（使用中）</text>
+  <rect x="526" y="138" width="148" height="24" rx="5" fill="var(--c3)"/>
+  <text x="600" y="154" font-size="10.5" fill="var(--on)" text-anchor="middle">チームトークン B（新規）</text>
+
+  <line x1="195" y1="100" x2="266" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah1)"/>
+  <text x="230" y="88" font-size="10.5" fill="var(--muted)" text-anchor="middle">① A で認証</text>
+
+  <line x1="435" y1="100" x2="506" y2="100" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah1)"/>
+  <text x="470" y="88" font-size="10.5" fill="var(--muted)" text-anchor="middle">② B を発行</text>
+
+  <line x1="270" y1="150" x2="199" y2="150" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ah1)"/>
+  <text x="234" y="170" font-size="10.5" fill="var(--muted)" text-anchor="middle">③ B に書き戻し</text>
+
+  <rect x="270" y="222" width="165" height="52" rx="10" fill="none" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="352" y="253" font-size="12" fill="var(--ink)" text-anchor="middle">次の run</text>
+  <path d="M102,180 L102,248 L266,248" fill="none" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#ah1)"/>
+  <text x="180" y="240" font-size="10.5" fill="var(--muted)" text-anchor="middle">④ B で認証</text>
+</svg>
+<figcaption>tfe プロバイダは環境変数 <code>TFE_TOKEN</code> を自動で読むので、provider ブロックに token を書く必要はない。①〜③ が1回の apply の中で起き、④ 以降の run は新しいトークンを使う。</figcaption>
+</figure>
+
+<h2>部品は3つ</h2>
+<ul>
+<li><strong>専用チーム＋チームトークン</strong>：owners のトークンではなく、管理対象に必要な権限だけを持つチームを作り、そのトークンを使う。チームトークンは <code>description</code> を付ければ複数本を同時に有効化でき（2025年4月〜）、<code>expired_at</code> で有効期限も付けられる。Organization トークンは常に1本しか持てず権限も固定、User トークンは個人に紐づくため、どちらも不向き。</li>
+<li><strong>time_rotating</strong>：設定した周期が来ると差分が出るリソース。これがローテーションの起点になる。</li>
+<li><strong>tfe_variable（Variable Set）</strong>：発行した新トークンを sensitive な環境変数 <code>TFE_TOKEN</code> として、管理用ワークスペース自身に書き戻す。</li>
+</ul>
+
+<h2>落とし穴：使用中のトークンを消すと apply が死ぬ</h2>
+<p>トークンを1本だけ持って作り直す素朴な構成には罠がある。Terraform の「作り直し」は古いトークンの失効（revoke）を含むが、その apply 自身が古いトークンで API を叩いている。apply の途中で自分の認証を失効させると残りの API 呼び出しが 401 になり、変数の書き戻しに失敗して次の run も動けない——管理用ワークスペースが文鎮化する。</p>
+<p>だからトークンは2本（ブルー／グリーン）を半周期ずらして持つ。使うのは常に「直近に作り直された方」。apply が置き換えるのは「もう使っていない古い方」だけなので、実行中の認証は壊れない。<code>expired_at</code> は、ローテーションが止まったときに古いトークンが生き残り続けないための保険として付ける。</p>
+
+<figure>
+<svg viewBox="0 0 700 290" role="img" aria-label="ブルーとグリーンのトークンを半周期ずらしてローテーションするタイムライン">
+  <g stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" opacity=".6">
+    <line x1="218" y1="38" x2="218" y2="218"/>
+    <line x1="356" y1="38" x2="356" y2="218"/>
+    <line x1="494" y1="38" x2="494" y2="218"/>
+  </g>
+  <g font-size="10.5" fill="var(--muted)" text-anchor="middle">
+    <text x="218" y="30">▼ run</text>
+    <text x="356" y="30">▼ run</text>
+    <text x="494" y="30">▼ run</text>
+  </g>
+
+  <text x="8" y="66" font-size="11" fill="var(--muted)">TFE_TOKEN</text>
+  <text x="8" y="80" font-size="11" fill="var(--muted)">が指す先</text>
+  <rect x="80" y="56" width="138" height="24" rx="4" fill="var(--c1)"/>
+  <rect x="218" y="56" width="138" height="24" rx="4" fill="var(--c3)"/>
+  <rect x="356" y="56" width="138" height="24" rx="4" fill="var(--c1)"/>
+  <rect x="494" y="56" width="138" height="24" rx="4" fill="var(--c3)"/>
+  <g font-size="10.5" fill="var(--on)" text-anchor="middle">
+    <text x="149" y="72">青1</text><text x="287" y="72">緑2</text>
+    <text x="425" y="72">青2</text><text x="563" y="72">緑3</text>
+  </g>
+
+  <text x="8" y="126" font-size="11" fill="var(--muted)">ブルー</text>
+  <rect x="80" y="112" width="276" height="24" rx="4" fill="var(--c1)"/>
+  <text x="149" y="128" font-size="10.5" fill="var(--on)">青1</text>
+  <rect x="356" y="112" width="276" height="24" rx="4" fill="var(--c1)"/>
+  <text x="425" y="128" font-size="10.5" fill="var(--on)">青2</text>
+
+  <text x="8" y="176" font-size="11" fill="var(--muted)">グリーン</text>
+  <rect x="80" y="162" width="138" height="24" rx="4" fill="var(--c3)" opacity=".45"/>
+  <text x="118" y="178" font-size="10.5" fill="var(--on)">緑1</text>
+  <rect x="218" y="162" width="276" height="24" rx="4" fill="var(--c3)"/>
+  <text x="287" y="178" font-size="10.5" fill="var(--on)">緑2</text>
+  <rect x="494" y="162" width="138" height="24" rx="4" fill="var(--c3)"/>
+  <text x="563" y="178" font-size="10.5" fill="var(--on)">緑3</text>
+  <rect x="632" y="112" width="52" height="24" rx="4" fill="none" stroke="var(--stop)" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <text x="684" y="106" font-size="10" fill="var(--stop)" text-anchor="end">expired_at（保険）</text>
+
+  <line x1="80" y1="218" x2="660" y2="218" stroke="var(--muted)" stroke-width="1"/>
+  <g font-size="10.5" fill="var(--muted)" text-anchor="middle">
+    <text x="80" y="236">0日</text>
+    <text x="218" y="236">30日</text>
+    <text x="356" y="236">60日</text>
+    <text x="494" y="236">90日</text>
+    <text x="632" y="236">120日</text>
+  </g>
+
+  <text x="218" y="264" font-size="11" fill="var(--stop)" text-anchor="middle">↑ 置き換えるのは常に「使っていない古い方」</text>
+</svg>
+<figcaption>周期60日・半周期ずらしの例。30日目の run は「青1」で認証しながら「緑1」を「緑2」に作り直し、<code>TFE_TOKEN</code> を「緑2」へ切り替える。認証に使っている側のトークンにはその apply では一切触れない。ローテーションが完全に止まった場合も、各トークンは <code>expired_at</code> で自然に失効する。</figcaption>
+</figure>
+
+<h2>書き方</h2>
+<pre><code># ローテーションの起点。アンカー日付を半周期（30日）ずらす
+resource "time_rotating" "blue" {
+  rfc3339       = "2026-01-01T00:00:00Z"
+  rotation_days = 60
+}
+
+resource "time_rotating" "green" {
+  rfc3339       = "2026-01-31T00:00:00Z"
+  rotation_days = 60
+}
+
+# 管理専用チーム。権限は管理対象に必要な分だけ
+resource "tfe_team" "manager" {
+  name         = "workspace-manager"
+  organization = var.organization
+  organization_access {
+    manage_workspaces = true
+    manage_projects   = true
+  }
+}
+
+# description が変わると新しいトークンとして作り直される
+resource "tfe_team_token" "blue" {
+  team_id     = tfe_team.manager.id
+  description = "manager blue ${time_rotating.blue.rotation_rfc3339}"
+  expired_at  = timeadd(time_rotating.blue.rotation_rfc3339, "336h") # 次の作り直し + 14日
+}
+
+resource "tfe_team_token" "green" {
+  team_id     = tfe_team.manager.id
+  description = "manager green ${time_rotating.green.rotation_rfc3339}"
+  expired_at  = timeadd(time_rotating.green.rotation_rfc3339, "336h")
+}
+
+# 「直近に作り直された方」= 次の作り直しが遠い方を使う
+locals {
+  current_token = (
+    timecmp(
+      time_rotating.blue.rotation_rfc3339,
+      time_rotating.green.rotation_rfc3339
+    ) > 0
+    ? tfe_team_token.blue.token
+    : tfe_team_token.green.token
+  )
+}
+
+# 管理用ワークスペース自身に書き戻す
+resource "tfe_variable" "tfe_token" {
+  key             = "TFE_TOKEN"
+  value           = local.current_token
+  category        = "env"
+  sensitive       = true
+  variable_set_id = tfe_variable_set.manager.id
+}
+</code></pre>
+
+<div class="note">
+<p><strong>注意は2つ。</strong></p>
+<p>① ローテーションは run が走ったときにしか起きない。周期の半分より短い間隔で run が回るように、スケジューラから定期的に API で plan / apply をキックする（VCS 連携で更新が頻繁にあるなら自然に回る）。run が完全に止まったまま <code>expired_at</code> を過ぎると初回と同じ手動ブートストラップからやり直しになるが、それは「検知すべき異常」として扱う。</p>
+<p>② 初回だけは手動。自分の User トークンを <code>TFE_TOKEN</code> に入れて1回 apply すれば、以降はチームトークンに置き換わってループに入る。</p>
+</div>
+
+<h2>さらに上を狙うなら</h2>
+<p>Vault を運用しているなら、Vault の Terraform Cloud secrets engine で run ごとに短命トークンを発行し、Vault-backed Dynamic Credentials で受け取る構成にできる。HCP Terraform 側に静的シークレットが一切残らないという意味ではこれが最高形。ただし Vault というインフラが1つ増えるので、Vault がない環境では本記事の自己ローテーションが実質の最適解になる。Vault 構成の中身と、「ローテーションはいつ完了と言えるのか」という論点は <a href="23-08_ローテーションを1回のPRで完了させる.html">23-08</a> で扱う。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://developer.hashicorp.com/terraform/cloud-docs/users-teams-organizations/api-tokens">Manage API tokens for HCP Terraform</a></li>
+<li><a href="https://www.hashicorp.com/en/blog/terraform-now-supports-multiple-team-tokens">Terraform now supports multiple team tokens（HashiCorp ブログ）</a></li>
+<li><a href="https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/resources/team_token">tfe_team_token リソース</a></li>
+<li><a href="https://registry.terraform.io/providers/hashicorp/time/latest/docs/resources/rotating">time_rotating リソース</a></li>
+<li><a href="https://developer.hashicorp.com/terraform/cloud-docs/dynamic-provider-credentials">Dynamic provider credentials（対応プロバイダ一覧）</a></li>
+<li><a href="https://developer.hashicorp.com/vault/docs/secrets/terraform">Vault: HCP Terraform secrets engine</a></li>
+</ul>
+
+</main>
+</body>
+</html>

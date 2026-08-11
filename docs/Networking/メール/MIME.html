@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MIME を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>MIME — 英数字しか運べないメールで、日本語と添付を送る</h1>
+<p class="lede">中身が何で、どう変換してあるかをヘッダで宣言する。いまは HTTP でも同じ仕組みが使われている。</p>
+
+<h2>何が問題なのか</h2>
+<p>SMTP は 1982 年の規格で、運べるのは<strong>7ビットの英数字テキストだけ</strong>という前提で作られている。日本語も、画像も、実行ファイルも、そのままでは通らない。</p>
+<p>プロトコルを作り直すのは現実的ではない。そこで<strong>メールの本文の中に「これは何のデータで、どう変換してあるか」を書いておき、受け取った側が元に戻す</strong>という約束を追加した。これが MIME（Multipurpose Internet Mail Extensions）。</p>
+
+<figure>
+<svg viewBox="0 0 700 280" role="img" aria-label="MIMEのマルチパート構造">
+  <rect x="8" y="16" width="684" height="252" rx="9" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="24" y="40" font-size="11.5" font-weight="600" fill="var(--ink)">メール全体</text>
+  <rect x="24" y="52" width="652" height="52" rx="6" fill="var(--lane)"/>
+  <text x="40" y="72" font-size="10.5" font-family="monospace" fill="var(--ink)">Content-Type: multipart/mixed; boundary="XYZ"</text>
+  <text x="40" y="92" font-size="10.5" fill="var(--muted)">↑ 「複数の部品が入っていて、XYZ という文字列で区切ってある」という宣言</text>
+
+  <rect x="24" y="116" width="316" height="70" rx="6" fill="var(--c1)"/>
+  <text x="40" y="138" font-size="10.5" font-family="monospace" fill="var(--on)">Content-Type: text/plain;</text>
+  <text x="40" y="154" font-size="10.5" font-family="monospace" fill="var(--on)">  charset="UTF-8"</text>
+  <text x="40" y="174" font-size="10.5" fill="var(--on)" opacity=".9">本文（日本語）</text>
+
+  <rect x="360" y="116" width="316" height="70" rx="6" fill="var(--c2)"/>
+  <text x="376" y="138" font-size="10.5" font-family="monospace" fill="var(--on)">Content-Type: image/png</text>
+  <text x="376" y="154" font-size="10.5" font-family="monospace" fill="var(--on)">Content-Transfer-Encoding: base64</text>
+  <text x="376" y="174" font-size="10.5" fill="var(--on)" opacity=".9">添付ファイル</text>
+
+  <rect x="24" y="198" width="652" height="54" rx="6" fill="var(--c4)"/>
+  <text x="40" y="220" font-size="10.5" font-family="monospace" fill="var(--on)">Content-Type: multipart/alternative</text>
+  <text x="40" y="240" font-size="10.5" fill="var(--on)" opacity=".9">同じ内容のテキスト版と HTML 版 — 受信側が表示できるほうを選ぶ（入れ子にできる）</text>
+</svg>
+<figcaption>部品の境目は本文中の区切り文字列（boundary）で示される。この文字列が本文の中に偶然現れないことが前提なので、送信側はランダムな長い文字列を使う。マルチパートは入れ子にでき、「本文＋添付」の中にさらに「テキスト版／HTML 版」が入る、という構造が普通のメールでも起きている。</figcaption>
+</figure>
+
+<h2>2つのヘッダを覚えれば足りる</h2>
+<table>
+<tr><th>ヘッダ</th><th>何を言っているか</th><th>値の例</th></tr>
+<tr><td><code>Content-Type</code></td><td>これは何のデータか（種類／サブ種類）</td><td><code>text/plain</code>、<code>image/png</code>、<code>application/pdf</code></td></tr>
+<tr><td><code>Content-Transfer-Encoding</code></td><td>7ビットに収めるためにどう変換したか</td><td><code>base64</code>、<code>quoted-printable</code>、<code>7bit</code></td></tr>
+</table>
+<p>変換の方式は主に2つ。バイナリには <a href="Base64.html">Base64</a>、大部分が英数字で一部だけ非 ASCII が混じるテキストには quoted-printable（該当文字だけを <code>=E3</code> のような形に置き換える）が使われる。</p>
+
+<h2>メールの外へ広がった</h2>
+<p>「データの種類を文字列で表す」という部分だけが独立して、いまや至るところで使われている。HTTP の <code>Content-Type</code> ヘッダがまさにそれで、<strong>ブラウザが受け取ったものを画像として描くのか、HTML として実行するのかは、この値で決まる</strong>。MIME タイプ、メディアタイプという呼び方はここから来ている。</p>
+
+<div class="note">
+<p><strong>「宣言」でしかない、という点が攻撃に使われる</strong></p>
+<p>Content-Type は送る側が自己申告しているだけで、中身と一致している保証はない。ここを突く攻撃が2種類ある。<br>
+1つは<strong>拡張子との不一致</strong>。<code>image/jpeg</code> と宣言された添付の実体が実行ファイル、という手口はマルウェア配布の定番。<br>
+もう1つが<strong>MIME スニッフィング</strong>。古いブラウザは「宣言が間違っていても中身から判断してあげる」という親切な挙動を持っていたため、画像としてアップロードされたファイルが HTML として解釈され、スクリプトが動いた。これを止めるのが <code>X-Content-Type-Options: nosniff</code> ヘッダで、ファイルをアップロードさせるサイトでは付けておく。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2045.html">RFC 2045 - MIME Part One: Format of Internet Message Bodies</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2046.html">RFC 2046 - MIME Part Two: Media Types</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/MIME_types">MDN - MIME タイプ</a></li>
+</ul>
+
+</main>
+</body>
+</html>

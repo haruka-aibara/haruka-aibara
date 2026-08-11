@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>グローバルルーティングプレフィックス</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>グローバルルーティングプレフィックス</h1>
+<p class="lede">IPv6 アドレスの前半 48 ビット。「どの組織のネットワークか」を表す部分。</p>
+
+<h2>128 ビットは 3 つのパートに分かれている</h2>
+<p>IPv6 アドレスは長いが、意味のない 128 ビットではない。<strong>先頭 48 ビットで組織を特定し、次の 16 ビットで組織内のサブネットを分け、残り 64 ビットで機器を識別する</strong>という構造になっている。</p>
+<p>この先頭 48 ビットが<strong>グローバルルーティングプレフィックス</strong>。インターネット上のルータはここだけを見て「どの方向へ送るか」を決める。</p>
+
+<figure>
+<svg viewBox="0 0 700 296" role="img" aria-label="IPv6グローバルユニキャストアドレスの3分割構造とプレフィックスの割り当ての流れ">
+<text x="20" y="22" font-size="12" fill="var(--ink)" font-weight="600">2001:0db8:1234 : 0001 : 0000:0000:0000:0001 の構造</text>
+<rect x="20" y="34" width="300" height="46" rx="5" fill="var(--c1)" opacity=".25"/>
+<rect x="20" y="34" width="300" height="46" rx="5" fill="none" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="170" y="54" font-size="11" fill="var(--ink)" text-anchor="middle">グローバルルーティングプレフィックス</text>
+<text x="170" y="71" font-size="10" fill="var(--muted)" text-anchor="middle">48 ビット　2001:0db8:1234</text>
+
+<rect x="324" y="34" width="110" height="46" rx="5" fill="var(--c4)" opacity=".25"/>
+<rect x="324" y="34" width="110" height="46" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.6"/>
+<text x="379" y="54" font-size="11" fill="var(--ink)" text-anchor="middle">サブネット ID</text>
+<text x="379" y="71" font-size="10" fill="var(--muted)" text-anchor="middle">16 ビット　0001</text>
+
+<rect x="438" y="34" width="242" height="46" rx="5" fill="var(--c3)" opacity=".25"/>
+<rect x="438" y="34" width="242" height="46" rx="5" fill="none" stroke="var(--c3)" stroke-width="1.6"/>
+<text x="559" y="54" font-size="11" fill="var(--ink)" text-anchor="middle">インタフェース ID</text>
+<text x="559" y="71" font-size="10" fill="var(--muted)" text-anchor="middle">64 ビット　::1</text>
+
+<text x="170" y="98" font-size="9.5" fill="var(--c1)" text-anchor="middle">どの組織か</text>
+<text x="379" y="98" font-size="9.5" fill="var(--c4)" text-anchor="middle">組織内のどのネットワークか</text>
+<text x="559" y="98" font-size="9.5" fill="var(--c3)" text-anchor="middle">そのネットワークのどの機器か</text>
+<path d="M20 108 h414" stroke="var(--c4)" stroke-width="1.6"/>
+<text x="227" y="124" font-size="10" fill="var(--c4)" text-anchor="middle">合わせて /64 ＝ 1 つのサブネット</text>
+
+<line x1="20" y1="142" x2="680" y2="142" stroke="var(--line)"/>
+<text x="20" y="166" font-size="12" fill="var(--ink)" font-weight="600">プレフィックスは上から配られてくる</text>
+<g font-size="10" fill="var(--ink)" text-anchor="middle">
+<rect x="20" y="180" width="140" height="44" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="90" y="199">IANA</text><text x="90" y="215" font-size="9" fill="var(--muted)">全体を管理</text>
+<text x="176" y="207" font-size="14" fill="var(--muted)">→</text>
+<rect x="192" y="180" width="140" height="44" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="262" y="199">地域レジストリ（APNIC）</text><text x="262" y="215" font-size="9" fill="var(--muted)">アジア太平洋を担当</text>
+<text x="348" y="207" font-size="14" fill="var(--muted)">→</text>
+<rect x="364" y="180" width="140" height="44" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="434" y="199">ISP</text><text x="434" y="215" font-size="9" fill="var(--muted)">/32 などを受け取る</text>
+<text x="520" y="207" font-size="14" fill="var(--muted)">→</text>
+<rect x="536" y="180" width="144" height="44" rx="6" fill="var(--c1)" opacity=".2"/>
+<rect x="536" y="180" width="144" height="44" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="608" y="199">利用者</text><text x="608" y="215" font-size="8.5" fill="var(--muted)">/48 や /56 を受け取る</text>
+</g>
+<text x="350" y="252" font-size="10.5" fill="var(--muted)" text-anchor="middle">階層的に配ることで、ルータが覚える経路情報を「上位のまとまり」に集約できる</text>
+<text x="350" y="274" font-size="10.5" fill="var(--muted)" text-anchor="middle">＝ 世界中の全アドレスを 1 台のルータが覚えなくてよい（経路集約）</text>
+</svg>
+<figcaption>/48 を受け取れば、サブネット ID の 16 ビットで 65536 個のサブネットを自由に切れる。IPv4 のように「アドレスが足りないから細かく分ける」という発想が不要になる。</figcaption>
+</figure>
+
+<h2>知っておくと役に立つプレフィックス</h2>
+<table>
+<tr><th>プレフィックス</th><th>意味</th></tr>
+<tr><td><code>2000::/3</code></td><td>グローバルユニキャスト（インターネットで使える普通のアドレス）</td></tr>
+<tr><td><code>fe80::/10</code></td><td>リンクローカル。同一セグメント内でのみ有効。自動で必ず付く</td></tr>
+<tr><td><code>fc00::/7</code></td><td>ユニークローカル。IPv4 のプライベートアドレスに相当</td></tr>
+<tr><td><code>2001:db8::/32</code></td><td>ドキュメント用に予約。設計書やサンプルで使ってよい</td></tr>
+</table>
+<p>ログに <code>fe80::</code> で始まるアドレスが出てきたら、それは自動生成されたリンクローカルアドレスで、外部と通信しているものではない。</p>
+
+<div class="note">
+<p><strong>設計上の注意：</strong>ISP から割り当てられるプレフィックスは、契約変更や再接続で変わることがある（プレフィックス委任）。<strong>グローバルアドレスをファイアウォールのルールに直接書くと、変わった瞬間に通信が止まる</strong>。組織内で固定したい通信にはユニークローカルアドレスを併用するのが定石。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4291">RFC 4291 — IP Version 6 Addressing Architecture</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3587">RFC 3587 — IPv6 Global Unicast Address Format</a></li>
+</ul>
+
+</main>
+</body>
+</html>

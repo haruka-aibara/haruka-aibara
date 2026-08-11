@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UEFI とセキュアブートを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>UEFI — OS が起動する前の時間を、誰が守るのか</h1>
+<p class="lede">OS より先に動くマルウェアは、OS 上の対策ソフトからは見えない。だから起動の連鎖そのものを検証する。</p>
+
+<h2>何が問題なのか</h2>
+<p>アンチウイルスもログ監視も、OS が動いていて初めて機能する。では<strong>OS より先に読み込まれる場所</strong>にマルウェアが居座ったらどうなるか——検査する側が、すでに乗っ取られた土台の上で動くことになる。「クリーンです」という結果自体が信用できない。</p>
+<p>電源投入から OS が動き出すまでの数秒間は、こういう性質の空白地帯だった。ここを埋めるのが UEFI とセキュアブート。</p>
+
+<h2>UEFI は BIOS の置き換え</h2>
+<p>UEFI（Unified Extensible Firmware Interface）は、PC の電源投入直後に動くファームウェアの規格。従来の BIOS を置き換えたもので、2TB を超えるディスクからの起動、ネットワーク機能、モジュール化された構造といった実務上の利点がある。だがセキュリティの文脈で重要なのは、<strong>ここに署名を検証する仕組みが入った</strong>こと。</p>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="セキュアブートによる起動時の署名検証の連鎖">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--c3)">セキュアブート有効</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="26" width="150" height="44" rx="6" fill="var(--c4)"/>
+    <text x="83" y="45" fill="var(--on)">UEFI ファームウェア</text>
+    <text x="83" y="61" fill="var(--on)" opacity=".9">信頼の起点</text>
+    <path d="M162 48 L196 48" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#j1)"/>
+    <rect x="200" y="26" width="150" height="44" rx="6" fill="var(--c1)"/>
+    <text x="275" y="45" fill="var(--on)">ブートローダ</text>
+    <text x="275" y="61" fill="var(--on)" opacity=".9">署名を検証してから起動</text>
+    <path d="M354 48 L388 48" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#j1)"/>
+    <rect x="392" y="26" width="150" height="44" rx="6" fill="var(--c1)"/>
+    <text x="467" y="45" fill="var(--on)">OS カーネル</text>
+    <text x="467" y="61" fill="var(--on)" opacity=".9">署名を検証してから起動</text>
+    <path d="M546 48 L580 48" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#j1)"/>
+    <rect x="584" y="26" width="108" height="44" rx="6" fill="var(--c1)"/>
+    <text x="638" y="52" fill="var(--on)">ドライバ</text>
+  </g>
+  <text x="8" y="94" font-size="11" fill="var(--c3)">前の段が次の段の署名を確かめてから渡す。どこか1つでも検証に失敗すれば、そこで起動が止まる。</text>
+
+  <line x1="8" y1="112" x2="692" y2="112" stroke="var(--line)"/>
+  <text x="8" y="138" font-size="12.5" font-weight="600" fill="var(--stop)">セキュアブート無効の場合</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="150" width="150" height="44" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="83" y="176" fill="var(--ink)">ファームウェア</text>
+    <path d="M162 172 L196 172" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#j2)"/>
+    <rect x="200" y="150" width="150" height="44" rx="6" fill="var(--stop)"/>
+    <text x="275" y="169" fill="var(--on)">すり替えられた</text>
+    <text x="275" y="185" fill="var(--on)">ブートローダ</text>
+    <path d="M354 172 L388 172" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#j2)"/>
+    <rect x="392" y="150" width="300" height="44" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="542" y="169" fill="var(--ink)">OS は正常に起動する</text>
+    <text x="542" y="185" fill="var(--stop)">が、すでに掌握されている</text>
+  </g>
+  <text x="8" y="222" font-size="11" fill="var(--muted)">OS より下に潜り込むマルウェアをブートキットと呼ぶ。OS を再インストールしても残るため、</text>
+  <text x="8" y="238" font-size="11" fill="var(--muted)">駆除が非常に難しい。</text>
+  <defs>
+    <marker id="j1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="j2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+  </defs>
+</svg>
+<figcaption>この連鎖の出発点は、UEFI 自身が持つ鍵。つまり<strong>ファームウェアが信頼できることが大前提</strong>で、ここが書き換えられると全体が崩れる。ファームウェアの更新を「面倒な作業」ではなく信頼の起点の保守として扱う理由がここにある。</figcaption>
+</figure>
+
+<h2>検証するのか、記録するのか</h2>
+<p>似て非なる仕組みが2つある。</p>
+<ul>
+<li><strong>セキュアブート</strong>：署名を検証し、通らなければ<strong>止める</strong>。</li>
+<li><strong>計測ブート（Measured Boot）</strong>：各段階のハッシュ値を計算し、TPM という専用チップに<strong>記録していく</strong>。起動自体は止めない。</li>
+</ul>
+<p>記録が何の役に立つのかというと、後から<strong>「この端末は改ざんされていない状態で起動した」ことを外部に示せる</strong>。社内ネットワークへの接続時に端末の健全性を確認する、といった用途に使われる。Windows のディスク暗号化（BitLocker）が、構成が変わると回復キーを要求してくるのも、この記録が変化したことを検知しているため。</p>
+
+<div class="note">
+<p><strong>運用でぶつかるところ</strong></p>
+<p><strong>署名のないものは動かない</strong>——これは仕様どおりの挙動だが、現場では障害として現れる。自前でビルドした Linux カーネル、署名のないドライバ、古い仮想化ソフト、一部の起動用 USB。<br>
+「動かないからセキュアブートを無効にする」で解決してしまうと、以後その端末は起動前の保護を失う。無効化を恒久的な対処にせず、<strong>署名済みのものに置き換えるか、自組織の鍵を登録する</strong>方向で解く。<br>
+また、署名済みでも脆弱性が見つかったブートローダは<strong>失効リスト（dbx）</strong>で拒否される。この更新が配布されると、古いブートローダを使っていた端末が突然起動しなくなることがあるので、大量展開の前に検証環境で確認する。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://uefi.org/specifications">UEFI Specifications</a></li>
+<li><a href="https://learn.microsoft.com/ja-jp/windows-hardware/design/device-experiences/oem-secure-boot">Microsoft - セキュア ブート</a></li>
+<li><a href="https://trustedcomputinggroup.org/resource/tpm-library-specification/">Trusted Computing Group - TPM Library Specification</a></li>
+</ul>
+
+</main>
+</body>
+</html>

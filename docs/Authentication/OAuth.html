@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OAuth を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>OAuth — 他人のアプリに、パスワードを渡さずに一部だけ許可する</h1>
+<p class="lede">「このアプリにカレンダーの読み取りを許可しますか？」の裏側。認証ではなく認可の仕組み。</p>
+
+<h2>何が問題なのか</h2>
+<p>あるアプリに自分の SNS へ投稿させたい。素朴なやり方は、そのアプリに SNS の ID とパスワードを教えることだ。これだと<strong>投稿以外の何でもできてしまう</strong>し、やめたくなってもパスワードを変えるしかなく、他のアプリまで巻き添えになる。</p>
+<p>OAuth はここを分解する。渡すのはパスワードではなく<strong>用途と期限が限られた引換券（アクセストークン）</strong>。何を許すかは利用者が選べ、あとから個別に取り消せる。</p>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="認可コードフローの流れ">
+  <text x="70" y="16" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">利用者</text>
+  <text x="290" y="16" font-size="12" font-weight="600" fill="var(--c2)" text-anchor="middle">アプリ</text>
+  <text x="560" y="16" font-size="12" font-weight="600" fill="var(--c1)" text-anchor="middle">サービス（認可サーバ）</text>
+  <line x1="70" y1="26" x2="70" y2="228" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="290" y1="26" x2="290" y2="228" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="560" y1="26" x2="560" y2="228" stroke="var(--line)" stroke-width="1.5"/>
+
+  <path d="M76 46 L284 46" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#o1)"/>
+  <text x="180" y="40" font-size="10.5" fill="var(--ink)" text-anchor="middle">① 連携したい</text>
+
+  <path d="M296 76 L554 76" stroke="var(--c2)" stroke-width="1.4" marker-end="url(#o2)"/>
+  <text x="424" y="70" font-size="10.5" fill="var(--c2)" text-anchor="middle">② 認可画面へ誘導（欲しい権限＝スコープを指定）</text>
+
+  <rect x="452" y="90" width="216" height="46" rx="6" fill="var(--lane)"/>
+  <text x="560" y="110" font-size="10.5" fill="var(--ink)" text-anchor="middle">③ 利用者がここでログインし</text>
+  <text x="560" y="126" font-size="10.5" fill="var(--ink)" text-anchor="middle">「許可する」を押す</text>
+
+  <path d="M554 158 L296 158" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#o3)"/>
+  <rect x="330" y="142" width="190" height="22" rx="4" fill="var(--c1)"/>
+  <text x="425" y="158" font-size="10.5" fill="var(--on)" text-anchor="middle">④ 認可コード（短命の引換券）</text>
+
+  <path d="M296 190 L554 190" stroke="var(--c2)" stroke-width="1.4" marker-end="url(#o2)"/>
+  <text x="424" y="184" font-size="10.5" fill="var(--c2)" text-anchor="middle">⑤ コード＋アプリの秘密を送って交換</text>
+
+  <path d="M554 220 L296 220" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#o4)"/>
+  <rect x="356" y="204" width="164" height="22" rx="4" fill="var(--c3)"/>
+  <text x="438" y="220" font-size="10.5" fill="var(--on)" text-anchor="middle">⑥ アクセストークン</text>
+
+  <text x="8" y="252" font-size="11" fill="var(--stop)">利用者のパスワードはサービスの画面にしか入力されない。アプリはそれを一度も見ない。</text>
+  <defs>
+    <marker id="o1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="o2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="o3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="o4" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>④と⑤⑥で2段階に分けているのが要点。トークンそのものをブラウザ経由で返すと、URL やブラウザ履歴に残って漏れる。ブラウザを通るのは短命な認可コードだけにして、トークンはアプリとサーバの直接通信で受け取る。</figcaption>
+</figure>
+
+<h2>トークンには範囲と期限がある</h2>
+<ul>
+<li><strong>スコープ</strong>：何ができるか（<code>calendar.read</code> のような単位）。アプリが要求し、利用者が同意した範囲に限られる。</li>
+<li><strong>有効期限</strong>：アクセストークンは短命（数十分程度）。漏れても被害が続かない。</li>
+<li><strong>リフレッシュトークン</strong>：期限切れのたびに利用者に同意を求めないための長命の鍵。こちらが漏れると影響が長く続くので、保管の要求は厳しくなる。</li>
+<li><strong>取り消し</strong>：利用者はサービスの設定画面から、アプリ単位で許可を取り消せる。パスワード変更と違って他のアプリに影響しない。</li>
+</ul>
+
+<div class="note">
+<p><strong>OAuth は認証ではない</strong></p>
+<p>もっとも多い誤用がこれ。アクセストークンが得られたことは<strong>「アプリがこのリソースを触ってよい」を意味するだけ</strong>で、「目の前の人物が誰か」は保証しない。別のサイト向けに発行されたトークンを持ち込まれても見分けられず、なりすましのログインが成立してしまう。<br>
+「このサービスでログイン」を実装したいなら、OAuth の上に本人確認の層を足した <strong>OpenID Connect</strong> を使い、ID トークン（発行先と発行者が署名で確認できる JWT）を検証する。</p>
+</div>
+
+<h2>実装で外せない点</h2>
+<ul>
+<li><strong>PKCE を使う</strong>：認可コードを横取りされても交換できないようにする仕組み。スマホアプリや SPA のようにアプリの秘密を隠しておけない環境では必須で、現在はすべてのアプリ種別で推奨されている。</li>
+<li><strong>リダイレクト先を完全一致で登録する</strong>：ここを緩く（前方一致やワイルドカードで）登録すると、攻撃者のサイトへコードを送らせる経路ができる。</li>
+<li><strong>state パラメータを検証する</strong>：利用者の意図しない連携を仕込まれる（CSRF）のを防ぐ。</li>
+<li><strong>暗黙的フロー（Implicit）は使わない</strong>：トークンをブラウザに直接返す古い方式で、現在は非推奨。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6749.html">RFC 6749 - The OAuth 2.0 Authorization Framework</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7636.html">RFC 7636 - Proof Key for Code Exchange by OAuth Public Clients (PKCE)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9700.html">RFC 9700 - Best Current Practice for OAuth 2.0 Security</a></li>
+<li><a href="https://openid.net/specs/openid-connect-core-1_0.html">OpenID Connect Core 1.0</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TLS Record プロトコルを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>TLS Record プロトコル — 暗号化を実際にやっている下の層</h1>
+<p class="lede">ハンドシェイクの結果を受け取って、すべてのデータを決まった大きさの箱に詰めて送り出す。</p>
+
+<h2>何が問題なのか</h2>
+<p>「TLS はハンドシェイクして通信を暗号化する」という説明で止まっていると、パケットキャプチャを見たときに困る。<strong>ハンドシェイク自体もパケットとして流れている</strong>し、通信の終わりにはアラートが飛ぶ。これらは何に載って運ばれているのか。</p>
+<p>TLS は1枚岩ではなく、<strong>下にある Record プロトコルの上に、複数のプロトコルが載る</strong>構造になっている。この形が分かると、キャプチャの読み方も、脆弱性の話も追いやすくなる。</p>
+
+<figure>
+<svg viewBox="0 0 700 216" role="img" aria-label="Recordプロトコルの上に載る4つのサブプロトコル">
+  <rect x="8" y="16" width="684" height="96" rx="10" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="24" y="38" font-size="12" font-weight="600" fill="var(--ink)">Record の上に載るプロトコル</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="24" y="48" width="156" height="50" rx="6" fill="var(--c1)"/>
+    <text x="102" y="70" fill="var(--on)">Handshake</text>
+    <text x="102" y="87" fill="var(--on)" opacity=".9">鍵の合意・相手の確認</text>
+    <rect x="190" y="48" width="156" height="50" rx="6" fill="var(--c2)"/>
+    <text x="268" y="70" fill="var(--on)">Alert</text>
+    <text x="268" y="87" fill="var(--on)" opacity=".9">エラー・切断の通知</text>
+    <rect x="356" y="48" width="156" height="50" rx="6" fill="var(--c4)"/>
+    <text x="434" y="70" fill="var(--on)">ChangeCipherSpec</text>
+    <text x="434" y="87" fill="var(--on)" opacity=".9">ここから暗号を使う合図</text>
+    <rect x="522" y="48" width="146" height="50" rx="6" fill="var(--c3)"/>
+    <text x="595" y="70" fill="var(--on)">Application Data</text>
+    <text x="595" y="87" fill="var(--on)" opacity=".9">HTTP などの中身</text>
+  </g>
+  <rect x="8" y="124" width="684" height="46" rx="8" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="350" y="144" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">Record プロトコル</text>
+  <text x="350" y="162" font-size="10.5" fill="var(--muted)" text-anchor="middle">分割 → 暗号化 → 完全性の付与 → 送信（受信時は逆順）</text>
+  <rect x="8" y="182" width="684" height="28" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="350" y="201" font-size="11.5" fill="var(--ink)" text-anchor="middle">TCP</text>
+</svg>
+<figcaption>ChangeCipherSpec は TLS 1.3 で役目を終えた（互換のために形だけ残っている）。「ここから暗号に切り替える」という区切りが攻撃の足がかりになりやすく、状態遷移を単純にする方向で整理された。</figcaption>
+</figure>
+
+<h2>Record が1レコードにすること</h2>
+<p>上位から渡されたデータは、そのまま送られるわけではない。Record 層で次の加工を受ける。</p>
+<ul>
+<li><strong>分割</strong>：最大 16KB 単位の塊（レコード）に切る。大きなファイルも必ずこの単位に割られる。</li>
+<li><strong>完全性の付与と暗号化</strong>：改ざん検知のための情報を付けて暗号化する。現在は AES-GCM のように両方を一度に行う方式が使われる。</li>
+<li><strong>順序の保証</strong>：レコードごとに増える番号を計算に混ぜる。<strong>この番号は送信されない</strong>——両者が自分で数えているので、レコードの抜き取り・入れ替え・再送はすべて検知される。</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 180" role="img" aria-label="TLSレコードの構造と、暗号化されない部分">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">1レコードの構造</text>
+  <rect x="8" y="26" width="110" height="40" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="63" y="44" font-size="10.5" fill="var(--ink)" text-anchor="middle">種別</text>
+  <text x="63" y="59" font-size="9.5" fill="var(--muted)" text-anchor="middle">1 バイト</text>
+  <rect x="126" y="26" width="110" height="40" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="181" y="44" font-size="10.5" fill="var(--ink)" text-anchor="middle">バージョン</text>
+  <text x="181" y="59" font-size="9.5" fill="var(--muted)" text-anchor="middle">2 バイト</text>
+  <rect x="244" y="26" width="110" height="40" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="299" y="44" font-size="10.5" fill="var(--ink)" text-anchor="middle">長さ</text>
+  <text x="299" y="59" font-size="9.5" fill="var(--muted)" text-anchor="middle">2 バイト</text>
+  <rect x="362" y="26" width="330" height="40" rx="5" fill="var(--c3)"/>
+  <text x="527" y="50" font-size="11" fill="var(--on)" text-anchor="middle">暗号化されたデータ</text>
+
+  <path d="M8 76 L354 76" stroke="var(--stop)" stroke-width="1.5"/>
+  <path d="M8 72 L8 80 M354 72 L354 80" stroke="var(--stop)" stroke-width="1.5"/>
+  <text x="181" y="94" font-size="11" fill="var(--stop)" text-anchor="middle">ここは平文のまま流れる</text>
+
+  <text x="8" y="126" font-size="11" fill="var(--muted)">ヘッダが平文である以上、レコードの「大きさ」と「タイミング」は誰でも観測できる。中身は読めなくても、</text>
+  <text x="8" y="144" font-size="11" fill="var(--muted)">通信量のパターンからどのページを見ているかを推定する分析は成立しうる。TLS 1.3 では対策として、</text>
+  <text x="8" y="162" font-size="11" fill="var(--muted)">実際の種別を暗号化した内側に隠し、外側は常に同じ値にしたうえで、詰め物で長さをぼかせるようにした。</text>
+</svg>
+<figcaption>「暗号化されているから何も分からない」わけではない、というのが Record 層を見ると分かる。何を守れていて何が漏れているかを、層ごとに切り分けて考える材料になる。</figcaption>
+</figure>
+
+<h2>圧縮は廃止された</h2>
+<p>かつて Record 層には圧縮の機能があった。だが<strong>暗号化の前に圧縮すると、圧縮後のサイズから中身が推測できる</strong>。攻撃者が推測文字列を送り込み、レコードが縮んだかどうかで正解を1文字ずつ特定していく——これが CRIME 攻撃で、Cookie の値が盗まれた。現在の TLS では圧縮そのものが廃止されている。</p>
+<p>「暗号化と圧縮を組み合わせるときは順序と副作用に注意する」という教訓は、TLS に限らず自作のプロトコルやログ処理にも当てはまる。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5246.html">RFC 5246 - The Transport Layer Security (TLS) Protocol Version 1.2</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7457.html">RFC 7457 - Summarizing Known Attacks on TLS and DTLS</a></li>
+</ul>
+
+</main>
+</body>
+</html>
