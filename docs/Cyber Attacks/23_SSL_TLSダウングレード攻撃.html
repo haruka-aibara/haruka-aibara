@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSL/TLS ダウングレード攻撃を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>SSL/TLS ダウングレード攻撃 — 強い暗号に対応していても意味がない</h1>
+<p class="lede">「どの暗号を使うか」の相談は、暗号がかかる前に平文で行われる。</p>
+
+<h2>何が問題なのか</h2>
+<p>サーバもブラウザも最新の TLS に対応していて、強い暗号スイートを持っている。それでも<strong>実際に使われる暗号は、その場のネゴシエーションで決まる</strong>。そしてこのネゴシエーションは、まだ暗号がかかっていない状態で交わされる。</p>
+<p>ここに中間者が入り、<strong>「弱い暗号にしか対応していないふり」をさせる</strong>のがダウングレード攻撃。サーバの設定に古い暗号スイートが 1 つ残っているだけで、最新のブラウザを使っていても、その弱い暗号で通信させられる。</p>
+
+<h2>やっていることは、選択肢の削除</h2>
+
+<figure>
+<svg viewBox="0 0 700 260" role="img" aria-label="中間者がClientHelloの暗号スイート一覧から強いものを削り、弱いスイートだけを残す">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">ClientHello の暗号スイート一覧を書き換える</text>
+
+  <text x="8" y="42" font-size="11.5" fill="var(--ink)" font-weight="600">クライアント</text>
+  <text x="290" y="42" font-size="11.5" fill="var(--stop)" font-weight="600">中間者</text>
+  <text x="540" y="42" font-size="11.5" fill="var(--ink)" font-weight="600">サーバ</text>
+
+  <rect x="8" y="56" width="200" height="96" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="20" y="74" font-size="10.5" fill="var(--muted)">ClientHello（本来）</text>
+  <g font-size="10.5" font-family="ui-monospace,monospace">
+    <rect x="18" y="82" width="180" height="20" rx="3" fill="var(--c3)"/><text x="26" y="96" fill="var(--on)">AES_256_GCM</text>
+    <rect x="18" y="106" width="180" height="20" rx="3" fill="var(--c3)"/><text x="26" y="120" fill="var(--on)">AES_128_GCM</text>
+    <rect x="18" y="130" width="180" height="20" rx="3" fill="var(--c2)"/><text x="26" y="144" fill="var(--on)">RSA_EXPORT_40</text>
+  </g>
+
+  <path d="M208 104 L286 104" stroke="var(--muted)" stroke-width="1.8" fill="none" marker-end="url(#d1)"/>
+
+  <rect x="290" y="60" width="140" height="88" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="360" y="90" font-size="11" fill="var(--stop)" text-anchor="middle" font-weight="600">強いスイートを</text>
+  <text x="360" y="108" font-size="11" fill="var(--stop)" text-anchor="middle" font-weight="600">一覧から削除</text>
+  <text x="360" y="132" font-size="10.5" fill="var(--muted)" text-anchor="middle">まだ暗号化前なので書ける</text>
+
+  <path d="M430 104 L508 104" stroke="var(--stop)" stroke-width="1.8" fill="none" marker-end="url(#d2)"/>
+
+  <rect x="510" y="72" width="182" height="64" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="522" y="90" font-size="10.5" fill="var(--muted)">サーバが受け取った一覧</text>
+  <rect x="520" y="98" width="162" height="20" rx="3" fill="var(--c2)"/>
+  <text x="528" y="112" font-size="10.5" font-family="ui-monospace,monospace" fill="var(--on)">RSA_EXPORT_40</text>
+
+  <path d="M600 136 L600 172" stroke="var(--muted)" stroke-width="1.5" fill="none" marker-end="url(#d1)"/>
+  <text x="612" y="160" font-size="11" fill="var(--muted)">「これしか対応していないのか」</text>
+
+  <rect x="8" y="180" width="684" height="40" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="350" y="205" font-size="12" fill="var(--stop)" text-anchor="middle" font-weight="600">合意された暗号：RSA_EXPORT_40（512 ビット鍵）→ 攻撃者が現実的な時間で解読できる</text>
+
+  <text x="8" y="242" font-size="11" fill="var(--muted)">サーバが弱いスイートを設定から外していれば、この時点で「共通の暗号がない」となりハンドシェイクは失敗する。</text>
+  <text x="8" y="256" font-size="11" fill="var(--muted)">つまり成立条件は、サーバ側に弱いスイートが有効なまま残っていること。</text>
+  <defs>
+    <marker id="d1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="d2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--stop)"/></marker>
+  </defs>
+</svg>
+<figcaption>ハンドシェイクの最後に交わされる Finished メッセージは、それまでのやりとり全体のハッシュを含むので、書き換えがあれば検知できる——はずだった。ところが合意された暗号自体が弱ければ、攻撃者はその鍵を解読して Finished を作り直せる。<strong>整合性チェックの強度が、合意した暗号の強度に依存している</strong>のが根本の問題。</figcaption>
+</figure>
+
+<h2>実際に起きた事例</h2>
+<table>
+<tr><th>名称</th><th>落とし先</th><th>背景</th></tr>
+<tr><td>FREAK（2015）</td><td>512 ビットの EXPORT 用 RSA</td><td>1990 年代の米国輸出規制で作られた弱い暗号スイートが、20 年後も実装に残っていた</td></tr>
+<tr><td>Logjam（2015）</td><td>512 ビットの DH 鍵交換</td><td>広く共有された素数が使われていたため、事前計算で効率よく破れた</td></tr>
+<tr><td>DROWN（2016）</td><td>同じ鍵を使う SSLv2 サーバ</td><td>別ポートで動く古いサーバが、TLS の通信を解読する材料になった</td></tr>
+</table>
+<p>共通しているのは、<strong>「もう使っていないつもりの古い設定が有効なまま残っていた」</strong>こと。攻撃の新しさではなく、消し忘れが原因になっている。</p>
+
+<h2>どうするか</h2>
+<ul>
+<li><strong>サーバ側で許可する暗号スイートを絞る。</strong>攻撃者が選べるのはサーバが提示できるものの中だけなので、弱いものを消せば選択肢がなくなる。EXPORT 系・RC4・DES/3DES・匿名 DH は無効にする。</li>
+<li><strong>TLS 1.3 を有効にする。</strong>TLS 1.3 は仕様のレベルで弱い暗号スイートを削除し、鍵交換も前方秘匿性のあるものだけに限定した。「設定で切る」のではなく「選択肢が存在しない」状態になる。</li>
+<li><strong>設定を外から検証する。</strong>SSL Labs のようなツールで、実際に何が提示されているかを見る。設定ファイルの意図ではなく、サーバが実際に応答する内容を確認する。</li>
+</ul>
+
+<div class="note">
+<p><strong>暗号スイートではなく、バージョンを落とす攻撃もある</strong></p>
+<p>この記事は「どのアルゴリズムを使うか」を弱いものにする攻撃。これとは別に、TLS そのもののバージョン（TLS 1.2 → SSL 3.0）を落とさせる手口があり、そちらは <a href="24_バージョンロールバック攻撃.html">バージョンロールバック攻撃</a>。落とした先の SSL 3.0 を実際に解読するところまでやったのが <a href="25_POODLE攻撃.html">POODLE</a>。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://weakdh.org/">Weak Diffie-Hellman and the Logjam Attack</a></li>
+<li><a href="https://drownattack.com/">The DROWN Attack</a></li>
+<li><a href="https://www.ssllabs.com/ssltest/">Qualys SSL Labs - SSL Server Test</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -167,10 +167,11 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **Slack**: `Slack/` 配下に `SlackとTeamsの比較.md`、`開発チームでのSlack活用.md`、`Slackワークフローの作り方.md` あり
 - **ADR×AI**: `ADR/ADRの要否をAIに判断させるリポジトリ設計.md` あり
 - **Trusted Advisor通知**: `Amazon Web Services/04_セキュリティ/検知と可視化/TrustedAdvisorアラートのSlack通知.md` あり
-- **サイバー攻撃の手法**: `Cyber Attacks/` 配下に 01〜22 を1手法1ファイルで執筆済み（CWE / ポートスキャン4種 / ポートノッキング / SPA / SSP / automatic fortification / DEP / ASLR / セッションフィクセーション / スニファ / プロミスキャスモード / WEP・WPA・ESSID / pass the hash / IP スプーフィング / DDoS 各種 / DNS 水責め / EDoS・DeOS / XSS / DNSSEC / キルチェーン / RLO / BadNets）。すべて図中心の HTML。攻撃手法の記事はここに追加する（別ディレクトリを作らない）
+- **サイバー攻撃の手法**: `Cyber Attacks/` 配下に 01〜25 を1手法1ファイルで執筆済み（CWE / ポートスキャン4種 / ポートノッキング / SPA / SSP / automatic fortification / DEP / ASLR / セッションフィクセーション / スニファ / プロミスキャスモード / WEP・WPA・ESSID / pass the hash / IP スプーフィング / DDoS 各種 / DNS 水責め / EDoS・DeOS / XSS / DNSSEC / キルチェーン / RLO / BadNets / SSL・TLS ダウングレード / バージョンロールバック / POODLE）。すべて図中心の HTML。攻撃手法の記事はここに追加する（別ディレクトリを作らない）
 - **HTTP/2**: `Networking/HTTP2.html`。図中心 HTML 記事のリファレンス実装
 - **HTTP/3 と QUIC**: `Networking/HTTP3.html`
 - **HSTS**: `Networking/HSTS.html`
+- **UPnP**: `Networking/UPnP.html`
 - **ファイル転送・リモート操作**: `Networking/ファイル転送とリモート操作/` 配下に 1 トピック 1 ファイル（FTP / パッシブ通信 / PASV / Anonymous FTP / SFTP / FTPS / TFTP / Telnet）
 - **無線 LAN**: `Networking/無線LAN/` 配下に 1 トピック 1 ファイル（CSMA/CA / アクセス手順 / ビーコン / ESSID / ステルスモード / ANY モード / WEP の IV / WPA・WPA2 / TKIP / CCMP / パーソナル・エンタープライズ / WPA3 / Enhanced Open / IEEE 802.1X / EAPOL / EAP / EAP の種類 / PIAFS）。攻撃者視点の WEP・WPA・ESSID は `Cyber Attacks/12_WEPとWPAとESSID.html` にある
 - **DHCP**: `Networking/DHCP.html`（しくみ＋リレーエージェント）
@@ -184,10 +185,11 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **IPv6**: `Networking/IPv6/` 配下に 1 トピック 1 ファイル（IPv6 / 表記方法 / グローバルルーティングプレフィックス / インタフェースID / NDP / エニーキャスト）。DNS64・NAT64 は `Networking/DNS64とNAT64.md`
 - **TCP と UDP**: `Networking/TCPとUDP/` 配下に 1 トピック 1 ファイル（TCPのSYNとACK / TCPヘッダ / UDP / サブミッションポート / 動的割り当てのポート番号）
 - **ネットワーク仮想化**: `Networking/ネットワーク仮想化/` 配下に VXLAN / VTEP
-- **暗号**: `Cryptography/` 配下に 1 トピック 1 ファイル（CRYPTREC / DES / ハイブリッド方式 / 楕円曲線暗号 / Diffie-Hellman / 耐量子暗号PQC / MACとデジタル署名）。PQC の業務接点・クラウド対応状況は `Quantum Computing/` の記事にある
+- **暗号**: `Cryptography/` 配下に 1 トピック 1 ファイル（CRYPTREC / DES / ハイブリッド方式 / 楕円曲線暗号 / Diffie-Hellman / 耐量子暗号PQC / MACとデジタル署名）。Triple DES は `DES.html` に含まれる。PQC の業務接点・クラウド対応状況は `Quantum Computing/` の記事にある
+- **暗号利用モード**: `Cryptography/暗号利用モード/` 配下に 1 トピック 1 ファイル（ブロック暗号と暗号利用モード / ECB / CBC / OFB）
 - **認証**: `Authentication/` 配下に 1 トピック 1 ファイル（チャレンジレスポンス / S/KEY / 時刻同期方式 / ゼロ知識証明 / RADIUS / AAAフレームワーク / Kerberos / SAML / OAuth）。IEEE 802.1X は `Networking/無線LAN/` にある
 - **PKI**: `PKI/` 配下に `X.509証明書とは.md` と HTML 記事（PKIとは / CA・RA・IA・VA / 認証局の階層構造とルート証明書 / DV・OV・EV / CRLとOCSP / タイムスタンプとTSA / GPKI / XMLデジタル署名 / ASN.1）
-- **TLS**: `TLS/` 配下に 1 トピック 1 ファイル（プレマスタシークレット / Recordプロトコル / DTLS）
+- **TLS**: `TLS/` 配下に 1 トピック 1 ファイル（プレマスタシークレット / Recordプロトコル / DTLS / TCP 上で動作する理由）。ダウングレード系の攻撃は `Cyber Attacks/23`〜`25` にある
 - **カード決済**: `Payments/SETと3Dセキュア.html`
 - **物理セキュリティ**: `Hardware Security/` 配下に 1 トピック 1 ファイル（耐タンパ性 / UEFIとセキュアブート / ICカードと磁気カード / RFID）
 - **メール形式**: `Networking/メール/` に MIME / S/MIME / Base64 を追加済み。`Networking/SOAP.html` あり

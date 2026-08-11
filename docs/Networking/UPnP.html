@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UPnP を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>UPnP — 誰も申請していないのにポートが開いている</h1>
+<p class="lede">機器が自分でルータに穴を開ける仕組み。便利さと引き換えに何を渡しているか。</p>
+
+<h2>何が問題なのか</h2>
+<p>NAT の内側にいる端末は、外から接続を受けられない。ゲーム機や P2P アプリ、一部のビデオ会議は「外から着信を受ける」必要があるので、本来ならルータでポート開放の設定をしなければならない。<strong>ところが実際には、何も設定していないのに動く。</strong></p>
+<p>誰がポートを開けたのか。アプリ自身が、ルータに「このポートを自分宛に転送してくれ」と頼んで開けさせている。この頼み方の仕組みが <strong>UPnP</strong>（Universal Plug and Play）、正確にはその中の <strong>IGD</strong>（Internet Gateway Device）という機能。つまり<strong>LAN 内の端末が、管理者を通さずに NAT の穴を作れる</strong>。</p>
+
+<h2>3 ステップで「探して・調べて・命令する」</h2>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="UPnPの3段階。SSDPでの発見、XMLでの機能取得、SOAPでのポートマッピング要求">
+  <rect x="8" y="30" width="150" height="180" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="83" y="52" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">PC 上のアプリ</text>
+  <rect x="520" y="30" width="170" height="180" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="605" y="52" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">ルータ（IGD）</text>
+
+  <g font-size="11">
+    <path d="M158 82 L518 82" stroke="var(--c1)" stroke-width="1.8" fill="none" marker-end="url(#u1)"/>
+    <text x="338" y="76" fill="var(--c1)" text-anchor="middle" font-weight="600">① 発見：SSDP（UDP 1900 マルチキャスト）</text>
+    <text x="338" y="96" fill="var(--muted)" text-anchor="middle">「この LAN にゲートウェイはいますか」</text>
+
+    <path d="M518 128 L160 128" stroke="var(--c3)" stroke-width="1.8" fill="none" marker-end="url(#u2)"/>
+    <text x="338" y="122" fill="var(--c3)" text-anchor="middle" font-weight="600">② 機能取得：HTTP で XML を返す</text>
+    <text x="338" y="142" fill="var(--muted)" text-anchor="middle">「私はこの URL でこの操作を受け付けます」</text>
+
+    <path d="M158 178 L518 178" stroke="var(--c2)" stroke-width="1.8" fill="none" marker-end="url(#u3)"/>
+    <text x="338" y="172" fill="var(--c2)" text-anchor="middle" font-weight="600">③ 実行：SOAP で AddPortMapping</text>
+    <text x="338" y="192" fill="var(--muted)" text-anchor="middle">「外部 12345 番を 192.168.1.20:12345 へ」</text>
+  </g>
+
+  <rect x="530" y="196" width="150" height="0" fill="none"/>
+  <text x="8" y="228" font-size="11" fill="var(--stop)" font-weight="600">③ に認証はない。LAN 内にいること自体が「許可された」ことの証明として扱われる。</text>
+  <defs>
+    <marker id="u1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="u2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="u3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+  </defs>
+</svg>
+<figcaption>UPnP は 1990 年代末の家庭 LAN を前提に設計された。「家の中の機器は信頼できる」という前提があり、そこに認証を置かなかった。<a href="SOAP.html">SOAP</a> や HTTP といった Web の技術をそのまま使っているので、実装も簡単だった。</figcaption>
+</figure>
+
+<h2>その前提が崩れると何が起きるか</h2>
+<p>「LAN 内にいれば信頼できる」は、LAN 内の 1 台がマルウェアに感染した瞬間に崩れる。マルウェアは同じ手順を踏むだけで、<strong>自分宛のポートを外向きに開ける</strong>。境界のファイアウォールを迂回するのではなく、正規の機能で穴を開けさせるので、ルータのログにも異常として残らない。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="マルウェアがUPnPで自分宛のポートマッピングを追加し、外部から直接到達可能になる図">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">本来ブロックされるはずの外部からの着信が通る</text>
+
+  <rect x="8" y="40" width="130" height="120" rx="8" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="73" y="62" font-size="11.5" fill="var(--muted)" text-anchor="middle">インターネット</text>
+  <rect x="24" y="80" width="98" height="30" rx="5" fill="var(--stop)"/>
+  <text x="73" y="100" font-size="11" fill="var(--on)" text-anchor="middle">攻撃者</text>
+
+  <rect x="250" y="40" width="90" height="120" rx="8" fill="var(--c1)"/>
+  <text x="295" y="90" font-size="11.5" fill="var(--on)" text-anchor="middle">ルータ</text>
+  <text x="295" y="110" font-size="11.5" fill="var(--on)" text-anchor="middle">NAT</text>
+
+  <rect x="450" y="40" width="240" height="120" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="570" y="62" font-size="11.5" fill="var(--muted)" text-anchor="middle">社内 LAN</text>
+  <rect x="480" y="80" width="180" height="34" rx="5" fill="var(--c2)"/>
+  <text x="570" y="102" font-size="11" fill="var(--on)" text-anchor="middle">感染した端末（192.168.1.20）</text>
+
+  <path d="M480 130 L340 130" stroke="var(--c2)" stroke-width="1.8" fill="none" marker-end="url(#p1)"/>
+  <text x="410" y="148" font-size="10.5" fill="var(--c2)" text-anchor="middle">UPnP で</text>
+  <text x="410" y="162" font-size="10.5" fill="var(--c2)" text-anchor="middle">ポート開放を要求</text>
+
+  <path d="M138 95 L248 95" stroke="var(--stop)" stroke-width="2" fill="none" marker-end="url(#p2)"/>
+  <path d="M342 95 L478 95" stroke="var(--stop)" stroke-width="2" fill="none" marker-end="url(#p2)"/>
+  <text x="190" y="86" font-size="10.5" fill="var(--stop)">着信</text>
+  <text x="360" y="86" font-size="10.5" fill="var(--stop)">そのまま転送</text>
+
+  <text x="8" y="186" font-size="11" fill="var(--muted)">外向き通信だけを許していたつもりが、内側から開けられた穴で双方向になる。遠隔操作の受け口や、踏み台の待ち受けに使われる。</text>
+  <defs>
+    <marker id="p1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="p2" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="var(--stop)"/></marker>
+  </defs>
+</svg>
+<figcaption>もう 1 つの典型が、UPnP/SSDP を<strong>WAN 側に晒してしまっている</strong>ルータ。UDP 1900 番への小さな問い合わせに対して大きな応答を返すため、送信元を詐称した SSDP リフレクション攻撃の増幅器として使われる（<a href="../Cyber Attacks/15_DDoS_枯渇型と反射増幅型.html">反射増幅型 DDoS</a>）。設定ミスと古いファームウェアの組み合わせで、いまも大量に残っている。</figcaption>
+</figure>
+
+<h2>どうするか</h2>
+<ul>
+<li><strong>業務ネットワークのルータでは UPnP を無効にする。</strong>外部からの着信が必要なら、申請を受けて管理者が明示的にポート開放する。何が開いているかを管理者が把握できる状態を保つ、というだけの話。</li>
+<li><strong>WAN 側の UDP 1900 を閉じる。</strong>外向けに UPnP/SSDP が応答していないか、外部から確認する。</li>
+<li><strong>家庭・小規模拠点では止められないこともある。</strong>その場合はルータの管理画面でポートマッピング一覧を定期的に見て、身に覚えのない転送設定がないかを確認する。</li>
+</ul>
+
+<div class="note">
+<p><strong>「UPnP を切ると何が動かなくなるか」を先に確認する</strong></p>
+<p>一律に無効化すると、ゲーム機・IP カメラ・一部の会議システムが繋がらなくなって差し戻される。無効化を提案するときは、その拠点で UPnP に依存している機器を洗い出し、代替（固定のポート開放、あるいは外向き通信だけで成立するクラウド経由の構成）とセットで出す。「危ないので切る」だけでは通らない。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://openconnectivity.org/developer/specifications/upnp-resources/upnp/">UPnP Device Architecture / IGD 仕様（Open Connectivity Foundation）</a></li>
+<li><a href="https://www.kb.cert.org/vuls/id/357851">CERT/CC VU#357851 - UPnP requests accepted over router WAN interfaces</a></li>
+<li><a href="https://www.jpcert.or.jp/at/2014/at140026.html">JPCERT/CC - SSDP を用いた DDoS 攻撃に関する注意喚起</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2020-12695">CVE-2020-12695（CallStranger）- UPnP SUBSCRIBE の悪用</a></li>
+</ul>
+
+</main>
+</body>
+</html>
