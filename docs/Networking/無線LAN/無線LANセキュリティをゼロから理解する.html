@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>無線 LAN セキュリティをゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 7rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+svg{width:100%;height:auto;display:block}
+svg text{font-family:inherit;font-size:12px;fill:var(--ink)}
+svg .s{font-size:10.5px;fill:var(--muted)}
+svg .b{font-weight:600}
+svg .box{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+svg .lane{fill:var(--lane);stroke:var(--line);stroke-width:1.5}
+svg .e1{stroke:var(--c1)}svg .e2{stroke:var(--c2)}svg .e3{stroke:var(--c3)}svg .e4{stroke:var(--c4)}
+svg .ex{stroke:var(--stop)}
+svg .t1{fill:var(--c1)}svg .t2{fill:var(--c2)}svg .t3{fill:var(--c3)}svg .t4{fill:var(--c4)}
+svg .tx{fill:var(--stop)}
+svg .ln{stroke:var(--wire);stroke-width:1.5;fill:none}
+svg .dash{stroke-dasharray:5 4}
+svg .arc{stroke:var(--c2);stroke-width:1.2;fill:none;opacity:.75}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:32rem}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--wire)"/></marker>
+<marker id="arx" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+</defs></svg>
+
+<main>
+
+<h1>無線 LAN セキュリティをゼロから理解する</h1>
+<p class="lede">WEP・TKIP・CCMP・WPA3・802.1X・EAP。バラバラに見える用語を、6 ステップで 1 本の線につなぎます。</p>
+
+<h2>この記事の目的</h2>
+
+<p>無線 LAN のセキュリティは、用語がとにかく多い。WEP、TKIP、CCMP、WPA、WPA2、WPA3、Enhanced Open、802.1X、EAPOL、EAP、EAP-TLS、PEAP……。試験対策で表を覚えても、少し形を変えて聞かれると答えられない。</p>
+
+<p>原因は、これらが<strong>並列に並んだ用語ではない</strong>ことにあります。実際には「暗号化」と「認証」という 2 本の柱があり、それぞれの柱の上で世代交代が起きているだけです。この構造が見えると、用語は覚えるものではなく、位置が分かるものになります。</p>
+
+<p>そこでこの記事は、あえて遠回りします。「電波はみんなに届く」という当たり前の話から始めて、6 ステップで WPA3 までたどり着きます。ゴールは用語を覚えることではなく、<strong>無線 LAN のセキュリティを自分の言葉で説明できるようになること</strong>です。最後に、そのまま口に出せる説明テンプレートを用意しました。</p>
+
+<div class="dg">
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>電波は全員に届く</li>
+<li><span class="n">STEP 2</span>WEP はなぜ壊れたか</li>
+<li><span class="n">STEP 3</span>暗号を作り直す</li>
+<li><span class="n">STEP 4</span>誰を入れるか</li>
+<li><span class="n">STEP 5</span>802.1X の中身</li>
+<li><span class="n">STEP 6</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+<p class="cap">STEP 2・3 が暗号化の柱、STEP 4・5 が認証の柱です。STEP 6 で 2 本の柱が 1 つにつながります。最新の WPA3 の話は最後だけですが、そこまでの 5 ステップがないと「WPA3 は何を直したのか」は理解できません。</p>
+</div>
+
+<h2>STEP 1：電波は全員に届く</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>電波は全員に届く</li>
+<li><span class="n">STEP 2</span>WEP はなぜ壊れたか</li>
+<li><span class="n">STEP 3</span>暗号を作り直す</li>
+<li><span class="n">STEP 4</span>誰を入れるか</li>
+<li><span class="n">STEP 5</span>802.1X の中身</li>
+<li><span class="n">STEP 6</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+
+<p>有線 LAN でよそのパソコンの通信を盗み見るには、その線に物理的に触る必要があります。ケーブルを抜き差しできる場所に入れるかどうかが、そのまま関門になっている。</p>
+
+<p>無線 LAN にはその関門がありません。電波は宛先を選んで飛ぶことができないので、<strong>届く範囲にいる全員が、すべてのフレームを受信できます</strong>。隣のビルからでも、道路に停めた車の中からでも受信できる。これが無線 LAN セキュリティのすべての出発点です。</p>
+
+<div class="dg">
+<p class="ttl">有線と無線で、何が違うのか</p>
+<svg viewBox="0 0 640 210" role="img" aria-label="有線はケーブルに触れないと読めないが、無線は届く範囲の全員が受信できる">
+  <rect x="4" y="4" width="304" height="200" rx="10" class="lane"/>
+  <text x="20" y="28" class="b">有線 LAN</text>
+  <rect x="30" y="60" width="90" height="44" rx="8" class="box e1"/>
+  <text x="75" y="87" text-anchor="middle">PC</text>
+  <rect x="190" y="60" width="90" height="44" rx="8" class="box e1"/>
+  <text x="235" y="87" text-anchor="middle">スイッチ</text>
+  <line x1="120" y1="82" x2="190" y2="82" class="ln"/>
+  <rect x="100" y="140" width="110" height="40" rx="8" class="box ex dash"/>
+  <text x="155" y="165" text-anchor="middle" class="tx">第三者</text>
+  <text x="155" y="196" text-anchor="middle" class="s">線に触れないと読めない</text>
+
+  <rect x="332" y="4" width="304" height="200" rx="10" class="lane"/>
+  <text x="348" y="28" class="b">無線 LAN</text>
+  <rect x="440" y="52" width="90" height="40" rx="8" class="box e2"/>
+  <text x="485" y="77" text-anchor="middle">AP</text>
+  <path d="M485 100 a70 70 0 0 0 -70 70" class="arc"/>
+  <path d="M485 100 a70 70 0 0 1 70 70" class="arc"/>
+  <path d="M485 100 a105 105 0 0 0 -105 105" class="arc"/>
+  <path d="M485 100 a105 105 0 0 1 105 105" class="arc"/>
+  <rect x="350" y="120" width="86" height="38" rx="8" class="box e1"/>
+  <text x="393" y="144" text-anchor="middle">PC</text>
+  <rect x="534" y="120" width="86" height="38" rx="8" class="box ex dash"/>
+  <text x="577" y="144" text-anchor="middle" class="tx">第三者</text>
+  <text x="485" y="196" text-anchor="middle" class="s">同じ電波が、区別なく全員に届く</text>
+</svg>
+<p class="cap">受信そのものは止められません。アンテナを立てられたら終わりです。だから無線 LAN は「届いてしまうこと」を前提に、届いた後で困らないようにする方向で設計されています。</p>
+</div>
+
+<h3>やることは 2 つしかない</h3>
+
+<p>「届いてしまう」ことを前提にすると、対策は 2 つに分かれます。</p>
+
+<ul>
+<li><strong>暗号化</strong>：受信されても<em>中身を読ませない</em>。盗聴と改ざんへの対策</li>
+<li><strong>認証</strong>：そもそも<em>知らない人を参加させない</em>。ただ乗りと内部への侵入への対策</li>
+</ul>
+
+<p>この 2 つは目的が別なので、<strong>別々に進化してきました</strong>。暗号化の柱が WEP → TKIP → CCMP、認証の柱が 共有パスワード → IEEE 802.1X、という具合です。冒頭に挙げた用語は、全部このどちらかの柱の上にあります。</p>
+
+<div class="tw">
+<table>
+<tr><th>柱</th><th>解きたい問題</th><th>この記事で出てくる用語</th></tr>
+<tr><td>暗号化</td><td>受信されても読まれない・書き換えられない</td><td>WEP／IV／TKIP／CCMP／MIC</td></tr>
+<tr><td>認証</td><td>入っていい人だけ入れる</td><td>PSK／パーソナル／エンタープライズ／802.1X／EAPOL／EAP</td></tr>
+<tr><td>世代の名前</td><td>上の 2 つを「この組み合わせで使う」と決めたパッケージ</td><td>WPA／WPA2／WPA3／Enhanced Open</td></tr>
+</table>
+</div>
+
+<p><strong>WPA・WPA2・WPA3 は、暗号方式でも認証方式でもありません。</strong>「この世代では暗号はこれ、認証はこれを使う」と束ねた<em>パッケージの名前</em>です。ここを混ぜないことが、最初の分かれ道になります。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　「暗号化しているから、知らない人が繋いでも問題ない」——この考え方はどこが間違っているでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>暗号化は「外から読まれないこと」しか保証しないからです。</strong></p>
+<p>繋がった相手は暗号の中に入ってきた人なので、暗号化の恩恵をそのまま受けます。社内ネットワークに直接アクセスされますし、後で見るように、同じパスワードを知っている人どうしは互いの通信も読めてしまいます。だから暗号化と認証は、どちらか一方では足りません。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：WEP はなぜ壊れたか</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>電波は全員に届く</li>
+<li class="now"><span class="n">STEP 2</span>WEP はなぜ壊れたか</li>
+<li><span class="n">STEP 3</span>暗号を作り直す</li>
+<li><span class="n">STEP 4</span>誰を入れるか</li>
+<li><span class="n">STEP 5</span>802.1X の中身</li>
+<li><span class="n">STEP 6</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+
+<p>最初の暗号化方式が <strong>WEP</strong>（Wired Equivalent Privacy）です。「有線と同等の privacy」という名前のとおり、STEP 1 の落差を埋めるために作られました。</p>
+
+<p>WEP は今どこでも使うなと言われている方式ですが、<strong>WEP の壊れ方を知らないと、後続の TKIP も CCMP も「なぜそういう作りなのか」が分かりません</strong>。ここが記事の中でいちばん重要なステップです。</p>
+
+<h3>ストリーム暗号と、IV という部品</h3>
+
+<p>WEP は RC4 というストリーム暗号を使います。ストリーム暗号は、鍵を種にして<strong>乱数の列（キーストリーム）を作り、データと 1 ビットずつ XOR する</strong>方式です。受け取った側は同じキーストリームをもう一度作って XOR すれば元に戻ります。</p>
+
+<p>ここで問題になるのが、無線 LAN の合言葉（共有鍵）は<strong>全員共通で、ずっと変わらない</strong>ことです。鍵が同じなら、種が同じ。種が同じなら、キーストリームも毎回まったく同じ列になってしまいます。</p>
+
+<p>そこで WEP は、共有鍵にフレームごとに変わる数値をくっつけてから種にしました。この「毎回変える数値」が <strong>IV（Initialization Vector、初期化ベクトル）</strong>です。受信側も同じ IV を知らないと復号できないので、<strong>IV は暗号化せず、そのままフレームに付けて送ります</strong>。</p>
+
+<div class="dg">
+<p class="ttl">WEP の暗号化と、IV が一周したときに起きること</p>
+<svg viewBox="0 0 640 300" role="img" aria-label="WEP は共有鍵と 24 ビットの IV から RC4 のキーストリームを作る。IV が再利用されると同じキーストリームが再登場する">
+  <rect x="10" y="14" width="130" height="38" rx="8" class="box e1"/>
+  <text x="75" y="32" text-anchor="middle">共有鍵</text>
+  <text x="75" y="46" text-anchor="middle" class="s">全員共通・固定</text>
+  <rect x="10" y="66" width="130" height="38" rx="8" class="box e2"/>
+  <text x="75" y="84" text-anchor="middle">IV（24 ビット）</text>
+  <text x="75" y="98" text-anchor="middle" class="s">フレームごとに変える</text>
+  <path d="M140 33 L188 50" class="ln" marker-end="url(#ar)"/>
+  <path d="M140 85 L188 68" class="ln" marker-end="url(#ar)"/>
+  <rect x="192" y="38" width="96" height="42" rx="8" class="box e4"/>
+  <text x="240" y="64" text-anchor="middle">RC4</text>
+  <path d="M288 59 L336 59" class="ln" marker-end="url(#ar)"/>
+  <rect x="340" y="38" width="130" height="42" rx="8" class="box e4"/>
+  <text x="405" y="57" text-anchor="middle">キーストリーム</text>
+  <text x="405" y="72" text-anchor="middle" class="s">乱数の列</text>
+  <path d="M470 59 L512 59" class="ln" marker-end="url(#ar)"/>
+  <text x="530" y="64" class="b t4">XOR</text>
+  <rect x="340" y="100" width="130" height="34" rx="8" class="box"/>
+  <text x="405" y="122" text-anchor="middle">平文</text>
+  <path d="M470 117 L520 117 L520 76" class="ln"/>
+  <rect x="556" y="38" width="74" height="42" rx="8" class="box e3"/>
+  <text x="593" y="64" text-anchor="middle">暗号文</text>
+  <text x="593" y="96" text-anchor="middle" class="s">IV は平文の</text>
+  <text x="593" y="110" text-anchor="middle" class="s">まま付けて送る</text>
+
+  <line x1="10" y1="156" x2="630" y2="156" stroke="var(--line)" stroke-width="1"/>
+  <text x="10" y="180" class="b tx">24 ビット ＝ 約 1,670 万通りしかない</text>
+  <text x="10" y="202" class="s">混雑した AP では数時間で使い切り、同じ IV が再び登場する</text>
+
+  <rect x="10" y="216" width="290" height="66" rx="8" class="lane"/>
+  <text x="26" y="238">1 通目：IV=<tspan class="tx">A</tspan> ＋ 共有鍵</text>
+  <text x="26" y="258">2 通目：IV=<tspan class="tx">A</tspan> ＋ 共有鍵（再利用）</text>
+  <text x="26" y="276" class="s">→ まったく同じキーストリームで暗号化される</text>
+  <path d="M300 249 L336 249" class="ln" marker-end="url(#arx)" stroke="var(--stop)"/>
+  <rect x="340" y="216" width="290" height="66" rx="8" class="lane"/>
+  <text x="356" y="238">暗号文1 XOR 暗号文2</text>
+  <text x="356" y="258" class="b tx">＝ 平文1 XOR 平文2</text>
+  <text x="356" y="276" class="s">鍵が式から消える。中身の推測が始められる</text>
+</svg>
+<p class="cap">同じキーストリームで暗号化された 2 つの暗号文を XOR すると、キーストリームの項が打ち消し合って消えます。攻撃者は鍵を知らないまま、平文どうしの関係を手に入れます。実際の WEP はこれに加えて RC4 の鍵生成の弱点も突かれ、IV を大量に集めるだけで<strong>共有鍵そのものが復元</strong>できるところまで行きました。</p>
+</div>
+
+<h3>もう 1 つの欠陥：改ざんを検知できなかった</h3>
+
+<p>WEP はデータの壊れを調べるために CRC-32 を付けていました。しかし CRC は<em>通信エラーを見つけるための仕組み</em>であって、悪意のある書き換えを見つけるためのものではありません。攻撃者は暗号文の特定のビットを反転させ、それに合わせて CRC 側も辻褄が合うように反転させられます。中身を読めないまま、中身を書き換えられるということです。</p>
+
+<div class="note">
+<p><strong>WEP が残した 2 つの教訓。</strong>これがそのまま次世代の設計要件になります。</p>
+<ul>
+<li>同じ鍵（同じキーストリーム）を二度使ってはいけない → 鍵はフレームごとに変える</li>
+<li>暗号化と改ざん検知は別物 → 暗号化とセットで<strong>MIC（メッセージ認証符号）</strong>が要る</li>
+</ul>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　IV は暗号化されずにフレームへ付けて送られます。これは設計ミスでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>ミスではありません。IV は秘密である必要がないからです。</strong></p>
+<p>受信側は「共有鍵＋その IV」で同じキーストリームを作り直す必要があるので、IV は相手に伝わらなければ機能しません。秘密なのはあくまで共有鍵のほうです。WEP の問題は IV が見えることではなく、<strong>IV が 24 ビットしかなく、すぐ一周してしまうこと</strong>でした。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：暗号を作り直す（TKIP・CCMP・WPA・WPA2）</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>電波は全員に届く</li>
+<li class="done"><span class="n">STEP 2 ✓</span>WEP はなぜ壊れたか</li>
+<li class="now"><span class="n">STEP 3</span>暗号を作り直す</li>
+<li><span class="n">STEP 4</span>誰を入れるか</li>
+<li><span class="n">STEP 5</span>802.1X の中身</li>
+<li><span class="n">STEP 6</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+
+<p>WEP が破られたとき、正しい直し方は「RC4 をやめて AES にする」でした。ところが当時世の中に出回っていた無線チップは RC4 しか処理できず、AES に変えるには<strong>全世界の機器を買い替える</strong>必要がありました。</p>
+
+<p>そこで手が 2 つに分かれます。<strong>買い替えずに今すぐ塞ぐ道（TKIP）</strong>と、<strong>時間をかけて正しく作り直す道（CCMP）</strong>です。この 2 択の存在が、WPA と WPA2 という 2 つの名前が生まれた理由です。</p>
+
+<div class="dg">
+<p class="ttl">応急処置としての TKIP と、本命の CCMP</p>
+<svg viewBox="0 0 640 250" role="img" aria-label="TKIP は RC4 の周りに部品を足した応急処置、CCMP は AES で暗号化と改ざん検知を一体化した本命">
+  <rect x="6" y="6" width="304" height="238" rx="10" class="lane"/>
+  <text x="22" y="30" class="b t2">TKIP（WPA）</text>
+  <text x="22" y="48" class="s">既存ハードのまま、ファームウェア更新で載せる</text>
+  <rect x="105" y="140" width="106" height="42" rx="8" class="box e2"/>
+  <text x="158" y="166" text-anchor="middle">RC4</text>
+  <text x="158" y="200" text-anchor="middle" class="s">中身は WEP と同じ</text>
+  <text x="158" y="216" text-anchor="middle" class="s">変えられなかった部分</text>
+  <rect x="22" y="64" width="128" height="36" rx="8" class="box e3"/>
+  <text x="86" y="80" text-anchor="middle" class="s">IV を 48 ビットに</text>
+  <text x="86" y="94" text-anchor="middle" class="s">一周させない</text>
+  <rect x="166" y="64" width="128" height="36" rx="8" class="box e3"/>
+  <text x="230" y="80" text-anchor="middle" class="s">鍵ミキシング</text>
+  <text x="230" y="94" text-anchor="middle" class="s">1 フレーム 1 鍵</text>
+  <rect x="94" y="106" width="128" height="26" rx="8" class="box e3"/>
+  <text x="158" y="124" text-anchor="middle" class="s">MIC（改ざん検知）</text>
+  <path d="M86 100 L120 138" class="ln"/>
+  <path d="M230 100 L196 138" class="ln"/>
+
+  <rect x="330" y="6" width="304" height="238" rx="10" class="lane"/>
+  <text x="346" y="30" class="b t1">CCMP（WPA2）</text>
+  <text x="346" y="48" class="s">AES 対応の新しいハードが要る</text>
+  <rect x="380" y="80" width="204" height="102" rx="8" class="box e1"/>
+  <text x="482" y="106" text-anchor="middle" class="b">AES（CCM モード）</text>
+  <line x1="400" y1="120" x2="564" y2="120" stroke="var(--line)"/>
+  <text x="482" y="142" text-anchor="middle" class="s">暗号化（CTR）</text>
+  <text x="482" y="164" text-anchor="middle" class="s">＋ 改ざん検知（CBC-MAC）</text>
+  <text x="482" y="206" text-anchor="middle" class="s">2 つの役割を 1 つの方式で</text>
+  <text x="482" y="222" text-anchor="middle" class="s">まとめて実現している</text>
+</svg>
+<p class="cap">TKIP は STEP 2 の教訓「鍵を使い回さない」「MIC を付ける」を、RC4 を残したまま外付けで満たした構造です。設計としてはつぎはぎで、後に一部の攻撃も見つかりました。今の機器で TKIP を有効にすると、規格上 802.11n 以降の高速通信も使えなくなります。</p>
+</div>
+
+<h3>WPA と WPA2 は「パッケージの名前」</h3>
+
+<p>ここで STEP 1 の話に戻ります。WPA と WPA2 は暗号方式ではなく、Wi-Fi Alliance が付けた<strong>認証プログラム（パッケージ）の名前</strong>です。</p>
+
+<div class="tw">
+<table>
+<tr><th></th><th>WPA</th><th>WPA2</th><th>WPA3</th></tr>
+<tr><td>登場</td><td>2003 年</td><td>2004 年</td><td>2018 年</td></tr>
+<tr><td>位置づけ</td><td>IEEE 802.11i の完成を待たずに前倒しした暫定版</td><td>802.11i の完成版に対応</td><td>WPA2 の弱点を塞いだ現行世代</td></tr>
+<tr><td>暗号</td><td>TKIP</td><td>CCMP（必須）／TKIP（互換のため許容）</td><td>CCMP 以上</td></tr>
+<tr><td>接続の入口</td><td colspan="2">パーソナル（共有パスワード）／エンタープライズ（802.1X）</td><td>SAE ／ エンタープライズ</td></tr>
+</table>
+</div>
+
+<p>WPA2 は CCMP が必須ですが、古い機器と繋ぐために<strong>TKIP も併用できる設定が残っています</strong>。「WPA2 にしてあるから AES」とは限らない、というのは実務でよく踏む落とし穴です。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　TKIP は RC4 を使い続けています。それでも WEP より安全と言えるのはなぜでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>WEP の壊れ方の原因が、RC4 そのものではなく「鍵の作り方」だったからです。</strong></p>
+<p>TKIP は IV を 48 ビットに広げて一周しないようにし、さらにフレームごとに違う RC4 鍵を組み立てます。同じキーストリームが二度出てこないので、STEP 2 の XOR の話が成立しません。加えて MIC で改ざんも検知します。ただしこれは延命策であり、今から選ぶ理由はありません。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：誰を入れるか（パーソナルとエンタープライズ）</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>電波は全員に届く</li>
+<li class="done"><span class="n">STEP 2 ✓</span>WEP はなぜ壊れたか</li>
+<li class="done"><span class="n">STEP 3 ✓</span>暗号を作り直す</li>
+<li class="now"><span class="n">STEP 4</span>誰を入れるか</li>
+<li><span class="n">STEP 5</span>802.1X の中身</li>
+<li><span class="n">STEP 6</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+
+<p>ここから認証の柱に移ります。暗号方式が何であれ、<strong>「その鍵を誰に渡すか」を決める仕組みが別に要ります</strong>。WPA には最初からこれが 2 種類あり、それが<strong>パーソナルモード</strong>と<strong>エンタープライズモード</strong>です。</p>
+
+<div class="dg">
+<p class="ttl">合言葉を配るか、一人ひとりを確かめるか</p>
+<svg viewBox="0 0 640 260" role="img" aria-label="パーソナルは全員が同じ合言葉を共有する。エンタープライズは利用者ごとのアカウントを認証サーバで確認する">
+  <rect x="6" y="6" width="304" height="248" rx="10" class="lane"/>
+  <text x="22" y="30" class="b t2">パーソナル（PSK）</text>
+  <rect x="112" y="46" width="92" height="34" rx="8" class="box e2"/>
+  <text x="158" y="68" text-anchor="middle">AP</text>
+  <text x="158" y="100" text-anchor="middle" class="s">合言葉「abc123…」1 つ</text>
+  <rect x="24" y="116" width="76" height="32" rx="8" class="box e1"/>
+  <text x="62" y="137" text-anchor="middle" class="s">社員 A</text>
+  <rect x="120" y="116" width="76" height="32" rx="8" class="box e1"/>
+  <text x="158" y="137" text-anchor="middle" class="s">社員 B</text>
+  <rect x="216" y="116" width="76" height="32" rx="8" class="box e1"/>
+  <text x="254" y="137" text-anchor="middle" class="s">退職者</text>
+  <path d="M158 82 L62 114" class="ln"/><path d="M158 82 L158 114" class="ln"/>
+  <path d="M158 82 L254 114" class="ln"/>
+  <text x="158" y="176" text-anchor="middle" class="s tx">全員が同じ合言葉を知っている</text>
+  <text x="158" y="200" text-anchor="middle" class="s">・1 人辞めたら全端末で変更</text>
+  <text x="158" y="220" text-anchor="middle" class="s">・ログを見ても誰か分からない</text>
+  <text x="158" y="240" text-anchor="middle" class="s">・知っている人どうしは互いを覗ける</text>
+
+  <rect x="330" y="6" width="304" height="248" rx="10" class="lane"/>
+  <text x="346" y="30" class="b t1">エンタープライズ（802.1X）</text>
+  <rect x="436" y="46" width="92" height="34" rx="8" class="box e2"/>
+  <text x="482" y="68" text-anchor="middle">AP</text>
+  <rect x="546" y="46" width="80" height="34" rx="8" class="box e3"/>
+  <text x="586" y="68" text-anchor="middle" class="s">認証サーバ</text>
+  <path d="M528 63 L544 63" class="ln" marker-end="url(#ar)"/>
+  <text x="482" y="100" text-anchor="middle" class="s">利用者ごとに ID とパスワード／証明書</text>
+  <rect x="348" y="116" width="76" height="32" rx="8" class="box e1"/>
+  <text x="386" y="137" text-anchor="middle" class="s">社員 A</text>
+  <rect x="444" y="116" width="76" height="32" rx="8" class="box e1"/>
+  <text x="482" y="137" text-anchor="middle" class="s">社員 B</text>
+  <rect x="540" y="116" width="76" height="32" rx="8" class="box ex dash"/>
+  <text x="578" y="137" text-anchor="middle" class="s tx">退職者</text>
+  <path d="M482 82 L386 114" class="ln"/><path d="M482 82 L482 114" class="ln"/>
+  <path d="M482 82 L578 114" class="ln ex dash"/>
+  <text x="482" y="176" text-anchor="middle" class="s t3">1 人分だけ止められる</text>
+  <text x="482" y="200" text-anchor="middle" class="s">・他の端末は設定変更なし</text>
+  <text x="482" y="220" text-anchor="middle" class="s">・誰が繋いだかログに残る</text>
+  <text x="482" y="240" text-anchor="middle" class="s">・鍵も利用者ごとに別になる</text>
+</svg>
+<p class="cap">パーソナルの最大の問題は、退職者よりむしろ<strong>「同じ合言葉を知る人からは守られない」</strong>点です。合言葉が同じなら、他人の接続の瞬間を電波で捉えることで、その人の通信鍵まで導き出せます。カフェの共有パスワード方式が安心でない理由がこれです。</p>
+</div>
+
+<p>名前が紛らわしいのですが、<strong>パーソナルとエンタープライズで暗号の強さは変わりません</strong>。どちらも CCMP を使います。違うのは「鍵をどう配るか」だけです。ここは STEP 6 でもう一度出てきます。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　小さな事務所で、Wi-Fi のパスワードを 20 文字のランダムな文字列にしました。これでエンタープライズと同等になったと言えるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>言えません。</strong>長いパスワードは総当たり攻撃には効きますが、パーソナルのもう 1 つの問題は解決しません。</p>
+<p>その合言葉を知っている人（＝社内の全員、それを教えられた来客）は、他の人の通信を復号できる立場に立てます。「誰が接続したか」も記録に残りません。人ごとに分けたいならエンタープライズが必要です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：802.1X の中身（EAPOL と EAP）</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>電波は全員に届く</li>
+<li class="done"><span class="n">STEP 2 ✓</span>WEP はなぜ壊れたか</li>
+<li class="done"><span class="n">STEP 3 ✓</span>暗号を作り直す</li>
+<li class="done"><span class="n">STEP 4 ✓</span>誰を入れるか</li>
+<li class="now"><span class="n">STEP 5</span>802.1X の中身</li>
+<li><span class="n">STEP 6</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+
+<p>エンタープライズモードの正体が <strong>IEEE 802.1X</strong> です。ここで多くの人がつまずくのは、802.1X・EAPOL・EAP・RADIUS という 4 つの名前が同時に出てくるからです。この 4 つは競合する選択肢ではなく、<strong>役割が違う部品</strong>です。1 枚の図で片が付きます。</p>
+
+<h3>まず登場人物が 3 人</h3>
+
+<div class="dg">
+<p class="ttl">802.1X の 3 者と、名前の担当範囲</p>
+<svg viewBox="0 0 640 300" role="img" aria-label="サプリカント、オーセンティケータ、認証サーバの 3 者。無線区間は EAPOL、有線区間は RADIUS、EAP は端から端まで">
+  <rect x="14" y="60" width="140" height="62" rx="8" class="box e1"/>
+  <text x="84" y="86" text-anchor="middle" class="b">端末</text>
+  <text x="84" y="106" text-anchor="middle" class="s">サプリカント</text>
+  <rect x="250" y="60" width="140" height="62" rx="8" class="box e2"/>
+  <text x="320" y="86" text-anchor="middle" class="b">AP／スイッチ</text>
+  <text x="320" y="106" text-anchor="middle" class="s">オーセンティケータ</text>
+  <rect x="486" y="60" width="140" height="62" rx="8" class="box e3"/>
+  <text x="556" y="86" text-anchor="middle" class="b">認証サーバ</text>
+  <text x="556" y="106" text-anchor="middle" class="s">RADIUS サーバ</text>
+
+  <path d="M154 91 L246 91" class="ln" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <text x="200" y="46" text-anchor="middle" class="s t4">EAPOL</text>
+  <text x="200" y="30" text-anchor="middle" class="s">無線区間</text>
+  <path d="M390 91 L482 91" class="ln" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <text x="436" y="46" text-anchor="middle" class="s t4">RADIUS</text>
+  <text x="436" y="30" text-anchor="middle" class="s">有線区間</text>
+
+  <path d="M84 132 L84 150 L556 150 L556 132" class="ln e1 dash" stroke="var(--c1)"/>
+  <text x="320" y="172" text-anchor="middle" class="t1 b">EAP：端から端まで（AP は中身を読まずに詰め替えるだけ）</text>
+
+  <rect x="200" y="196" width="240" height="88" rx="8" class="lane"/>
+  <text x="320" y="218" text-anchor="middle" class="b">AP のポートは 2 段構え</text>
+  <rect x="214" y="230" width="102" height="42" rx="6" class="box ex"/>
+  <text x="265" y="248" text-anchor="middle" class="s tx">認証前</text>
+  <text x="265" y="264" text-anchor="middle" class="s">EAPOL だけ通す</text>
+  <path d="M320 251 L336 251" class="ln" marker-end="url(#ar)"/>
+  <rect x="338" y="230" width="90" height="42" rx="6" class="box e3"/>
+  <text x="383" y="248" text-anchor="middle" class="s t3">認証後</text>
+  <text x="383" y="264" text-anchor="middle" class="s">通常の通信を開放</text>
+  <text x="60" y="242" class="s">DHCP も業務通信も</text>
+  <text x="60" y="260" class="s">認証が済むまで通らない</text>
+  <path d="M186 252 L196 252" class="ln"/>
+</svg>
+<p class="cap">802.1X が「ポートベース認証」と呼ばれるのは、<strong>認証が済むまでポートを閉じておく</strong>という考え方だからです。無線 AP だけの話ではなく、有線スイッチのポートでもまったく同じ仕組みが使えます。</p>
+</div>
+
+<h3>EAPOL：IP が使えるようになる前に認証したい</h3>
+
+<p>認証は<strong>接続の入口</strong>で行われます。この時点で端末はまだ IP アドレスを持っていません。DHCP を通すには先にポートを開ける必要があり、ポートを開けるには先に認証が必要——という順番になっているからです。</p>
+
+<p>そこで、IP に頼らず<strong>イーサネットフレームに直接載せて認証のやりとりを運ぶ</strong>仕組みが要ります。それが <strong>EAPOL（EAP over LAN）</strong>です。EAPOL は認証データの<em>運び方</em>を決めているだけで、認証の中身には関与しません。</p>
+
+<h3>EAP：認証方式そのものではなく「枠」</h3>
+
+<p><strong>EAP（Extensible Authentication Protocol）</strong>は、名前のとおり拡張可能な<em>枠組み</em>です。「要求を送る／応答を返す／成功か失敗を返す」という進行の型だけを決めていて、<strong>実際に何で本人確認するかは中身を差し替えられます</strong>。</p>
+
+<p>なぜ枠にしたのか。パスワードで確認したい組織、証明書で確認したい組織、ワンタイムパスワードのトークンを使いたい組織があり、認証方式を 1 つに決められなかったからです。枠にしておけば、方式が増えても AP を作り直さずに済みます。実際、AP は EAP の中身を理解しないまま右から左へ流しているだけです。</p>
+
+<h3>EAP の種類：違いは「証明書を誰に配るか」</h3>
+
+<p>認証のやりとりをそのまま電波に流すと、パスワードに関する情報が漏れます。そこで多くの方式は<strong>先に暗号のトンネルを張り、その中で本人確認をします</strong>。この構図が分かると、名前の羅列は整理できます。</p>
+
+<div class="dg">
+<p class="ttl">証明書を両方に配るか、サーバ側だけにするか</p>
+<svg viewBox="0 0 640 250" role="img" aria-label="EAP-TLS は双方が証明書を持つ。PEAP と EAP-TTLS はサーバ証明書でトンネルを張り、その中でパスワード認証する">
+  <rect x="6" y="6" width="304" height="238" rx="10" class="lane"/>
+  <text x="22" y="30" class="b t1">EAP-TLS</text>
+  <rect x="30" y="56" width="106" height="46" rx="8" class="box e1"/>
+  <text x="83" y="76" text-anchor="middle" class="s">端末</text>
+  <text x="83" y="93" text-anchor="middle" class="s t1">証明書あり</text>
+  <rect x="180" y="56" width="106" height="46" rx="8" class="box e3"/>
+  <text x="233" y="76" text-anchor="middle" class="s">認証サーバ</text>
+  <text x="233" y="93" text-anchor="middle" class="s t3">証明書あり</text>
+  <path d="M136 79 L176 79" class="ln" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <text x="158" y="130" text-anchor="middle" class="s">互いに証明書を見せ合う</text>
+  <text x="158" y="150" text-anchor="middle" class="s">パスワードを一切使わない</text>
+  <text x="158" y="182" text-anchor="middle" class="s">最も強い。ただし全端末への</text>
+  <text x="158" y="200" text-anchor="middle" class="s">証明書の配布と失効管理が要る</text>
+
+  <rect x="330" y="6" width="304" height="238" rx="10" class="lane"/>
+  <text x="346" y="30" class="b t4">PEAP ／ EAP-TTLS</text>
+  <rect x="346" y="46" width="272" height="112" rx="10" class="box e4 dash"/>
+  <text x="482" y="68" text-anchor="middle" class="s t4">① サーバ証明書で TLS トンネルを張る</text>
+  <rect x="384" y="82" width="196" height="60" rx="8" class="box e2"/>
+  <text x="482" y="106" text-anchor="middle" class="s">② トンネルの中で</text>
+  <text x="482" y="126" text-anchor="middle" class="s">ID とパスワードを確認</text>
+  <text x="482" y="182" text-anchor="middle" class="s">端末に証明書を配らなくていい</text>
+  <text x="482" y="202" text-anchor="middle" class="s">＝ 導入しやすい</text>
+  <text x="482" y="226" text-anchor="middle" class="s tx">端末側でサーバ証明書の検証は必須</text>
+</svg>
+<p class="cap">端末に証明書を配らない方式では、<strong>「どの認証サーバ証明書を信じるか」の設定が生命線</strong>です。ここを空にしたまま配布すると、同じ名前を名乗る偽 AP に対して、利用者が素直に ID とパスワードを渡してしまいます。</p>
+</div>
+
+<div class="tw">
+<table>
+<tr><th>方式</th><th>端末に証明書</th><th>位置づけ</th></tr>
+<tr><td>EAP-TLS</td><td>必要</td><td>最も強い。配布・失効管理の手間を許容できるなら第一候補</td></tr>
+<tr><td>EAP-TTLS</td><td>不要</td><td>サーバ証明書でトンネルを張り、中は任意の方式が使える</td></tr>
+<tr><td>PEAP</td><td>不要</td><td>TTLS とほぼ同じ発想。中身は MSCHAPv2 が定番で、企業でよく使われる</td></tr>
+<tr><td>EAP-MD5</td><td>—</td><td>トンネルも相互認証もない。無線では使わない</td></tr>
+<tr><td>EAP-POTP</td><td>—</td><td>ワンタイムパスワードのトークンを使う方式</td></tr>
+</table>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　新しい EAP の方式を採用したいとき、AP のファームウェアを対応させる必要があるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>原則として必要ありません。</strong></p>
+<p>AP（オーセンティケータ）は EAP の中身を読まず、EAPOL と RADIUS の間で入れ物を詰め替えているだけだからです。方式を理解しているのは端末（サプリカント）と認証サーバの 2 者です。EAP をあえて「枠」として作った狙いがここに出ています。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 6：鍵ができるまで、そして WPA3</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>電波は全員に届く</li>
+<li class="done"><span class="n">STEP 2 ✓</span>WEP はなぜ壊れたか</li>
+<li class="done"><span class="n">STEP 3 ✓</span>暗号を作り直す</li>
+<li class="done"><span class="n">STEP 4 ✓</span>誰を入れるか</li>
+<li class="done"><span class="n">STEP 5 ✓</span>802.1X の中身</li>
+<li class="now"><span class="n">STEP 6</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+
+<p>ここまで、暗号化の柱と認証の柱を別々に見てきました。最後に、この 2 本が合流する場所を見ます。<strong>認証は「鍵の元」を作る工程</strong>だ、というのがその答えです。</p>
+
+<div class="dg">
+<p class="ttl">認証の結果から、実際の通信鍵ができるまで</p>
+<svg viewBox="0 0 640 240" role="img" aria-label="PSK または 802.1X の認証結果から PMK ができ、4 ウェイハンドシェイクで PTK を作って CCMP で暗号化する">
+  <rect x="10" y="30" width="140" height="46" rx="8" class="box e2"/>
+  <text x="80" y="50" text-anchor="middle" class="s b">パーソナル</text>
+  <text x="80" y="68" text-anchor="middle" class="s">合言葉（PSK）</text>
+  <rect x="10" y="94" width="140" height="46" rx="8" class="box e1"/>
+  <text x="80" y="114" text-anchor="middle" class="s b">エンタープライズ</text>
+  <text x="80" y="132" text-anchor="middle" class="s">802.1X ＋ EAP</text>
+  <path d="M150 53 L190 76" class="ln" marker-end="url(#ar)"/>
+  <path d="M150 117 L190 94" class="ln" marker-end="url(#ar)"/>
+  <rect x="194" y="62" width="120" height="46" rx="8" class="box e4"/>
+  <text x="254" y="82" text-anchor="middle" class="b">PMK</text>
+  <text x="254" y="99" text-anchor="middle" class="s">鍵の元</text>
+  <path d="M314 85 L354 85" class="ln" marker-end="url(#ar)"/>
+  <rect x="358" y="52" width="140" height="66" rx="8" class="box e3"/>
+  <text x="428" y="76" text-anchor="middle" class="s b">4 ウェイ</text>
+  <text x="428" y="94" text-anchor="middle" class="s b">ハンドシェイク</text>
+  <text x="428" y="111" text-anchor="middle" class="s">乱数を交換する</text>
+  <path d="M498 85 L538 85" class="ln" marker-end="url(#ar)"/>
+  <rect x="542" y="52" width="90" height="66" rx="8" class="box e1"/>
+  <text x="587" y="76" text-anchor="middle" class="b">PTK</text>
+  <text x="587" y="93" text-anchor="middle" class="s">この接続の</text>
+  <text x="587" y="110" text-anchor="middle" class="s">通信鍵</text>
+  <path d="M587 118 L587 150" class="ln" marker-end="url(#ar)"/>
+  <rect x="500" y="154" width="132" height="36" rx="8" class="box e1"/>
+  <text x="566" y="177" text-anchor="middle" class="s">CCMP で暗号化</text>
+
+  <rect x="10" y="154" width="470" height="76" rx="8" class="lane"/>
+  <text x="26" y="176" class="s tx b">パーソナルの弱点はこの図の左端にある</text>
+  <text x="26" y="196" class="s">合言葉が同じなら PMK も全員同じ。4 ウェイハンドシェイクは電波に流れるので、</text>
+  <text x="26" y="214" class="s">合言葉を知る人は他人の PTK を計算でき、攻撃者は録音して手元で合言葉を試せる。</text>
+</svg>
+<p class="cap">認証方式が何であれ、出口は同じ <strong>PMK</strong> です。だから AP から先の暗号化の作りは、パーソナルでもエンタープライズでも変わりません。違うのは PMK が全員共通か、利用者ごとに別かという 1 点だけです。</p>
+</div>
+
+<h3>WPA3：合言葉が短くても破られないようにする</h3>
+
+<p>上の図の左端が WPA2 パーソナルの弱点でした。攻撃者は AP に接続を試みる必要すらありません。<strong>誰かが接続する瞬間の 4 ウェイハンドシェイクを電波から拾って保存し、あとは手元のマシンで合言葉を片っ端から試せます</strong>。ネットワークに何度もアクセスしないので、失敗回数の制限も効きません。合言葉が短ければ現実的な時間で当てられます。</p>
+
+<p><strong>WPA3</strong> のパーソナルモードは、PSK から PMK を作る部分を <strong>SAE</strong> という鍵交換に置き換えました。SAE では、やりとりを録音しても、そこから合言葉を試すことができません。1 回試すには 1 回接続する必要があるので、AP 側で回数を制限できます。<strong>合言葉が弱いままでも成立させる</strong>のが WPA3 の狙いです。</p>
+
+<h3>Enhanced Open：合言葉がないネットワークを暗号化する</h3>
+
+<p>カフェや空港の Wi-Fi は、誰でも使えることが前提なので合言葉を配れません。従来はそのまま暗号化なし（オープン）で運用するしかなく、同じ場所にいる人には通信の中身がそのまま見えていました。</p>
+
+<p><strong>Enhanced Open</strong>（技術名は OWE）は、上の図の左端を<em>合言葉なしの鍵交換</em>に置き換えます。利用者の手順は今までどおり「選ぶだけ」なのに、通信は端末ごとに別の鍵で暗号化されます。</p>
+
+<div class="note">
+<p><strong>Enhanced Open は暗号化だけで、認証はしていません。</strong>相手が本物の AP かどうかは確かめていないので、同じ名前を名乗る偽 AP に繋がされる可能性は残ります。公衆 Wi-Fi では引き続き https や VPN が必要です。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　WPA3 パーソナルは CCMP を使い、WPA2 パーソナルも CCMP を使えます。同じ暗号方式なのに WPA3 のほうが安全と言われるのはなぜでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>変わったのは暗号方式ではなく、鍵の元（PMK）の作り方だからです。</strong></p>
+<p>暗号アルゴリズムがどれだけ強くても、鍵の元になる合言葉を当てられたら終わりです。WPA2 は合言葉を手元で試し放題という穴があり、WPA3 は SAE でそこを塞ぎました。「暗号の強さ」と「鍵にたどり着く難しさ」は別問題、という STEP 6 の図がそのまま答えになります。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：1 枚の地図と、説明テンプレート</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>電波は全員に届く</li>
+<li class="done"><span class="n">STEP 2 ✓</span>WEP はなぜ壊れたか</li>
+<li class="done"><span class="n">STEP 3 ✓</span>暗号を作り直す</li>
+<li class="done"><span class="n">STEP 4 ✓</span>誰を入れるか</li>
+<li class="done"><span class="n">STEP 5 ✓</span>802.1X の中身</li>
+<li class="done"><span class="n">STEP 6 ✓</span>鍵ができるまで、WPA3</li>
+</ol>
+</nav>
+
+<div class="dg">
+<p class="ttl">2 本の柱の年表</p>
+<svg viewBox="0 0 640 250" role="img" aria-label="暗号化の柱と認証の柱を、WEP から WPA3 までの年表に並べた図">
+  <text x="12" y="26" class="s">1999</text>
+  <text x="172" y="26" class="s">2003</text>
+  <text x="332" y="26" class="s">2004</text>
+  <text x="492" y="26" class="s">2018</text>
+  <line x1="10" y1="36" x2="630" y2="36" class="ln"/>
+  <text x="12" y="58" class="b t2">WEP</text>
+  <text x="172" y="58" class="b t2">WPA</text>
+  <text x="332" y="58" class="b t1">WPA2</text>
+  <text x="492" y="58" class="b t3">WPA3</text>
+
+  <rect x="10" y="76" width="620" height="70" rx="8" class="lane"/>
+  <text x="24" y="98" class="b">暗号化の柱</text>
+  <rect x="24" y="106" width="140" height="30" rx="6" class="box ex"/>
+  <text x="94" y="126" text-anchor="middle" class="s tx">RC4 ＋ IV 24 ビット</text>
+  <rect x="176" y="106" width="140" height="30" rx="6" class="box e2"/>
+  <text x="246" y="126" text-anchor="middle" class="s">TKIP（応急処置）</text>
+  <rect x="328" y="106" width="288" height="30" rx="6" class="box e1"/>
+  <text x="472" y="126" text-anchor="middle" class="s">CCMP（AES）＋ MIC</text>
+
+  <rect x="10" y="158" width="620" height="82" rx="8" class="lane"/>
+  <text x="24" y="180" class="b">認証の柱</text>
+  <rect x="24" y="188" width="140" height="42" rx="6" class="box ex"/>
+  <text x="94" y="206" text-anchor="middle" class="s tx">共有鍵を知っているか</text>
+  <text x="94" y="222" text-anchor="middle" class="s">だけ</text>
+  <rect x="176" y="188" width="288" height="42" rx="6" class="box e2"/>
+  <text x="320" y="206" text-anchor="middle" class="s">パーソナル（PSK）</text>
+  <text x="320" y="222" text-anchor="middle" class="s">／ エンタープライズ（802.1X ＋ EAP）</text>
+  <rect x="476" y="188" width="140" height="42" rx="6" class="box e3"/>
+  <text x="546" y="206" text-anchor="middle" class="s">SAE ／ 802.1X</text>
+  <text x="546" y="222" text-anchor="middle" class="s">＋ Enhanced Open</text>
+</svg>
+<p class="cap">エンタープライズ（802.1X ＋ EAP）は WPA の時代から WPA3 まで、ほぼ形を変えずに使われ続けています。大きく動いているのはパーソナル側と暗号方式で、それは<strong>「合言葉 1 つで運用する」ことに無理があった</strong>ことの裏返しです。</p>
+</div>
+
+<h3>30 秒版</h3>
+
+<blockquote>
+<p>無線は届く範囲の全員に電波が届くので、「中身を読ませない暗号化」と「知らない人を入れない認証」の 2 つが要ります。暗号化は WEP が鍵の使い回しで破られ、既存機器を延命する TKIP を挟んで、AES ベースの CCMP に落ち着きました。認証は、全員で同じ合言葉を使うパーソナルと、利用者ごとに確かめるエンタープライズの 2 種類です。WPA・WPA2・WPA3 はその組み合わせに付いたパッケージ名です。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+
+<blockquote>
+<p>WEP は共有鍵に IV という数値を足して暗号化していましたが、IV が 24 ビットしかなく一周してしまい、同じ鍵で暗号化された通信から中身が漏れました。ここから「鍵は使い回さない」「改ざん検知（MIC）を必ず付ける」という設計が生まれています。</p>
+<p>エンタープライズの中身が IEEE 802.1X です。認証が済むまで AP のポートを閉じておき、端末・AP・認証サーバ（RADIUS）の 3 者で認証します。まだ IP が使えない段階なので、EAPOL という仕組みでイーサネット上に直接載せて運びます。中身の認証方式は EAP という枠になっていて、証明書を使う EAP-TLS や、サーバ証明書でトンネルを張って中でパスワードを確認する PEAP・EAP-TTLS を選べます。</p>
+<p>認証の役割は、最終的に PMK という鍵の元を作ることです。そこから 4 ウェイハンドシェイクで実際の通信鍵を作ります。WPA2 パーソナルはこのハンドシェイクを録音されると合言葉を手元で試され放題だったので、WPA3 は SAE に置き換えてそこを塞ぎました。合言葉を配れない公衆 Wi-Fi 向けには、認証なしで暗号化だけ行う Enhanced Open があります。</p>
+</blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>「WPA2 にしてあるから AES」ではない</h3>
+
+<p>WPA2 は CCMP が必須ですが、古い機器との互換のために TKIP を同時に許可する設定が残っています。混在モードにしていると、弱いほうに引きずられます。設定画面で暗号方式が何になっているかを直接見てください。</p>
+
+<h3>「エンタープライズは暗号が強い」ではない</h3>
+
+<p>暗号方式はパーソナルと同じ CCMP です。エンタープライズが解決するのは<strong>鍵の配り方と、誰が繋いだかの記録</strong>であって、暗号アルゴリズムの強度ではありません。</p>
+
+<h3>「EAPOL はエンタープライズだけの話」ではない</h3>
+
+<p>4 ウェイハンドシェイクは EAPOL-Key というフレームでやりとりされます。つまり<strong>パーソナルモードでも EAPOL は飛んでいます</strong>。EAPOL は「802.1X 認証専用の仕組み」ではなく、「無線区間で鍵関連のやりとりを運ぶ仕組み」だと捉えると混乱しません。</p>
+
+<h3>「ESSID を隠せば安全」ではない</h3>
+
+<p>ステルスモードや MAC アドレスフィルタリングは、暗号化でも認証でもありません。ESSID は接続中の端末が電波に流していますし、MAC アドレスは詐称できます。この記事の 2 本の柱の代わりにはならない、という位置づけで見てください。</p>
+
+<h2>次の一歩</h2>
+
+<p>各用語をもう一段詳しく見るなら、同じディレクトリの単独記事へ。</p>
+
+<ul>
+<li>暗号化の柱：<a href="WEPのIV.html">WEP の IV</a>／<a href="TKIP.html">TKIP</a>／<a href="CCMP.html">CCMP</a>／<a href="WPAとWPA2.html">WPA・WPA2</a>／<a href="WPA3.html">WPA3</a>／<a href="EnhancedOpen.html">Enhanced Open</a></li>
+<li>認証の柱：<a href="パーソナルモードとエンタープライズモード.html">パーソナルとエンタープライズ</a>／<a href="IEEE802.1X認証.html">IEEE 802.1X</a>／<a href="EAPOL.html">EAPOL</a>／<a href="EAP.html">EAP</a>／<a href="EAPの種類.html">EAP の種類</a></li>
+<li>接続の入口の話：<a href="ESSID.html">ESSID</a>／<a href="ステルスモード.html">ステルスモード</a>／<a href="ビーコン信号.html">ビーコン信号</a></li>
+<li>攻撃者側から見た同じ話：<a href="../../Cyber Attacks/12_WEPとWPAとESSID.html">WEP と WPA と ESSID（Cyber Attacks）</a></li>
+</ul>
+
+<h2>参考</h2>
+
+<ul>
+<li><a href="https://www.wi-fi.org/discover-wi-fi/security">Wi-Fi Alliance — Security</a></li>
+<li><a href="https://www.wi-fi.org/system/files/WPA3%20Specification%20v3.5.pdf">Wi-Fi Alliance — WPA3 Specification</a></li>
+<li><a href="https://www.wi-fi.org/discover-wi-fi/wi-fi-certified-enhanced-open">Wi-Fi Alliance — Wi-Fi CERTIFIED Enhanced Open</a></li>
+<li><a href="https://standards.ieee.org/ieee/802.11/7028/">IEEE 802.11 — Wireless LAN MAC and PHY Specifications</a></li>
+<li><a href="https://standards.ieee.org/ieee/802.1X/7345/">IEEE 802.1X — Port-Based Network Access Control</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3748">RFC 3748 — Extensible Authentication Protocol (EAP)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5216">RFC 5216 — EAP-TLS Authentication Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5281">RFC 5281 — EAP-TTLS v0</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8110">RFC 8110 — Opportunistic Wireless Encryption</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc2865">RFC 2865 — Remote Authentication Dial In User Service (RADIUS)</a></li>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/38/c/upd1/final">NIST SP 800-38C — CCM Mode</a></li>
+<li><a href="https://www.ipa.go.jp/security/vuln/websecurity/wireless-lan.html">IPA — 無線 LAN のセキュリティ</a></li>
+</ul>
+
+</main>
+</body>
+</html>
