@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ISMS と関連規格をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+.tw{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+@media (max-width:640px){table{min-width:34rem}}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+<marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>
+</defs></svg>
+
+<main>
+
+<h1>ISMS と関連規格をゼロから理解する</h1>
+<p class="lede">27000、27001、27002、27014、BS 7799-1、BS 7799-2。似た番号の正体を、系譜と役割で 1 回だけ整理する。</p>
+
+<h2>何が分からないのか</h2>
+
+<p>ISMS の勉強を始めると、番号が一斉に出てくる。JIS Q 27000、JIS Q 27001、JIS Q 27002、JIS Q 27014、そして BS 7799-1、BS 7799-2、ISO/IEC 27002。どれも「情報セキュリティの規格」としか説明されず、番号の違いが何の違いなのか分からないまま暗記することになる。</p>
+
+<p>この違いは、実は 2 つの軸しかない。<strong>どこが出した文書か</strong>（BS＝英国、ISO/IEC＝国際、JIS＝日本）と、<strong>何を書いた文書か</strong>（満たすべき要求事項か、実装の手引か、用語の定義か）。系譜を一度たどれば、あとは位置で思い出せる。</p>
+
+<h2>規格の系譜：もとは 1 つの英国規格</h2>
+
+<figure>
+<svg viewBox="0 0 700 215" role="img" aria-label="BS 7799 から ISO/IEC を経て JIS Q に至る規格の系譜">
+  <text x="10" y="14" font-size="12" font-weight="600" fill="var(--c1)">実践のための規範 — どう実装するか</text>
+  <g>
+    <rect x="10" y="24" width="118" height="46" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="69" y="46" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">BS 7799-1</text>
+    <text x="69" y="62" font-size="10" fill="var(--muted)" text-anchor="middle">1995 英国規格</text>
+
+    <rect x="168" y="24" width="142" height="46" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="239" y="46" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">ISO/IEC 17799</text>
+    <text x="239" y="62" font-size="10" fill="var(--muted)" text-anchor="middle">2000 国際規格になる</text>
+
+    <rect x="350" y="24" width="148" height="46" rx="6" fill="var(--c1)"/>
+    <text x="424" y="46" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">ISO/IEC 27002</text>
+    <text x="424" y="62" font-size="10" fill="var(--on)" text-anchor="middle" opacity=".85">27000 番台へ改番</text>
+
+    <rect x="538" y="24" width="152" height="46" rx="6" fill="var(--c1)"/>
+    <text x="614" y="46" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">JIS Q 27002</text>
+    <text x="614" y="62" font-size="10" fill="var(--on)" text-anchor="middle" opacity=".85">日本語化して JIS 化</text>
+
+    <line x1="130" y1="47" x2="164" y2="47" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <line x1="312" y1="47" x2="346" y2="47" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <line x1="500" y1="47" x2="534" y2="47" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#a1)"/>
+  </g>
+
+  <line x1="614" y1="70" x2="614" y2="122" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="598" y="99" font-size="10.5" fill="var(--muted)" text-anchor="end">27001 が挙げる管理策を、27002 が「どう実装するか」で解説する</text>
+
+  <text x="10" y="112" font-size="12" font-weight="600" fill="var(--c2)">認証のための要求事項 — 何を満たすか</text>
+  <g>
+    <rect x="10" y="122" width="118" height="46" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="69" y="144" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">BS 7799-2</text>
+    <text x="69" y="160" font-size="10" fill="var(--muted)" text-anchor="middle">1999 英国規格</text>
+
+    <rect x="350" y="122" width="148" height="46" rx="6" fill="var(--c2)"/>
+    <text x="424" y="144" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">ISO/IEC 27001</text>
+    <text x="424" y="160" font-size="10" fill="var(--on)" text-anchor="middle" opacity=".85">2005 国際規格になる</text>
+
+    <rect x="538" y="122" width="152" height="46" rx="6" fill="var(--c2)"/>
+    <text x="614" y="144" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">JIS Q 27001</text>
+    <text x="614" y="160" font-size="10" fill="var(--on)" text-anchor="middle" opacity=".85">日本語化して JIS 化</text>
+
+    <line x1="130" y1="145" x2="346" y2="145" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#a2)"/>
+    <line x1="500" y1="145" x2="534" y2="145" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#a2)"/>
+  </g>
+
+  <line x1="10" y1="196" x2="686" y2="196" stroke="var(--muted)" stroke-width="1" marker-end="url(#am)"/>
+  <text x="350" y="190" font-size="10.5" fill="var(--muted)" text-anchor="middle">時間の流れ</text>
+</svg>
+<figcaption>2 本のレーンが最後まで分かれたまま残るのがポイント。「実装の手引」と「認証の判定基準」は最初から別の文書で、番号が変わっただけで役割は 30 年間そのまま引き継がれている。</figcaption>
+</figure>
+
+<p>出発点は英国規格の BS 7799。1995 年の <strong>BS 7799-1</strong> が「こうやるとよい」というベストプラクティス集、1999 年の <strong>BS 7799-2</strong> が「認証を受けるならこれを満たすこと」という要求事項。この 2 本立てが、そのまま今の 27002 と 27001 になっている。</p>
+
+<p>BS 7799-1 は ISO/IEC 17799 を経て ISO/IEC 27002 に、BS 7799-2 は ISO/IEC 27001 になった。それを日本語化して日本産業規格にしたのが JIS Q 27001 / JIS Q 27002。つまり <strong>JIS Q 27001 と ISO/IEC 27001 は中身が同じ</strong>で、違うのは発行元だけ。</p>
+
+<h2>27001 と 27002 の役割の違い</h2>
+
+<figure>
+<svg viewBox="0 0 700 246" role="img" aria-label="27001は要求事項、27002は実践のための規範という役割の対比">
+  <text x="175" y="14" font-size="12.5" font-weight="600" fill="var(--c2)" text-anchor="middle">JIS Q 27001 ｜ 要求事項</text>
+  <rect x="8" y="24" width="334" height="140" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+  <g font-size="11.5" fill="var(--ink)">
+    <text x="26" y="52">・「〜しなければならない」で書かれる</text>
+    <text x="26" y="78">・ISMS の作り方と回し方を定めた文書</text>
+    <text x="26" y="104">・附属書 A に管理策の一覧（項目名のみ）</text>
+  </g>
+  <line x1="26" y1="118" x2="324" y2="118" stroke="var(--line)" stroke-width="1"/>
+  <text x="26" y="142" font-size="11.5" font-weight="600" fill="var(--c2)">→ 認証審査はこれへの適合を見る</text>
+
+  <text x="525" y="14" font-size="12.5" font-weight="600" fill="var(--c1)" text-anchor="middle">JIS Q 27002 ｜ 実践のための規範</text>
+  <rect x="358" y="24" width="334" height="140" rx="8" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+  <g font-size="11.5" fill="var(--ink)">
+    <text x="376" y="52">・「〜するとよい」で書かれる</text>
+    <text x="376" y="78">・管理策ごとに目的と実装の手引を示す</text>
+    <text x="376" y="104">・分量は 27001 よりずっと厚い</text>
+  </g>
+  <line x1="376" y1="118" x2="674" y2="118" stroke="var(--line)" stroke-width="1"/>
+  <text x="376" y="142" font-size="11.5" font-weight="600" fill="var(--c1)">→ これ自体は認証の基準ではない</text>
+
+  <rect x="8" y="182" width="334" height="56" rx="8" fill="var(--lane)"/>
+  <text x="26" y="204" font-size="11.5" font-weight="600" fill="var(--c4)">JIS Q 27000 ｜ 用語</text>
+  <text x="26" y="226" font-size="11" fill="var(--muted)">27000 番台で使う言葉の定義と全体像</text>
+
+  <rect x="358" y="182" width="334" height="56" rx="8" fill="var(--lane)"/>
+  <text x="376" y="204" font-size="11.5" font-weight="600" fill="var(--c4)">JIS Q 27014 ｜ ガバナンス</text>
+  <text x="376" y="226" font-size="11" fill="var(--muted)">経営陣が ISMS をどう統治するかの指針</text>
+</svg>
+<figcaption>迷ったら語尾で判別できる。要求事項は「〜しなければならない」、規範は「〜するとよい」。下段の 2 つは単独で認証を取る対象ではなく、27000 は辞書、27014 は経営陣側から ISMS を見たときの規格。</figcaption>
+</figure>
+
+<h2>ISMS そのものは何を回す枠組みか</h2>
+
+<p>ISMS（情報セキュリティマネジメントシステム）は、製品でもツールでもなく<strong>組織の仕組み</strong>のこと。守るべき情報資産を洗い出し、リスクを評価し、対策を決めて実行し、うまくいっているか点検して直す——この PDCA を回し続けることが ISMS で、JIS Q 27001 はその回し方を要求事項として書いている。</p>
+
+<p>「セキュリティ製品を導入すること」ではないので、審査で見られるのも製品ではなく<strong>運用の記録</strong>になる。</p>
+
+<h2>ポリシの 3 階層と残留リスク</h2>
+
+<p>ISMS で作る文書は、抽象度で 3 段に分かれる。</p>
+
+<div class="tw">
+<table>
+<tr><th>階層</th><th>何を書くか</th><th>例</th></tr>
+<tr><td><strong>基本方針</strong><br>（ポリシ）</td><td>経営者が示す方針。なぜ守るのか、誰が責任を持つか</td><td>「当社は顧客情報の保護を経営上の責務と位置づける」</td></tr>
+<tr><td><strong>対策基準</strong><br>（スタンダード）</td><td>方針を実現するために守るべきルール</td><td>「パスワードは 12 文字以上とする」</td></tr>
+<tr><td><strong>実施手順</strong><br>（プロシージャ）</td><td>現場が実際に動くための具体的な手順</td><td>「アカウント発行の申請フローと承認者」</td></tr>
+</table>
+</div>
+
+<p>上ほど抽象的で滅多に変わらず、下ほど具体的で頻繁に更新される。基本方針だけ立派で実施手順がない、という状態は ISMS として成立しない。</p>
+
+<div class="note">
+<p><strong>残留リスク</strong></p>
+<p>対策を打ってもリスクはゼロにならない。対策後に残るものを<strong>残留リスク</strong>と呼ぶ。重要なのは、これを「受け入れる」と決めるのが現場ではなく<strong>経営者</strong>だという点。経営陣が残留リスクを承認し、ISMS の状況を監督する——その関係を定めているのが JIS Q 27014（情報セキュリティガバナンス）。</p>
+</div>
+
+<h2>認証を与える側の登場人物</h2>
+
+<p>認証を受ける企業のほかに、3 つの登場人物がいる。</p>
+
+<ul>
+<li><strong>認証機関（審査登録機関）</strong>：企業を審査して ISMS 認証を与える。企業が直接契約する相手はここ。</li>
+<li><strong>認定機関</strong>：その認証機関に審査する資格があるかを認定する。日本の ISMS 認証制度では ISMS-AC（情報マネジメントシステム認定センター）が担う。制度を立ち上げ運営してきたのが JIPDEC（日本情報経済社会推進協会）で、認定業務は現在 ISMS-AC に引き継がれている。</li>
+<li><strong>審査員</strong>：実際に現場を見る人。認証機関に所属し、要員認証機関（JRCA など）に資格を登録している。</li>
+</ul>
+
+<p>「認証する側も認定されている」という入れ子構造なのは、認証機関を誰も見ていなければ認証が買えるものになってしまうから。</p>
+
+<h2>3 種類の審査は、いつ来るか</h2>
+
+<figure>
+<svg viewBox="0 0 700 215" role="img" aria-label="認証審査・維持審査・更新審査が来るタイミングの時系列">
+  <g font-size="11.5">
+    <rect x="0" y="18" width="124" height="36" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="62" y="34" font-weight="600" fill="var(--c2)" text-anchor="middle">① 第一段階審査</text>
+    <text x="62" y="48" font-size="10.5" fill="var(--muted)" text-anchor="middle">文書・体制の確認</text>
+
+    <rect x="88" y="60" width="150" height="36" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="163" y="76" font-weight="600" fill="var(--c2)" text-anchor="middle">② 第二段階審査</text>
+    <text x="163" y="90" font-size="10.5" fill="var(--muted)" text-anchor="middle">現場の運用を確認 → 認証</text>
+
+    <rect x="248" y="18" width="124" height="36" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="310" y="34" font-weight="600" fill="var(--c3)" text-anchor="middle">維持審査</text>
+    <text x="310" y="48" font-size="10.5" fill="var(--muted)" text-anchor="middle">1 年目・範囲を絞って</text>
+
+    <rect x="368" y="60" width="124" height="36" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="430" y="76" font-weight="600" fill="var(--c3)" text-anchor="middle">維持審査</text>
+    <text x="430" y="90" font-size="10.5" fill="var(--muted)" text-anchor="middle">2 年目・範囲を絞って</text>
+
+    <rect x="512" y="18" width="140" height="36" rx="6" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/>
+    <text x="582" y="34" font-weight="600" fill="var(--c4)" text-anchor="middle">更新審査</text>
+    <text x="582" y="48" font-size="10.5" fill="var(--muted)" text-anchor="middle">3 年目・全体を見直す</text>
+  </g>
+
+  <line x1="62" y1="54" x2="62" y2="104" stroke="var(--c2)" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="163" y1="96" x2="163" y2="104" stroke="var(--c2)" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="310" y1="54" x2="310" y2="104" stroke="var(--c3)" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="430" y1="96" x2="430" y2="104" stroke="var(--c3)" stroke-width="1" stroke-dasharray="3 3"/>
+  <line x1="582" y1="54" x2="582" y2="104" stroke="var(--c4)" stroke-width="1" stroke-dasharray="3 3"/>
+
+  <line x1="20" y1="110" x2="686" y2="110" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am)"/>
+  <circle cx="62" cy="110" r="5" fill="var(--c2)"/>
+  <circle cx="163" cy="110" r="5" fill="var(--c2)"/>
+  <circle cx="310" cy="110" r="5" fill="var(--c3)"/>
+  <circle cx="430" cy="110" r="5" fill="var(--c3)"/>
+  <circle cx="582" cy="110" r="5" fill="var(--c4)"/>
+
+  <rect x="163" y="128" width="419" height="26" rx="5" fill="var(--c3)" opacity=".28"/>
+  <text x="372" y="145" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">認証の有効期間（3 年）</text>
+  <rect x="582" y="128" width="104" height="26" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="634" y="145" font-size="11" fill="var(--muted)" text-anchor="middle">次の 3 年へ</text>
+
+  <text x="20" y="184" font-size="11" fill="var(--muted)">初回だけ ①② の 2 段階。②で運用が回っている記録を見せられないと認証されないため、</text>
+  <text x="20" y="200" font-size="11" fill="var(--muted)">申請の前に数か月〜半年ほど ISMS を実際に運用して記録を貯めておく必要がある。</text>
+</svg>
+<figcaption>維持審査は「まだちゃんと回っているか」の抜き取り確認で、範囲は絞られる。更新審査は有効期間が切れる前に ISMS 全体をあらためて見る審査で、規模は初回の認証審査に近い。年 1 回は必ず外部の目が入る、と覚えるとよい。</figcaption>
+</figure>
+
+<p>3 つの違いは、ひとことで言えば<strong>目的が違う</strong>。認証審査は「認証してよいか」、維持審査は「認証を維持してよいか」、更新審査は「もう 3 年続けてよいか」。頻度と範囲の違いはこの目的から出てくる。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://isms.jp/isms.html">ISMS-AC - ISMS 適合性評価制度</a></li>
+<li><a href="https://www.jipdec.or.jp/">JIPDEC（一般財団法人 日本情報経済社会推進協会）</a></li>
+<li><a href="https://www.jisc.go.jp/app/jis/general/GnrJISSearch.html">日本産業標準調査会 - JIS 検索（JIS Q 27000 番台の閲覧）</a></li>
+<li><a href="https://www.iso.org/standard/27001">ISO - ISO/IEC 27001 Information security management systems</a></li>
+<li><a href="https://jrca.jsa.jp/">JRCA（要員認証機関・審査員の登録）</a></li>
+<li><a href="https://www.ipa.go.jp/security/guide/sme/about.html">IPA - 中小企業の情報セキュリティ対策ガイドライン</a></li>
+</ul>
+
+</main>
+</body>
+</html>
