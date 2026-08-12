@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPsec をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figure .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 流れ ---- */
+.flow{display:flex;flex-direction:column;gap:.45rem;margin:1.4rem 0}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.88rem;background:var(--card);line-height:1.7;
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+.flow div.rx{border-left-color:var(--c2)}
+.flow div.rx b{color:var(--c2)}
+
+/* ---- 確認問題 ---- */
+.quiz{margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;background:var(--card)}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>IPsec をゼロから理解する</h1>
+<p class="lede">SA・ISAKMP SA・フェーズ1・クイックモード・SPD。用語が多いのは、同じものに何個も名前が付いているからです。5 ステップで並べ直します。</p>
+
+<h2>この記事の目的</h2>
+
+<p>IPsec の解説を読むと、最初の 1 ページでこれだけの言葉が出てきます。</p>
+
+<p>AH、ESP、トランスポートモード、トンネルモード、SA、SPI、SAD、SPD、IKE、フェーズ 1、フェーズ 2、IKE フェーズ、IPsec フェーズ、ISAKMP SA、IKE SA、IPsec SA、メインモード、アグレッシブモード、クイックモード。</p>
+
+<p>難しいのは中身ではありません。困るのは、<strong>同じものに複数の名前が付いていて、どの言葉とどの言葉が同じ土俵の話なのか分からない</strong>ことです。「フェーズ 1」と「メインモード」と「ISAKMP SA」は、対立する 3 つの概念ではなく、1 つの出来事を違う角度から呼んだ名前です。それが分からないうちは、何個覚えても地図になりません。</p>
+
+<p>この記事は用語を暗記させません。<strong>4 つの問いに分類して、順番に答えていきます。</strong></p>
+
+<div class="tw">
+<table>
+<tr><th>問い</th><th>答えにあたる用語</th></tr>
+<tr><td>① どうやって守るのか</td><td>AH / ESP</td></tr>
+<tr><td>② どこまで包むのか</td><td>トランスポートモード / トンネルモード</td></tr>
+<tr><td>③ 守るための取り決めをどう持つのか</td><td>SA / SPI / SAD</td></tr>
+<tr><td>④ その取り決めをどう作るのか</td><td>IKE / フェーズ 1・2 / ISAKMP SA / メイン・アグレッシブ・クイックモード</td></tr>
+<tr><td>（最後に）そもそもどの通信を IPsec に流すのか</td><td>SPD</td></tr>
+</table>
+</div>
+
+<figure>
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>どう守るか — AH と ESP</li>
+<li><span class="n">STEP 2</span>どこまで包むか</li>
+<li><span class="n">STEP 3</span>取り決めの単位 — SA</li>
+<li><span class="n">STEP 4</span>取り決めの作り方 — IKE</li>
+<li><span class="n">STEP 5</span>入口の門番 — SPD</li>
+</ol>
+</nav>
+<figcaption>STEP 4 がいちばん重く、用語の 8 割はここに集まっています。逆に STEP 1〜3 を踏んでおけば、STEP 4 は「なるほどそうするしかない」と感じられるはずです。</figcaption>
+</figure>
+
+<h3>前提：IP は裸で飛んでいる</h3>
+
+<p>その前に、なぜ IPsec が必要なのかを 3 行で。</p>
+
+<p>ネットワークを流れる IP パケットには、<strong>中身を隠す仕組みも、書き換えられたことを検知する仕組みもありません</strong>。途中の機器はパケットの中身を読めますし、書き換えても誰も気づきません。</p>
+
+<p>HTTPS があるじゃないか、と思うかもしれません。しかし HTTPS で守れるのは HTTPS を喋るアプリだけです。社内の古い業務アプリや独自プロトコルはその外にいます。<strong>アプリに一切手を入れず、その端末が出す通信をまとめて守りたい</strong>——アプリより下の IP 層に暗号を足すことで解決するのが IPsec です。上のアプリからは何も変わって見えません。</p>
+
+<h2>STEP 1：どう守るか — AH と ESP</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>どう守るか — AH と ESP</li>
+<li><span class="n">STEP 2</span>どこまで包むか</li>
+<li><span class="n">STEP 3</span>取り決めの単位 — SA</li>
+<li><span class="n">STEP 4</span>取り決めの作り方 — IKE</li>
+<li><span class="n">STEP 5</span>入口の門番 — SPD</li>
+</ol>
+</nav>
+
+<p>「通信を守る」という言葉には、実は別々の 2 つの意味が入っています。</p>
+
+<ul>
+<li><strong>読まれないこと</strong>。中身を見られても意味が分からない状態にする（暗号化）</li>
+<li><strong>すり替えられていないこと</strong>。途中で 1 バイトでも書き換わったら受信側が気づける（改ざん検知）</li>
+</ul>
+
+<p>この 2 つは別物です。暗号化しても改ざんは検知できませんし、改ざん検知だけなら中身は読まれたままです。IPsec はこれを 2 つのプロトコルに分けました。<strong>AH は改ざん検知だけ、ESP は暗号化＋改ざん検知</strong>です。</p>
+
+<figure>
+<p class="ttl">AH と ESP、守っている範囲の違い</p>
+<svg viewBox="0 0 700 246" role="img" aria-label="AHとESPのパケット構造と保護範囲の比較">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">AH — 改ざん検知だけ。中身はそのまま読める</text>
+  <g font-size="10" text-anchor="middle">
+    <rect x="0" y="24" width="104" height="34" rx="5" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="52" y="45" fill="var(--ink)">IP ヘッダ</text>
+    <rect x="108" y="24" width="86" height="34" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="151" y="45" fill="var(--ink)">AH ヘッダ</text>
+    <rect x="198" y="24" width="104" height="34" rx="5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="250" y="45" fill="var(--ink)">TCP ヘッダ</text>
+    <rect x="306" y="24" width="260" height="34" rx="5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="436" y="45" fill="var(--ink)">データ（平文で読める）</text>
+  </g>
+  <path d="M0 68 L0 74 L566 74 L566 68" fill="none" stroke="var(--c2)" stroke-width="1.4"/>
+  <text x="283" y="89" font-size="10" fill="var(--c2)" text-anchor="middle">改ざん検知の範囲 — 元の IP ヘッダまで含む</text>
+  <text x="0" y="108" font-size="9.5" fill="var(--muted)">IP ヘッダを検知対象に入れているので、途中の NAT がアドレスを書き換えると「改ざんされた」と判定されて捨てられる</text>
+
+  <text x="0" y="140" font-size="12.5" font-weight="600" fill="var(--ink)">ESP — 暗号化＋改ざん検知</text>
+  <g font-size="10" text-anchor="middle">
+    <rect x="0" y="152" width="104" height="34" rx="5" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="52" y="173" fill="var(--ink)">IP ヘッダ</text>
+    <rect x="108" y="152" width="86" height="34" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="151" y="173" fill="var(--ink)">ESP ヘッダ</text>
+    <rect x="198" y="152" width="104" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="250" y="173" fill="var(--ink)">TCP ヘッダ</text>
+    <rect x="306" y="152" width="180" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="396" y="173" fill="var(--ink)">データ</text>
+    <rect x="490" y="152" width="76" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="528" y="173" fill="var(--ink)">トレーラ</text>
+    <rect x="570" y="152" width="86" height="34" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="613" y="173" fill="var(--ink)">認証値</text>
+  </g>
+  <path d="M198 196 L198 202 L566 202 L566 196" fill="none" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="382" y="216" font-size="10" fill="var(--c3)" text-anchor="middle">暗号化される範囲</text>
+  <path d="M108 222 L108 228 L566 228 L566 222" fill="none" stroke="var(--c2)" stroke-width="1.4"/>
+  <text x="337" y="242" font-size="10" fill="var(--c2)" text-anchor="middle">改ざん検知の範囲 — IP ヘッダは含まない</text>
+</svg>
+<figcaption>ESP が IP ヘッダを検知対象から外したのは仕様上の割り切りですが、結果として「途中で IP アドレスが書き換わっても平気」になりました。AH が実質使われなくなったのは、暗号化しないからだけでなく、NAT の普及と決定的に相性が悪かったからです。</figcaption>
+</figure>
+
+<div class="tw">
+<table>
+<tr><th></th><th>AH</th><th>ESP</th></tr>
+<tr><td>暗号化</td><td>しない</td><td>する</td></tr>
+<tr><td>改ざん検知</td><td>する（IP ヘッダも含む）</td><td>する（IP ヘッダは除く）</td></tr>
+<tr><td>NAT の下で使えるか</td><td>使えない</td><td>使える</td></tr>
+<tr><td>実務では</td><td>使わない</td><td>これを使う</td></tr>
+</table>
+</div>
+
+<p>つまり <strong>選ぶ余地はほぼありません。実務は ESP 一択</strong>です。AH は「並んで説明されるけれど選ばれない片方」として覚えておけば十分です。</p>
+
+<div class="note">
+<p><strong>「認証」という言葉に注意。</strong>IPsec の世界では「認証」が 2 つの意味で使われ、初学者が最も混乱する箇所です。<br>
+① <strong>パケットの認証</strong>＝このパケットは書き換えられていない（＝改ざん検知。この STEP の話）<br>
+② <strong>相手の認証</strong>＝通信相手が本物の拠点である（＝ STEP 4 の話）<br>
+この記事では ① を「改ざん検知」、② を「相手認証」と書き分けます。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　暗号化してあれば改ざん検知は不要ではないでしょうか。なぜ ESP は両方やるのでしょう。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>暗号化は「読まれないこと」しか保証しないからです。</strong></p>
+<p>攻撃者は中身を読めなくても、暗号文をランダムに書き換えて送りつけることはできます。受信側は改ざん検知の仕組みがなければ、それを復号して「壊れたデータ」として処理してしまいます。書き換えた結果どう変化するかを観察して、鍵の情報を引き出す攻撃も成立します。「読まれない」と「すり替えられない」は別に用意する必要があります。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：どこまで包むか — トランスポートとトンネル</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>どう守るか — AH と ESP</li>
+<li class="now"><span class="n">STEP 2</span>どこまで包むか</li>
+<li><span class="n">STEP 3</span>取り決めの単位 — SA</li>
+<li><span class="n">STEP 4</span>取り決めの作り方 — IKE</li>
+<li><span class="n">STEP 5</span>入口の門番 — SPD</li>
+</ol>
+</nav>
+
+<p>守り方が決まったら、次は<strong>どこからどこまでを守るのか</strong>です。STEP 1 の ESP の図をよく見ると、いちばん左の IP ヘッダは暗号化されていませんでした。つまり<strong>誰から誰への通信かは丸見え</strong>です。</p>
+
+<p>これで困る場面があります。東京拠点の <code>10.0.1.5</code> から大阪拠点の <code>10.0.2.8</code> へ通信したいとき、この 2 つはプライベート IP アドレスなので、インターネット上をそのまま流せません。宛先として書けないのです。</p>
+
+<p>そこで <strong>元のパケットを丸ごと「中身」として扱い、外側に新しい IP ヘッダを貼る</strong>という方法が用意されています。これがトンネルモードです。元の IP ヘッダを残すほうがトランスポートモードです。</p>
+
+<figure>
+<p class="ttl">同じ ESP で、包む範囲だけが違う</p>
+<svg viewBox="0 0 700 268" role="img" aria-label="元のパケット、トランスポートモード、トンネルモードのパケット構造の比較">
+  <text x="0" y="12" font-size="11.5" fill="var(--muted)">元の IP パケット</text>
+  <g font-size="10" text-anchor="middle">
+    <rect x="0" y="20" width="104" height="32" rx="5" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="52" y="40" fill="var(--ink)">IP ヘッダ</text>
+    <rect x="108" y="20" width="104" height="32" rx="5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="160" y="40" fill="var(--ink)">TCP ヘッダ</text>
+    <rect x="216" y="20" width="200" height="32" rx="5" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="316" y="40" fill="var(--ink)">データ</text>
+  </g>
+  <text x="440" y="40" font-size="9.5" fill="var(--muted)">10.0.1.5 → 10.0.2.8 と書いてある</text>
+
+  <text x="0" y="84" font-size="12.5" font-weight="600" fill="var(--ink)">トランスポートモード — 元の IP ヘッダはそのまま使う</text>
+  <g font-size="10" text-anchor="middle">
+    <rect x="0" y="94" width="104" height="34" rx="5" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="52" y="115" fill="var(--ink)">IP ヘッダ</text>
+    <rect x="108" y="94" width="80" height="34" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="148" y="115" fill="var(--ink)">ESP</text>
+    <rect x="192" y="94" width="104" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="244" y="115" fill="var(--ink)">TCP ヘッダ</text>
+    <rect x="300" y="94" width="200" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="400" y="115" fill="var(--ink)">データ</text>
+    <rect x="504" y="94" width="120" height="34" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="564" y="115" fill="var(--ink)">トレーラ／認証値</text>
+  </g>
+  <path d="M192 138 L192 143 L500 143 L500 138" fill="none" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="346" y="157" font-size="9.5" fill="var(--c3)" text-anchor="middle">暗号化される範囲</text>
+  <text x="0" y="157" font-size="9.5" fill="var(--stop)">送信元・宛先 IP は見える</text>
+
+  <text x="0" y="192" font-size="12.5" font-weight="600" fill="var(--ink)">トンネルモード — 元のパケット丸ごとが「中身」になる</text>
+  <g font-size="10" text-anchor="middle">
+    <rect x="0" y="202" width="104" height="34" rx="5" fill="none" stroke="var(--c4)" stroke-width="2"/>
+    <text x="52" y="223" fill="var(--ink)">新 IP ヘッダ</text>
+    <rect x="108" y="202" width="70" height="34" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="143" y="223" fill="var(--ink)">ESP</text>
+    <rect x="182" y="202" width="104" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="234" y="223" fill="var(--ink)">元 IP ヘッダ</text>
+    <rect x="290" y="202" width="94" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="337" y="223" fill="var(--ink)">TCP ヘッダ</text>
+    <rect x="388" y="202" width="112" height="34" rx="5" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="444" y="223" fill="var(--ink)">データ</text>
+    <rect x="504" y="202" width="120" height="34" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="564" y="223" fill="var(--ink)">トレーラ／認証値</text>
+  </g>
+  <path d="M182 246 L182 251 L500 251 L500 246" fill="none" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="341" y="265" font-size="9.5" fill="var(--c3)" text-anchor="middle">暗号化される範囲（元の IP ヘッダごと）</text>
+  <text x="0" y="265" font-size="9.5" fill="var(--c4)">元の IP は隠れる</text>
+</svg>
+<figcaption>トンネルモードは外側のヘッダが丸ごと増えるので、1 パケットに載せられる実データが数十バイト減ります。ここを調整しないと「疎通はするのに大きいファイル転送だけ固まる」という症状が出ます。IPsec 導入直後の定番トラブルで、MTU / MSS の調整が要るのはこのためです。</figcaption>
+</figure>
+
+<p>大事なのは、この 2 つが <strong>AH / ESP とは別の軸</strong>だということです。「ESP のトンネルモード」という組み合わせで指定します。どちらか選ぶ話ではありません。</p>
+
+<figure>
+<p class="ttl">誰が暗号化するのかも変わる</p>
+<svg viewBox="0 0 700 250" role="img" aria-label="トランスポートモードは端末同士、トンネルモードはゲートウェイ同士が暗号化する">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">トランスポートモード — 通信する端点自身が暗号化する</text>
+  <rect x="40" y="26" width="120" height="42" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="100" y="43" font-size="10" fill="var(--ink)" text-anchor="middle">サーバ A</text>
+  <text x="100" y="58" font-size="9" fill="var(--muted)" text-anchor="middle">IPsec を喋る</text>
+  <rect x="480" y="26" width="120" height="42" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="540" y="43" font-size="10" fill="var(--ink)" text-anchor="middle">サーバ B</text>
+  <text x="540" y="58" font-size="9" fill="var(--muted)" text-anchor="middle">IPsec を喋る</text>
+  <line x1="160" y1="47" x2="480" y2="47" stroke="var(--c3)" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="320" y="41" font-size="9.5" fill="var(--c3)" text-anchor="middle">暗号化区間は端から端まで</text>
+  <text x="320" y="84" font-size="9.5" fill="var(--muted)" text-anchor="middle">途中のルータは中身に触らず、ただ転送する</text>
+
+  <text x="0" y="122" font-size="12.5" font-weight="600" fill="var(--ink)">トンネルモード — 装置が代わりに暗号化する</text>
+  <g font-size="9.5" text-anchor="middle">
+    <rect x="0" y="140" width="96" height="46" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="48" y="159" font-size="10" fill="var(--ink)">PC</text>
+    <text x="48" y="175" fill="var(--muted)">10.0.1.5</text>
+    <rect x="116" y="140" width="112" height="46" rx="6" fill="none" stroke="var(--c4)" stroke-width="2"/>
+    <text x="172" y="159" font-size="10" fill="var(--ink)">VPN GW</text>
+    <text x="172" y="175" fill="var(--muted)">203.0.113.1</text>
+    <rect x="248" y="140" width="204" height="46" rx="6" fill="var(--lane)" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="350" y="159" font-size="10" fill="var(--ink)">インターネット</text>
+    <text x="350" y="175" fill="var(--muted)">203.0.113.1 → 198.51.100.1 だけが見える</text>
+    <rect x="472" y="140" width="112" height="46" rx="6" fill="none" stroke="var(--c4)" stroke-width="2"/>
+    <text x="528" y="159" font-size="10" fill="var(--ink)">VPN GW</text>
+    <text x="528" y="175" fill="var(--muted)">198.51.100.1</text>
+    <rect x="604" y="140" width="96" height="46" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="652" y="159" font-size="10" fill="var(--ink)">サーバ</text>
+    <text x="652" y="175" fill="var(--muted)">10.0.2.8</text>
+  </g>
+  <line x1="96" y1="163" x2="116" y2="163" stroke="var(--wire)" stroke-width="1.5"/>
+  <line x1="228" y1="163" x2="248" y2="163" stroke="var(--wire)" stroke-width="1.5"/>
+  <line x1="452" y1="163" x2="472" y2="163" stroke="var(--wire)" stroke-width="1.5"/>
+  <line x1="584" y1="163" x2="604" y2="163" stroke="var(--wire)" stroke-width="1.5"/>
+  <path d="M172 196 L172 206 L528 206 L528 196" fill="none" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="350" y="221" font-size="9.5" fill="var(--c3)" text-anchor="middle">暗号化・カプセル化するのはこの区間だけ</text>
+  <text x="350" y="240" font-size="9.5" fill="var(--muted)" text-anchor="middle">PC とサーバは 10.0.1.5 ↔ 10.0.2.8 で普通に通信しているつもりでいる</text>
+</svg>
+<figcaption>下段の形は、端末側に何もインストールしなくてよいという意味でもあります。クラウドとのサイト間 VPN（AWS Site-to-Site VPN など）は、右側の GW をクラウド事業者が持つ形でこれを提供しているものです。</figcaption>
+</figure>
+
+<p>実務ではほぼトンネルモードです。拠点間 VPN もクラウド接続も、端末に手を入れずプライベート IP のまま通したいからで、それができるのはトンネルモードだけです。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　トンネルモードで通信しているとき、経路上のルータには何が見えているでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>「203.0.113.1 から 198.51.100.1 へ送られる、中身の読めないパケット」だけです。</strong></p>
+<p>元の <code>10.0.1.5 → 10.0.2.8</code> は暗号化された内側にあるので見えません。誰と誰が通信しているかすら分からないので、通信相手の一覧という情報自体を隠せます。これはトランスポートモードでは得られない性質です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：取り決めの単位 — SA</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>どう守るか — AH と ESP</li>
+<li class="done"><span class="n">STEP 2 ✓</span>どこまで包むか</li>
+<li class="now"><span class="n">STEP 3</span>取り決めの単位 — SA</li>
+<li><span class="n">STEP 4</span>取り決めの作り方 — IKE</li>
+<li><span class="n">STEP 5</span>入口の門番 — SPD</li>
+</ol>
+</nav>
+
+<p>ここまでで守り方と包み方が決まりました。しかし、送信側が勝手に暗号化しても受信側は復号できません。<strong>事前に「どのアルゴリズムで、どの鍵で、どちらのモードで」を相手と合意しておく必要があります。</strong></p>
+
+<p>この合意のかたまりに名前が付いています。<strong>SA（Security Association）</strong>です。日本語では「セキュリティアソシエーション」で、訳しても分かりやすくならない類の言葉なので、<strong>「相手と交わした 1 つの取り決め」</strong>と読み替えてください。中身は次のようなものです。</p>
+
+<ul>
+<li>暗号アルゴリズムと鍵（例：AES-256、この鍵）</li>
+<li>改ざん検知のアルゴリズムと鍵</li>
+<li>AH か ESP か、トランスポートかトンネルか</li>
+<li>この取り決めの寿命</li>
+</ul>
+
+<h3>SA は片方向にしか効かない</h3>
+
+<p>ここが初見でつまずくポイントです。<strong>1 本の SA は片方向の通信にしか使えません。</strong>A から B と、B から A は別の取り決めです。したがって、ごく普通の双方向通信をするだけで <strong>SA は 2 本必要</strong>になります。</p>
+
+<p>なぜ片方向なのか。SA は「送る側が守り方を決めて、受け取る側がそれに従って開ける」という一方通行の取り決めだからです。方向ごとに独立させておけば、A→B と B→A で別の鍵を使えます。片方の鍵が漏れても逆方向は守られます。</p>
+
+<h3>受信側はどの取り決めか見分けられるのか</h3>
+
+<p>1 台のゲートウェイが 50 拠点と繋がっていれば、SA は 100 本あります。届いたパケットをどの取り決めで開けばよいか、どうやって分かるのでしょうか。</p>
+
+<p>答えは単純で、<strong>パケットに取り決めの整理番号が書いてあります</strong>。これが <strong>SPI（Security Parameters Index）</strong>で、32 ビットの数値です。受信側は SPI をキーにして、自分が持っている SA の一覧表を引きます。この一覧表が <strong>SAD（Security Association Database）</strong>です。</p>
+
+<figure>
+<p class="ttl">SPI で取り決めを引き当てる</p>
+<svg viewBox="0 0 700 176" role="img" aria-label="受信したパケットのSPIをキーにSADからSAを引き当てる流れ">
+  <g font-size="10" text-anchor="middle">
+    <rect x="0" y="46" width="150" height="60" rx="6" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="75" y="68" fill="var(--ink)">届いたパケット</text>
+    <text x="75" y="88" font-size="9.5" fill="var(--c2)">SPI = 0x3F2A11C4</text>
+  </g>
+  <line x1="150" y1="76" x2="196" y2="76" stroke="var(--wire)" stroke-width="1.5"/>
+  <text x="173" y="68" font-size="9" fill="var(--muted)" text-anchor="middle">引く</text>
+  <rect x="200" y="16" width="290" height="128" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="345" y="34" font-size="10.5" font-weight="600" fill="var(--c1)" text-anchor="middle">SAD（持っている取り決めの一覧）</text>
+  <g font-size="9.5">
+    <line x1="212" y1="44" x2="478" y2="44" stroke="var(--line)" stroke-width="1"/>
+    <text x="220" y="60" fill="var(--muted)">SPI</text>
+    <text x="330" y="60" fill="var(--muted)">相手</text>
+    <text x="410" y="60" fill="var(--muted)">鍵とアルゴリズム</text>
+    <line x1="212" y1="68" x2="478" y2="68" stroke="var(--line)" stroke-width="1"/>
+    <text x="220" y="84" fill="var(--muted)">0x8B01...</text>
+    <text x="330" y="84" fill="var(--muted)">大阪 GW</text>
+    <text x="410" y="84" fill="var(--muted)">AES-256 / …</text>
+    <rect x="212" y="90" width="266" height="22" fill="var(--c3)" fill-opacity="0.18"/>
+    <text x="220" y="106" fill="var(--c3)">0x3F2A...</text>
+    <text x="330" y="106" fill="var(--c3)">名古屋 GW</text>
+    <text x="410" y="106" fill="var(--c3)">AES-256 / …</text>
+    <text x="220" y="128" fill="var(--muted)">0xC7E4...</text>
+    <text x="330" y="128" fill="var(--muted)">福岡 GW</text>
+    <text x="410" y="128" fill="var(--muted)">AES-128 / …</text>
+  </g>
+  <line x1="490" y1="76" x2="536" y2="76" stroke="var(--wire)" stroke-width="1.5"/>
+  <rect x="540" y="46" width="160" height="60" rx="6" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="620" y="68" font-size="10" fill="var(--ink)" text-anchor="middle">この鍵で復号し</text>
+  <text x="620" y="86" font-size="10" fill="var(--ink)" text-anchor="middle">改ざん検知を確認</text>
+  <text x="0" y="168" font-size="9.5" fill="var(--muted)">SPI は送信側が勝手に決める番号ではなく、受信側が「自分に送るときはこの番号を書いてくれ」と指定したもの。</text>
+</svg>
+<figcaption>SPI が平文で書かれていても問題ありません。整理番号を見られたところで鍵は分からないからです。むしろ暗号化してしまうと、どの鍵で開けるかを知る前に復号が必要になり、順番が回らなくなります。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　東京と大阪の拠点間で普通に双方向の通信をします。SA は何本必要でしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>2 本です。</strong></p>
+<p>東京 → 大阪の 1 本と、大阪 → 東京の 1 本。SA は片方向の取り決めなので、双方向に流すには方向ごとに用意します。設定画面上は「1 本の VPN 接続」に見えても、内部では 2 本の SA が動いています。STEP 4 でもう 1 本別の種類の SA が出てくるので、この「2 本」を覚えておいてください。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：取り決めの作り方 — IKE</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>どう守るか — AH と ESP</li>
+<li class="done"><span class="n">STEP 2 ✓</span>どこまで包むか</li>
+<li class="done"><span class="n">STEP 3 ✓</span>取り決めの単位 — SA</li>
+<li class="now"><span class="n">STEP 4</span>取り決めの作り方 — IKE</li>
+<li><span class="n">STEP 5</span>入口の門番 — SPD</li>
+</ol>
+</nav>
+
+<p>SA が要ることは分かりました。では鍵をどうやって相手に渡すのでしょうか。</p>
+
+<p>拠点が 2 つなら、管理者が両方の機器に同じ鍵を手で打ち込むこともできます。しかし拠点が 50 個あればどうでしょう。そして鍵は定期的に替えたい——漏れたときの被害を短く抑えるためです。手作業では回りません。</p>
+
+<p>この交渉と鍵の受け渡しを自動でやるのが <strong>IKE（Internet Key Exchange）</strong>です。UDP の 500 番で動きます。IPsec の設定項目のほとんどは、実は IKE の設定です。</p>
+
+<h3>なぜ 2 段階に分かれているのか</h3>
+
+<p>ここが IPsec の用語が増える最大の原因です。しかし理屈は 1 行です。</p>
+
+<blockquote>
+<p><strong>鍵の交渉そのものを平文でやったら意味がない。</strong></p>
+</blockquote>
+
+<p>これから暗号通信を始めようという相手と、その暗号の鍵を平文で相談していたら、盗聴している人にも鍵が知られてしまいます。そこで IKE は 2 段構えにしました。</p>
+
+<ul>
+<li><strong>第 1 段階</strong>：まず「交渉のための安全な通信路」を 1 本作る</li>
+<li><strong>第 2 段階</strong>：その中で、本番のデータを守る取り決めを決める</li>
+</ul>
+
+<p>この 2 つの段階を <strong>フェーズ 1</strong> と <strong>フェーズ 2</strong> と呼びます。そしてそれぞれで作られる SA に別の名前が付いています。</p>
+
+<ul>
+<li>フェーズ 1 で作るのが <strong>ISAKMP SA</strong>。<strong>双方向で 1 本</strong>。交渉専用で、実データは流さない</li>
+<li>フェーズ 2 で作るのが <strong>IPsec SA</strong>。<strong>片方向 1 本ずつで計 2 本</strong>。実データはこれで流れる</li>
+</ul>
+
+<figure>
+<p class="ttl">ISAKMP SA の中で IPsec SA を作る</p>
+<svg viewBox="0 0 700 226" role="img" aria-label="ISAKMP SAという安全な通信路の中で2本のIPsec SAが作られる入れ子構造">
+  <rect x="0" y="58" width="80" height="86" rx="6" fill="none" stroke="var(--c4)" stroke-width="2"/>
+  <text x="40" y="95" font-size="10" fill="var(--ink)" text-anchor="middle">東京</text>
+  <text x="40" y="112" font-size="10" fill="var(--ink)" text-anchor="middle">GW</text>
+  <rect x="620" y="58" width="80" height="86" rx="6" fill="none" stroke="var(--c4)" stroke-width="2"/>
+  <text x="660" y="95" font-size="10" fill="var(--ink)" text-anchor="middle">大阪</text>
+  <text x="660" y="112" font-size="10" fill="var(--ink)" text-anchor="middle">GW</text>
+
+  <rect x="94" y="20" width="512" height="156" rx="10" fill="none" stroke="var(--c1)" stroke-width="2"/>
+  <text x="350" y="40" font-size="11.5" font-weight="600" fill="var(--c1)" text-anchor="middle">ISAKMP SA（＝ IKE SA）— フェーズ 1 で作る。双方向で 1 本</text>
+  <text x="350" y="56" font-size="9.5" fill="var(--muted)" text-anchor="middle">この中のやりとりは暗号化されている。交渉と鍵の更新にしか使わない</text>
+
+  <rect x="118" y="68" width="464" height="38" rx="6" fill="var(--c3)" fill-opacity="0.18" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="350" y="85" font-size="10" fill="var(--ink)" text-anchor="middle">IPsec SA ①　東京 → 大阪 の方向</text>
+  <text x="350" y="100" font-size="9" fill="var(--muted)" text-anchor="middle">SPI・鍵・アルゴリズム</text>
+  <rect x="118" y="112" width="464" height="38" rx="6" fill="var(--c2)" fill-opacity="0.18" stroke="var(--c2)" stroke-width="1.5"/>
+  <text x="350" y="129" font-size="10" fill="var(--ink)" text-anchor="middle">IPsec SA ②　大阪 → 東京 の方向</text>
+  <text x="350" y="144" font-size="9" fill="var(--muted)" text-anchor="middle">SPI・鍵・アルゴリズム</text>
+  <text x="350" y="168" font-size="9.5" fill="var(--muted)" text-anchor="middle">↑ フェーズ 2（クイックモード）で作られる。実データはこの 2 本を通る</text>
+
+  <line x1="80" y1="101" x2="94" y2="101" stroke="var(--wire)" stroke-width="1.5"/>
+  <line x1="606" y1="101" x2="620" y2="101" stroke="var(--wire)" stroke-width="1.5"/>
+  <text x="0" y="200" font-size="9.5" fill="var(--muted)">寿命は別々に設定でき、ISAKMP SA（数時間）より IPsec SA（1 時間程度）を短くするのが一般的。</text>
+  <text x="0" y="216" font-size="9.5" fill="var(--muted)">「VPN が 1 時間ごとに一瞬不安定になる」ように見えるとき、この寿命が関わっていることがある。</text>
+</svg>
+<figcaption>2 段階にしておく実利は、鍵の更新のたびにフェーズ 1 をやり直さなくて済むことです。フェーズ 1 は鍵計算と相手認証で重いので、外側を使い回せることが運用で効いてきます。</figcaption>
+</figure>
+
+<h3>同じものを指す言葉の一覧</h3>
+
+<p>この 2 つのフェーズには、機器メーカーやドキュメントによって違う呼び名が付いています。<strong>この表がこの記事でいちばん役に立つ部分です。</strong></p>
+
+<div class="tw">
+<table>
+<tr><th></th><th>第 1 段階</th><th>第 2 段階</th></tr>
+<tr><td>番号での呼び方</td><td>フェーズ 1</td><td>フェーズ 2</td></tr>
+<tr><td>役割での呼び方</td><td><strong>IKE フェーズ</strong>（IKE 自身の SA を作るから）</td><td><strong>IPsec フェーズ</strong>（IPsec 用の SA を作るから）</td></tr>
+<tr><td>できる SA の名前</td><td>ISAKMP SA ／ IKE SA</td><td>IPsec SA（IKEv2 では Child SA）</td></tr>
+<tr><td>SA の本数</td><td>双方向で 1 本</td><td>片方向 1 本ずつ、計 2 本</td></tr>
+<tr><td>やりとりの手順の名前</td><td>メインモード or アグレッシブモード</td><td>クイックモード</td></tr>
+<tr><td>何のためにあるか</td><td>交渉を守る通信路を作る</td><td>実データを守る鍵を決める</td></tr>
+</table>
+</div>
+
+<p>つまり <strong>「フェーズ 1」「IKE フェーズ」「ISAKMP SA を作る段階」「メインモードを走らせる段階」は、全部同じ 1 つの出来事です。</strong>ここが繋がれば、IPsec の用語の混乱はほぼ解けます。</p>
+
+<h3>フェーズ 1 の中身 — メインモードとアグレッシブモード</h3>
+
+<p>フェーズ 1 でやることは 3 つです。</p>
+
+<ul>
+<li>① どのアルゴリズムを使うかの合意</li>
+<li>② 鍵の共有（Diffie-Hellman という、盗聴されている回線上でも共通の秘密を作れる方法を使う）</li>
+<li>③ <strong>相手認証</strong>——相手が本物の拠点かの確認。事前共有鍵（PSK。要はパスフレーズ）か、証明書で行う</li>
+</ul>
+
+<p>この 3 つを<strong>どんな順番で、何往復でやるか</strong>に 2 種類あります。これがメインモードとアグレッシブモードです。やっていることは同じで、手順だけが違います。</p>
+
+<figure>
+<p class="ttl">6 メッセージか、3 メッセージか</p>
+<svg viewBox="0 0 700 386" role="img" aria-label="メインモードとアグレッシブモードのメッセージ交換手順の比較">
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 1 L9 5 L0 9 z" fill="var(--c2)"/>
+    </marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0 1 L9 5 L0 9 z" fill="var(--c3)"/>
+    </marker>
+  </defs>
+
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">メインモード（6 メッセージ）</text>
+  <text x="88" y="32" font-size="9.5" fill="var(--muted)" text-anchor="middle">開始側</text>
+  <text x="418" y="32" font-size="9.5" fill="var(--muted)" text-anchor="middle">応答側</text>
+  <line x1="88" y1="38" x2="88" y2="198" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="418" y1="38" x2="418" y2="198" stroke="var(--line)" stroke-width="1.5"/>
+  <rect x="92" y="136" width="322" height="58" rx="5" fill="var(--c3)" fill-opacity="0.15"/>
+  <g font-size="9.5" text-anchor="middle">
+    <path d="M88 58 L412 58" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="253" y="52" fill="var(--c2)">① アルゴリズムの提案</text>
+    <path d="M418 82 L94 82" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="253" y="76" fill="var(--c2)">② 合意した内容</text>
+    <path d="M88 106 L412 106" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="253" y="100" fill="var(--c2)">③ Diffie-Hellman の公開値 ＋ 乱数</text>
+    <path d="M418 130 L94 130" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="253" y="124" fill="var(--c2)">④ Diffie-Hellman の公開値 ＋ 乱数</text>
+    <path d="M88 166 L412 166" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#ag)"/>
+    <text x="253" y="160" fill="var(--c3)">⑤ 自分は誰か ＋ 相手認証</text>
+    <path d="M418 190 L94 190" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#ag)"/>
+    <text x="253" y="184" fill="var(--c3)">⑥ 自分は誰か ＋ 相手認証</text>
+  </g>
+  <text x="436" y="152" font-size="9.5" fill="var(--c3)">③④ で鍵ができてから</text>
+  <text x="436" y="168" font-size="9.5" fill="var(--c3)">身元と認証情報を送るので、</text>
+  <text x="436" y="184" font-size="9.5" fill="var(--c3)">⑤⑥ は暗号化されている</text>
+
+  <text x="0" y="240" font-size="12.5" font-weight="600" fill="var(--ink)">アグレッシブモード（3 メッセージ）</text>
+  <text x="88" y="260" font-size="9.5" fill="var(--muted)" text-anchor="middle">開始側</text>
+  <text x="418" y="260" font-size="9.5" fill="var(--muted)" text-anchor="middle">応答側</text>
+  <line x1="88" y1="266" x2="88" y2="360" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="418" y1="266" x2="418" y2="360" stroke="var(--line)" stroke-width="1.5"/>
+  <g font-size="9.5" text-anchor="middle">
+    <path d="M88 292 L412 292" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="253" y="286" fill="var(--stop)">① 提案 ＋ 公開値 ＋ 自分は誰か</text>
+    <path d="M418 328 L94 328" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="253" y="310" fill="var(--stop)">② 合意 ＋ 公開値 ＋ 自分は誰か</text>
+    <text x="253" y="322" fill="var(--stop)">＋ 認証ハッシュ（暗号化されていない）</text>
+    <path d="M88 352 L412 352" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#ar)"/>
+    <text x="253" y="346" fill="var(--stop)">③ 認証ハッシュ</text>
+  </g>
+  <text x="436" y="300" font-size="9.5" fill="var(--stop)">往復が減るぶん、身元と</text>
+  <text x="436" y="316" font-size="9.5" fill="var(--stop)">認証ハッシュが守られる前に流れる</text>
+  <text x="436" y="336" font-size="9.5" fill="var(--muted)">→ 盗聴者はハッシュを持ち帰り、</text>
+  <text x="436" y="352" font-size="9.5" fill="var(--muted)">   自分の PC で総当たりできる</text>
+</svg>
+<figcaption>速いほうが優れているわけではないという典型例です。メインモードは「鍵を先に作ってから身元を明かす」順番になっているので、誰が誰と繋いでいるかも盗聴者には分かりません。</figcaption>
+</figure>
+
+<p>ではなぜ弱いアグレッシブモードが残っているのか。<strong>相手の IP アドレスが変わる場合に必要だから</strong>です。メインモードは相手を IP アドレスで識別してから事前共有鍵を引くので、モバイル回線などで毎回 IP が変わる相手だと、そもそも使う鍵を選べません。</p>
+
+<div class="note">
+<p><strong>アグレッシブモードと事前共有鍵の組み合わせは避ける。</strong>認証ハッシュが平文で観測できるため、辞書攻撃や総当たりでパスフレーズを割られる可能性があります。しかもオフラインで試せるので、何回間違えてもロックはかかりません。動的 IP の相手と繋ぐ必要があるなら、事前共有鍵をやめて証明書認証にします（ハッシュを割られても秘密鍵は手に入らないため）。</p>
+</div>
+
+<h3>フェーズ 2 — クイックモード</h3>
+
+<p>フェーズ 1 でできあがった安全な通信路（ISAKMP SA）の中で、3 メッセージのやりとりをして IPsec SA を作ります。この手順の名前が <strong>クイックモード</strong>です。メインモードやアグレッシブモードと並ぶ選択肢ではありません。<strong>フェーズ 2 の手順はこれしかないので、選ぶ場面がない</strong>のがクイックモードです。</p>
+
+<p>ここで決まるのは 2 つです。</p>
+
+<ul>
+<li><strong>どの範囲の通信を守るか</strong>（送信元・宛先のネットワーク。機器では「トラフィックセレクタ」などと呼ばれる）</li>
+<li><strong>ESP で使うアルゴリズムと鍵</strong></li>
+</ul>
+
+<p>結果として方向ごとに 1 本ずつ、計 2 本の IPsec SA ができます。ここから先、実データは ESP で暗号化されて流れます。</p>
+
+<p>そして IPsec SA には寿命があります。切れる前に <strong>クイックモードだけをもう一度走らせて鍵を作り直します</strong>。フェーズ 1 はそのまま使い回すので、通信は途切れません。これが「2 段階にしておいてよかった」がいちばん効く場面です。</p>
+
+<div class="note">
+<p><strong>ここまでの手順名は IKEv1 のものです。</strong>「メインモード／アグレッシブモード／クイックモード」という区分があるのは IKEv1 だけで、後継の <strong>IKEv2</strong> ではこの区分自体がなくなり、往復 2 回（4 メッセージ）で接続が完了します。新規に組むなら IKEv2 を選びます。<br>
+逆に言えば、<strong>設定画面に「メインモード／アグレッシブモード」の選択肢が見えたら、それは IKEv1 で動いている</strong>ということです。既存機器の棚卸しではこれが目印になります。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　IPsec SA の寿命が切れて鍵を更新するとき、フェーズ 1 からやり直す必要があるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>ありません。クイックモード（フェーズ 2）だけを走らせます。</strong></p>
+<p>ISAKMP SA がまだ生きている限り、その中でフェーズ 2 をもう一度やって新しい IPsec SA を作るだけで済みます。フェーズ 1 は鍵計算と相手認証で重い処理なので、これを毎回やらずに済むことが 2 段階構成の目的です。逆に ISAKMP SA の寿命が切れたときは、フェーズ 1 からやり直しになります。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：入口の門番 — SPD</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>どう守るか — AH と ESP</li>
+<li class="done"><span class="n">STEP 2 ✓</span>どこまで包むか</li>
+<li class="done"><span class="n">STEP 3 ✓</span>取り決めの単位 — SA</li>
+<li class="done"><span class="n">STEP 4 ✓</span>取り決めの作り方 — IKE</li>
+<li class="now"><span class="n">STEP 5</span>入口の門番 — SPD</li>
+</ol>
+</nav>
+
+<p>最後に 1 つ残っています。<strong>すべての通信を暗号化したいわけではない</strong>という問題です。</p>
+
+<p>拠点間 VPN を張ったとしても、社員が見る一般の Web サイトへの通信を VPN 越しに流したいとは限りません。「大阪拠点のネットワーク宛だけ VPN を通す」「それ以外はそのまま出す」という振り分けが必要です。</p>
+
+<p>この振り分けルールの表が <strong>SPD（Security Policy Database）</strong>です。送信元・宛先アドレスやポートの条件ごとに、次の 3 つのどれかを決めます。</p>
+
+<figure>
+<p class="ttl">パケットは必ずここを通ってから出ていく</p>
+<svg viewBox="0 0 700 214" role="img" aria-label="SPDが送信パケットをPROTECT・BYPASS・DISCARDに振り分ける流れ">
+  <rect x="0" y="72" width="96" height="56" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="48" y="96" font-size="10" fill="var(--ink)" text-anchor="middle">送信する</text>
+  <text x="48" y="113" font-size="10" fill="var(--ink)" text-anchor="middle">パケット</text>
+  <line x1="96" y1="100" x2="130" y2="100" stroke="var(--wire)" stroke-width="1.5"/>
+
+  <rect x="134" y="52" width="176" height="96" rx="6" fill="none" stroke="var(--c1)" stroke-width="2"/>
+  <text x="222" y="72" font-size="10.5" font-weight="600" fill="var(--c1)" text-anchor="middle">SPD</text>
+  <text x="222" y="88" font-size="9" fill="var(--muted)" text-anchor="middle">上から順に条件を照合</text>
+  <g font-size="9" fill="var(--muted)">
+    <text x="146" y="106">10.0.2.0/24 宛 → 保護</text>
+    <text x="146" y="122">53/udp → 素通し</text>
+    <text x="146" y="138">それ以外 → 破棄</text>
+  </g>
+
+  <g font-size="10" text-anchor="middle">
+    <path d="M310 88 L352 40" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+    <rect x="356" y="14" width="150" height="52" rx="6" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="431" y="34" fill="var(--c3)">PROTECT</text>
+    <text x="431" y="52" font-size="9" fill="var(--muted)">IPsec で保護して送る</text>
+
+    <path d="M310 108 L352 108" fill="none" stroke="var(--wire)" stroke-width="1.5"/>
+    <rect x="356" y="82" width="150" height="52" rx="6" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <text x="431" y="102" fill="var(--ink)">BYPASS</text>
+    <text x="431" y="120" font-size="9" fill="var(--muted)">平文のまま普通に送る</text>
+
+    <path d="M310 128 L352 176" fill="none" stroke="var(--stop)" stroke-width="1.5"/>
+    <rect x="356" y="150" width="150" height="52" rx="6" fill="none" stroke="var(--stop)" stroke-width="1.5"/>
+    <text x="431" y="170" fill="var(--stop)">DISCARD</text>
+    <text x="431" y="188" font-size="9" fill="var(--muted)">捨てる（何も返さない）</text>
+  </g>
+
+  <line x1="506" y1="40" x2="540" y2="40" stroke="var(--wire)" stroke-width="1.5"/>
+  <rect x="544" y="8" width="156" height="64" rx="6" fill="var(--c3)" fill-opacity="0.15" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="622" y="28" font-size="9.5" fill="var(--ink)" text-anchor="middle">SAD から SA を引き、</text>
+  <text x="622" y="45" font-size="9.5" fill="var(--ink)" text-anchor="middle">その鍵で ESP 暗号化。</text>
+  <text x="622" y="62" font-size="9.5" fill="var(--ink)" text-anchor="middle">SPI を書いて送信</text>
+</svg>
+<figcaption>受信側では逆向きに使います。SPI から SA を引いて復号したあと、<strong>その通信が本来 IPsec で保護されているべきものだったか</strong>を SPD で確かめます。平文で届いた大阪宛のパケットを黙って受け入れないための確認です。</figcaption>
+</figure>
+
+<p>SPD は上から順に評価される点で、ファイアウォールのルール表とよく似ています。そして<strong>実務でいちばん事故が起きる場所</strong>でもあります。</p>
+
+<div class="note">
+<p><strong>VPN 越しに繋がらないときは、暗号設定より先に SPD を見る。</strong>通したい通信の行を書き忘れると DISCARD 側に落ち、何のエラーも返さずパケットが消えます。「暗号アルゴリズムは合っているのに通らない」ときの定番がこれです。機器によっては SPD という名前で表示されず、「暗号化対象トラフィック」「interesting traffic」「トラフィックセレクタ」などと呼ばれています。</p>
+</div>
+
+<h3>1 パケットの旅——全部つなげる</h3>
+
+<p>ここまでの 5 ステップが、1 つのパケットの上でどう組み合わさるのかを追います。東京の PC（<code>10.0.1.5</code>）から大阪のサーバ（<code>10.0.2.8</code>）へ通信する場面です。</p>
+
+<div class="flow">
+<div><b>1</b>PC が普通のパケットを出す。宛先 <code>10.0.2.8</code>。PC は IPsec の存在を知らない</div>
+<div><b>2</b>東京の VPN ゲートウェイが受け取り、<strong>SPD</strong> を照合する。「<code>10.0.2.0/24</code> 宛は PROTECT」に一致（STEP 5）</div>
+<div><b>3</b>使う <strong>SA</strong> を <strong>SAD</strong> から取り出す。まだ無ければ、ここで <strong>IKE</strong> が起動してフェーズ 1・フェーズ 2 を走らせ、SA を作る（STEP 3・4）</div>
+<div><b>4</b>SA に書かれた鍵とアルゴリズムで <strong>ESP</strong> により暗号化（STEP 1）。<strong>トンネルモード</strong>なので元のパケット丸ごとを包み、外側に GW 同士の IP ヘッダを貼る（STEP 2）</div>
+<div><b>5</b>どの SA を使ったかを示す <strong>SPI</strong> をパケットに書いて送出。経路上のルータには「GW から GW への、中身の読めないパケット」に見える</div>
+<div class="rx"><b>6</b>大阪の GW が受信。<strong>SPI</strong> をキーに <strong>SAD</strong> を引いて SA を特定し、改ざん検知を確認してから復号する</div>
+<div class="rx"><b>7</b>出てきた元のパケットについて、本当に保護されているべき通信だったかを <strong>SPD</strong> で確認し、社内ネットワークへ流す</div>
+<div class="rx"><b>8</b>サーバは <code>10.0.1.5</code> から普通のパケットが届いたと認識する。途中で暗号化されたことは知らない</div>
+</div>
+
+<p>用語が多いのは、この 8 ステップの各段に別々の名前が付いているからです。逆に、この流れの中でどこに位置する言葉なのかが分かれば、名前は覚え直さなくても引き出せます。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　拠点間 VPN を設定しました。IKE のフェーズ 1 もフェーズ 2 も成功し、ログには SA が確立したと出ています。しかし拠点間の通信は一切通りません。どこを疑いますか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>SPD（＝暗号化対象トラフィックの設定）です。</strong></p>
+<p>SA が確立しているということは、鍵の交渉・相手認証・アルゴリズムの合意はすべて成功しています。それでも通らないのは、<strong>パケットが IPsec に入る前の段階で振り分けを間違えている</strong>ということです。通したいネットワークの行が書かれていなければ、パケットは黙って捨てられます。</p>
+<p>もう 1 つよくあるのが、<strong>両側で保護対象の範囲が食い違っている</strong>ケースです。片側が <code>10.0.0.0/16</code>、もう片側が <code>10.0.2.0/24</code> と書いていると、フェーズ 2 の合意でずれが起きて意図した通信が落ちます。</p>
+<p>なお「疎通はするが大きい通信だけ固まる」場合は別問題で、そちらは MTU / MSS を疑います（STEP 2）。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>どう守るか — AH と ESP</li>
+<li class="done"><span class="n">STEP 2 ✓</span>どこまで包むか</li>
+<li class="done"><span class="n">STEP 3 ✓</span>取り決めの単位 — SA</li>
+<li class="done"><span class="n">STEP 4 ✓</span>取り決めの作り方 — IKE</li>
+<li class="done"><span class="n">STEP 5 ✓</span>入口の門番 — SPD</li>
+</ol>
+</nav>
+
+<p>理解したことは、口に出せて初めて自分のものになります。長さ違いで 2 つ用意しました。</p>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>IPsec は、アプリに手を入れずに IP 層で暗号化と改ざん検知を足す仕組みです。実際に暗号化するのは ESP で、拠点間 VPN では元のパケット丸ごとを包むトンネルモードを使います。暗号化には相手との取り決めが必要で、この取り決めを SA と呼びます。SA は片方向なので双方向通信には 2 本要ります。SA を自動で作るのが IKE で、どの通信を IPsec に流すかを決めるのが SPD です。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>IKE は 2 段階に分かれています。鍵の交渉を平文でやったら意味がないので、まず交渉用の安全な通信路を 1 本作り、その中で本番の鍵を決めます。前半がフェーズ 1 で、できる SA を ISAKMP SA と呼びます。後半がフェーズ 2 で、できる SA が IPsec SA です。フェーズ 1 は IKE 自身の SA を作るので IKE フェーズ、フェーズ 2 は IPsec 用の SA を作るので IPsec フェーズとも呼ばれます。</p>
+<p>フェーズ 1 の手順にはメインモードとアグレッシブモードがあり、メインモードは 6 メッセージで鍵を作ってから身元を明かすので安全、アグレッシブモードは 3 メッセージで速い代わりに認証ハッシュが平文で流れます。事前共有鍵と組み合わせると総当たりされうるので、動的 IP の相手には証明書認証を使います。フェーズ 2 の手順はクイックモードだけです。</p>
+<p>なお、これらのモード名は IKEv1 のもので、IKEv2 ではこの区分がなくなり 4 メッセージで完了します。新規なら IKEv2 を選びます。</p>
+</blockquote>
+
+<h3>用語の早見表</h3>
+
+<div class="tw">
+<table>
+<tr><th>用語</th><th>正体</th></tr>
+<tr><td>AH</td><td>改ざん検知だけをする方式。NAT を越えられず、実務では使わない</td></tr>
+<tr><td>ESP</td><td>暗号化＋改ざん検知。実務はこちら</td></tr>
+<tr><td>トランスポートモード</td><td>元の IP ヘッダを残して中身だけ守る。端点自身が IPsec を喋る構成</td></tr>
+<tr><td>トンネルモード</td><td>元のパケット丸ごとを包んで新しい IP ヘッダを貼る。拠点間 VPN はこれ</td></tr>
+<tr><td>SA</td><td>相手と交わした 1 つの取り決め（鍵とアルゴリズム）。<strong>片方向</strong></td></tr>
+<tr><td>SPI</td><td>取り決めの整理番号（32 ビット）。パケットに平文で書かれる</td></tr>
+<tr><td>SAD</td><td>持っている SA の一覧表。SPI から引く</td></tr>
+<tr><td>SPD</td><td>どの通信を保護／素通し／破棄するかのルール表。事故が起きる場所</td></tr>
+<tr><td>IKE</td><td>SA を自動で作る交渉プロトコル。UDP 500</td></tr>
+<tr><td>フェーズ 1 ／ IKE フェーズ</td><td>交渉用の安全な通信路を作る段階</td></tr>
+<tr><td>ISAKMP SA ／ IKE SA</td><td>フェーズ 1 でできる SA。双方向で 1 本</td></tr>
+<tr><td>メインモード</td><td>フェーズ 1 の手順、6 メッセージ。身元が守られる。既定で使う</td></tr>
+<tr><td>アグレッシブモード</td><td>フェーズ 1 の手順、3 メッセージ。速いが身元と認証ハッシュが平文</td></tr>
+<tr><td>フェーズ 2 ／ IPsec フェーズ</td><td>実データ用の鍵を決める段階</td></tr>
+<tr><td>クイックモード</td><td>フェーズ 2 の手順、3 メッセージ。選択肢はこれだけ</td></tr>
+<tr><td>IPsec SA</td><td>フェーズ 2 でできる SA。片方向 1 本ずつ、計 2 本</td></tr>
+</table>
+</div>
+
+<h2>よくある誤解</h2>
+
+<h3>「IPsec ＝ VPN」ではない</h3>
+
+<p>IPsec は「IP 層で通信を守る仕組み」であって、VPN はその使い道の 1 つです。拠点間 VPN が代表的な用途なのでほぼ同一視されますが、サーバ同士が直接 IPsec で話す構成（トランスポートモード）は VPN とは呼びにくい形です。逆に、SSL-VPN のように IPsec を使わない VPN もあります。</p>
+
+<h3>SA は 1 本ではない</h3>
+
+<p>設定画面上は「1 本の VPN 接続」に見えても、内部では <strong>ISAKMP SA が 1 本、IPsec SA が 2 本</strong>、合計 3 本の取り決めが動いています。トラブルシューティングで「SA が確立しているか」を確認するとき、どの SA の話なのかを区別しないと、フェーズ 1 は成功しているがフェーズ 2 で失敗している状況を見落とします。</p>
+
+<h3>「認証」が 2 種類あることを忘れない</h3>
+
+<p>ESP の認証（パケットが書き換えられていないこと）と、フェーズ 1 の認証（相手が本物の拠点であること）は別の話です。設定項目としても別々に出てきます。「認証アルゴリズム」と書いてあれば前者、「認証方式：事前共有鍵／証明書」と書いてあれば後者です。</p>
+
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話が 3 つあります。ここまで理解できていれば、どれも読めるはずです。</p>
+
+<ul>
+<li><strong>NAT の下では ESP がそのまま通らない</strong>：ESP はポート番号を持たないので、NAT 機器が複数端末を区別できません。そのため ESP を UDP 4500 に包み直す NAT-T という仕組みが使われます。ファイアウォールで UDP 500 と UDP 4500 を開ける必要があるのはこのためです</li>
+<li><strong>MTU / MSS の調整</strong>：トンネルモードで数十バイト太るので「疎通はするのに大きい通信だけ固まる」が起きます。ルータ側で TCP MSS を書き換える設定（MSS クランプ）を入れるのが定石です</li>
+<li><strong>IKEv2 の中身</strong>：4 メッセージで何をやっているのか、相手が落ちたことをどう検知するか（DPD）など</li>
+</ul>
+
+<p>このリポジトリ内の関連記事：<a href="IPsec.html">IPsec（要点まとめ）</a> / <a href="IKE.html">IKE</a> / <a href="トランスポートモードとトンネルモード.html">トランスポートモードとトンネルモード</a> / <a href="インターネットVPNとIP-VPN.html">インターネット VPN と IP-VPN</a> / <a href="SSL-VPN.html">SSL-VPN</a> / <a href="../../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a></p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4301">RFC 4301 — Security Architecture for the Internet Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4302">RFC 4302 — IP Authentication Header</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4303">RFC 4303 — IP Encapsulating Security Payload (ESP)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc2409">RFC 2409 — The Internet Key Exchange (IKE)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc2408">RFC 2408 — Internet Security Association and Key Management Protocol (ISAKMP)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7296">RFC 7296 — Internet Key Exchange Protocol Version 2 (IKEv2)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3948">RFC 3948 — UDP Encapsulation of IPsec ESP Packets（NAT-T）</a></li>
+</ul>
+
+</main>
+</body>
+</html>
