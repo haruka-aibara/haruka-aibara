@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>送信ドメイン認証をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:32rem}}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figure .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem}
+figcaption{margin-top:.7rem;font-size:.84rem;color:var(--muted);line-height:1.7}
+svg text{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-size:13px;fill:var(--ink)}
+svg .s{font-size:11px}
+svg .xs{font-size:10px}
+svg .mo{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+svg .mos{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px}
+svg .mu{fill:var(--muted)}
+svg .ok{fill:var(--c3)}
+svg .ng{fill:var(--stop)}
+svg .cb{fill:var(--c2)}
+svg .cc{fill:var(--c4)}
+svg .bx{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+svg .bxl{fill:var(--lane);stroke:var(--line);stroke-width:1.5}
+svg .s1{stroke:var(--c1)}
+svg .s2{stroke:var(--c2)}
+svg .s3{stroke:var(--c3)}
+svg .s4{stroke:var(--c4)}
+svg .sx{stroke:var(--stop)}
+svg .ln{stroke:var(--wire);stroke-width:2;fill:none}
+svg .dash{stroke:var(--wire);stroke-width:1.5;stroke-dasharray:5 4;fill:none}
+svg .dx{stroke:var(--stop)}
+svg .do{stroke:var(--c3)}
+
+/* ---- 確認問題 ---- */
+.quiz{margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;background:var(--card)}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>送信ドメイン認証をゼロから理解する</h1>
+<p class="lede">SMTP が差出人を検証しないところから始めて、5 ステップで SPF・DKIM・DMARC の関係までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+
+<p>「SPF と DKIM と DMARC を設定してください」と言われて、3 つとも設定はできた。でも「なぜ 3 つも要るのか」と聞かれると答えられない。よくある状態です。</p>
+
+<p>3 つの解説を個別に読んでも、この疑問は解けません。SPF・DKIM・DMARC は、<strong>前の仕組みで取りこぼした穴を埋めるために、順番に足されてきたもの</strong>だからです。何を取りこぼしたのかを知らないまま次の説明を読むと、似た機能が 3 つ並んでいるようにしか見えません。</p>
+
+<p>そこでこの記事は、SMTP が差出人を一切検証しないという出発点から始めて、穴が見つかるたびに次の仕組みを足していく順番でたどります。ゴールは用語を覚えることではなく、<strong>なぜ 3 つ必要なのかを自分の言葉で説明できるようになること</strong>です。</p>
+
+<figure>
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>SMTP は名乗り放題</li>
+<li><span class="n">STEP 2</span>SPF — IP を照合する</li>
+<li><span class="n">STEP 3</span>DKIM — メールに署名する</li>
+<li><span class="n">STEP 4</span>DMARC — 見える From に結ぶ</li>
+<li><span class="n">STEP 5</span>ポリシーとレポート</li>
+</ol>
+</nav>
+<figcaption>STEP 2 以降は「前のステップで見つかった穴を埋める」形で進みます。順に読めば、DMARC が最後に来る理由まで含めて筋が通るはずです。</figcaption>
+</figure>
+
+<h2>STEP 1：SMTP は名乗り放題</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>SMTP は名乗り放題</li>
+<li><span class="n">STEP 2</span>SPF — IP を照合する</li>
+<li><span class="n">STEP 3</span>DKIM — メールに署名する</li>
+<li><span class="n">STEP 4</span>DMARC — 見える From に結ぶ</li>
+<li><span class="n">STEP 5</span>ポリシーとレポート</li>
+</ol>
+</nav>
+
+<p>メールを送るときにサーバ同士が交わしている会話は、驚くほど素朴です。実際の中身を見てみます。</p>
+
+<figure>
+<p class="ttl">メール 1 通を送るときの会話（SMTP）</p>
+<svg viewBox="0 0 720 290" role="img" aria-label="SMTP の会話例。差出人はすべて送信側の自己申告で、検証されない">
+<defs><marker id="mk1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker></defs>
+<rect x="10" y="10" width="420" height="252" rx="8" class="bxl"/>
+<text class="mo mu" x="26" y="38">220 mx.example.jp ESMTP</text>
+<text class="mo" x="26" y="66">HELO mail.attacker.example</text>
+<text class="mo" x="26" y="94">MAIL FROM:&lt;security@bank.example&gt;</text>
+<text class="mo" x="26" y="122">RCPT TO:&lt;user@example.jp&gt;</text>
+<text class="mo" x="26" y="150">DATA</text>
+<text class="mo" x="26" y="178">From: 銀行お客様係 &lt;security@bank.example&gt;</text>
+<text class="mo" x="26" y="206">Subject: 【重要】ご利用確認のお願い</text>
+<text class="mo mu" x="26" y="234">250 OK: queued</text>
+<line class="ln" x1="432" y1="90" x2="450" y2="90" marker-end="url(#mk1)"/>
+<text class="s cb" x="458" y="86">エンベロープ From</text>
+<text class="xs mu" x="458" y="104">配送用。受信者には見えない</text>
+<line class="ln" x1="432" y1="174" x2="450" y2="174" marker-end="url(#mk1)"/>
+<text class="s cc" x="458" y="170">ヘッダ From</text>
+<text class="xs mu" x="458" y="188">メールソフトが表示する</text>
+<rect x="452" y="208" width="256" height="54" rx="8" class="bx sx"/>
+<text class="s ng" x="468" y="232">どの行にも検証がない</text>
+<text class="xs mu" x="468" y="252">名乗りをそのまま受け取っている</text>
+</svg>
+<figcaption>攻撃者のサーバから接続しても、銀行を名乗った時点で誰にも止められません。SMTP が生まれた時代、つながっている相手は身元の知れた組織だけで、名乗りを疑う必要がなかったためです。</figcaption>
+</figure>
+
+<h3>差出人は 2 か所にある</h3>
+
+<p>もう 1 つ、この会話には引っかかるところがあります。<strong>差出人が 2 回出てくる</strong>のです。</p>
+
+<figure>
+<p class="ttl">封筒の差出人と、便箋の署名</p>
+<svg viewBox="0 0 720 240" role="img" aria-label="エンベロープ From とヘッダ From は別々に書ける">
+<rect x="15" y="15" width="330" height="140" rx="8" class="bx s2"/>
+<text class="s cb" x="32" y="42">封筒 ＝ エンベロープ From</text>
+<text class="mo" x="32" y="74">MAIL FROM:&lt;...&gt;</text>
+<text class="xs mu" x="32" y="102">配送とエラーの返送に使う</text>
+<text class="xs mu" x="32" y="124">受信者の画面には出てこない</text>
+<rect x="375" y="15" width="330" height="140" rx="8" class="bx s4"/>
+<text class="s cc" x="392" y="42">便箋 ＝ ヘッダ From</text>
+<text class="mo" x="392" y="74">From: &lt;...&gt;</text>
+<text class="xs mu" x="392" y="102">メール本文の先頭に書かれている</text>
+<rect x="392" y="112" width="240" height="30" rx="6" class="bxl s4"/>
+<text class="xs cc" x="404" y="132">利用者が見て判断するのはこちら</text>
+<rect x="15" y="175" width="690" height="52" rx="8" class="bx sx"/>
+<text class="s ng" x="32" y="200">2 つは別々に書ける。しかも一致している必要がない</text>
+<text class="xs mu" x="32" y="220">封筒と便箋の差出人が食い違っていても、SMTP はそれを異常だと思わない</text>
+</svg>
+<figcaption>この「2 つある」という事実は、STEP 4 まで効き続けます。以降に出てくる仕組みが<strong>どちらの From を見ているのか</strong>を意識しながら読み進めてください。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　攻撃者が銀行になりすますとき、2 つの From のうちどちらを詐称すれば目的を達成できるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>ヘッダ From です。</strong></p>
+<p>受信者のメールソフトに表示されるのはヘッダ From だけだからです。エンベロープ From には自分のアドレスを書いておいて、ヘッダ From にだけ銀行を書く、という作りにもできます。</p>
+<p>この非対称は最後まで覚えておいてください。<strong>守りたいのはヘッダ From なのに、これから出てくる SPF はヘッダ From を見ません。</strong></p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：SPF — 偽装しにくいものを 1 つ見つける</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>SMTP は名乗り放題</li>
+<li class="now"><span class="n">STEP 2</span>SPF — IP を照合する</li>
+<li><span class="n">STEP 3</span>DKIM — メールに署名する</li>
+<li><span class="n">STEP 4</span>DMARC — 見える From に結ぶ</li>
+<li><span class="n">STEP 5</span>ポリシーとレポート</li>
+</ol>
+</nav>
+
+<p>自己申告が信用できないなら、<strong>自己申告ではないもの</strong>を探すしかありません。会話の中に 1 つだけあります。<strong>接続してきた IP アドレス</strong>です。</p>
+
+<p>ここは名乗る場所ではなく、実際に通信が成立している相手そのものです。デタラメな IP を書いても、返事がそこへ飛んでしまって会話が続きません。だから比較的信用できます。</p>
+
+<p>そこで、ドメインの管理者が「うちのドメインを名乗ってよいサーバの IP はこれだ」と <strong>DNS に公開しておきます</strong>。DNS のレコードを書き換えられるのはそのドメインの管理者だけなので、攻撃者には偽の一覧を置けません。これが <strong>SPF</strong> です。</p>
+
+<figure>
+<p class="ttl">受信サーバが SPF を確かめる 4 ステップ</p>
+<svg viewBox="0 0 720 165" role="img" aria-label="接続元IPの記録、エンベロープFromの取得、DNS参照、照合の4ステップ">
+<defs><marker id="mk3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker></defs>
+<text class="xs mu" x="10" y="16">受信サーバの中で起きていること</text>
+<rect x="10" y="26" width="154" height="122" rx="8" class="bx s1"/>
+<text class="s" x="87" y="54" text-anchor="middle">① 接続を受ける</text>
+<text class="xs mu" x="87" y="80" text-anchor="middle">接続元 IP を記録</text>
+<text class="mos" x="87" y="106" text-anchor="middle">198.51.100.9</text>
+<rect x="192" y="26" width="154" height="122" rx="8" class="bx s1"/>
+<text class="s" x="269" y="54" text-anchor="middle">② 名乗りを読む</text>
+<text class="xs mu" x="269" y="80" text-anchor="middle">エンベロープ From の</text>
+<text class="xs mu" x="269" y="96" text-anchor="middle">ドメインを取り出す</text>
+<text class="mos" x="269" y="122" text-anchor="middle">example.jp</text>
+<rect x="374" y="26" width="154" height="122" rx="8" class="bx s1"/>
+<text class="s" x="451" y="54" text-anchor="middle">③ DNS を引く</text>
+<text class="xs mu" x="451" y="80" text-anchor="middle">そのドメインの TXT</text>
+<text class="mos" x="451" y="104" text-anchor="middle">v=spf1</text>
+<text class="mos" x="451" y="122" text-anchor="middle">ip4:203.0.113.5 -all</text>
+<rect x="556" y="26" width="154" height="122" rx="8" class="bx sx"/>
+<text class="s" x="633" y="54" text-anchor="middle">④ 照合する</text>
+<text class="xs mu" x="633" y="80" text-anchor="middle">① の IP は</text>
+<text class="xs mu" x="633" y="96" text-anchor="middle">一覧に載っているか</text>
+<text class="s ng" x="633" y="122" text-anchor="middle">載っていない → fail</text>
+<line class="ln" x1="166" y1="88" x2="188" y2="88" marker-end="url(#mk3)"/>
+<line class="ln" x1="348" y1="88" x2="370" y2="88" marker-end="url(#mk3)"/>
+<line class="ln" x1="530" y1="88" x2="552" y2="88" marker-end="url(#mk3)"/>
+</svg>
+<figcaption>偽装しにくいのは ① だけで、②〜④ はすべて ① を根拠にしています。逆に言えば、<strong>① が本来と違う値になる場面では SPF は正しく働きません</strong>。それが次の節です。</figcaption>
+</figure>
+
+<h3>転送で壊れる</h3>
+
+<p>メールはしばしば転送されます。メーリングリストに投げると参加者へ配り直されますし、会社のアドレスに届いたメールを個人のアドレスへ自動転送している人もいます。</p>
+
+<p>このとき、受信サーバに接続してくるのは元の送信サーバではなく <strong>転送サーバ</strong>です。</p>
+
+<figure>
+<p class="ttl">転送を挟むと、接続元 IP だけが変わる</p>
+<svg viewBox="0 0 720 275" role="img" aria-label="直接届いた場合はSPF pass、転送を挟むと接続元IPが変わりSPF fail">
+<defs><marker id="mk4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker></defs>
+<text class="xs mu" x="10" y="18">直接届く場合</text>
+<rect x="10" y="26" width="180" height="56" rx="8" class="bx s1"/>
+<text class="s" x="100" y="50" text-anchor="middle">example.jp の送信サーバ</text>
+<text class="mos" x="100" y="70" text-anchor="middle">203.0.113.5</text>
+<line class="ln" x1="194" y1="54" x2="320" y2="54" marker-end="url(#mk4)"/>
+<rect x="325" y="26" width="180" height="56" rx="8" class="bx s1"/>
+<text class="s" x="415" y="50" text-anchor="middle">受信サーバ</text>
+<text class="xs mu" x="415" y="70" text-anchor="middle">接続元＝203.0.113.5</text>
+<text class="s ok" x="520" y="60">SPF pass ✓</text>
+<text class="xs mu" x="10" y="114">転送を挟む場合（メーリングリスト・自動転送）</text>
+<rect x="10" y="122" width="170" height="56" rx="8" class="bx s1"/>
+<text class="s" x="95" y="146" text-anchor="middle">example.jp の送信サーバ</text>
+<text class="mos" x="95" y="166" text-anchor="middle">203.0.113.5</text>
+<line class="ln" x1="184" y1="150" x2="224" y2="150" marker-end="url(#mk4)"/>
+<rect x="228" y="122" width="160" height="56" rx="8" class="bx s2"/>
+<text class="s cb" x="308" y="146" text-anchor="middle">転送サーバ</text>
+<text class="mos" x="308" y="166" text-anchor="middle">192.0.2.7</text>
+<line class="ln" x1="392" y1="150" x2="432" y2="150" marker-end="url(#mk4)"/>
+<rect x="436" y="122" width="180" height="56" rx="8" class="bx s1"/>
+<text class="s" x="526" y="146" text-anchor="middle">受信サーバ</text>
+<text class="xs mu" x="526" y="166" text-anchor="middle">接続元＝192.0.2.7</text>
+<text class="s ng" x="628" y="156">SPF fail ✗</text>
+<rect x="10" y="205" width="700" height="55" rx="8" class="bx sx"/>
+<text class="s ng" x="28" y="230">差出人ドメインも本文も変わっていないのに fail になる</text>
+<text class="xs mu" x="28" y="250">SPF が見ているのは経路（どこから接続してきたか）だから、経路が変われば結果も変わる</text>
+</svg>
+<figcaption>これは SPF のバグではなく、設計そのものの帰結です。経路を根拠にする以上、経路が変わったら判定が変わるのは避けられません。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　転送されても壊れないようにするには、何を検証すればよいでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>メールそのものを検証すればよい</strong>ことになります。</p>
+<p>壊れた原因は「経路を根拠にした」ことでした。であれば、経路がどう変わっても一緒に運ばれていくもの、つまりメールの中身に証拠を埋め込んでおけば、転送されても証拠は消えません。次のステップはこの話です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：DKIM — 経路ではなくメールに証拠を貼る</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>SMTP は名乗り放題</li>
+<li class="done"><span class="n">STEP 2 ✓</span>SPF — IP を照合する</li>
+<li class="now"><span class="n">STEP 3</span>DKIM — メールに署名する</li>
+<li><span class="n">STEP 4</span>DMARC — 見える From に結ぶ</li>
+<li><span class="n">STEP 5</span>ポリシーとレポート</li>
+</ol>
+</nav>
+
+<p>メールに証拠を貼り付ける方法が <strong>DKIM</strong> です。送信サーバが、ヘッダと本文から計算した値を<strong>秘密鍵で署名</strong>し、<code>DKIM-Signature</code> というヘッダとしてメールに付けます。対になる公開鍵は DNS に置いておき、受信サーバはそれを取ってきて署名を検証します。</p>
+
+<p>秘密鍵を持っているのはそのドメインの管理者だけです。だから「この署名が検証できた＝そのドメインの持ち主が送った」と言えます。おまけに、本文が 1 文字でも書き換えられれば検証は失敗するので、途中で改ざんされていないことも同時に分かります。</p>
+
+<figure>
+<p class="ttl">署名はメールに貼り付いたまま運ばれる</p>
+<svg viewBox="0 0 720 265" role="img" aria-label="DKIM署名は転送サーバを経由しても消えず、受信側で公開鍵により検証できる">
+<defs><marker id="mk5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker></defs>
+<rect x="10" y="20" width="190" height="58" rx="8" class="bx s3"/>
+<text class="s" x="105" y="44" text-anchor="middle">example.jp の送信サーバ</text>
+<text class="xs mu" x="105" y="64" text-anchor="middle">秘密鍵で署名する</text>
+<line class="ln" x1="204" y1="48" x2="244" y2="48" marker-end="url(#mk5)"/>
+<rect x="248" y="20" width="150" height="58" rx="8" class="bx s2"/>
+<text class="s cb" x="323" y="44" text-anchor="middle">転送サーバ</text>
+<text class="xs mu" x="323" y="64" text-anchor="middle">中身は触らない</text>
+<line class="ln" x1="402" y1="48" x2="442" y2="48" marker-end="url(#mk5)"/>
+<rect x="446" y="20" width="180" height="58" rx="8" class="bx s1"/>
+<text class="s" x="536" y="44" text-anchor="middle">受信サーバ</text>
+<text class="xs mu" x="536" y="64" text-anchor="middle">公開鍵で署名を検証</text>
+<text class="s ok" x="636" y="54">pass ✓</text>
+<text class="xs mu" x="10" y="100">一緒に運ばれていくもの</text>
+<rect x="35" y="108" width="140" height="44" rx="6" class="bxl"/>
+<text class="xs" x="105" y="128" text-anchor="middle">ヘッダ＋本文</text>
+<text class="mos cc" x="105" y="144" text-anchor="middle">DKIM-Signature</text>
+<line class="dash" x1="179" y1="130" x2="249" y2="130"/>
+<rect x="253" y="108" width="140" height="44" rx="6" class="bxl"/>
+<text class="xs" x="323" y="128" text-anchor="middle">ヘッダ＋本文</text>
+<text class="mos cc" x="323" y="144" text-anchor="middle">DKIM-Signature</text>
+<line class="dash" x1="397" y1="130" x2="452" y2="130"/>
+<rect x="456" y="108" width="160" height="44" rx="6" class="bxl"/>
+<text class="xs" x="536" y="128" text-anchor="middle">ヘッダ＋本文</text>
+<text class="mos cc" x="536" y="144" text-anchor="middle">DKIM-Signature</text>
+<text class="s" x="10" y="196">経路が変わっても</text>
+<text class="s" x="10" y="218">署名は消えない</text>
+<text class="xs mu" x="10" y="240">だから転送で壊れない</text>
+<rect x="400" y="178" width="310" height="70" rx="8" class="bx s1"/>
+<text class="s" x="416" y="204">example.jp の DNS（公開鍵）</text>
+<text class="mos" x="416" y="230">セレクタ._domainkey.example.jp</text>
+<path class="dash" d="M420,178 V95 H520 V84" marker-end="url(#mk5)"/>
+</svg>
+<figcaption>署名の中には「どのドメインの、どの鍵で署名したか」が書いてあります。受信側はそれを見て DNS の問い合わせ先を組み立てます。STEP 2 の図と見比べると、証拠を置く場所が経路からメール本体へ移ったことが分かります。</figcaption>
+</figure>
+
+<h3>それでもヘッダ From は詐称できる</h3>
+
+<p>ここで STEP 1 の確認問題を思い出してください。守りたいのは<strong>ヘッダ From</strong> でした。</p>
+
+<p>攻撃者が自分のドメイン <code>evil.example</code> を用意して、そこで正しく DKIM 署名をしたらどうなるでしょうか。署名は自分の鍵で作っているので、当然きれいに検証を通ります。</p>
+
+<figure>
+<p class="ttl">署名の検証は通るのに、表示される名前は別物</p>
+<svg viewBox="0 0 720 255" role="img" aria-label="DKIMの署名ドメインとヘッダFromのドメインが異なるメールの例">
+<rect x="15" y="15" width="420" height="175" rx="8" class="bx"/>
+<text class="s mu" x="32" y="42">届いたメール（攻撃者が送信）</text>
+<text class="mo" x="32" y="76">DKIM-Signature: v=1; d=evil.example;</text>
+<text class="mo" x="32" y="112">From: 銀行お客様係 &lt;security@bank.example&gt;</text>
+<text class="xs mu" x="32" y="148">本文：カードのご利用確認はこちらから…</text>
+<line class="dash" x1="437" y1="72" x2="453" y2="72"/>
+<line class="dash" x1="437" y1="112" x2="453" y2="138"/>
+<rect x="455" y="52" width="250" height="52" rx="8" class="bx s3"/>
+<text class="s ok" x="470" y="76">署名の検証は pass ✓</text>
+<text class="xs mu" x="470" y="94">evil.example の鍵で正しく署名済み</text>
+<rect x="455" y="118" width="250" height="52" rx="8" class="bx sx"/>
+<text class="s ng" x="470" y="142">表示されるのは bank.example</text>
+<text class="xs mu" x="470" y="160">利用者はこちらしか見ていない</text>
+<rect x="15" y="200" width="690" height="50" rx="8" class="bxl"/>
+<text class="s" x="32" y="224">DKIM が保証したのは「evil.example が署名した」ことだけ</text>
+<text class="xs mu" x="32" y="242">この 2 つのドメインが違うことを、SPF も DKIM も問題にしていない</text>
+</svg>
+<figcaption>SPF もまったく同じ穴を持っています。SPF が照合するのはエンベロープ From のドメインで、表示されるヘッダ From とは別物だからです。<strong>2 つの検証が両方 pass しても、利用者が見ている名前は誰も守っていません。</strong></figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　SPF も DKIM も pass しているメールが、それでもフィッシングでありうるのはなぜでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>pass したのは攻撃者自身のドメインについてだからです。</strong></p>
+<p>攻撃者は <code>evil.example</code> を自分で取得し、SPF レコードも DKIM の鍵も自分で正しく設定できます。その状態でヘッダ From にだけ <code>bank.example</code> と書けば、「認証はすべて pass、表示は銀行」というメールができあがります。</p>
+<p>足りないのは新しい検証手段ではなく、<strong>検証したドメインと表示されるドメインを突き合わせるルール</strong>です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：DMARC — 検証したドメインと、見える From を結ぶ</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>SMTP は名乗り放題</li>
+<li class="done"><span class="n">STEP 2 ✓</span>SPF — IP を照合する</li>
+<li class="done"><span class="n">STEP 3 ✓</span>DKIM — メールに署名する</li>
+<li class="now"><span class="n">STEP 4</span>DMARC — 見える From に結ぶ</li>
+<li><span class="n">STEP 5</span>ポリシーとレポート</li>
+</ol>
+</nav>
+
+<p>ここまでで、1 通のメールには <strong>ドメインが 3 か所</strong>に出てくることになりました。</p>
+
+<div class="tw">
+<table>
+<tr><th>どこに出てくるか</th><th>誰が見ているか</th></tr>
+<tr><td>エンベロープ From のドメイン</td><td>SPF が照合する</td></tr>
+<tr><td>DKIM 署名のドメイン（<code>d=</code>）</td><td>DKIM が検証する</td></tr>
+<tr><td>ヘッダ From のドメイン</td><td><strong>利用者が見る</strong></td></tr>
+</table>
+</div>
+
+<p>3 つはバラバラに書けます。SPF と DKIM は上の 2 つしか見ておらず、いちばん大事な 3 つ目とのつながりが切れていました。</p>
+
+<p>そこで <strong>DMARC</strong> は、<strong>検証に成功したドメインが、利用者に見えるヘッダ From と一致しているか</strong>を追加で確かめます。この一致確認を <strong>アライメント</strong>と呼びます。DMARC が持ち込んだ新しい概念は、実質これ 1 つです。</p>
+
+<figure>
+<p class="ttl">DMARC のアライメント判定</p>
+<svg viewBox="0 0 720 330" role="img" aria-label="SPFとDKIMが検証したドメインをヘッダFromと突き合わせるアライメントの図">
+<defs>
+<marker id="mk7x" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--stop)"/></marker>
+<marker id="mk7o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--c3)"/></marker>
+</defs>
+<rect x="15" y="20" width="300" height="66" rx="8" class="bx s2"/>
+<text class="s cb" x="32" y="46">SPF が検証したドメイン</text>
+<text class="mo" x="32" y="70">mail-svc.example</text>
+<rect x="15" y="110" width="300" height="66" rx="8" class="bx s4"/>
+<text class="s cc" x="32" y="136">DKIM が署名したドメイン</text>
+<text class="mo" x="32" y="160">example.jp</text>
+<rect x="15" y="200" width="300" height="66" rx="8" class="bx s1"/>
+<text class="s" x="32" y="226">利用者に見えるドメイン（ヘッダ From）</text>
+<text class="mo" x="32" y="250">info@example.jp</text>
+<path class="dash dx" d="M315,53 H345 V216 H321" marker-end="url(#mk7x)"/>
+<path class="dash do" d="M315,143 H375 V248 H321" marker-end="url(#mk7o)"/>
+<text class="s ng" x="395" y="50">別ドメイン → 不一致</text>
+<text class="xs mu" x="395" y="70">SPF 側のアライメントは NG</text>
+<text class="s ok" x="395" y="140">同じドメイン → 一致</text>
+<text class="xs mu" x="395" y="160">DKIM 側のアライメントは OK</text>
+<rect x="395" y="185" width="310" height="86" rx="8" class="bx s3"/>
+<text class="s ok" x="412" y="212">DKIM が pass ＋ アライメント OK</text>
+<text class="s" x="412" y="236">→ DMARC pass</text>
+<text class="xs mu" x="412" y="258">SPF 側が崩れていても通る</text>
+<rect x="15" y="285" width="690" height="36" rx="8" class="bxl"/>
+<text class="xs mu" x="32" y="308">SPF・DKIM のどちらか一方でも「pass ＋ ヘッダ From と一致」なら DMARC pass</text>
+</svg>
+<figcaption>この図は、外部の配信サービスからメールを送っている実際によくある構成です。配送用のドメインはサービス側のものになりますが、DKIM を自ドメインで署名していれば DMARC は通ります。</figcaption>
+</figure>
+
+<h3>なぜ「どちらか一方」でよいのか</h3>
+
+<p>両方揃うことを条件にしなかったのは、手を抜いたからではありません。STEP 2 の転送を思い出してください。</p>
+
+<p>転送されたメールは <strong>SPF が必ず fail します</strong>。両方を必須にすると、メーリングリスト経由の正規のメールが軒並み巻き添えで落ちてしまいます。一方 DKIM は転送を越えて生き残るので、片方でよい設計にしておけば正規のメールは救われます。</p>
+
+<p>そして攻撃者側から見ると、この緩さは抜け道になりません。<strong>どちらのルートを通るにも、ヘッダ From と同じドメインを支配している必要がある</strong>からです。</p>
+
+<div class="tw">
+<table>
+<tr><th>場面</th><th>SPF</th><th>DKIM</th><th>アライメント</th><th>DMARC</th></tr>
+<tr><td>自社サーバから直接送信</td><td>pass</td><td>pass</td><td>OK</td><td>pass</td></tr>
+<tr><td>メーリングリストで転送された正規メール</td><td>fail</td><td>pass</td><td>DKIM 側 OK</td><td>pass</td></tr>
+<tr><td>攻撃者が自分のドメインで署名し From だけ詐称</td><td>pass</td><td>pass</td><td>両方 NG</td><td><strong>fail</strong></td></tr>
+<tr><td>攻撃者が何も設定せず From を詐称</td><td>fail</td><td>なし</td><td>—</td><td><strong>fail</strong></td></tr>
+</table>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　DMARC を導入したあと、攻撃者がヘッダ From になりすまして DMARC を pass させるには何が必要でしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>なりすまし先のドメインの DNS を支配することです。</strong></p>
+<p>SPF ルートを通るならそのドメインの SPF レコードに自分の IP を書き足す必要があり、DKIM ルートを通るならそのドメインの DNS に自分の公開鍵を置く必要があります。どちらも正規の管理者にしかできません。</p>
+<p>逆に言えば、<strong>DNS を乗っ取られたらこの仕組みは丸ごと崩れます</strong>。送信ドメイン認証の信頼は、最終的に DNS の管理に乗っています。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：ポリシーとレポート</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>SMTP は名乗り放題</li>
+<li class="done"><span class="n">STEP 2 ✓</span>SPF — IP を照合する</li>
+<li class="done"><span class="n">STEP 3 ✓</span>DKIM — メールに署名する</li>
+<li class="done"><span class="n">STEP 4 ✓</span>DMARC — 見える From に結ぶ</li>
+<li class="now"><span class="n">STEP 5</span>ポリシーとレポート</li>
+</ol>
+</nav>
+
+<p>ここまでで「詐称を見破る」ところまでは来ました。しかし、見破ったメールを<strong>どう扱うか</strong>は受信サーバの胸三寸のままです。捨てるのか、迷惑メールに入れるのか、それでも配るのか。差出人には何も言う権利がありませんでした。</p>
+
+<p>DMARC はここも引き受けます。差出人が DNS に <strong>ポリシー</strong>を公開しておくと、受信側はそれを尊重して処理します。</p>
+
+<blockquote>
+<p><code>_dmarc.example.jp　TXT　"v=DMARC1; p=none; rua=mailto:report@example.jp"</code></p>
+</blockquote>
+
+<figure>
+<p class="ttl">ポリシーの 3 段階と、返ってくるレポート</p>
+<svg viewBox="0 0 720 295" role="img" aria-label="p=none、quarantine、rejectの3段階と、集計レポートが差出人に届く流れ">
+<defs><marker id="mk8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker></defs>
+<text class="xs mu" x="30" y="20">DMARC に失格したメールの扱いを、差出人が宣言する</text>
+<line class="ln" x1="30" y1="36" x2="670" y2="36" marker-end="url(#mk8)"/>
+<text class="xs mu" x="350" y="56" text-anchor="middle">レポートを見ながら段階的に強くしていく</text>
+<rect x="30" y="170" width="195" height="70" rx="8" class="bxl"/>
+<text class="s" x="127" y="198" text-anchor="middle">p=none</text>
+<text class="xs mu" x="127" y="220" text-anchor="middle">そのまま配送する（何も止まらない）</text>
+<rect x="255" y="125" width="195" height="115" rx="8" class="bx s2"/>
+<text class="s cb" x="352" y="153" text-anchor="middle">p=quarantine</text>
+<text class="xs mu" x="352" y="175" text-anchor="middle">迷惑メールフォルダへ</text>
+<text class="xs mu" x="352" y="215" text-anchor="middle">利用者は見落としやすいが</text>
+<text class="xs mu" x="352" y="231" text-anchor="middle">正規メールが消えはしない</text>
+<rect x="480" y="80" width="195" height="160" rx="8" class="bx sx"/>
+<text class="s ng" x="577" y="108" text-anchor="middle">p=reject</text>
+<text class="xs mu" x="577" y="130" text-anchor="middle">受け取り自体を拒否</text>
+<text class="xs mu" x="577" y="199" text-anchor="middle">認証漏れの送信経路が</text>
+<text class="xs mu" x="577" y="215" text-anchor="middle">残っていると、正規の</text>
+<text class="xs mu" x="577" y="231" text-anchor="middle">メールも届かなくなる</text>
+<path class="dash" d="M577,244 V266 H60 V248" marker-end="url(#mk8)"/>
+<text class="xs mu" x="350" y="286" text-anchor="middle">判定結果は集計レポート（rua）で差出人に届く。自分のドメインがどこから名乗られているかが見える</text>
+</svg>
+<figcaption>実際に処理をするのは受信側なので、ポリシーはあくまで宣言です。それでも主要なメールサービスが尊重するため、実務上は効きます。</figcaption>
+</figure>
+
+<h3>いきなり reject にしない</h3>
+
+<p>導入の定石は <code>p=none</code> から始めることです。<code>none</code> は何も止めませんが、<strong>レポートは届きます</strong>。</p>
+
+<p>ここが重要で、多くの組織は<strong>自分のドメインで誰がメールを送っているかを正確には把握していません</strong>。人事システムの通知、問い合わせフォームの自動返信、契約している SaaS からの案内。長く運用しているほど、担当者すら忘れた送信経路が残っています。</p>
+
+<p>いきなり <code>p=reject</code> にすると、それらが一斉に届かなくなります。<code>none</code> でレポートを数週間眺めて送信経路を棚卸しし、すべて認証を通せる状態にしてから <code>quarantine</code>、最後に <code>reject</code> へ進めます。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　<code>p=none</code> は 1 通も止めません。それでも設定する意味は何でしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>レポートを受け取るためです。</strong></p>
+<p><code>none</code> の本当の役割は防御ではなく可視化です。「どの IP が自分のドメインを名乗って送っているか」「そのうち認証を通っていないのはどれか」が集計されて返ってきます。</p>
+<p>ただし <code>none</code> のまま何年も置くのは、レポートを見ていないなら意味がありません。<code>none</code> は<strong>次の段階へ進むための観測期間</strong>であって、ゴールではありません。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>SMTP は名乗り放題</li>
+<li class="done"><span class="n">STEP 2 ✓</span>SPF — IP を照合する</li>
+<li class="done"><span class="n">STEP 3 ✓</span>DKIM — メールに署名する</li>
+<li class="done"><span class="n">STEP 4 ✓</span>DMARC — 見える From に結ぶ</li>
+<li class="done"><span class="n">STEP 5 ✓</span>ポリシーとレポート</li>
+</ol>
+</nav>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>SMTP は差出人の名乗りを検証しないので、誰でも実在の会社を名乗れます。そこで SPF が「送信元 IP が正規サーバか」を、DKIM が「正規のドメインが署名し改ざんされていないか」を確かめます。ただしこの 2 つは、利用者に表示されるヘッダ From を見ていません。DMARC が「検証に成功したドメインと、表示される From が一致しているか」を確かめて、ようやく利用者が見る名前が守られます。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>SPF は送信元 IP を DNS の一覧と照合する仕組みなので、転送を挟むと接続元が転送サーバに変わって fail します。DKIM は証拠をメール自体に貼り付ける方式なので、転送されても壊れません。</p>
+<p>DMARC は SPF と DKIM の「どちらか一方」が pass ＋ 一致していれば pass とします。転送で SPF が崩れても DKIM で救えるようにするためです。攻撃者から見れば、どちらのルートも From と同じドメインの DNS を支配していないと通れないので、緩さは抜け道になりません。</p>
+<p>失格時の扱いは <code>p=</code> で宣言します。<code>none</code>（そのまま配送）から始めてレポートで自社の送信経路を棚卸しし、<code>quarantine</code>、<code>reject</code> と強めていくのが定石です。</p>
+</blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>「SPF を設定したのでなりすまし対策は済んだ」</h3>
+
+<p>済んでいません。SPF が見ているのはエンベロープ From であって、利用者に表示されるヘッダ From ではないからです。攻撃者は自分のドメインで SPF を pass させたうえで、表示だけ他社を名乗れます。この穴を塞ぐのは DMARC のアライメントです。</p>
+
+<h3>「DMARC を設定した＝守られている」</h3>
+
+<p><code>p=none</code> のままなら、1 通も止まりません。設定した事実と、実際に止まっているかは別の話です。</p>
+
+<h3>「認証を通ったメールは安全」</h3>
+
+<p>送信ドメイン認証が保証するのは「名乗ったドメインが本当に送ったこと」だけで、<strong>そのドメインが善良かどうかは何も言っていません</strong>。攻撃者が取得した詐欺ドメインは、SPF も DKIM も DMARC も正しく設定できます。認証は差出人の身元確認であって、中身の安全性の証明ではありません。</p>
+
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話が 3 つあります。ここまで理解できていれば、どれも読めるはずです。</p>
+
+<ul>
+<li><strong>ARC</strong>：メーリングリストは件名に <code>[list]</code> を足すなど本文やヘッダを書き換えることがあり、そうなると DKIM の署名も壊れます。転送前の認証結果を引き継ぐための仕組みが ARC です</li>
+<li><strong>アライメントの strict と relaxed</strong>：この記事では「一致するか」だけを見ましたが、サブドメインを同一視するかどうかを選べます</li>
+<li><strong>レポートの読み方</strong>：集計レポートは XML で届きます。実運用では可視化サービスに投げるのが一般的です</li>
+</ul>
+
+<p>このリポジトリ内の関連記事（要点まとめ）：<a href="送信ドメイン認証.html">送信ドメイン認証</a> / <a href="SPF.html">SPF</a> / <a href="DKIM.html">DKIM</a> / <a href="DMARC.html">DMARC</a></p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5321">RFC 5321 — Simple Mail Transfer Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5322">RFC 5322 — Internet Message Format</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7208">RFC 7208 — Sender Policy Framework (SPF)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6376">RFC 6376 — DomainKeys Identified Mail (DKIM) Signatures</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7489">RFC 7489 — Domain-based Message Authentication, Reporting, and Conformance (DMARC)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8617">RFC 8617 — The Authenticated Received Chain (ARC) Protocol</a></li>
+<li><a href="https://dmarc.org/">dmarc.org</a></li>
+<li><a href="https://support.google.com/a/answer/81126">Google — メール送信者のガイドライン</a></li>
+</ul>
+
+</main>
+</body>
+</html>
