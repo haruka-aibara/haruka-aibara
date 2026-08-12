@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>セキュア OS と SELinux をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>セキュア OS と SELinux をゼロから理解する</h1>
+<p class="lede">root を取られた「その先」を止めるための仕組み。</p>
+
+<h2>root を取られたら、止めるものがない</h2>
+<p>Web サーバが乗っ取られたとする。プロセスは <code>apache</code> ユーザで動いているので、まずはそのユーザで読めるファイルが漏れる。そこからカーネルや setuid バイナリの脆弱性で root に昇格されると、あとは止まらない。<code>/etc/shadow</code> も SSH の秘密鍵も業務データも、全部読める。</p>
+<p>なぜ止まらないのか。Linux の通常のパーミッションは<strong>任意アクセス制御（DAC: Discretionary Access Control）</strong>と呼ばれる。「任意」とは、アクセス権を決めるのが<strong>ファイルの所有者</strong>だという意味だ。所有者は自分のファイルを誰にでも開放できるし、root は DAC のチェックをほぼ素通りする。権限が「誰が実行しているか」だけで決まり、しかも最強のユーザが1人いる。だから侵入が root に届いた瞬間、被害はシステム全体に広がる。</p>
+<p>（<code>rwx</code> の読み方そのものは <a href="../Linux/04_ファイル操作/04-01_ファイルパーミッション.md">Linux/04-01 ファイルパーミッション</a> にある）</p>
+
+<figure>
+<svg viewBox="0 0 700 312" role="img" aria-label="同じ攻撃がDACの世界とMACの世界でどこまで届くかの比較">
+  <defs>
+    <marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+
+  <text x="0" y="12" font-size="13" font-weight="600" fill="var(--ink)">DAC — root に届いた時点で、その先を止めるものがない</text>
+  <rect x="0" y="40" width="120" height="48" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="60" y="60" font-size="11" fill="var(--ink)" text-anchor="middle">Web サーバ</text>
+  <text x="60" y="77" font-size="10.5" fill="var(--muted)" text-anchor="middle">乗っ取られる</text>
+  <path d="M124 64 H152" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am)"/>
+  <rect x="158" y="40" width="106" height="48" rx="6" fill="var(--c2)"/>
+  <text x="211" y="69" font-size="11.5" fill="var(--on)" text-anchor="middle">root へ昇格</text>
+  <path d="M268 64 H296" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am)"/>
+  <rect x="302" y="18" width="290" height="92" rx="8" fill="none" stroke="var(--stop)" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <g font-size="10.5" fill="var(--ink)">
+    <rect x="316" y="28" width="262" height="22" rx="4" fill="var(--lane)"/><text x="328" y="43">/etc/shadow</text>
+    <rect x="316" y="56" width="262" height="22" rx="4" fill="var(--lane)"/><text x="328" y="71">/home/alice/.ssh/id_rsa</text>
+    <rect x="316" y="84" width="262" height="22" rx="4" fill="var(--lane)"/><text x="328" y="99">業務データベースの認証情報</text>
+  </g>
+  <text x="302" y="128" font-size="11.5" fill="var(--stop)">→ すべて読める・書き換えられる</text>
+
+  <text x="0" y="182" font-size="13" font-weight="600" fill="var(--ink)">MAC — root になっても、ポリシに書いていないものは通らない</text>
+  <rect x="0" y="210" width="120" height="48" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="60" y="230" font-size="11" fill="var(--ink)" text-anchor="middle">Web サーバ</text>
+  <text x="60" y="247" font-size="10.5" fill="var(--muted)" text-anchor="middle">乗っ取られる</text>
+  <path d="M124 234 H152" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am)"/>
+  <rect x="158" y="210" width="106" height="48" rx="6" fill="var(--c2)"/>
+  <text x="211" y="239" font-size="11.5" fill="var(--on)" text-anchor="middle">root へ昇格</text>
+  <path d="M268 234 H280" stroke="var(--muted)" stroke-width="1.5"/>
+  <text x="288" y="240" font-size="15" font-weight="700" fill="var(--stop)" text-anchor="middle">×</text>
+  <rect x="300" y="188" width="12" height="92" rx="3" fill="var(--c3)"/>
+  <text x="306" y="298" font-size="10.5" fill="var(--c3)" text-anchor="middle">ポリシ</text>
+  <rect x="330" y="188" width="262" height="92" rx="8" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+  <g font-size="10.5" fill="var(--muted)">
+    <rect x="344" y="198" width="234" height="22" rx="4" fill="var(--lane)" opacity=".55"/><text x="356" y="213">/etc/shadow</text>
+    <rect x="344" y="226" width="234" height="22" rx="4" fill="var(--lane)" opacity=".55"/><text x="356" y="241">/home/alice/.ssh/id_rsa</text>
+    <rect x="344" y="254" width="234" height="22" rx="4" fill="var(--lane)" opacity=".55"/><text x="356" y="269">業務データベースの認証情報</text>
+  </g>
+  <text x="350" y="298" font-size="11.5" fill="var(--muted)">→ 届かない（拒否がログに残る）</text>
+</svg>
+<figcaption>下の世界でも root への昇格自体は起きている。違うのは、昇格してもプロセスに貼られたラベルが変わらないこと。ポリシは「誰か」ではなくそのラベルを見て判断するので、root という肩書きが効かない。侵入を防ぐ仕組みではなく、侵入された後の被害範囲を閉じ込める仕組みだと考えるとよい。</figcaption>
+</figure>
+
+<h2>ポリシで縛る — 強制アクセス制御（MAC）</h2>
+<p><strong>強制アクセス制御（MAC: Mandatory Access Control）</strong>は、アクセスの可否をシステム側のポリシで固定する方式だ。所有者は変えられず、root も例外にならない。「この Web サーバのプロセスは <code>/var/www</code> 以下を読むだけ」とポリシにあれば、root 権限を得ても <code>/etc/shadow</code> に手が届かない。</p>
+<p>この MAC を備えた OS が<strong>セキュア OS</strong>である。設計の柱は2つ。</p>
+<ul>
+<li><strong>最小権限の原則</strong> — プロセスやユーザに与えるのは、その仕事に必要な権限だけ。「とりあえず root で動かす」をやめる。</li>
+<li><strong>管理者権限（root）の分割</strong> — 万能の root を廃し、ポリシを書く人・ユーザを管理する人・監査ログを見る人に分ける。1アカウントの侵害で全部を持っていかれない。</li>
+</ul>
+<p>なお<strong>Trusted OS</strong>は、こうした機能が TCSEC（オレンジブック）などの評価基準を満たすと認められた製品を指す呼び方。セキュア OS はその考え方を一般化した言い方で、対立する概念ではない。</p>
+
+<h2>SELinux の中核 — Type Enforcement（TE）</h2>
+<p>Linux で MAC を実装したのが SELinux。その中心が <strong>Type Enforcement（TE）</strong>だ。</p>
+<p>SELinux はすべてのプロセスとファイルに<strong>ラベル</strong>を貼る。プロセス側のラベルを<strong>ドメイン</strong>、ファイルなど資源側のラベルを<strong>タイプ</strong>と呼ぶ（実体は同じラベルで、どちら側かの違い）。ポリシには「このドメインはこのタイプに何をしてよいか」を <code>allow</code> ルールで列挙する。</p>
+<p>効いているのは<strong>書いていない組み合わせは拒否</strong>というホワイトリスト方式であること。禁止事項を数え上げる必要がないので、想定していなかった攻撃経路もまとめて塞がる。</p>
+
+<figure>
+<svg viewBox="0 0 700 244" role="img" aria-label="ドメインからタイプへの許可関係を示した図">
+  <text x="10" y="12" font-size="12" font-weight="600" fill="var(--muted)">プロセスに貼るラベル＝ドメイン</text>
+  <text x="450" y="12" font-size="12" font-weight="600" fill="var(--muted)">資源に貼るラベル＝タイプ</text>
+
+  <rect x="10" y="40" width="170" height="46" rx="6" fill="var(--c1)"/>
+  <text x="95" y="62" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">httpd_t</text>
+  <text x="95" y="78" font-size="10" fill="var(--on)" opacity=".85" text-anchor="middle">Web サーバのプロセス</text>
+
+  <rect x="10" y="150" width="170" height="46" rx="6" fill="var(--c4)"/>
+  <text x="95" y="172" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">sshd_t</text>
+  <text x="95" y="188" font-size="10" fill="var(--on)" opacity=".85" text-anchor="middle">SSH のプロセス</text>
+
+  <rect x="450" y="30" width="240" height="46" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="570" y="52" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">httpd_sys_content_t</text>
+  <text x="570" y="68" font-size="10" fill="var(--muted)" text-anchor="middle">/var/www/html 配下</text>
+
+  <rect x="450" y="140" width="240" height="46" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="570" y="162" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">shadow_t</text>
+  <text x="570" y="178" font-size="10" fill="var(--muted)" text-anchor="middle">/etc/shadow</text>
+
+  <path d="M184 56 H446" stroke="var(--c3)" stroke-width="2"/>
+  <text x="315" y="48" font-size="11" fill="var(--c3)" text-anchor="middle">allow（読み取り可）</text>
+
+  <path d="M184 76 L446 158" stroke="var(--stop)" stroke-width="2" stroke-dasharray="5 4"/>
+  <text x="315" y="110" font-size="11" fill="var(--stop)" text-anchor="middle" transform="rotate(17.4 315 117)">ルールがない → 拒否</text>
+
+  <path d="M184 172 H446" stroke="var(--c3)" stroke-width="2"/>
+  <text x="315" y="192" font-size="11" fill="var(--c3)" text-anchor="middle">allow（読み取り可）</text>
+
+  <text x="10" y="230" font-size="11" fill="var(--muted)">ポリシに書くのは許可だけ。同じ root 権限でも、sshd_t は /etc/shadow を読めて httpd_t は読めない。</text>
+</svg>
+<figcaption>プロセスがどのドメインで動くかは、実行されるバイナリのタイプから自動的に決まる（ドメイン遷移）。攻撃者が Web サーバ経由でシェルを起動しても、そのシェルは httpd_t の系列に留まり、管理者がログインして起動したシェルとは別物として扱われる。</figcaption>
+</figure>
+
+<h2>ロールを挟む — SELinux の RBAC</h2>
+<p>ドメインをユーザに直接ひもづけると、ユーザが増えるたびに割り当てが膨らんで管理できなくなる。そこで SELinux は間に<strong>ロール</strong>を挟む。ユーザには就ける<strong>ロール</strong>を、ロールには入れる<strong>ドメイン</strong>を定義しておき、ユーザは許されたロールを介してしかドメインに移れない。</p>
+<p>一般ユーザは管理系のドメインに入れず、そこに紐づくタイプにも触れない。「ロールを切り替えないと管理作業ができない」という形で、前述の権限分割が実装されている。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="ユーザからロール、ドメイン、タイプへの紐づきを段で示した図">
+  <defs>
+    <marker id="am2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <rect x="10" y="12" width="300" height="46" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="26" y="34" font-size="11.5" font-weight="600" fill="var(--ink)">Linux ユーザ alice</text>
+  <text x="26" y="50" font-size="10.5" fill="var(--muted)">↳ SELinux ユーザ user_u に対応づけ</text>
+  <text x="330" y="40" font-size="11" fill="var(--muted)">ログイン時にどの SELinux ユーザになるか</text>
+  <path d="M100 58 V72" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am2)"/>
+
+  <rect x="10" y="76" width="300" height="46" rx="6" fill="var(--c4)"/>
+  <text x="26" y="98" font-size="11.5" font-weight="600" fill="var(--on)">ロール　user_r</text>
+  <text x="26" y="114" font-size="10.5" fill="var(--on)" opacity=".85">管理者なら sysadm_r も持つ</text>
+  <text x="330" y="104" font-size="11" fill="var(--muted)">そのユーザが就ける役職の一覧</text>
+  <path d="M100 122 V136" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am2)"/>
+
+  <rect x="10" y="140" width="300" height="46" rx="6" fill="var(--c1)"/>
+  <text x="26" y="162" font-size="11.5" font-weight="600" fill="var(--on)">ドメイン　user_t</text>
+  <text x="26" y="178" font-size="10.5" fill="var(--on)" opacity=".85">いま動いているプロセスの身分</text>
+  <text x="330" y="168" font-size="11" fill="var(--muted)">ロールが入れるドメインだけに限定される</text>
+  <path d="M100 186 V200" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am2)"/>
+  <text x="112" y="198" font-size="10.5" fill="var(--c3)">TE の allow ルールで許可された範囲だけ</text>
+
+  <rect x="10" y="204" width="300" height="46" rx="6" fill="var(--c2)"/>
+  <text x="26" y="226" font-size="11.5" font-weight="600" fill="var(--on)">タイプ　user_home_t / shadow_t …</text>
+  <text x="26" y="242" font-size="10.5" fill="var(--on)" opacity=".85">アクセスされる側のラベル</text>
+  <text x="330" y="234" font-size="11" fill="var(--muted)">ここに届くかどうかが最終的な可否</text>
+</svg>
+<figcaption>ラベルは <code>user_u:user_r:user_t</code> のようにコロン区切りで一体になっており、<code>ps -Z</code> や <code>ls -Z</code> で確認できる。ロールが効くのはプロセス側だけで、ファイルのロール欄は慣例的に <code>object_r</code> 固定になる。</figcaption>
+</figure>
+
+<h2>動作モード</h2>
+<p>SELinux には <strong>enforcing</strong>（ポリシ違反を実際に拒否する）、<strong>permissive</strong>（拒否せずログだけ残す）、<strong>disabled</strong>（無効）の3モードがある。permissive はポリシを詰めている最中の調査用で、本番の狙いは enforcing。</p>
+
+<div class="note">
+<p><strong>止まったから無効化する、をやらない</strong></p>
+<p>アプリが動かないときに <code>disabled</code> にするのが最も多い運用事故。まず permissive にして拒否ログを集め、必要な許可だけを足すのが本来の手順。提案するときは「侵害されたときに被害が全社に広がるか一台で止まるかが変わる」と言うと、無効化の是非を判断してもらいやすい。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.redhat.com/ja/documentation/red_hat_enterprise_linux/9/html/using_selinux/index">Red Hat - SELinux の使用</a></li>
+<li><a href="https://selinuxproject.org/page/NB_TE">SELinux Project - Type Enforcement</a></li>
+<li><a href="https://selinuxproject.org/page/NB_RBAC">SELinux Project - Role-Based Access Control</a></li>
+<li><a href="https://www.ipa.go.jp/security/vuln/programming/index.html">IPA - セキュア・プログラミング講座</a></li>
+<li><a href="https://csrc.nist.gov/glossary/term/mandatory_access_control">NIST CSRC Glossary - Mandatory Access Control</a></li>
+</ul>
+
+</main>
+</body>
+</html>

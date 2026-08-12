@@ -210,3 +210,4 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **物理セキュリティ**: `Hardware Security/` 配下に 1 トピック 1 ファイル（耐タンパ性 / UEFIとセキュアブート / ICカードと磁気カード / RFID）
 - **メール形式**: `Networking/メール/` に MIME / S/MIME / Base64 を追加済み。`Networking/SOAP.html` あり
 - **ログ管理**: `Logging/syslog.html`（syslog の集約 / ファシリティとプライオリティ / journald との分担 / rsyslog・syslog-ng の設定例）。認証ログの読み方は `Linux/06_サーバー確認/06-02_認証ログ.md` にある
+- **セキュア OS**: `Secure OS/セキュアOSとSELinuxをゼロから理解する.html`（DAC と MAC の対比 / セキュア OS と Trusted OS / Type Enforcement / SELinux の RBAC / 動作モード）。通常のパーミッション（rwx）は `Linux/04_ファイル操作/04-01_ファイルパーミッション.md` にある
