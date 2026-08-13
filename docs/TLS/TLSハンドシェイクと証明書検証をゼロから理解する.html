@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TLS ハンドシェイクと証明書検証をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+ol{padding-left:1.4rem}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>TLS ハンドシェイクと証明書検証をゼロから理解する</h1>
+<p class="lede">鍵マークの裏で、実際に何が確認されているのか。ハンドシェイクから証明書検証・失効確認までを1本につなぐ。</p>
+
+<h2>https でつながっているとき、何が確認されているのか</h2>
+<p>「鍵マーク＝暗号化されている」とだけ理解していると、TLS の半分を見落とす。TLS がやっているのは3つある。<strong>相手が名乗ったホスト本人か（認証）／経路で読まれないか（機密性）／途中で書き換えられていないか（完全性）</strong>。</p>
+<p>そして順番が肝心で、<strong>認証が先、鍵の共有が後</strong>。逆にすると、中間者と仲良く暗号通信を確立して終わる。暗号化は「誰と」が確定していて初めて意味を持つ。</p>
+
+<h2>その前に、なぜ TCP の上なのか</h2>
+<p>TLS は下位層が「欠けず・重複せず・順番どおり」届けることを前提に作られている。レコードのバイトが1つでも欠ければ復号も改ざん検知も通らないので、欠落と順序の面倒は TCP に任せている。詳しくは<a href="SSL_TLSがTCP上で動作する理由.html">SSL/TLS が TCP 上で動作する理由</a>。</p>
+
+<h2>ハンドシェイクの流れ</h2>
+<p>段取りは4つ。<strong>暗号スイートの合意 → 証明書の提示 → 鍵の共有 → 暗号化通信の開始</strong>。</p>
+
+<figure>
+<svg viewBox="0 0 700 424" role="img" aria-label="TLSハンドシェイクのシーケンスと平文・暗号化の境界">
+  <rect x="56" y="36" width="588" height="240" rx="8" fill="var(--lane)"/>
+  <rect x="56" y="282" width="588" height="118" rx="8" fill="var(--c3)" opacity=".17"/>
+  <text x="66" y="54" font-size="10.5" fill="var(--stop)">平文 — 経路上で読める</text>
+  <text x="66" y="300" font-size="10.5" fill="var(--c3)">セッション鍵で暗号化</text>
+
+  <text x="110" y="24" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">クライアント</text>
+  <text x="590" y="24" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">サーバ</text>
+  <line x1="110" y1="36" x2="110" y2="404" stroke="var(--ink)" stroke-width="1" opacity=".35"/>
+  <line x1="590" y1="36" x2="590" y2="404" stroke="var(--ink)" stroke-width="1" opacity=".35"/>
+
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <text x="350" y="72">① ClientHello ─ 対応する暗号スイート一覧・乱数・接続先ホスト名(SNI)</text>
+    <line x1="114" y1="78" x2="578" y2="78" stroke="var(--c1)" stroke-width="1.6"/>
+    <polygon points="586,78 576,74 576,82" fill="var(--c1)"/>
+
+    <text x="350" y="106">② ServerHello ─ 使う暗号スイートを1つ選ぶ・乱数</text>
+    <line x1="122" y1="112" x2="586" y2="112" stroke="var(--c2)" stroke-width="1.6"/>
+    <polygon points="114,112 124,108 124,116" fill="var(--c2)"/>
+
+    <text x="350" y="138">③ Certificate ─ サーバ証明書 ＋ 中間 CA 証明書</text>
+    <line x1="122" y1="144" x2="586" y2="144" stroke="var(--c2)" stroke-width="1.6"/>
+    <polygon points="114,144 124,140 124,148" fill="var(--c2)"/>
+
+    <text x="350" y="170">④ 鍵交換パラメータ（サーバの秘密鍵で署名）</text>
+    <line x1="122" y1="176" x2="586" y2="176" stroke="var(--c2)" stroke-width="1.6"/>
+    <polygon points="114,176 124,172 124,180" fill="var(--c2)"/>
+  </g>
+
+  <rect x="66" y="188" width="196" height="34" rx="6" fill="var(--card)" stroke="var(--c4)" stroke-width="1.4"/>
+  <text x="164" y="203" font-size="10.5" fill="var(--c4)" text-anchor="middle" font-weight="600">⑤ 証明書を検証（図2）</text>
+  <text x="164" y="217" font-size="10" fill="var(--muted)" text-anchor="middle">ここを省くと中間者に気づけない</text>
+
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <text x="350" y="238">⑥ 鍵交換パラメータ／プレマスタシークレット</text>
+    <line x1="114" y1="244" x2="578" y2="244" stroke="var(--c1)" stroke-width="1.6"/>
+    <polygon points="586,244 576,240 576,248" fill="var(--c1)"/>
+  </g>
+  <rect x="176" y="252" width="348" height="20" rx="5" fill="var(--card)" stroke="var(--line)"/>
+  <text x="350" y="266" font-size="10.5" fill="var(--muted)" text-anchor="middle">⑦ 双方でマスタシークレット → セッション鍵を導出</text>
+
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <text x="350" y="322">⑧ Finished（ここまでの全メッセージのハッシュ）</text>
+    <line x1="114" y1="328" x2="578" y2="328" stroke="var(--c3)" stroke-width="1.6"/>
+    <polygon points="586,328 576,324 576,332" fill="var(--c3)"/>
+
+    <text x="350" y="352">⑨ Finished</text>
+    <line x1="122" y1="358" x2="586" y2="358" stroke="var(--c3)" stroke-width="1.6"/>
+    <polygon points="114,358 124,354 124,362" fill="var(--c3)"/>
+
+    <text x="350" y="382">アプリケーションデータ（HTTP など）— ここからは Record プロトコルの担当</text>
+    <line x1="122" y1="390" x2="578" y2="390" stroke="var(--c3)" stroke-width="1.6"/>
+    <polygon points="586,390 576,386 576,394" fill="var(--c3)"/>
+    <polygon points="114,390 124,386 124,394" fill="var(--c3)"/>
+  </g>
+</svg>
+<figcaption>TLS 1.3 では鍵交換パラメータを ClientHello に相乗りさせて往復を1つ減らし、証明書も暗号化されてから送られる。段取り自体は同じで、平文で流れる範囲が狭くなったと捉えるとよい。SNI は 1.3 でも平文のままで、どのホストに接続したかは経路上から見える。</figcaption>
+</figure>
+
+<p>押さえるのは、<strong>①〜④が平文で流れる</strong>こと。暗号スイートの合意そのものを改ざんして弱い暗号に落とすのが<a href="../Cyber Attacks/23_SSL_TLSダウングレード攻撃.html">ダウングレード攻撃</a>で、これを防いでいるのが最後の Finished ——ここまでの全メッセージのハッシュを鍵付きで送り合うので、途中で1バイトでも書き換えられていれば一致せず接続が切れる。</p>
+
+<h3>プレマスタシークレット → マスタシークレット → セッション鍵</h3>
+<p>共有した秘密（プレマスタシークレット）はそのまま暗号鍵にしない。①②で交換した<strong>双方の乱数を混ぜてマスタシークレットを作り</strong>、そこから用途別・方向別のセッション鍵（暗号化用と MAC 用、送信方向と受信方向で別）を導出する。</p>
+<p>乱数を混ぜるのは、同じ鍵が二度と再現されないようにするため。毎回同じ鍵になるなら、記録しておいた過去の通信をそのまま投げ返す再生攻撃が成立する。鍵の作り方2通りは<a href="プレマスタシークレット.html">プレマスタシークレット</a>にある。</p>
+
+<h3>Record プロトコルが実データにしていること</h3>
+<p>以降のデータを扱うのが Record プロトコル。<strong>扱える大きさに分割し、改ざん検知用の MAC を付け、セッション鍵で暗号化し、ヘッダを付けて TCP に渡す</strong>。</p>
+<p>MAC がないとどうなるか。暗号文は読めなくても、ビットを反転させて中身を狂わせることはできる。「読めない」と「変えられない」は別物で、後者を担うのが MAC（現在の AEAD 暗号は両方を一体で行う）。詳細は <a href="Recordプロトコル.html">Record プロトコル</a>。</p>
+
+<h2>受け取った証明書を検証する</h2>
+<p>サーバが証明書を出してきた時点では、まだ何も証明されていない。証明書は誰でも自分で作れるからだ。クライアントは4点を確認する。</p>
+
+<figure>
+<svg viewBox="0 0 700 316" role="img" aria-label="署名の連鎖と証明書検証の4項目">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">署名の連鎖</text>
+
+  <rect x="24" y="26" width="252" height="50" rx="7" fill="var(--c4)"/>
+  <text x="150" y="46" font-size="11.5" fill="var(--on)" text-anchor="middle" font-weight="600">ルート CA 証明書</text>
+  <text x="150" y="63" font-size="10" fill="var(--on)" text-anchor="middle">自己署名。OS／ブラウザに最初から入っている</text>
+
+  <line x1="150" y1="76" x2="150" y2="112" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="150,120 145,110 155,110" fill="var(--muted)"/>
+  <text x="160" y="100" font-size="10" fill="var(--muted)">ルートの秘密鍵で署名</text>
+
+  <rect x="24" y="120" width="252" height="46" rx="7" fill="var(--c1)"/>
+  <text x="150" y="140" font-size="11.5" fill="var(--on)" text-anchor="middle" font-weight="600">中間 CA 証明書</text>
+  <text x="150" y="156" font-size="10" fill="var(--on)" text-anchor="middle">サーバが自分で配信する必要がある</text>
+
+  <line x1="150" y1="166" x2="150" y2="202" stroke="var(--muted)" stroke-width="1.4"/>
+  <polygon points="150,210 145,200 155,200" fill="var(--muted)"/>
+  <text x="160" y="190" font-size="10" fill="var(--muted)">中間 CA の秘密鍵で署名</text>
+
+  <rect x="24" y="210" width="252" height="46" rx="7" fill="var(--c3)"/>
+  <text x="150" y="230" font-size="11.5" fill="var(--on)" text-anchor="middle" font-weight="600">サーバ証明書（example.com）</text>
+  <text x="150" y="246" font-size="10" fill="var(--on)" text-anchor="middle">公開鍵・SAN・有効期限が入っている</text>
+
+  <path d="M14 250 L14 40" fill="none" stroke="var(--c2)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <polygon points="14,30 9,42 19,42" fill="var(--c2)"/>
+  <text x="8" y="284" font-size="10" fill="var(--c2)">検証はサーバ証明書から上へたどり、内蔵のルートに届けば信頼できる</text>
+
+  <line x1="310" y1="20" x2="310" y2="262" stroke="var(--line)" stroke-width="1"/>
+  <text x="332" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">クライアントが確認する4点</text>
+
+  <g font-size="11" fill="var(--ink)">
+    <circle cx="344" cy="42" r="10" fill="var(--c4)"/><text x="344" y="46" font-size="10" fill="var(--on)" text-anchor="middle">1</text>
+    <text x="364" y="40">署名の連鎖が内蔵ルートまで届くか</text>
+    <text x="364" y="56" font-size="10" fill="var(--muted)">届かないなら、その証明書は誰でも作れた紙切れ</text>
+
+    <circle cx="344" cy="98" r="10" fill="var(--c4)"/><text x="344" y="102" font-size="10" fill="var(--on)" text-anchor="middle">2</text>
+    <text x="364" y="96">有効期限の内側か</text>
+    <text x="364" y="112" font-size="10" fill="var(--muted)">判定は端末の時計が基準になる</text>
+
+    <circle cx="344" cy="154" r="10" fill="var(--c4)"/><text x="344" y="158" font-size="10" fill="var(--on)" text-anchor="middle">3</text>
+    <text x="364" y="152">SAN が接続先ホスト名と一致するか</text>
+    <text x="364" y="168" font-size="10" fill="var(--muted)">本物の証明書でも、別ドメイン向けなら無意味</text>
+
+    <circle cx="344" cy="210" r="10" fill="var(--c4)"/><text x="344" y="214" font-size="10" fill="var(--on)" text-anchor="middle">4</text>
+    <text x="364" y="208">失効していないか（図3）</text>
+    <text x="364" y="224" font-size="10" fill="var(--muted)">期限内でも、鍵が漏れて取り消された可能性がある</text>
+  </g>
+</svg>
+<figcaption>ルート証明書だけは誰にも署名されていない。「信頼できる」根拠は上位の署名ではなく、OS／ブラウザのストアに収録されているという事実そのものにある。だから端末にルート証明書を1枚追加できる立場の者は、任意のサイトになりすませる。詳しくは<a href="../PKI/認証局の階層構造とルート証明書.html">認証局の階層構造とルート証明書</a>。</figcaption>
+</figure>
+
+<p>4点のどれを省いても穴になる。<strong>連鎖を見なければ攻撃者の自作証明書が通る</strong>し、<strong>名前を照合しなければ攻撃者が自分のドメインで正規に取得した証明書で他サイトになりすませる</strong>。ホスト名の照合は、かつての CN ではなく SAN（Subject Alternative Name）で行うのが現在の仕様。</p>
+
+<h2>失効確認：CRL と OCSP</h2>
+<p>秘密鍵が漏れた証明書は、放っておけば期限まで有効なまま使える。だから「この証明書はまだ生きているか」を発行元に問い合わせる仕組みが要る。</p>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="CRLとOCSPの確認先とタイミングの違い">
+  <rect x="8" y="8" width="332" height="248" rx="9" fill="var(--card)" stroke="var(--line)"/>
+  <text x="24" y="30" font-size="12.5" font-weight="600" fill="var(--c1)">CRL — 失効した証明書の一覧を丸ごと取る</text>
+
+  <rect x="24" y="44" width="82" height="34" rx="6" fill="var(--lane)"/>
+  <text x="65" y="65" font-size="11" fill="var(--ink)" text-anchor="middle">クライアント</text>
+  <line x1="110" y1="61" x2="222" y2="61" stroke="var(--c1)" stroke-width="1.5"/>
+  <polygon points="230,61 220,57 220,65" fill="var(--c1)"/>
+  <rect x="234" y="44" width="90" height="34" rx="6" fill="var(--c1)"/>
+  <text x="279" y="65" font-size="11" fill="var(--on)" text-anchor="middle">CRL 配布点</text>
+  <text x="116" y="94" font-size="10" fill="var(--muted)">一覧（数万件になることも）をダウンロード</text>
+
+  <text x="24" y="126" font-size="11" font-weight="600" fill="var(--ink)">タイミング</text>
+  <rect x="24" y="136" width="300" height="16" rx="4" fill="var(--lane)"/>
+  <rect x="24" y="136" width="10" height="16" rx="3" fill="var(--c1)"/>
+  <rect x="122" y="136" width="10" height="16" rx="3" fill="var(--c1)"/>
+  <rect x="220" y="136" width="10" height="16" rx="3" fill="var(--c1)"/>
+  <text x="24" y="168" font-size="10" fill="var(--muted)">定期発行（例：1日1回）。次の発行までに失効した</text>
+  <text x="24" y="182" font-size="10" fill="var(--muted)">証明書は、その間ずっと有効に見える</text>
+
+  <text x="24" y="212" font-size="11" font-weight="600" fill="var(--stop)">弱点</text>
+  <text x="24" y="228" font-size="10" fill="var(--muted)">サイズが大きい／発行間隔ぶんのタイムラグ</text>
+
+  <rect x="360" y="8" width="332" height="248" rx="9" fill="var(--card)" stroke="var(--line)"/>
+  <text x="376" y="30" font-size="12.5" font-weight="600" fill="var(--c2)">OCSP — その1枚だけを都度たずねる</text>
+
+  <rect x="376" y="44" width="82" height="34" rx="6" fill="var(--lane)"/>
+  <text x="417" y="65" font-size="11" fill="var(--ink)" text-anchor="middle">クライアント</text>
+  <line x1="462" y1="61" x2="566" y2="61" stroke="var(--c2)" stroke-width="1.5"/>
+  <polygon points="574,61 564,57 564,65" fill="var(--c2)"/>
+  <rect x="578" y="44" width="98" height="34" rx="6" fill="var(--c2)"/>
+  <text x="627" y="65" font-size="11" fill="var(--on)" text-anchor="middle">OCSP レスポンダ</text>
+  <text x="466" y="94" font-size="10" fill="var(--muted)">「この1枚は有効か？」有効／失効／不明</text>
+
+  <text x="376" y="126" font-size="11" font-weight="600" fill="var(--ink)">タイミング</text>
+  <rect x="376" y="136" width="300" height="16" rx="4" fill="var(--lane)"/>
+  <rect x="376" y="136" width="10" height="16" rx="3" fill="var(--c2)"/>
+  <rect x="400" y="136" width="10" height="16" rx="3" fill="var(--c2)"/>
+  <rect x="424" y="136" width="10" height="16" rx="3" fill="var(--c2)"/>
+  <rect x="448" y="136" width="10" height="16" rx="3" fill="var(--c2)"/>
+  <rect x="472" y="136" width="10" height="16" rx="3" fill="var(--c2)"/>
+  <rect x="496" y="136" width="10" height="16" rx="3" fill="var(--c2)"/>
+  <text x="376" y="168" font-size="10" fill="var(--muted)">接続のたびに問い合わせる。最新の状態が分かるが、</text>
+  <text x="376" y="182" font-size="10" fill="var(--muted)">接続先のホスト名が発行元に伝わる</text>
+
+  <text x="376" y="212" font-size="11" font-weight="600" fill="var(--stop)">弱点</text>
+  <text x="376" y="228" font-size="10" fill="var(--muted)">プライバシー／レスポンダが落ちると確認できない</text>
+</svg>
+<figcaption>どちらにも共通する最大の問題は、確認できなかったときの扱い。厳格に落とすと発行元の障害でサイト全体が見えなくなるため、主要ブラウザは「確認できなければ通す」ソフトフェイルを選んだ。中間者は失効確認の通信を遮断するだけでこれを迂回できる。だから実装は、失効情報をブラウザ側に配布する方式や、証明書の有効期間そのものを短くする方向へ動いた。</figcaption>
+</figure>
+
+<p>失効確認を一切しないと、<strong>秘密鍵が漏れて取り消し済みの証明書が、期限が来るまで使われ続ける</strong>。OCSP の負荷とプライバシーを緩和する OCSP ステープリングは、サーバが自分の分の応答をあらかじめ取得してハンドシェイクに同梱する方式。詳しくは<a href="../PKI/証明書の失効確認_CRLとOCSP.html">CRL と OCSP</a>。</p>
+
+<h2>登場人物：CA / RA / IA / VA</h2>
+<p>ここまでの「発行元」は、実務では役割が分かれている。</p>
+<table>
+<tr><th>役割</th><th>担当</th></tr>
+<tr><td>CA</td><td>認証局全体。ポリシを定め、証明書を発行する主体</td></tr>
+<tr><td>RA</td><td>申請の受付と本人・ドメイン所有の確認（登録局）</td></tr>
+<tr><td>IA</td><td>実際に鍵と証明書を生成する（発行局）</td></tr>
+<tr><td>VA</td><td>失効情報を提供する。CRL や OCSP レスポンダの側（検証局）</td></tr>
+</table>
+<p>分けている理由は<a href="../PKI/CA_RA_IA_VA.html">CA・RA・IA・VA</a> にある。</p>
+
+<h2>鍵マークが出ていても安全とは限らない</h2>
+<div class="note">
+<p><strong>DV 証明書が証明しているのは「申請者がそのドメインを操作できた」ことだけ</strong></p>
+<p>運営者が誰かも、サイトの中身が安全かも証明していない。フィッシングサイトでも、自分で取得したドメインなら数分で鍵マークが付く。<code>example-bank-login.com</code> で正規の鍵マークが出ている状況は普通に起こる。鍵マークが保証するのは「暗号化されている」「アドレスバーのホスト名と証明書が一致している」までで、その先は利用者がホスト名を読むしかない。→ <a href="../PKI/ドメイン認証と企業認証とEV認証.html">DV・OV・EV</a></p>
+</div>
+<p>もう一つは企業内の TLS 復号プロキシ。端末にプロキシのルート証明書が配布されていれば検証は正常に通り鍵マークも出るが、通信はプロキシで一度復号されている。中間者攻撃と技術的には同じ構造で、違いは端末の管理者が意図して信頼させたかどうかだけ。</p>
+
+<h2>検証が失敗するときの切り分け</h2>
+<table>
+<tr><th>症状</th><th>原因</th><th>切り分けの観点</th></tr>
+<tr><td>ブラウザでは正常、curl や古い端末・アプリだけエラー</td><td>中間 CA 証明書がサーバから配信されていない</td><td>ブラウザは過去に見た中間 CA をキャッシュしたり自力で取得したりして繋がってしまう。サーバが返す証明書チェーンを直接確認する</td></tr>
+<tr><td>名前が一致しないというエラー</td><td>SAN に接続先ホスト名がない</td><td>www 有無、ワイルドカードの階層（<code>*.example.com</code> は <code>a.b.example.com</code> に一致しない）、IP アドレス直打ちでのアクセス</td></tr>
+<tr><td>ある日突然すべての利用者でエラー</td><td>証明書の期限切れ</td><td>更新はできていて配置・再読み込みが漏れている場合もある。実際に配信されている証明書の期限を見る</td></tr>
+<tr><td>特定の端末だけ「まだ有効でない／期限切れ」</td><td>端末の時刻ずれ</td><td>期限判定は端末の時計が基準。NTP が止まっている、仮想マシンの復元直後などを疑う</td></tr>
+</table>
+
+<h2>UDP の上でやるなら</h2>
+<p>TLS は TCP の順序保証に寄りかかっているので、UDP の上ではそのまま動かない。欠落と順序入れ替えを自前で吸収して TLS 相当を実現するのが <a href="DTLS.html">DTLS</a>で、VPN や WebRTC で使われている。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5280.html">RFC 5280 - Internet X.509 PKI Certificate and CRL Profile</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6960.html">RFC 6960 - X.509 Internet PKI Online Certificate Status Protocol (OCSP)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6125.html">RFC 6125 - サービス識別のためのドメイン名の照合</a></li>
+<li><a href="https://www.ipa.go.jp/security/crypto/guideline/ssl_crypt_config.html">IPA - TLS 暗号設定ガイドライン</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/Security/Transport_Layer_Security">MDN - Transport Layer Security</a></li>
+<li><a href="https://www.cabforum.org/working-groups/server/baseline-requirements/documents/">CA/Browser Forum - Baseline Requirements</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -191,7 +191,7 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **暗号利用モード**: `Cryptography/暗号利用モード/` 配下に 1 トピック 1 ファイル（ブロック暗号と暗号利用モード / ECB / CBC / OFB）
 - **認証**: `Authentication/` 配下に 1 トピック 1 ファイル（チャレンジレスポンス / S/KEY / 時刻同期方式 / ゼロ知識証明 / RADIUS / AAAフレームワーク / Kerberos / SAML / OAuth）。IEEE 802.1X は `Networking/無線LAN/` にある
 - **PKI**: `PKI/` 配下に `X.509証明書とは.md` と HTML 記事（PKIとは / CA・RA・IA・VA / 認証局の階層構造とルート証明書 / DV・OV・EV / CRLとOCSP / タイムスタンプとTSA / GPKI / XMLデジタル署名 / ASN.1）
-- **TLS**: `TLS/` 配下に 1 トピック 1 ファイル（プレマスタシークレット / Recordプロトコル / DTLS / TCP 上で動作する理由）。ダウングレード系の攻撃は `Cyber Attacks/23`〜`25` にある
+- **TLS**: `TLS/` 配下に 1 トピック 1 ファイル（プレマスタシークレット / Recordプロトコル / DTLS / TCP 上で動作する理由）＋ `TLSハンドシェイクと証明書検証をゼロから理解する.html`（ハンドシェイク→鍵導出→証明書検証→失効確認を1本につなぐ初学者向け。個別記事と PKI の各記事は要点まとめなのでリンクで棲み分ける）。ダウングレード系の攻撃は `Cyber Attacks/23`〜`25` にある
 - **カード決済**: `Payments/SETと3Dセキュア.html`
 - **物理セキュリティ**: `Hardware Security/` 配下に 1 トピック 1 ファイル（耐タンパ性 / UEFIとセキュアブート / ICカードと磁気カード / RFID）
 - **メール形式**: `Networking/メール/` に MIME / S/MIME / Base64 を追加済み。`Networking/SOAP.html` あり
