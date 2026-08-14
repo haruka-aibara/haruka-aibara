@@ -41,96 +41,373 @@ code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
 ul{padding-left:1.3rem}li{margin:.35rem 0}
 ol{padding-left:1.4rem}
 a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:34rem}}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+.rmbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.rmbox .ttl{font-size:.86rem;font-weight:600;margin:0 0 .2rem}
+.rmbox .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
 </style>
 </head>
 <body>
 <main>
 
 <h1>TLS ハンドシェイクと証明書検証をゼロから理解する</h1>
-<p class="lede">鍵マークの裏で、実際に何が確認されているのか。ハンドシェイクから証明書検証・失効確認までを1本につなぐ。</p>
+<p class="lede">鍵とハッシュの話から始めて、5 ステップで「鍵マークの裏で何が起きているか」までたどり着きます。</p>
 
-<h2>https でつながっているとき、何が確認されているのか</h2>
-<p>「鍵マーク＝暗号化されている」とだけ理解していると、TLS の半分を見落とす。TLS がやっているのは3つある。<strong>相手が名乗ったホスト本人か（認証）／経路で読まれないか（機密性）／途中で書き換えられていないか（完全性）</strong>。</p>
-<p>そして順番が肝心で、<strong>認証が先、鍵の共有が後</strong>。逆にすると、中間者と仲良く暗号通信を確立して終わる。暗号化は「誰と」が確定していて初めて意味を持つ。</p>
+<h2>この記事の目的</h2>
 
-<h2>その前に、なぜ TCP の上なのか</h2>
-<p>TLS は下位層が「欠けず・重複せず・順番どおり」届けることを前提に作られている。レコードのバイトが1つでも欠ければ復号も改ざん検知も通らないので、欠落と順序の面倒は TCP に任せている。詳しくは<a href="SSL_TLSがTCP上で動作する理由.html">SSL/TLS が TCP 上で動作する理由</a>。</p>
+<p>TLS の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
 
-<h2>ハンドシェイクの流れ</h2>
-<p>段取りは4つ。<strong>暗号スイートの合意 → 証明書の提示 → 鍵の共有 → 暗号化通信の開始</strong>。</p>
+<p>それは読解力の問題ではありません。多くの記事は「サーバ証明書を検証し、鍵交換でプレマスタシークレットを共有する」という説明から始まります。この説明が成立するのは、公開鍵・署名・証明書・鍵交換という言葉がすでに体に入っている人だけです。土台が抜けている状態でこれを読むと、知らない言葉を知らない言葉で説明されることになります。</p>
+
+<p>そこでこの記事は、あえて遠回りします。<strong>「通信ははがきで送っているようなもの」というところから始めて、5 ステップで TLS ハンドシェイクまでたどり着きます。</strong>ゴールは用語を覚えることではなく、TLS を自分の言葉で説明できるようになることです。最後に、そのまま口に出せる説明テンプレートを用意しました。</p>
+
+<div class="rmbox">
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>通信ははがき</li>
+<li><span class="n">STEP 2</span>鍵が 2 種類ある</li>
+<li><span class="n">STEP 3</span>ハッシュと署名</li>
+<li><span class="n">STEP 4</span>証明書と認証局</li>
+<li><span class="n">STEP 5</span>ハンドシェイク</li>
+</ol>
+</nav>
+<p class="cap">STEP 4 まではすべて TLS の部品の話です。TLS そのものの話は STEP 5 だけですが、そこに至るまでの 4 ステップがないと STEP 5 は理解できません。逆に言えば、STEP 4 まで進めば STEP 5 は部品を順番に並べるだけの作業に感じられるはずです。</p>
+</div>
+
+<h2>STEP 1：通信は、はがきで送っているようなもの</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>通信ははがき</li>
+<li><span class="n">STEP 2</span>鍵が 2 種類ある</li>
+<li><span class="n">STEP 3</span>ハッシュと署名</li>
+<li><span class="n">STEP 4</span>証明書と認証局</li>
+<li><span class="n">STEP 5</span>ハンドシェイク</li>
+</ol>
+</nav>
+
+<p>ブラウザにパスワードを入力して送信ボタンを押したとき、そのデータはどこを通っているでしょうか。</p>
+
+<p>手元の PC から Wi-Fi ルータへ、そこからプロバイダへ、さらにいくつものネットワークを経由して、ようやく相手のサーバに届きます。この経路上の機器は、通り過ぎるデータをそのまま見ることができます。<strong>封筒ではなく、はがきで送っているようなものです。</strong></p>
 
 <figure>
-<svg viewBox="0 0 700 424" role="img" aria-label="TLSハンドシェイクのシーケンスと平文・暗号化の境界">
-  <rect x="56" y="36" width="588" height="240" rx="8" fill="var(--lane)"/>
-  <rect x="56" y="282" width="588" height="118" rx="8" fill="var(--c3)" opacity=".17"/>
-  <text x="66" y="54" font-size="10.5" fill="var(--stop)">平文 — 経路上で読める</text>
-  <text x="66" y="300" font-size="10.5" fill="var(--c3)">セッション鍵で暗号化</text>
-
-  <text x="110" y="24" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">クライアント</text>
-  <text x="590" y="24" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">サーバ</text>
-  <line x1="110" y1="36" x2="110" y2="404" stroke="var(--ink)" stroke-width="1" opacity=".35"/>
-  <line x1="590" y1="36" x2="590" y2="404" stroke="var(--ink)" stroke-width="1" opacity=".35"/>
-
+<svg viewBox="0 0 700 240" role="img" aria-label="通信経路と、経路上で起きる3つの困りごと">
   <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
-    <text x="350" y="72">① ClientHello ─ 対応する暗号スイート一覧・乱数・接続先ホスト名(SNI)</text>
-    <line x1="114" y1="78" x2="578" y2="78" stroke="var(--c1)" stroke-width="1.6"/>
-    <polygon points="586,78 576,74 576,82" fill="var(--c1)"/>
-
-    <text x="350" y="106">② ServerHello ─ 使う暗号スイートを1つ選ぶ・乱数</text>
-    <line x1="122" y1="112" x2="586" y2="112" stroke="var(--c2)" stroke-width="1.6"/>
-    <polygon points="114,112 124,108 124,116" fill="var(--c2)"/>
-
-    <text x="350" y="138">③ Certificate ─ サーバ証明書 ＋ 中間 CA 証明書</text>
-    <line x1="122" y1="144" x2="586" y2="144" stroke="var(--c2)" stroke-width="1.6"/>
-    <polygon points="114,144 124,140 124,148" fill="var(--c2)"/>
-
-    <text x="350" y="170">④ 鍵交換パラメータ（サーバの秘密鍵で署名）</text>
-    <line x1="122" y1="176" x2="586" y2="176" stroke="var(--c2)" stroke-width="1.6"/>
-    <polygon points="114,176 124,172 124,180" fill="var(--c2)"/>
+    <rect x="10" y="34" width="100" height="40" rx="7" fill="var(--lane)"/>
+    <text x="60" y="59">あなたの PC</text>
+    <rect x="155" y="34" width="100" height="40" rx="7" fill="var(--lane)"/>
+    <text x="205" y="59">Wi-Fi ルータ</text>
+    <rect x="300" y="34" width="100" height="40" rx="7" fill="var(--lane)"/>
+    <text x="350" y="59">プロバイダ</text>
+    <rect x="445" y="34" width="100" height="40" rx="7" fill="var(--lane)"/>
+    <text x="495" y="51">多数の中継</text>
+    <text x="495" y="66">ネットワーク</text>
+    <rect x="590" y="34" width="100" height="40" rx="7" fill="var(--lane)"/>
+    <text x="640" y="59">サーバ</text>
   </g>
-
-  <rect x="66" y="188" width="196" height="34" rx="6" fill="var(--card)" stroke="var(--c4)" stroke-width="1.4"/>
-  <text x="164" y="203" font-size="10.5" fill="var(--c4)" text-anchor="middle" font-weight="600">⑤ 証明書を検証（図2）</text>
-  <text x="164" y="217" font-size="10" fill="var(--muted)" text-anchor="middle">ここを省くと中間者に気づけない</text>
-
-  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
-    <text x="350" y="238">⑥ 鍵交換パラメータ／プレマスタシークレット</text>
-    <line x1="114" y1="244" x2="578" y2="244" stroke="var(--c1)" stroke-width="1.6"/>
-    <polygon points="586,244 576,240 576,248" fill="var(--c1)"/>
+  <g stroke="var(--muted)" stroke-width="1.4" fill="var(--muted)">
+    <line x1="110" y1="54" x2="147" y2="54"/><polygon points="155,54 145,50 145,58" stroke="none"/>
+    <line x1="255" y1="54" x2="292" y2="54"/><polygon points="300,54 290,50 290,58" stroke="none"/>
+    <line x1="400" y1="54" x2="437" y2="54"/><polygon points="445,54 435,50 435,58" stroke="none"/>
+    <line x1="545" y1="54" x2="582" y2="54"/><polygon points="590,54 580,50 580,58" stroke="none"/>
   </g>
-  <rect x="176" y="252" width="348" height="20" rx="5" fill="var(--card)" stroke="var(--line)"/>
-  <text x="350" y="266" font-size="10.5" fill="var(--muted)" text-anchor="middle">⑦ 双方でマスタシークレット → セッション鍵を導出</text>
+  <text x="10" y="98" font-size="10" fill="var(--muted)">経路上の機器は、通り過ぎるデータをそのまま見られる</text>
 
-  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
-    <text x="350" y="322">⑧ Finished（ここまでの全メッセージのハッシュ）</text>
-    <line x1="114" y1="328" x2="578" y2="328" stroke="var(--c3)" stroke-width="1.6"/>
-    <polygon points="586,328 576,324 576,332" fill="var(--c3)"/>
+  <rect x="10" y="112" width="220" height="112" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="28" y="138" font-size="12" font-weight="600" fill="var(--c1)">盗聴</text>
+  <text x="28" y="162" font-size="10" fill="var(--muted)">パスワードやカード番号</text>
+  <text x="28" y="178" font-size="10" fill="var(--muted)">が経路上で読まれる</text>
+  <text x="28" y="204" font-size="10" fill="var(--ink)">対策 → 暗号化（機密性）</text>
 
-    <text x="350" y="352">⑨ Finished</text>
-    <line x1="122" y1="358" x2="586" y2="358" stroke="var(--c3)" stroke-width="1.6"/>
-    <polygon points="114,358 124,354 124,362" fill="var(--c3)"/>
+  <rect x="240" y="112" width="220" height="112" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="258" y="138" font-size="12" font-weight="600" fill="var(--c2)">改ざん</text>
+  <text x="258" y="162" font-size="10" fill="var(--muted)">振込先の口座番号を、途中</text>
+  <text x="258" y="178" font-size="10" fill="var(--muted)">で書き換えられる</text>
+  <text x="258" y="204" font-size="10" fill="var(--ink)">対策 → 改ざん検知（完全性）</text>
 
-    <text x="350" y="382">アプリケーションデータ（HTTP など）— ここからは Record プロトコルの担当</text>
-    <line x1="122" y1="390" x2="578" y2="390" stroke="var(--c3)" stroke-width="1.6"/>
-    <polygon points="586,390 576,386 576,394" fill="var(--c3)"/>
-    <polygon points="114,390 124,386 124,394" fill="var(--c3)"/>
-  </g>
+  <rect x="470" y="112" width="220" height="112" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="488" y="138" font-size="12" font-weight="600" fill="var(--stop)">なりすまし</text>
+  <text x="488" y="162" font-size="10" fill="var(--muted)">そもそも接続先が偽サイト</text>
+  <text x="488" y="178" font-size="10" fill="var(--muted)">だった、という可能性</text>
+  <text x="488" y="204" font-size="10" fill="var(--ink)">対策 → 相手の確認（認証）</text>
 </svg>
-<figcaption>TLS 1.3 では鍵交換パラメータを ClientHello に相乗りさせて往復を1つ減らし、証明書も暗号化されてから送られる。段取り自体は同じで、平文で流れる範囲が狭くなったと捉えるとよい。SNI は 1.3 でも平文のままで、どのホストに接続したかは経路上から見える。</figcaption>
+<figcaption>「鍵マーク＝暗号化」とだけ理解していると、左の 1 つしか見ていないことになります。TLS が引き受けているのは 3 つで、しかも重要なのは順番です。相手が偽物なら、どれだけ強く暗号化しても偽物と安全に会話しているだけです。</figcaption>
 </figure>
 
-<p>押さえるのは、<strong>①〜④が平文で流れる</strong>こと。暗号スイートの合意そのものを改ざんして弱い暗号に落とすのが<a href="../Cyber Attacks/23_SSL_TLSダウングレード攻撃.html">ダウングレード攻撃</a>で、これを防いでいるのが最後の Finished ——ここまでの全メッセージのハッシュを鍵付きで送り合うので、途中で1バイトでも書き換えられていれば一致せず接続が切れる。</p>
+<p>この 3 つを 1 つの仕組みでまとめて解決するのが <strong>TLS</strong> です。https の「s」がこれにあたります。</p>
 
-<h3>プレマスタシークレット → マスタシークレット → セッション鍵</h3>
-<p>共有した秘密（プレマスタシークレット）はそのまま暗号鍵にしない。①②で交換した<strong>双方の乱数を混ぜてマスタシークレットを作り</strong>、そこから用途別・方向別のセッション鍵（暗号化用と MAC 用、送信方向と受信方向で別）を導出する。</p>
-<p>乱数を混ぜるのは、同じ鍵が二度と再現されないようにするため。毎回同じ鍵になるなら、記録しておいた過去の通信をそのまま投げ返す再生攻撃が成立する。鍵の作り方2通りは<a href="プレマスタシークレット.html">プレマスタシークレット</a>にある。</p>
+<p>そして、この記事を通してずっと効いてくる原則がひとつあります。</p>
 
-<h3>Record プロトコルが実データにしていること</h3>
-<p>以降のデータを扱うのが Record プロトコル。<strong>扱える大きさに分割し、改ざん検知用の MAC を付け、セッション鍵で暗号化し、ヘッダを付けて TCP に渡す</strong>。</p>
-<p>MAC がないとどうなるか。暗号文は読めなくても、ビットを反転させて中身を狂わせることはできる。「読めない」と「変えられない」は別物で、後者を担うのが MAC（現在の AEAD 暗号は両方を一体で行う）。詳細は <a href="Recordプロトコル.html">Record プロトコル</a>。</p>
+<blockquote>
+<p><strong>認証が先、暗号化が後。</strong>暗号化は「誰と話しているか」が確定して初めて意味を持つ。</p>
+</blockquote>
 
-<h2>受け取った証明書を検証する</h2>
-<p>サーバが証明書を出してきた時点では、まだ何も証明されていない。証明書は誰でも自分で作れるからだ。クライアントは4点を確認する。</p>
+<div class="quiz">
+<p class="q"><b>確認問題</b>　パスワードを強力に暗号化して送れば、それだけで安全と言えるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>言えません。</strong></p>
+<p>暗号化が守るのは「経路の途中で読まれないこと」だけです。もし接続先が攻撃者の用意した偽サーバなら、パスワードは暗号化されたうえで攻撃者に丁寧に届きます。暗号化する前に「相手が本物か」を確かめる必要があります。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：鍵が 2 種類ある</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>通信ははがき</li>
+<li class="now"><span class="n">STEP 2</span>鍵が 2 種類ある</li>
+<li><span class="n">STEP 3</span>ハッシュと署名</li>
+<li><span class="n">STEP 4</span>証明書と認証局</li>
+<li><span class="n">STEP 5</span>ハンドシェイク</li>
+</ol>
+</nav>
+
+<p>まず暗号化から片付けます。暗号化には鍵が要りますが、その鍵の使い方が 2 種類あります。</p>
+
+<p>1 つ目は <strong>共通鍵</strong>。閉めるときと開けるときで同じ鍵を使う、金庫のような方式です。速いのが長所ですが、致命的な問題があります。<strong>その鍵を相手にどうやって渡すのか。</strong>渡す手段が STEP 1 のはがきしかないなら、鍵ごと読まれて終わりです。</p>
+
+<p>2 つ目は <strong>公開鍵</strong>。こちらは鍵が 2 本で 1 組になっていて、<strong>南京錠と、その鍵</strong>だと考えてください。南京錠は誰にでも配って構いません。受け取った人は錠を閉めることはできますが、開けることはできません。開けられるのは、手元に 1 つだけ残しておいた鍵の持ち主だけです。</p>
+
+<p>この南京錠にあたるのが <strong>公開鍵</strong>、手元に残す鍵が <strong>秘密鍵</strong>です。</p>
+
+<figure>
+<svg viewBox="0 0 700 280" role="img" aria-label="共通鍵の鍵配送問題と、公開鍵による解決">
+  <rect x="8" y="8" width="332" height="264" rx="9" fill="var(--card)" stroke="var(--line)"/>
+  <text x="24" y="32" font-size="12.5" font-weight="600" fill="var(--c1)">共通鍵 — 同じ鍵で閉めて開ける</text>
+
+  <rect x="24" y="48" width="300" height="40" rx="7" fill="var(--lane)"/>
+  <text x="36" y="66" font-size="11" fill="var(--ink)">① 同じ鍵 K で閉めて、同じ鍵 K で開ける</text>
+  <text x="36" y="81" font-size="10" fill="var(--muted)">計算が速い。実データの暗号化に向いている</text>
+  <polygon points="174,99 167,89 181,89" fill="var(--muted)"/>
+
+  <rect x="24" y="100" width="300" height="40" rx="7" fill="var(--lane)"/>
+  <text x="36" y="118" font-size="11" fill="var(--ink)">② では、その鍵 K を相手にどう渡す？</text>
+  <text x="36" y="133" font-size="10" fill="var(--muted)">相手はまだ鍵を持っていない</text>
+  <polygon points="174,151 167,141 181,141" fill="var(--muted)"/>
+
+  <rect x="24" y="152" width="300" height="40" rx="7" fill="var(--card)" stroke="var(--stop)" stroke-width="1.4"/>
+  <text x="36" y="170" font-size="11" fill="var(--stop)">③ 経路で渡せば、鍵ごと読まれる</text>
+  <text x="36" y="185" font-size="10" fill="var(--muted)">使える経路は、暗号化したいその経路しかない</text>
+
+  <text x="24" y="216" font-size="11" font-weight="600" fill="var(--stop)">→ これが鍵配送問題</text>
+  <text x="24" y="240" font-size="10" fill="var(--muted)">速いので実データには使いたい。でも、そのままでは</text>
+  <text x="24" y="256" font-size="10" fill="var(--muted)">スタート地点に立てない</text>
+
+  <rect x="360" y="8" width="332" height="264" rx="9" fill="var(--card)" stroke="var(--line)"/>
+  <text x="376" y="32" font-size="12.5" font-weight="600" fill="var(--c2)">公開鍵 — 南京錠を配る</text>
+
+  <rect x="376" y="48" width="300" height="40" rx="7" fill="var(--lane)"/>
+  <text x="388" y="66" font-size="11" fill="var(--ink)">① サーバが公開鍵（南京錠）を配る</text>
+  <text x="388" y="81" font-size="10" fill="var(--muted)">誰に見られてもよい。むしろ配るためのもの</text>
+  <polygon points="526,99 519,89 533,89" fill="var(--muted)"/>
+
+  <rect x="376" y="100" width="300" height="40" rx="7" fill="var(--lane)"/>
+  <text x="388" y="118" font-size="11" fill="var(--ink)">② あなたが公開鍵で施錠して送る</text>
+  <text x="388" y="133" font-size="10" fill="var(--muted)">閉めることはできるが、自分でも開けられない</text>
+  <polygon points="526,151 519,141 533,141" fill="var(--muted)"/>
+
+  <rect x="376" y="152" width="300" height="40" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="388" y="170" font-size="11" fill="var(--c3)">③ サーバが秘密鍵で開ける</text>
+  <text x="388" y="185" font-size="10" fill="var(--muted)">開けられるのは秘密鍵の持ち主だけ</text>
+
+  <text x="376" y="216" font-size="11" font-weight="600" fill="var(--c3)">→ 鍵を事前に渡さなくてよくなった</text>
+  <text x="376" y="240" font-size="10" fill="var(--muted)">ただし共通鍵より桁違いに遅い。だから鍵の共有だけ</text>
+  <text x="376" y="256" font-size="10" fill="var(--muted)">に使い、実データは共通鍵で運ぶ</text>
+</svg>
+<figcaption>両方を組み合わせるこのやり方を<strong><a href="../Cryptography/ハイブリッド方式.html">ハイブリッド方式</a></strong>と呼びます。公開鍵が遅いのは、大きな数の計算をしているためです。数百キロバイトの Web ページを丸ごと公開鍵で暗号化すると実用的な速度になりません。</figcaption>
+</figure>
+
+<div class="tw">
+<table>
+<tr><th></th><th>共通鍵</th><th>公開鍵</th></tr>
+<tr><td>鍵の本数</td><td>1 本を両者で共有</td><td>2 本 1 組（公開鍵・秘密鍵）</td></tr>
+<tr><td>たとえると</td><td>金庫の鍵</td><td>南京錠と、その鍵</td></tr>
+<tr><td>速さ</td><td>速い</td><td>遅い</td></tr>
+<tr><td>困ること</td><td>鍵をどう渡すか</td><td>速度</td></tr>
+<tr><td>TLS での役目</td><td>実データの暗号化</td><td>その鍵を共有するまで</td></tr>
+</table>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　公開鍵は誰でも手に入ります。それなら攻撃者も、公開鍵を使って暗号文を復号できてしまうのではないでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>できません。</strong></p>
+<p>公開鍵でかけた錠は、対になる秘密鍵でしか開きません。南京錠を配られた人が錠を閉められるだけで開けられないのと同じです。「暗号化に使った鍵で復号できる」というのは共通鍵の感覚で、公開鍵ではそれが成り立たないところが肝心な点です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：ハッシュと署名</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>通信ははがき</li>
+<li class="done"><span class="n">STEP 2 ✓</span>鍵が 2 種類ある</li>
+<li class="now"><span class="n">STEP 3</span>ハッシュと署名</li>
+<li><span class="n">STEP 4</span>証明書と認証局</li>
+<li><span class="n">STEP 5</span>ハンドシェイク</li>
+</ol>
+</nav>
+
+<p>暗号化の目処は立ちました。残りは <strong>改ざん検知</strong>と <strong>認証</strong>です。この 2 つは同じ部品で実現できます。</p>
+
+<h3>ハッシュ ＝ データの指紋</h3>
+
+<p><strong>ハッシュ</strong>とは、どんなに大きなデータでも決まった長さの短い値に潰す計算です。性質は 3 つだけ覚えれば十分です。</p>
+
+<ul>
+<li>同じデータからは、必ず同じ値になる</li>
+<li><strong>1 バイトでも変われば、まったく違う値になる</strong></li>
+<li>値から元のデータには戻せない（一方向）</li>
+</ul>
+
+<p>これで「データが変わっていないか」を、短い値の比較だけで判定できます。しかしハッシュ値をデータと一緒に送るだけでは改ざんを防げません。<strong>途中の攻撃者は、データもハッシュ値も両方まとめて書き換えられる</strong>からです。</p>
+
+<h3>署名 ＝ 本人しか作れないハッシュ</h3>
+
+<p>そこで、ハッシュ値を <strong>秘密鍵で処理してから</strong>送ります。STEP 2 とは鍵の使い方が逆で、秘密鍵をかける側に、公開鍵を確かめる側に使います。</p>
+
+<p>こうすると、<strong>その署名を作れるのは秘密鍵を持つ本人だけ、確かめられるのは公開鍵を持つ全員</strong>という状態になります。これが <strong>デジタル署名</strong>です。</p>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="署名の作成と検証の流れ">
+  <text x="8" y="20" font-size="11" font-weight="600" fill="var(--muted)">送信側 — 署名を作る</text>
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <rect x="8" y="30" width="84" height="34" rx="6" fill="var(--lane)"/><text x="50" y="51">データ</text>
+    <rect x="110" y="30" width="104" height="34" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.4"/><text x="162" y="51" fill="var(--c1)">ハッシュ関数</text>
+    <rect x="232" y="30" width="92" height="34" rx="6" fill="var(--lane)"/><text x="278" y="45">ハッシュ値</text><text x="278" y="58" font-size="9" fill="var(--muted)">9f2a4c…</text>
+    <rect x="342" y="30" width="110" height="34" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.4"/><text x="397" y="51" fill="var(--c2)">秘密鍵で署名</text>
+    <rect x="470" y="30" width="84" height="34" rx="6" fill="var(--c2)"/><text x="512" y="51" fill="var(--on)">署名</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="1.3" fill="var(--muted)">
+    <line x1="92" y1="47" x2="102" y2="47"/><polygon points="110,47 100,43 100,51" stroke="none"/>
+    <line x1="214" y1="47" x2="224" y2="47"/><polygon points="232,47 222,43 222,51" stroke="none"/>
+    <line x1="324" y1="47" x2="334" y2="47"/><polygon points="342,47 332,43 332,51" stroke="none"/>
+    <line x1="452" y1="47" x2="462" y2="47"/><polygon points="470,47 460,43 460,51" stroke="none"/>
+  </g>
+  <text x="566" y="44" font-size="10" fill="var(--muted)">データと署名の</text>
+  <text x="566" y="58" font-size="10" fill="var(--muted)">2 つを送る</text>
+
+  <line x1="0" y1="96" x2="700" y2="96" stroke="var(--line)" stroke-width="1"/>
+  <text x="8" y="120" font-size="11" font-weight="600" fill="var(--muted)">受信側 — 署名を確かめる</text>
+
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <rect x="8" y="134" width="84" height="34" rx="6" fill="var(--lane)"/><text x="50" y="155">データ</text>
+    <rect x="110" y="134" width="104" height="34" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.4"/><text x="162" y="155" fill="var(--c1)">ハッシュ関数</text>
+    <rect x="232" y="134" width="92" height="34" rx="6" fill="var(--lane)"/><text x="278" y="155">ハッシュ値 ①</text>
+
+    <rect x="8" y="186" width="84" height="34" rx="6" fill="var(--c2)"/><text x="50" y="207" fill="var(--on)">署名</text>
+    <rect x="110" y="186" width="104" height="34" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.4"/><text x="162" y="207" fill="var(--c2)">公開鍵で検証</text>
+    <rect x="232" y="186" width="92" height="34" rx="6" fill="var(--lane)"/><text x="278" y="207">ハッシュ値 ②</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="1.3" fill="var(--muted)">
+    <line x1="92" y1="151" x2="102" y2="151"/><polygon points="110,151 100,147 100,155" stroke="none"/>
+    <line x1="214" y1="151" x2="224" y2="151"/><polygon points="232,151 222,147 222,155" stroke="none"/>
+    <line x1="92" y1="203" x2="102" y2="203"/><polygon points="110,203 100,199 100,207" stroke="none"/>
+    <line x1="214" y1="203" x2="224" y2="203"/><polygon points="232,203 222,199 222,207" stroke="none"/>
+  </g>
+
+  <line x1="348" y1="130" x2="348" y2="224" stroke="var(--line)" stroke-width="1"/>
+  <text x="370" y="152" font-size="11.5" font-weight="600" fill="var(--c3)">① と ② が一致すれば</text>
+  <text x="370" y="180" font-size="10.5" fill="var(--ink)">・秘密鍵を持つ本人が作った（認証）</text>
+  <text x="370" y="204" font-size="10.5" fill="var(--ink)">・途中で変わっていない（完全性）</text>
+</svg>
+<figcaption>この構造がそのまま、次のステップの証明書にも、ハンドシェイクの最後の Finished にも出てきます。「ハッシュを取って、鍵で処理して、受け手が同じハッシュを再計算して突き合わせる」という形は TLS 全体で繰り返し使われます。共通鍵で同じことをする版が MAC です（→ <a href="../Cryptography/MACとデジタル署名.html">MAC とデジタル署名</a>）。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　サーバから送られてきた署名を、手元の公開鍵で検証できました。これで「相手は本物の <code>example.com</code> だ」と言えるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>言えません。</strong></p>
+<p>言えるのは「その公開鍵と対になる秘密鍵を、相手が持っている」ところまでです。<strong>その公開鍵が <code>example.com</code> のものだという保証は、まだどこにもありません。</strong>攻撃者が自分の鍵ペアを作り、自分の公開鍵を「これが example.com の公開鍵です」と言い張れば、署名の検証は普通に成功します。</p>
+<p>この穴を埋めるのが次のステップです。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：証明書 — 公開鍵に名前を貼る</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>通信ははがき</li>
+<li class="done"><span class="n">STEP 2 ✓</span>鍵が 2 種類ある</li>
+<li class="done"><span class="n">STEP 3 ✓</span>ハッシュと署名</li>
+<li class="now"><span class="n">STEP 4</span>証明書と認証局</li>
+<li><span class="n">STEP 5</span>ハンドシェイク</li>
+</ol>
+</nav>
+
+<p>公開鍵はただの数字の並びで、それ自体には持ち主の名前が書かれていません。だから STEP 3 の最後の穴が空きます。</p>
+
+<p>解決策は、日常でやっていることと同じです。<strong>初対面の相手を信じられないなら、第三者の発行した身分証を見せてもらう。</strong></p>
+
+<p>公開鍵と持ち主の名前をセットにして、第三者に署名してもらったもの。これが <strong>サーバ証明書</strong>で、署名する第三者が <strong>認証局（CA）</strong>です。</p>
+
+<div class="tw">
+<table>
+<tr><th>証明書に入っているもの</th><th>意味</th></tr>
+<tr><td>公開鍵</td><td>このサーバの南京錠</td></tr>
+<tr><td>SAN（ホスト名）</td><td>どのホスト名のための証明書か。<code>example.com</code> など</td></tr>
+<tr><td>有効期限</td><td>いつからいつまで有効か</td></tr>
+<tr><td>発行元（CA）の名前</td><td>誰が保証したか</td></tr>
+<tr><td>CA の署名</td><td>上の内容全部に対する、CA の秘密鍵による署名</td></tr>
+</table>
+</div>
+
+<h3>では CA の公開鍵は本物なのか</h3>
+
+<p>ここで同じ疑問が一段上がって戻ってきます。CA の署名を検証するには CA の公開鍵が要りますが、<strong>その公開鍵が本物の CA のものだと、誰が保証するのでしょうか。</strong></p>
+
+<p>答えは「さらに上位の CA が署名する」です。そしてこれを繰り返すと、いつかは終点が必要になります。終点にあたるのが <strong>ルート CA 証明書</strong>で、これは自分で自分に署名しています（自己署名）。</p>
+
+<p>自己署名なら誰でも作れます。ではなぜ信じられるのか。<strong>ルート証明書は、OS やブラウザに最初から埋め込まれているからです。</strong>信頼の根拠は署名ではなく、「手元の端末にあらかじめ入っている」という事実そのものにあります。</p>
 
 <figure>
 <svg viewBox="0 0 700 316" role="img" aria-label="署名の連鎖と証明書検証の4項目">
@@ -177,17 +454,147 @@ a{color:var(--c1)}
     <text x="364" y="168" font-size="10" fill="var(--muted)">本物の証明書でも、別ドメイン向けなら無意味</text>
 
     <circle cx="344" cy="210" r="10" fill="var(--c4)"/><text x="344" y="214" font-size="10" fill="var(--on)" text-anchor="middle">4</text>
-    <text x="364" y="208">失効していないか（図3）</text>
-    <text x="364" y="224" font-size="10" fill="var(--muted)">期限内でも、鍵が漏れて取り消された可能性がある</text>
+    <text x="364" y="208">失効していないか</text>
+    <text x="364" y="224" font-size="10" fill="var(--muted)">期限内でも、鍵が漏れて取り消された可能性がある（後述）</text>
   </g>
 </svg>
-<figcaption>ルート証明書だけは誰にも署名されていない。「信頼できる」根拠は上位の署名ではなく、OS／ブラウザのストアに収録されているという事実そのものにある。だから端末にルート証明書を1枚追加できる立場の者は、任意のサイトになりすませる。詳しくは<a href="../PKI/認証局の階層構造とルート証明書.html">認証局の階層構造とルート証明書</a>。</figcaption>
+<figcaption>4 点のどれを省いても穴になります。連鎖を見なければ攻撃者の自作証明書が通り、ホスト名を照合しなければ攻撃者が自分のドメインで正規に取得した証明書で他サイトになりすませます。ホスト名の照合は、かつての CN ではなく SAN（Subject Alternative Name）で行うのが現在の仕様です。詳しくは<a href="../PKI/認証局の階層構造とルート証明書.html">認証局の階層構造とルート証明書</a>。</figcaption>
 </figure>
 
-<p>4点のどれを省いても穴になる。<strong>連鎖を見なければ攻撃者の自作証明書が通る</strong>し、<strong>名前を照合しなければ攻撃者が自分のドメインで正規に取得した証明書で他サイトになりすませる</strong>。ホスト名の照合は、かつての CN ではなく SAN（Subject Alternative Name）で行うのが現在の仕様。</p>
+<div class="quiz">
+<p class="q"><b>確認問題</b>　ルート CA 証明書は自己署名で、誰にも保証されていません。それなのに信頼できるのはなぜでしょうか。そして、この構造にはどんな弱点があるでしょうか。</p>
+<details>
+<summary>考えた結果を確認する</summary>
+<div class="ans">
+<p><strong>信頼の根拠は、OS やブラウザのストアに収録されているという事実そのものです。</strong>署名の連鎖を上へたどっていった終点であり、そこから先は「入っているものは信じる」と決め打ちしています。</p>
+<p>弱点はそのまま裏返しになります。<strong>端末にルート証明書を 1 枚追加できる立場の者は、任意のサイトになりすませます。</strong>その追加した CA で偽の証明書を発行すれば、連鎖はきちんとルートまで届いてしまうからです。企業内の TLS 復号プロキシは、まさにこれを意図的にやっている仕組みです（後述）。</p>
+</div>
+</details>
+</div>
 
-<h2>失効確認：CRL と OCSP</h2>
-<p>秘密鍵が漏れた証明書は、放っておけば期限まで有効なまま使える。だから「この証明書はまだ生きているか」を発行元に問い合わせる仕組みが要る。</p>
+<h2>STEP 5：ハンドシェイク — 全部を順番に組み立てる</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>通信ははがき</li>
+<li class="done"><span class="n">STEP 2 ✓</span>鍵が 2 種類ある</li>
+<li class="done"><span class="n">STEP 3 ✓</span>ハッシュと署名</li>
+<li class="done"><span class="n">STEP 4 ✓</span>証明書と認証局</li>
+<li class="now"><span class="n">STEP 5</span>ハンドシェイク</li>
+</ol>
+</nav>
+
+<p>部品が揃いました。あとは順番に並べるだけです。通信を始める前のこの段取りを <strong>ハンドシェイク</strong>と呼びます。やることは 4 つです。</p>
+
+<blockquote>
+<p><strong>暗号スイートの合意 → 証明書の提示と検証 → 鍵の共有 → 暗号化通信の開始</strong></p>
+</blockquote>
+
+<p><strong>暗号スイート</strong>とは、使う暗号方式の組み合わせのことです。共通鍵の方式、鍵の共有方法、ハッシュの種類などが 1 セットになっていて、クライアントとサーバで対応しているものが違うため、最初にどれを使うかを決める必要があります。</p>
+
+<figure>
+<svg viewBox="0 0 700 424" role="img" aria-label="TLSハンドシェイクのシーケンスと平文・暗号化の境界">
+  <rect x="56" y="36" width="588" height="240" rx="8" fill="var(--lane)"/>
+  <rect x="56" y="282" width="588" height="118" rx="8" fill="var(--c3)" opacity=".17"/>
+  <text x="66" y="54" font-size="10.5" fill="var(--stop)">平文 — 経路上で読める</text>
+  <text x="66" y="300" font-size="10.5" fill="var(--c3)">セッション鍵で暗号化</text>
+
+  <text x="110" y="24" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">クライアント</text>
+  <text x="590" y="24" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">サーバ</text>
+  <line x1="110" y1="36" x2="110" y2="404" stroke="var(--ink)" stroke-width="1" opacity=".35"/>
+  <line x1="590" y1="36" x2="590" y2="404" stroke="var(--ink)" stroke-width="1" opacity=".35"/>
+
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <text x="350" y="72">① ClientHello ─ 対応する暗号スイート一覧・乱数・接続先ホスト名(SNI)</text>
+    <line x1="114" y1="78" x2="578" y2="78" stroke="var(--c1)" stroke-width="1.6"/>
+    <polygon points="586,78 576,74 576,82" fill="var(--c1)"/>
+
+    <text x="350" y="106">② ServerHello ─ 使う暗号スイートを1つ選ぶ・乱数</text>
+    <line x1="122" y1="112" x2="586" y2="112" stroke="var(--c2)" stroke-width="1.6"/>
+    <polygon points="114,112 124,108 124,116" fill="var(--c2)"/>
+
+    <text x="350" y="138">③ Certificate ─ サーバ証明書 ＋ 中間 CA 証明書</text>
+    <line x1="122" y1="144" x2="586" y2="144" stroke="var(--c2)" stroke-width="1.6"/>
+    <polygon points="114,144 124,140 124,148" fill="var(--c2)"/>
+
+    <text x="350" y="170">④ 鍵交換パラメータ（サーバの秘密鍵で署名）</text>
+    <line x1="122" y1="176" x2="586" y2="176" stroke="var(--c2)" stroke-width="1.6"/>
+    <polygon points="114,176 124,172 124,180" fill="var(--c2)"/>
+  </g>
+
+  <rect x="66" y="188" width="212" height="34" rx="6" fill="var(--card)" stroke="var(--c4)" stroke-width="1.4"/>
+  <text x="172" y="203" font-size="10.5" fill="var(--c4)" text-anchor="middle" font-weight="600">⑤ 証明書を検証（STEP 4 の4点）</text>
+  <text x="172" y="217" font-size="10" fill="var(--muted)" text-anchor="middle">ここを省くと中間者に気づけない</text>
+
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <text x="350" y="238">⑥ 鍵交換パラメータ／プレマスタシークレット</text>
+    <line x1="114" y1="244" x2="578" y2="244" stroke="var(--c1)" stroke-width="1.6"/>
+    <polygon points="586,244 576,240 576,248" fill="var(--c1)"/>
+  </g>
+  <rect x="176" y="252" width="348" height="20" rx="5" fill="var(--card)" stroke="var(--line)"/>
+  <text x="350" y="266" font-size="10.5" fill="var(--muted)" text-anchor="middle">⑦ 双方でマスタシークレット → セッション鍵を導出</text>
+
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <text x="350" y="322">⑧ Finished（ここまでの全メッセージのハッシュ）</text>
+    <line x1="114" y1="328" x2="578" y2="328" stroke="var(--c3)" stroke-width="1.6"/>
+    <polygon points="586,328 576,324 576,332" fill="var(--c3)"/>
+
+    <text x="350" y="352">⑨ Finished</text>
+    <line x1="122" y1="358" x2="586" y2="358" stroke="var(--c3)" stroke-width="1.6"/>
+    <polygon points="114,358 124,354 124,362" fill="var(--c3)"/>
+
+    <text x="350" y="382">アプリケーションデータ（HTTP など）— ここからは Record プロトコルの担当</text>
+    <line x1="122" y1="390" x2="578" y2="390" stroke="var(--c3)" stroke-width="1.6"/>
+    <polygon points="586,390 576,386 576,394" fill="var(--c3)"/>
+    <polygon points="114,390 124,386 124,394" fill="var(--c3)"/>
+  </g>
+</svg>
+<figcaption>TLS 1.3 では鍵交換パラメータを ClientHello に相乗りさせて往復を 1 つ減らし、証明書も暗号化されてから送られます。段取り自体は同じで、平文で流れる範囲が狭くなったと捉えるとよいです。SNI は 1.3 でも平文のままで、どのホストに接続したかは経路上から見えます。</figcaption>
+</figure>
+
+<p>ここで押さえるのは、<strong>①〜④が平文で流れる</strong>ことです。まだ鍵を共有していないのだから当然ですが、これは「最初のやりとりは書き換えられる」ということでもあります。</p>
+
+<p>暗号スイートの合意そのものを改ざんして、弱い暗号だけを選ばせるのが<a href="../Cyber Attacks/23_SSL_TLSダウングレード攻撃.html">ダウングレード攻撃</a>です。これを防いでいるのが最後の <strong>Finished</strong> ——ここまでの全メッセージのハッシュを鍵付きで送り合うので、途中で 1 バイトでも書き換えられていれば値が一致せず、接続が切られます。STEP 3 の構造がそのまま使われています。</p>
+
+<h3>プレマスタシークレット → マスタシークレット → セッション鍵</h3>
+
+<p>⑥で共有した秘密（<strong>プレマスタシークレット</strong>）は、そのまま暗号鍵にはしません。①②で交換した<strong>双方の乱数を混ぜてマスタシークレットを作り</strong>、そこから用途別・方向別のセッション鍵（暗号化用と MAC 用、送信方向と受信方向で別）を導出します。</p>
+
+<p>乱数を混ぜるのは、同じ鍵が二度と再現されないようにするためです。毎回同じ鍵になるなら、記録しておいた過去の通信をそのまま投げ返す再生攻撃が成立します。鍵の作り方には 2 通りあり、その違いは<a href="プレマスタシークレット.html">プレマスタシークレット</a>にあります。</p>
+
+<h3>そのあとを担当する Record プロトコル</h3>
+
+<p>ハンドシェイクが終わってからのデータを扱うのが <strong>Record プロトコル</strong>です。やることは、<strong>扱える大きさに分割し、改ざん検知用の MAC を付け、セッション鍵で暗号化し、ヘッダを付けて TCP に渡す</strong>こと。</p>
+
+<p>MAC がないとどうなるか。暗号文は読めなくても、ビットを反転させて中身を狂わせることはできます。<strong>「読めない」と「変えられない」は別物</strong>で、後者を担うのが MAC です（現在の AEAD 暗号は両方を一体で行います）。詳細は <a href="Recordプロトコル.html">Record プロトコル</a>。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　①の ClientHello は平文です。攻撃者がこれを書き換えて、弱い暗号スイートだけが載っているように見せかけたとします。この攻撃はどこで気づけるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>⑧⑨の Finished で気づけます。</strong></p>
+<p>Finished はここまでのハンドシェイク全メッセージのハッシュを、共有した鍵付きで送り合うものです。クライアントは「自分が送った ClientHello」でハッシュを計算し、サーバは「自分が受け取った ClientHello」で計算します。途中で書き換えられていれば両者の値がずれ、一致しないので接続が中断されます。</p>
+<p>ただしこれは「合意した暗号スイートが弱かった場合」までは救ってくれません。両者が本当に弱い暗号にしか対応していないなら、改ざんなしで弱い接続が成立します。だからサーバ側で古いプロトコルや弱い暗号スイートを無効化しておく設定が必要になります。</p>
+</div>
+</details>
+</div>
+
+<h2>証明書が途中で取り消されたら：CRL と OCSP</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>通信ははがき</li>
+<li class="done"><span class="n">STEP 2 ✓</span>鍵が 2 種類ある</li>
+<li class="done"><span class="n">STEP 3 ✓</span>ハッシュと署名</li>
+<li class="done"><span class="n">STEP 4 ✓</span>証明書と認証局</li>
+<li class="done"><span class="n">STEP 5 ✓</span>ハンドシェイク</li>
+</ol>
+</nav>
+
+<p>STEP 4 の検証 4 点のうち、最後の 1 つだけが未回収でした。</p>
+
+<p>サーバの秘密鍵が漏れたとします。証明書自体は正しく発行されたものなので、放っておけば<strong>有効期限が来るまで、盗んだ側がそのまま使い続けられます</strong>。だから「この証明書はまだ生きているか」を発行元に問い合わせる仕組みが要ります。方式は 2 つです。</p>
 
 <figure>
 <svg viewBox="0 0 700 264" role="img" aria-label="CRLとOCSPの確認先とタイミングの違い">
@@ -238,13 +645,16 @@ a{color:var(--c1)}
   <text x="376" y="212" font-size="11" font-weight="600" fill="var(--stop)">弱点</text>
   <text x="376" y="228" font-size="10" fill="var(--muted)">プライバシー／レスポンダが落ちると確認できない</text>
 </svg>
-<figcaption>どちらにも共通する最大の問題は、確認できなかったときの扱い。厳格に落とすと発行元の障害でサイト全体が見えなくなるため、主要ブラウザは「確認できなければ通す」ソフトフェイルを選んだ。中間者は失効確認の通信を遮断するだけでこれを迂回できる。だから実装は、失効情報をブラウザ側に配布する方式や、証明書の有効期間そのものを短くする方向へ動いた。</figcaption>
+<figcaption>どちらにも共通する最大の問題は、確認できなかったときの扱いです。厳格に落とすと発行元の障害でサイト全体が見えなくなるため、主要ブラウザは「確認できなければ通す」ソフトフェイルを選びました。中間者は失効確認の通信を遮断するだけでこれを迂回できます。だから実装は、失効情報をブラウザ側に配布する方式や、証明書の有効期間そのものを短くする方向へ動きました。</figcaption>
 </figure>
 
-<p>失効確認を一切しないと、<strong>秘密鍵が漏れて取り消し済みの証明書が、期限が来るまで使われ続ける</strong>。OCSP の負荷とプライバシーを緩和する OCSP ステープリングは、サーバが自分の分の応答をあらかじめ取得してハンドシェイクに同梱する方式。詳しくは<a href="../PKI/証明書の失効確認_CRLとOCSP.html">CRL と OCSP</a>。</p>
+<p>OCSP の負荷とプライバシーを緩和する <strong>OCSP ステープリング</strong>は、サーバが自分の分の応答をあらかじめ取得しておき、ハンドシェイクに同梱して渡す方式です。クライアントは発行元に問い合わせずに済みます。詳しくは<a href="../PKI/証明書の失効確認_CRLとOCSP.html">CRL と OCSP</a>。</p>
 
-<h2>登場人物：CA / RA / IA / VA</h2>
-<p>ここまでの「発行元」は、実務では役割が分かれている。</p>
+<h3>登場人物：CA / RA / IA / VA</h3>
+
+<p>ここまで「発行元」とまとめて呼んできましたが、実務では役割が分かれています。</p>
+
+<div class="tw">
 <table>
 <tr><th>役割</th><th>担当</th></tr>
 <tr><td>CA</td><td>認証局全体。ポリシを定め、証明書を発行する主体</td></tr>
@@ -252,16 +662,46 @@ a{color:var(--c1)}
 <tr><td>IA</td><td>実際に鍵と証明書を生成する（発行局）</td></tr>
 <tr><td>VA</td><td>失効情報を提供する。CRL や OCSP レスポンダの側（検証局）</td></tr>
 </table>
-<p>分けている理由は<a href="../PKI/CA_RA_IA_VA.html">CA・RA・IA・VA</a> にある。</p>
+</div>
 
-<h2>鍵マークが出ていても安全とは限らない</h2>
+<p>分けている理由は <a href="../PKI/CA_RA_IA_VA.html">CA・RA・IA・VA</a> にあります。</p>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<p>理解したことは、口に出せて初めて自分のものになります。長さ違いで 2 つ用意しました。</p>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>TLS は、通信の <strong>認証・機密性・完全性</strong>をまとめて実現する仕組みです。まず通信を始める前のハンドシェイクで、使う暗号方式を合意し、サーバの証明書を検証して相手が本物か確かめ、そのうえで共通鍵（セッション鍵）を共有します。以降の実データはその共通鍵で暗号化して運びます。<strong>認証が先、暗号化が後</strong>という順番が肝心で、逆にすると中間者と安全に会話しているだけになります。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>鍵の共有に公開鍵を使うのは、共通鍵をそのまま経路で渡せないからです（鍵配送問題）。逆に実データを公開鍵で暗号化しないのは、遅すぎるからです。この組み合わせをハイブリッド方式と呼びます。</p>
+<p>証明書は、サーバの公開鍵とホスト名をセットにして認証局が署名したものです。クライアントは、署名の連鎖が端末内蔵のルート証明書まで届くか、有効期限内か、SAN が接続先ホスト名と一致するか、失効していないかの 4 点を確認します。ルート証明書だけは自己署名で、信頼の根拠は OS やブラウザに収録されているという事実そのものです。</p>
+<p>ハンドシェイクの前半は平文で流れるので、そこを改ざんして弱い暗号に落とすダウングレード攻撃があります。防いでいるのは最後の Finished で、ここまでの全メッセージのハッシュを送り合って一致を確認しています。</p>
+</blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>鍵マークは「安全なサイト」の印ではない</h3>
+
 <div class="note">
 <p><strong>DV 証明書が証明しているのは「申請者がそのドメインを操作できた」ことだけ</strong></p>
-<p>運営者が誰かも、サイトの中身が安全かも証明していない。フィッシングサイトでも、自分で取得したドメインなら数分で鍵マークが付く。<code>example-bank-login.com</code> で正規の鍵マークが出ている状況は普通に起こる。鍵マークが保証するのは「暗号化されている」「アドレスバーのホスト名と証明書が一致している」までで、その先は利用者がホスト名を読むしかない。→ <a href="../PKI/ドメイン認証と企業認証とEV認証.html">DV・OV・EV</a></p>
+<p>運営者が誰かも、サイトの中身が安全かも証明していません。フィッシングサイトでも、自分で取得したドメインなら数分で鍵マークが付きます。<code>example-bank-login.com</code> で正規の鍵マークが出ている状況は普通に起こります。鍵マークが保証するのは「暗号化されている」「アドレスバーのホスト名と証明書が一致している」までで、その先は利用者がホスト名を読むしかありません。→ <a href="../PKI/ドメイン認証と企業認証とEV認証.html">DV・OV・EV</a></p>
 </div>
-<p>もう一つは企業内の TLS 復号プロキシ。端末にプロキシのルート証明書が配布されていれば検証は正常に通り鍵マークも出るが、通信はプロキシで一度復号されている。中間者攻撃と技術的には同じ構造で、違いは端末の管理者が意図して信頼させたかどうかだけ。</p>
+
+<h3>「TLS ＝ 暗号化の技術」で止めない</h3>
+
+<p>この記事で 5 ステップかけて積み上げてきたうち、暗号化そのものは STEP 2 だけです。残りの STEP 3・STEP 4 は全部「相手が本物か」を確かめるための仕組みでした。<strong>TLS の分量の多くは認証に費やされています。</strong>「暗号化の技術です」で止めると、証明書の話が全部宙に浮きます。</p>
+
+<h3>検証が通って鍵マークが出ていても、復号されていることがある</h3>
+
+<p>企業内の TLS 復号プロキシがこれにあたります。端末にプロキシのルート証明書が配布されていれば、STEP 4 の 4 点はすべて正常に通り、鍵マークも出ます。しかし通信はプロキシで一度復号されています。<strong>中間者攻撃と技術的には同じ構造で、違いは端末の管理者が意図して信頼させたかどうかだけ</strong>です。</p>
 
 <h2>検証が失敗するときの切り分け</h2>
+
+<div class="tw">
 <table>
 <tr><th>症状</th><th>原因</th><th>切り分けの観点</th></tr>
 <tr><td>ブラウザでは正常、curl や古い端末・アプリだけエラー</td><td>中間 CA 証明書がサーバから配信されていない</td><td>ブラウザは過去に見た中間 CA をキャッシュしたり自力で取得したりして繋がってしまう。サーバが返す証明書チェーンを直接確認する</td></tr>
@@ -269,9 +709,19 @@ a{color:var(--c1)}
 <tr><td>ある日突然すべての利用者でエラー</td><td>証明書の期限切れ</td><td>更新はできていて配置・再読み込みが漏れている場合もある。実際に配信されている証明書の期限を見る</td></tr>
 <tr><td>特定の端末だけ「まだ有効でない／期限切れ」</td><td>端末の時刻ずれ</td><td>期限判定は端末の時計が基準。NTP が止まっている、仮想マシンの復元直後などを疑う</td></tr>
 </table>
+</div>
 
-<h2>UDP の上でやるなら</h2>
-<p>TLS は TCP の順序保証に寄りかかっているので、UDP の上ではそのまま動かない。欠落と順序入れ替えを自前で吸収して TLS 相当を実現するのが <a href="DTLS.html">DTLS</a>で、VPN や WebRTC で使われている。</p>
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話があります。ここまで理解できていれば、どれも読めるはずです。</p>
+
+<ul>
+<li><strong>なぜ TCP の上で動くのか</strong>：TLS は下位層が「欠けず・重複せず・順番どおり」届けることを前提に作られています。→ <a href="SSL_TLSがTCP上で動作する理由.html">SSL/TLS が TCP 上で動作する理由</a></li>
+<li><strong>UDP の上でやるなら</strong>：欠落と順序入れ替えを自前で吸収して TLS 相当を実現するのが DTLS で、VPN や WebRTC で使われています。→ <a href="DTLS.html">DTLS</a></li>
+<li><strong>鍵をどう共有するか、の中身</strong>：⑥の鍵交換には方式が複数あり、通信後にサーバの秘密鍵が漏れても過去の通信を復号されない性質（前方秘匿性）の有無が変わります。→ <a href="プレマスタシークレット.html">プレマスタシークレット</a> / <a href="../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a></li>
+<li><strong>ダウングレード系の攻撃</strong>：合意の段階を狙う攻撃には型がいくつかあります。→ <a href="../Cyber Attacks/23_SSL_TLSダウングレード攻撃.html">SSL/TLS ダウングレード攻撃</a> / <a href="../Cyber Attacks/24_バージョンロールバック攻撃.html">バージョンロールバック攻撃</a> / <a href="../Cyber Attacks/25_POODLE攻撃.html">POODLE 攻撃</a></li>
+<li><strong>証明書の中身をバイト単位で読む</strong>：証明書は ASN.1 という記法で構造化されています。→ <a href="../PKI/ASN1.html">ASN.1</a></li>
+</ul>
 
 <h2>参考</h2>
 <ul>
