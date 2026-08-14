@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>セッション管理と入力の扱いをゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem;margin:1.2rem 0;overflow-x:auto;font-size:.85rem;line-height:1.7}
+pre code{background:none;padding:0}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.hole{color:var(--stop)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>セッション管理と入力の扱いをゼロから理解する</h1>
+<p class="lede">対策の名前は言える。「なぜそれで防げるのか」を説明しろと言われると詰まる——その隙間を埋める。</p>
+
+<h2>名前を覚えても、記述式では書けない</h2>
+<p>プリペアドステートメント、HttpOnly、セッション ID の再発行。名前はすぐ出てくる。ところが「なぜその対策で防げるのか」と問われた瞬間、手が止まる。午後試験で採点されるのはまさにそこだ。</p>
+<p>Web アプリの守りは、突き詰めると <strong>ログイン状態をどう持つか（セッション管理）</strong>と<strong>外から来た値をどこでどう扱うか（入力の扱い）</strong>の 2 本しかない。この 2 本を「何を・どこで・なぜ」で言い切れるところまで整理する。</p>
+
+<h2>セッション ID は「本人であること」そのもの</h2>
+<p>HTTP はリクエストごとに独立していて、前回誰だったかを覚えていない。そこでサーバは認証に成功した時点でセッション ID を発行し、以降はその ID だけを見て「ログイン済みの誰々」と判断する。</p>
+<p>つまり<strong>セッション ID はパスワードと同じ重みを持つ</strong>。攻撃者はパスワードを知らなくても、有効な ID をひとつ手に入れれば本人として振る舞える。連番や「ユーザ ID + 時刻」から組み立てた ID が危険なのは、他人の値を<em>計算で</em>作れてしまうから。要件は暗号論的な擬似乱数で十分な長さ、そして自作しないこと。</p>
+
+<h2>ログイン時に ID を再発行する理由</h2>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="正常なログインとセッションフィクセーションが成立する場合を同じ時間軸で比較した図">
+  <text x="0" y="12" font-size="13" font-weight="600" fill="var(--c3)">正常 — ログイン成功時にセッション ID を作り直す</text>
+  <g font-size="10.5">
+    <rect x="0" y="20" width="160" height="66" rx="6" fill="var(--lane)"/>
+    <text x="10" y="40" fill="var(--muted)">① 未ログイン</text>
+    <text x="10" y="56" fill="var(--ink)">ID-A が配られる</text>
+    <text x="10" y="72" fill="var(--muted)">まだ何の権限もない</text>
+
+    <rect x="176" y="20" width="160" height="66" rx="6" fill="var(--lane)"/>
+    <text x="186" y="40" fill="var(--muted)">② 利用者</text>
+    <text x="186" y="56" fill="var(--ink)">ID とパスワードを</text>
+    <text x="186" y="72" fill="var(--ink)">送信する</text>
+
+    <rect x="352" y="20" width="160" height="66" rx="6" fill="var(--c3)"/>
+    <text x="362" y="40" fill="var(--on)">③ 認証成功</text>
+    <text x="362" y="56" fill="var(--on)">ID-A を破棄し</text>
+    <text x="362" y="72" fill="var(--on)">ID-B を発行</text>
+
+    <rect x="528" y="20" width="172" height="66" rx="6" fill="var(--lane)"/>
+    <text x="538" y="40" fill="var(--muted)">④ 攻撃者</text>
+    <text x="538" y="56" fill="var(--ink)">ID-A で接続</text>
+    <text x="538" y="72" fill="var(--c3)">→ 失敗（A は無効）</text>
+  </g>
+  <text x="0" y="106" font-size="11" fill="var(--c3)">認証済みという状態は、攻撃者が知らない ID-B のほうに移っている。</text>
+
+  <text x="0" y="146" font-size="13" font-weight="600" fill="var(--stop)">セッションフィクセーション — ログイン前後で同じ ID を使い続ける</text>
+  <g font-size="10.5">
+    <rect x="0" y="154" width="160" height="66" rx="6" fill="var(--lane)"/>
+    <text x="10" y="174" fill="var(--muted)">① 攻撃者</text>
+    <text x="10" y="190" fill="var(--ink)">用意した ID-A を</text>
+    <text x="10" y="206" fill="var(--ink)">利用者に使わせる</text>
+
+    <rect x="176" y="154" width="160" height="66" rx="6" fill="var(--lane)"/>
+    <text x="186" y="174" fill="var(--muted)">② 利用者</text>
+    <text x="186" y="190" fill="var(--ink)">ID-A を持ったまま</text>
+    <text x="186" y="206" fill="var(--ink)">ログインする</text>
+
+    <rect x="352" y="154" width="160" height="66" rx="6" fill="var(--stop)"/>
+    <text x="362" y="174" fill="var(--on)">③ 認証成功</text>
+    <text x="362" y="190" fill="var(--on)">ID-A のまま</text>
+    <text x="362" y="206" fill="var(--on)">権限だけが上がる</text>
+
+    <rect x="528" y="154" width="172" height="66" rx="6" fill="var(--lane)"/>
+    <text x="538" y="174" fill="var(--muted)">④ 攻撃者</text>
+    <text x="538" y="190" fill="var(--ink)">ID-A で接続</text>
+    <text x="538" y="206" fill="var(--stop)">→ 成立（乗っ取り）</text>
+  </g>
+  <text x="0" y="240" font-size="11" fill="var(--stop)">攻撃者は ID を盗んでいない。最初から知っている ID が、③ で勝手に認証済みへ昇格した。</text>
+
+  <line x1="0" y1="272" x2="686" y2="272" stroke="var(--muted)" stroke-width="1"/>
+  <path d="M686 268 L700 272 L686 276 Z" fill="var(--muted)"/>
+  <text x="0" y="290" font-size="10.5" fill="var(--muted)">時間</text>
+</svg>
+<figcaption>③ の 1 マスだけが違い、④ の結果が反転する。ID を利用者に「使わせる」経路は、URL のクエリでセッション ID を運ぶ実装、同一ドメインの別アプリからの Cookie 上書き、XSS など。逆に言えば、③ で作り直してさえいれば ① や ② の経路を全部塞げなくても攻撃は完成しない。</figcaption>
+</figure>
+
+<p>言い切る形にするとこうなる——<strong>何を</strong>：セッション ID を新規発行して古い ID を破棄する。<strong>どこで</strong>：認証に成功した直後。<strong>なぜ</strong>：攻撃者が事前に用意・固定した ID が、認証済みの状態と結びつかないようにするため。</p>
+<p class="hole">それでも破られる条件：再発行はフィクセーション専用の対策で、ログイン<em>後</em>に新しい ID が盗聴や XSS で漏れれば、ハイジャックは普通に成立する。</p>
+
+<h3>ハイジャックとフィクセーションの成立条件</h3>
+<table>
+<tr><th></th><th>セッションハイジャック</th><th>セッションフィクセーション</th></tr>
+<tr><th>攻撃者に必要なこと</th><td>被害者の ID を<strong>知る</strong>（盗聴・XSS・Referer やログからの漏えい）</td><td>知る必要はない。自分の ID を<strong>使わせる</strong>だけ</td></tr>
+<tr><th>アプリ側の欠陥</th><td>ID が漏れる経路がある／ID が推測できる</td><td>ログイン前後で ID を変えていない</td></tr>
+<tr><th>効く対策</th><td>推測不能な ID、Secure、HttpOnly、TLS 全面化</td><td>ログイン成功時の ID 再発行</td></tr>
+</table>
+<p>対策は交換できない。属性をいくら固めてもフィクセーションは防げず（そもそも漏れていない）、再発行してもハイジャックは防げない。</p>
+
+<h2>Cookie の属性は、それぞれ別の穴を塞いでいる</h2>
+<p>セッション ID は普通 Cookie で運ぶ。属性は「まとめて付けておく」ものではなく、1 つずつ塞ぐ穴が違う。<a href="../Networking/HTTP/Cookieの属性.html">属性そのものの構文は別記事</a>にあるので、ここは防御の観点で並べる。</p>
+
+<table>
+<tr><th>属性</th><th>何を防ぐのか（なぜ）</th><th>それでも破られる条件</th></tr>
+<tr><td><code>Secure</code></td><td>HTTPS のリクエストにしか Cookie を載せない。平文で流れないので、経路上の盗聴で ID を拾われない</td><td>HSTS がないと最初の 1 回が HTTP になりうる。TLS を張る前の段階で剥がされれば意味がない</td></tr>
+<tr><td><code>HttpOnly</code></td><td>JavaScript の <code>document.cookie</code> から読めなくする。XSS が起きても ID を外部サーバへ送り出せない</td><td>XSS 自体は止まらない。スクリプトは被害者のブラウザ内で、Cookie が自動付与された状態のまま送金や設定変更を実行できる</td></tr>
+<tr><td><code>SameSite</code></td><td>他サイト起点のリクエストに Cookie を付けない。攻撃者のページから勝手に投げられたリクエストが認証済み扱いにならない（CSRF）</td><td><code>Lax</code> はトップレベルの GET には付くので、GET で状態を変える実装は守られない。同一サイト内の別サブドメインからは付く</td></tr>
+<tr><td><code>Domain</code></td><td>送信先ドメインを絞る。無関係なホストへ ID が飛ばない</td><td>指定すると<strong>サブドメイン全体</strong>に送られる。脆弱なサブドメインが 1 つあれば、そこから ID を回収できる。狭くしたいなら指定しないほうが狭い</td></tr>
+<tr><td><code>Path</code></td><td>特定パス配下のリクエストにだけ付ける。アプリ間の混線を減らす</td><td>同一オリジンの JavaScript は Path を越えて読み書きできる。セキュリティ境界としては当てにしない</td></tr>
+<tr><td>有効期限<br>（<code>Expires</code> / <code>Max-Age</code>）</td><td>指定しなければブラウザを閉じた時点で消えるセッション Cookie になり、共用端末に残らない</td><td>消えるのはブラウザ側だけ。サーバのセッションが生きていれば、盗まれた ID はまだ使える。ログアウトは<strong>サーバ側の破棄</strong>で行う</td></tr>
+</table>
+
+<h2>SQL インジェクション：値が構文になってしまう</h2>
+<p>危険な文字を渡されることが問題なのではない。<strong>値として渡したはずのものが、命令の一部として解釈されること</strong>が問題。</p>
+<p>文字列連結で SQL を組み立てると、DB が受け取るのは値と命令の区別がない 1 本の文字列になる。パーサは引用符の内側か外側かだけを見て解析するので、値の中に <code>'</code> が現れた瞬間に境界がずれ、そこから先が構文として読まれる。</p>
+
+<figure>
+<svg viewBox="0 0 700 330" role="img" aria-label="静的プレースホルダと文字列連結で、SQLの構文確定と値の流し込みがどう違うかを比べた図">
+  <text x="0" y="12" font-size="13" font-weight="600" fill="var(--c3)">静的プレースホルダ — 構文を先に確定させ、あとから値を入れる</text>
+
+  <rect x="0" y="22" width="330" height="56" rx="6" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="12" y="44" font-size="11" fill="var(--muted)">① 骨格だけを DB へ送る</text>
+  <text x="12" y="66" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c1)">WHERE name = ?</text>
+
+  <path d="M338 50 L372 50" stroke="var(--muted)" stroke-width="1.5"/>
+  <path d="M368 45 L378 50 L368 55 Z" fill="var(--muted)"/>
+
+  <rect x="386" y="22" width="314" height="56" rx="6" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/>
+  <text x="398" y="44" font-size="11" fill="var(--muted)">② 値を別枠で送る</text>
+  <text x="398" y="66" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c2)">' OR '1'='1</text>
+
+  <text x="0" y="102" font-size="11" fill="var(--muted)">DB 側で確定済みの構文木：</text>
+  <rect x="0" y="112" width="700" height="42" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="14" y="139" font-size="12" font-family="ui-monospace,monospace" fill="var(--c1)">WHERE  name  =</text>
+  <rect x="124" y="120" width="200" height="26" rx="4" fill="var(--c2)"/>
+  <text x="134" y="139" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--on)">' OR '1'='1</text>
+  <text x="338" y="139" font-size="11" fill="var(--c3)">← 値の箱に入るだけ。中身が何でも構文は増えない</text>
+
+  <text x="0" y="192" font-size="13" font-weight="600" fill="var(--stop)">文字列連結 — 値が混ざった 1 本の文字列を、DB が解析する</text>
+
+  <rect x="0" y="202" width="700" height="42" rx="6" fill="var(--lane)"/>
+  <text x="14" y="229" font-size="12" font-family="ui-monospace,monospace" fill="var(--ink)">WHERE  name  =  '</text>
+  <rect x="140" y="210" width="196" height="26" rx="4" fill="var(--c2)"/>
+  <text x="150" y="229" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--on)">' OR '1'='1</text>
+  <text x="342" y="229" font-size="12" font-family="ui-monospace,monospace" fill="var(--ink)">'</text>
+
+  <text x="0" y="262" font-size="11" fill="var(--muted)">DB はこう読む：</text>
+  <rect x="0" y="272" width="700" height="42" rx="6" fill="var(--card)" stroke="var(--stop)" stroke-width="1.5"/>
+  <text x="14" y="299" font-size="12" font-family="ui-monospace,monospace" fill="var(--c1)">WHERE  name  =  ''</text>
+  <rect x="150" y="280" width="118" height="26" rx="4" fill="var(--stop)"/>
+  <text x="160" y="299" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--on)">OR '1'='1'</text>
+  <text x="282" y="299" font-size="11" fill="var(--stop)">← 値のはずが条件式になった。常に真 → 全件返る</text>
+</svg>
+<figcaption>違いは「解析の前に値が届いているかどうか」の一点。静的プレースホルダでは、値が到着したときには構文木がもう固まっているので、<code>'</code> を何個入れても構文の形を変えられない。危険文字を数え上げる発想とは筋が違う。</figcaption>
+</figure>
+
+<pre><code># 文字列連結 — 値がそのまま SQL の一部になる
+cur.execute("SELECT * FROM users WHERE name = '" + name + "'")
+
+# 静的プレースホルダ — 骨格と値を別々に渡す
+cur.execute("SELECT * FROM users WHERE name = %s", (name,))</code></pre>
+
+<h3>バインド機構・プリペアドステートメント・静的／動的</h3>
+<p><strong>バインド機構</strong>は、値を SQL 文字列に埋め込まず別枠で渡す仕組み全般を指す。<strong>プリペアドステートメント</strong>は、その SQL をあらかじめ DB に準備させておく形。準備の段階でパースが終わるので、値は後から差し込むしかなくなる。</p>
+<table>
+<tr><th></th><th>どこで値を差し込むか</th><th>安全性の根拠と、残る穴</th></tr>
+<tr><td>静的プレースホルダ</td><td><strong>DB サーバ側</strong>。<code>?</code> 付きの SQL を先に送り、構文解析を済ませてから値を送る</td><td>構文が確定した後に値が届くので、原理的に値は構文になれない</td></tr>
+<tr><td>動的プレースホルダ</td><td><strong>ドライバやライブラリ側</strong>。内部でエスケープして 1 本の SQL を組み立て、DB へ送る</td><td class="hole">最終的に文字列連結をしているのは同じ。文字エンコーディングの扱いを誤ると引用符を作れる組合せが残り、実装依存の穴になる</td></tr>
+</table>
+<p class="hole">どちらにも共通して破られる条件：プレースホルダはテーブル名・カラム名・<code>ORDER BY</code> の並び順には使えない。ここだけ連結で書いた実装が実際によく残る。可変にしたいなら、外部入力を SQL に混ぜるのではなく<strong>許可リストから選ばせる</strong>。</p>
+
+<h3>エスケープに頼る方式が残す穴</h3>
+<p>「入口で危険文字を潰しておく」方式が破綻するのは、入口の時点では<strong>その値がどこへ行くのかが決まっていない</strong>から。同じ値が SQL にも HTML にもシェルにも流れうるのに、エスケープすべき文字は行き先ごとに違う。多バイト文字の解釈差をつけばすり抜ける組合せも作れるし、経路が 1 つでも漏れれば終わる。</p>
+<p>原則は逆側にある——<strong>入口でまとめて無害化せず、値を使う場所で、その場所の作法で処理する</strong>。入力時の検証は「型・長さ・書式が仕様どおりか」を確かめるものであって、防御の本体ではない。</p>
+
+<h2>XSS の対策は、出力の側にある</h2>
+<p>XSS も構造は SQL インジェクションと同じで、値がマークアップやスクリプトとして解釈されることが問題。<a href="../Cyber Attacks/18_XSSの3分類とセッションハイジャック.html">反射型・格納型・DOM 型という攻撃側の分類は別記事</a>にあるので、ここは対策側だけを見る。効くのは<strong>値を埋め込む直前</strong>の処理で、しかも埋め込み先の文脈ごとに必要な処理が変わる。</p>
+
+<table>
+<tr><th>埋め込む場所</th><th>必要な処理（なぜ）</th><th>破られる条件</th></tr>
+<tr><td>HTML の本文</td><td><code>&lt; &gt; &amp; " '</code> を文字参照へ。タグの開始として読まれなくなる</td><td>この処理だけを全文脈に使い回すこと</td></tr>
+<tr><td>属性値</td><td>必ず引用符で囲んだうえでエスケープ。囲まないと空白で属性を継ぎ足せる</td><td>引用符なしの <code>&lt;img src=…&gt;</code> に <code>onerror=</code> を足される</td></tr>
+<tr><td><code>&lt;script&gt;</code> 内</td><td>HTML エスケープでは不十分。JS の文字列リテラルに値を直書きせず、JSON として渡す</td><td>文字列を閉じずともテンプレートリテラルやコメントで脱出されうる</td></tr>
+<tr><td><code>href</code> / <code>src</code></td><td>エスケープでは足りない。スキームを <code>http</code> / <code>https</code> の許可リストで確認する</td><td><code>javascript:</code> は文字としては無害なので、エスケープを素通りする</td></tr>
+<tr><td>CSP</td><td>インラインスクリプトを禁じ、XSS が起きても実行される範囲を狭める</td><td>あくまで多層防御。既存アプリへの後付けは重く、単独の対策にはならない</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="入力から出力までの経路のどこで何の処理が必要かを重ねた図">
+  <rect x="0" y="0" width="180" height="34" rx="6" fill="none" stroke="var(--stop)" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <text x="12" y="22" font-size="11" fill="var(--stop)">WAF が見えるのはここだけ</text>
+  <path d="M75 34 L75 58" stroke="var(--stop)" stroke-width="1.3" stroke-dasharray="4 3"/>
+
+  <g font-size="11">
+    <rect x="0" y="62" width="150" height="40" rx="6" fill="var(--c1)"/>
+    <text x="75" y="87" fill="var(--on)" text-anchor="middle">① 値を受け取る</text>
+    <rect x="184" y="62" width="150" height="40" rx="6" fill="var(--c1)"/>
+    <text x="259" y="87" fill="var(--on)" text-anchor="middle">② DB へ保存する</text>
+    <rect x="368" y="62" width="150" height="40" rx="6" fill="var(--c1)"/>
+    <text x="443" y="87" fill="var(--on)" text-anchor="middle">③ 画面を組み立てる</text>
+    <rect x="552" y="62" width="148" height="40" rx="6" fill="var(--lane)"/>
+    <text x="626" y="87" fill="var(--ink)" text-anchor="middle">④ ブラウザが解釈</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="1.5" fill="var(--muted)">
+    <path d="M152 82 L176 82"/><path d="M172 77 L182 82 L172 87 Z"/>
+    <path d="M336 82 L360 82"/><path d="M356 77 L366 82 L356 87 Z"/>
+    <path d="M520 82 L544 82"/><path d="M540 77 L550 82 L540 87 Z"/>
+  </g>
+
+  <g font-size="10.5">
+    <rect x="0" y="120" width="150" height="76" rx="6" fill="var(--card)" stroke="var(--c3)"/>
+    <text x="10" y="140" fill="var(--c3)">型・長さ・書式の検証</text>
+    <text x="10" y="158" fill="var(--muted)">仕様に合うかを見る</text>
+    <text x="10" y="176" fill="var(--muted)">だけ。ここで無害化</text>
+    <text x="10" y="190" fill="var(--muted)">しようとしない</text>
+
+    <rect x="184" y="120" width="150" height="76" rx="6" fill="var(--card)" stroke="var(--c3)"/>
+    <text x="194" y="140" fill="var(--c3)">静的プレースホルダ</text>
+    <text x="194" y="158" fill="var(--muted)">構文を先に確定させ、</text>
+    <text x="194" y="176" fill="var(--muted)">値は値として渡す</text>
+
+    <rect x="368" y="120" width="150" height="76" rx="6" fill="var(--card)" stroke="var(--c3)"/>
+    <text x="378" y="140" fill="var(--c3)">文脈ごとのエスケープ</text>
+    <text x="378" y="158" fill="var(--muted)">本文 / 属性 / JS / URL</text>
+    <text x="378" y="176" fill="var(--muted)">で必要な処理が違う</text>
+
+    <rect x="552" y="120" width="148" height="76" rx="6" fill="var(--card)" stroke="var(--c4)"/>
+    <text x="562" y="140" fill="var(--c4)">CSP・HttpOnly</text>
+    <text x="562" y="158" fill="var(--muted)">抜けたときに被害を</text>
+    <text x="562" y="176" fill="var(--muted)">狭めるための保険</text>
+  </g>
+
+  <text x="0" y="226" font-size="11" fill="var(--stop)">DB に入った値がバッチや管理画面から出ていく経路は、① を通らない。入口だけの防御が届かないのはこの部分。</text>
+  <text x="0" y="244" font-size="11" fill="var(--muted)">同じ値でも ② と ③ で必要な処理は別物。片方だけやって「対策済み」にしない。</text>
+</svg>
+<figcaption>格納型 XSS が厄介なのは、③ の手抜きが ① の時点では表面化しないから。保存されるときは無害な文字列で、画面に出す瞬間に初めてスクリプトになる。</figcaption>
+</figure>
+
+<h2>その上で、WAF はどこに置くか</h2>
+<p>WAF はリクエストを検査して遮断する仕組みで、判定方式は 2 つある。</p>
+<ul>
+<li><strong>ポジティブモデル（許可リスト）</strong>：通してよい形だけを定義し、それ以外を落とす。精度は高いが、アプリの全パラメータの仕様を書き出し、改修のたびに追随する必要がある。運用が重い。</li>
+<li><strong>ネガティブモデル（シグネチャ）</strong>：既知の攻撃パターンに一致したものを落とす。導入が容易で実際に多いが、<strong>知らない形は通る</strong>。</li>
+</ul>
+<p>根本的な限界は、WAF が見ているのが<strong>リクエストの見た目だけ</strong>で、その値がアプリ内でどう使われるかを知らないこと。エンコードやコメントを混ぜた変形で回避されるし、HTTP を通らずに入るデータ（外部連携ファイル、他システム経由のレコード）は素通りする。誤検知を嫌って緩めれば、緩めた分だけ穴が開く。</p>
+<div class="note">
+<p><strong>提案するときの言い方</strong></p>
+<p>「WAF は脆弱性を直すものではなく、直すまでの時間を買うもの。改修に何か月かかるかと、その間どう検知するかがセットで決まっていないなら、入れても止まりません」</p>
+</div>
+
+<h2>「何を・どこで・なぜ」で言い切る</h2>
+<table>
+<tr><th>何を</th><th>どこで</th><th>なぜ</th></tr>
+<tr><td>セッション ID を再発行する</td><td>認証に成功した直後</td><td>攻撃者が事前に固定した ID が、認証済み状態と結びつかないようにするため</td></tr>
+<tr><td><code>HttpOnly</code> を付ける</td><td>Cookie を発行する <code>Set-Cookie</code></td><td>XSS が起きても、スクリプトからセッション ID を読み出せないようにするため</td></tr>
+<tr><td>静的プレースホルダを使う</td><td>SQL を組み立てるアプリ側</td><td>構文を先に確定させ、入力値が構文として解釈されないようにするため</td></tr>
+<tr><td>出力時にエスケープする</td><td>値を HTML に埋め込む直前</td><td>埋め込み先の文脈で、値がタグやスクリプトとして解釈されないようにするため</td></tr>
+</table>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.ipa.go.jp/security/vuln/websecurity/index.html">IPA - 安全なウェブサイトの作り方</a></li>
+<li><a href="https://www.ipa.go.jp/security/vuln/websecurity/session-management.html">IPA - セッション管理の留意点</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html">OWASP - Session Management Cheat Sheet</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html">OWASP - SQL Injection Prevention Cheat Sheet</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html">OWASP - Cross Site Scripting Prevention Cheat Sheet</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Reference/Headers/Set-Cookie">MDN - Set-Cookie</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/CSP">MDN - コンテンツセキュリティポリシー (CSP)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6265">RFC 6265 - HTTP State Management Mechanism</a></li>
+</ul>
+
+</main>
+</body>
+</html>

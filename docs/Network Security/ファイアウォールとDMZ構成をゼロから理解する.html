@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ファイアウォールと DMZ 構成をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ファイアウォールと DMZ 構成をゼロから理解する</h1>
+<p class="lede">構成図の上で、その通信はどこまで進んで、どこで止まるのか。</p>
+
+<h2>何が問題なのか</h2>
+<p>午後試験ではまずネットワーク構成図が渡される。ファイアウォール、DMZ、WAF、プロキシ——機器の名前はどれも知っている。それでも「この通信は遮断されるか」という設問に手が止まる。機器名を覚えても、通る／止まるの判断はできないからだ。</p>
+<p>判断に要るのは1つだけ。<strong>その機器はパケットのどこまで見ているか</strong>。見えていないものは止められない。逆に見えている範囲なら、あとはルール次第で止まる。この一点で構成図を読み直す。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="インターネット・DMZ・内部ネットワークの3領域と機器の配置">
+  <text x="57" y="20" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">インターネット</text>
+  <text x="295" y="20" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">DMZ（非武装地帯）</text>
+  <text x="588" y="20" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">内部ネットワーク</text>
+
+  <rect x="6" y="34" width="102" height="246" rx="8" fill="var(--lane)"/>
+  <rect x="118" y="34" width="32" height="246" rx="5" fill="var(--c2)" opacity=".18"/>
+  <rect x="118" y="34" width="32" height="246" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+  <rect x="160" y="34" width="270" height="246" rx="8" fill="none" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="440" y="34" width="32" height="246" rx="5" fill="var(--c2)" opacity=".18"/>
+  <rect x="440" y="34" width="32" height="246" rx="5" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+  <rect x="482" y="34" width="212" height="246" rx="8" fill="none" stroke="var(--c1)" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+  <text transform="rotate(-90 134 200)" x="134" y="204" font-size="12" fill="var(--c2)" text-anchor="middle">外側FW</text>
+  <text transform="rotate(-90 456 200)" x="456" y="204" font-size="12" fill="var(--c2)" text-anchor="middle">内側FW</text>
+
+  <text x="57" y="150" font-size="10.5" fill="var(--muted)" text-anchor="middle">利用者も攻撃者も</text>
+  <text x="57" y="168" font-size="10.5" fill="var(--muted)" text-anchor="middle">同じ経路で来る</text>
+
+  <path d="M108 118 H176" stroke="var(--ink)" stroke-width="1.5" opacity=".45" fill="none"/>
+  <path d="M372 118 H405 V246 H498" stroke="var(--ink)" stroke-width="1.5" opacity=".45" fill="none"/>
+  <path d="M588 96 V70 H108" stroke="var(--ink)" stroke-width="1.5" opacity=".45" fill="none"/>
+
+  <rect x="176" y="96" width="72" height="44" rx="6" fill="var(--c4)"/>
+  <text x="212" y="123" font-size="12" fill="var(--on)" text-anchor="middle">WAF</text>
+  <path d="M248 118 H270" stroke="var(--ink)" stroke-width="1.5" opacity=".45"/>
+  <rect x="272" y="96" width="100" height="44" rx="6" fill="var(--c3)"/>
+  <text x="322" y="123" font-size="11" fill="var(--on)" text-anchor="middle">公開Webサーバ</text>
+  <rect x="176" y="182" width="196" height="40" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="274" y="207" font-size="11" fill="var(--ink)" text-anchor="middle">公開DNS・メール中継サーバ</text>
+
+  <rect x="498" y="96" width="180" height="40" rx="6" fill="var(--c1)"/>
+  <text x="588" y="121" font-size="10.5" fill="var(--on)" text-anchor="middle">プロキシ／アプリケーションGW</text>
+  <rect x="498" y="158" width="180" height="48" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="588" y="180" font-size="11" fill="var(--ink)" text-anchor="middle">業務端末</text>
+  <text x="588" y="197" font-size="10" fill="var(--c2)" text-anchor="middle">＋パーソナルファイアウォール</text>
+  <rect x="498" y="226" width="180" height="40" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="588" y="251" font-size="11" fill="var(--ink)" text-anchor="middle">内部DB・ファイルサーバ</text>
+
+  <circle cx="142" cy="102" r="10" fill="var(--c3)"/><text x="142" y="106" font-size="11" fill="var(--on)" text-anchor="middle">1</text>
+  <circle cx="405" cy="200" r="10" fill="var(--c3)"/><text x="405" y="204" font-size="11" fill="var(--on)" text-anchor="middle">2</text>
+  <circle cx="505" cy="56" r="10" fill="var(--c2)"/><text x="505" y="60" font-size="11" fill="var(--on)" text-anchor="middle">3</text>
+</svg>
+<figcaption>ファイアウォールを2台置くのは、外部→DMZ と DMZ→内部で許可すべきルールがまったく違うため。1台の多脚（3本足）構成で3つのインタフェースに分ける形も同じ意図で、試験ではどちらの図も出る。①②③は後で追う通信で、③は内部から外部へ抜ける経路——DMZ のサーバを経由するという意味ではない。</figcaption>
+</figure>
+
+<h2>ペリメータセキュリティモデルと、崩れた前提</h2>
+<p>境界（ペリメータ）に関門を置き、その内側は信頼する——これがペリメータセキュリティモデル。長らく前提だったが、いまは成立しない場面が多い。</p>
+<ul>
+<li><strong>守る資産が内側にない</strong>：業務データが SaaS やクラウドに出た</li>
+<li><strong>利用者が内側にいない</strong>：リモートワーク、社外持ち出しの端末</li>
+<li><strong>境界は内側から開けられる</strong>：メール添付や改ざんサイト経由でマルウェアが端末に入れば、通信は内側から外へ出ていく。外側ファイアウォールは「内→外」を広く許可しているので、そのまま通る</li>
+</ul>
+<p>だから境界防御をやめるのではなく、<strong>境界で止まらないものを内側でも見る</strong>構成にする。多層防御であり、ゼロトラストもこの延長にある。</p>
+
+<h2>DMZ を置く理由</h2>
+<p>公開サーバは不特定多数からの接続を受ける以上、いつか侵害されうる。問題はその後だ。公開 Web サーバが内部 LAN と同じセグメントにいれば、そこを踏み台に内部のファイルサーバへ横移動できてしまう。</p>
+<p>そこで公開サーバだけを別セグメントに隔離し、<strong>DMZ→内部は原則遮断、業務上必要な最小限だけ許可</strong>する。DMZ は「陥落しないための区画」ではなく、<strong>陥落する前提で被害を閉じ込める区画</strong>。この読み方ができると、設問の「DMZ に置くべきサーバはどれか」がほぼ機械的に解ける——外部から接続を受けるものは DMZ、受けないものは内部。</p>
+
+<h2>パケットフィルタリング：静的と動的</h2>
+<p>ファイアウォールの土台はパケットフィルタリング。送信元／宛先の IP アドレス、ポート番号、方向を見て通す・落とすを決める。問題になるのは<strong>戻りの通信</strong>だ。</p>
+<p>内部端末（192.0.2.10:52341）から外部の Web サーバ（203.0.113.5:443）への通信を許可したとする。応答は「203.0.113.5:443 → 192.0.2.10:52341」で返ってくる。静的フィルタリングはルールが固定なので、この戻りを通すには<strong>外部→内部の高位ポート（1024〜65535）を開けっぱなし</strong>にするしかない。ここが穴になる。「ACK フラグが立っているものは戻りとみなして通す」という設定もあるが、ACK を立てただけの偽装パケットを通してしまう（ACK スキャンが成立する）。</p>
+<p>動的フィルタリング、すなわち<strong>ステートフルインスペクション</strong>は、行きの通信を見てコネクションテーブルに記録し、その記録に対応する戻りだけを一時的に通す。行きの記録がなければ戻りも通らない。TCP のフラグやシーケンス番号の整合性も見るので、いきなり届いた SYN/ACK や ACK は落ちる。現在のファイアウォールはこちらが標準。</p>
+
+<div class="note">
+<p><strong>ここが判断の分かれ目</strong></p>
+<p>ステートフルインスペクションが判断しているのは「対応する行きの通信があるか」であって、<strong>中身が正当かどうかではない</strong>。内部から出ていった通信の応答である限り、それが何であっても通る。</p>
+</div>
+
+<h2>通信を3つ追う</h2>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="3つの通信が構成図のどこまで進みどこで止まるか">
+  <defs>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+    <marker id="ao" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+  </defs>
+
+  <g font-size="10.5" fill="var(--muted)" text-anchor="middle">
+    <text x="48" y="14">インターネット</text>
+    <text x="158" y="14">外側FW</text>
+    <text x="252" y="14">WAF</text>
+    <text x="352" y="14">DMZ Web</text>
+    <text x="452" y="14">内側FW</text>
+    <text x="548" y="14">プロキシ</text>
+    <text x="650" y="14">端末・DB</text>
+  </g>
+  <g stroke="var(--line)" stroke-dasharray="3 4">
+    <line x1="48" y1="22" x2="48" y2="270"/><line x1="158" y1="22" x2="158" y2="270"/>
+    <line x1="252" y1="22" x2="252" y2="270"/><line x1="352" y1="22" x2="352" y2="270"/>
+    <line x1="452" y1="22" x2="452" y2="270"/><line x1="548" y1="22" x2="548" y2="270"/>
+    <line x1="650" y1="22" x2="650" y2="270"/>
+  </g>
+
+  <circle cx="12" cy="44" r="9" fill="var(--c3)"/><text x="12" y="48" font-size="11" fill="var(--on)" text-anchor="middle">1</text>
+  <text x="28" y="48" font-size="11.5" font-weight="600" fill="var(--ink)">インターネット → DMZ の Web サーバへの HTTPS</text>
+  <line x1="48" y1="70" x2="350" y2="70" stroke="var(--c3)" stroke-width="2.5" marker-end="url(#ag)"/>
+  <text x="103" y="63" font-size="10" fill="var(--muted)" text-anchor="middle">443/TCP 許可</text>
+  <text x="252" y="88" font-size="10" fill="var(--c4)" text-anchor="middle">中身を検査</text>
+  <text x="352" y="88" font-size="10" fill="var(--c3)" text-anchor="middle">到達</text>
+  <text x="12" y="108" font-size="10.5" fill="var(--muted)">FW は宛先 IP とポートしか見ない。SQL インジェクションはここを素通りし、WAF が初めて検査できる。</text>
+
+  <circle cx="12" cy="136" r="9" fill="var(--c3)"/><text x="12" y="140" font-size="11" fill="var(--on)" text-anchor="middle">2</text>
+  <text x="28" y="140" font-size="11.5" font-weight="600" fill="var(--ink)">DMZ の Web サーバ → 内部 DB への接続</text>
+  <line x1="352" y1="162" x2="648" y2="162" stroke="var(--c3)" stroke-width="2.5" marker-end="url(#ag)"/>
+  <text x="500" y="155" font-size="10" fill="var(--muted)" text-anchor="middle">1433/TCP・DB サーバ宛のみ許可</text>
+  <line x1="352" y1="188" x2="444" y2="188" stroke="var(--stop)" stroke-width="2.5" marker-end="url(#ar)"/>
+  <text x="398" y="181" font-size="10" fill="var(--muted)" text-anchor="middle">445/TCP（SMB）</text>
+  <g stroke="var(--stop)" stroke-width="2.5"><line x1="446" y1="181" x2="458" y2="195"/><line x1="458" y1="181" x2="446" y2="195"/></g>
+  <text x="12" y="212" font-size="10.5" fill="var(--muted)">ルール外は内側 FW で遮断。DMZ の Web サーバが乗っ取られても、内部を自由には探れない。</text>
+
+  <circle cx="12" cy="230" r="9" fill="var(--c2)"/><text x="12" y="234" font-size="11" fill="var(--on)" text-anchor="middle">3</text>
+  <text x="28" y="234" font-size="11.5" font-weight="600" fill="var(--ink)">内部端末 → 外部への通信に紛れた C2</text>
+  <line x1="650" y1="256" x2="50" y2="256" stroke="var(--c2)" stroke-width="2.5" marker-end="url(#ao)"/>
+  <text x="548" y="249" font-size="10" fill="var(--c1)" text-anchor="middle">宛先URLが見える</text>
+  <text x="452" y="249" font-size="10" fill="var(--muted)" text-anchor="middle">443 は許可</text>
+  <text x="158" y="249" font-size="10" fill="var(--muted)" text-anchor="middle">通過</text>
+  <text x="12" y="284" font-size="10.5" fill="var(--muted)">内側から出ていく 443/TCP は正規の Web 閲覧と区別がつかない。FW は素通し。止められる可能性があるのはプロキシだけ。</text>
+</svg>
+<figcaption>③でプロキシが見ているのは、TLS を復号しない構成なら <code>CONNECT</code> の宛先ホスト名（あるいは SNI）まで。それでも「未分類ドメイン宛」「プロキシ認証を通らない通信」を落とせる。マルウェアがプロキシ設定を読まずに直接外へ出ようとした場合は、外側 FW で「プロキシ以外からの外向き通信は禁止」としておけば、そこで止まる。</figcaption>
+</figure>
+
+<h2>アプリケーションゲートウェイ／プロキシ</h2>
+<p>プロキシは通信を一度<strong>終端</strong>し、自分が代理でつなぎ直す。パケットを素通しせず中身を組み立て直すので、<code>GET /admin</code> という URL、User-Agent、ダウンロードされたファイル種別まで見える。だから「業務に不要なカテゴリのサイトを落とす」「利用者 ID ごとにログを残す」ができる。この<strong>ログが残ること自体</strong>が、侵害後の調査で決定的になる。</p>
+
+<h2>WAF：ポジティブモデルとネガティブモデル</h2>
+<p>SQL インジェクションを考える。宛先 IP は正しい、ポートは 443、TCP の状態も正常、HTTP としても文法的に正しい。異常なのは<strong>パラメータの中身だけ</strong>だ。L3/L4 しか見ない機器では原理的に検知できない。HTTP のボディまで見る WAF が、唯一の検知点になる。</p>
+<table>
+<tr><th>方式</th><th>やり方</th><th>性質</th></tr>
+<tr><td>ネガティブモデル<br>（ブラックリスト）</td><td>攻撃パターンのシグネチャに一致したら遮断</td><td>導入は楽。未知の攻撃や、エンコードを変えた回避には弱い</td></tr>
+<tr><td>ポジティブモデル<br>（ホワイトリスト）</td><td>正常なリクエストの形（パラメータ名・型・長さ）を定義し、外れたら遮断</td><td>未知の攻撃にも効く。アプリの仕様把握と、変更のたびの更新が要る。仕様が固い API 向き</td></tr>
+</table>
+<p><strong>WAF で防げないもの</strong>：他人の ID を指定すると他人のデータが見えるといった<strong>認可の欠陥</strong>や業務ロジックの穴は、リクエスト単体が完全に正常なので判定できない。TLS を復号していない経路の中身も見えない。そして WAF を迂回してオリジンサーバへ直接アクセスされれば、そもそも通らない。WAF は時間を稼ぐ手段であって、脆弱性の修正の代わりにはならない。</p>
+<p>なお、検知に振り切った機器として IDS/IPS も同じ位置に入るが、検知方式（シグネチャ型・アノマリ型）は別トピック。</p>
+
+<h2>パーソナルファイアウォール</h2>
+<p>端末そのものに置くファイアウォール。境界に置いたものとの決定的な違いは、<strong>同一セグメント内の通信は境界の機器を通らない</strong>という点にある。1台が感染して隣の端末へ横移動するとき、その通信は外側 FW も内側 FW も経由しない。止められるのは端末側だけ。加えて、端末を社外に持ち出した時点で、境界の機器はもう経路上にいない。</p>
+
+<h2>それぞれ何を見ているのか</h2>
+
+<figure>
+<svg viewBox="0 0 700 296" role="img" aria-label="各機器が見ている層と、止められるものの対応表">
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle" font-weight="600">
+    <text x="216" y="18">静的パケット</text><text x="216" y="32">フィルタリング</text>
+    <text x="320" y="18">ステートフル</text><text x="320" y="32">インスペクション</text>
+    <text x="424" y="18">プロキシ</text><text x="424" y="32">／AP-GW</text>
+    <text x="528" y="26">WAF</text>
+    <text x="632" y="18">パーソナル</text><text x="632" y="32">ファイアウォール</text>
+  </g>
+
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="0" y="66" font-size="11.5" font-weight="600" fill="var(--ink)">L7 アプリケーション層</text>
+    <text x="0" y="82">URL・HTTP の中身・SQL 文</text>
+    <text x="0" y="122" font-size="11.5" font-weight="600" fill="var(--ink)">L3／L4</text>
+    <text x="0" y="138">IP アドレス・ポート番号</text>
+    <text x="0" y="178" font-size="11.5" font-weight="600" fill="var(--ink)">プロセス・利用者</text>
+    <text x="0" y="194">誰が／どのアプリが出したか</text>
+  </g>
+
+  <g stroke="var(--line)" fill="none">
+    <line x1="164" y1="44" x2="684" y2="44"/><line x1="164" y1="96" x2="684" y2="96"/>
+    <line x1="164" y1="148" x2="684" y2="148"/><line x1="164" y1="200" x2="684" y2="200"/>
+  </g>
+
+  <g font-size="9.5" text-anchor="middle">
+    <rect x="374" y="50" width="100" height="40" rx="5" fill="var(--c1)"/>
+    <text x="424" y="68" fill="var(--on)">URL・メソッド</text><text x="424" y="82" fill="var(--on)">ファイル種別</text>
+    <rect x="478" y="50" width="100" height="40" rx="5" fill="var(--c4)"/>
+    <text x="528" y="68" fill="var(--on)">パラメータの</text><text x="528" y="82" fill="var(--on)">中身まで</text>
+    <text x="216" y="74" fill="var(--muted)">見えない</text>
+    <text x="320" y="74" fill="var(--muted)">見えない</text>
+    <text x="632" y="74" fill="var(--muted)">見えない</text>
+
+    <rect x="166" y="102" width="100" height="40" rx="5" fill="var(--c3)"/>
+    <text x="216" y="120" fill="var(--on)">1パケット</text><text x="216" y="134" fill="var(--on)">単位で判定</text>
+    <rect x="270" y="102" width="100" height="40" rx="5" fill="var(--c3)"/>
+    <text x="320" y="120" fill="var(--on)">＋接続状態を</text><text x="320" y="134" fill="var(--on)">テーブル管理</text>
+    <rect x="374" y="102" width="100" height="40" rx="5" fill="var(--lane)" stroke="var(--c1)"/>
+    <text x="424" y="127" fill="var(--ink)">終端する</text>
+    <rect x="478" y="102" width="100" height="40" rx="5" fill="var(--lane)" stroke="var(--c4)"/>
+    <text x="528" y="127" fill="var(--ink)">終端する</text>
+    <rect x="582" y="102" width="100" height="40" rx="5" fill="var(--c3)"/>
+    <text x="632" y="127" fill="var(--on)">端末上で判定</text>
+
+    <rect x="374" y="154" width="100" height="40" rx="5" fill="var(--c1)"/>
+    <text x="424" y="179" fill="var(--on)">利用者ID</text>
+    <rect x="582" y="154" width="100" height="40" rx="5" fill="var(--c3)"/>
+    <text x="632" y="179" fill="var(--on)">プロセス単位</text>
+    <text x="216" y="179" fill="var(--muted)">見えない</text>
+    <text x="320" y="179" fill="var(--muted)">見えない</text>
+    <text x="528" y="179" fill="var(--muted)">見えない</text>
+  </g>
+
+  <text x="0" y="222" font-size="11.5" font-weight="600" fill="var(--ink)">そこでしか止められないもの</text>
+  <g font-size="9.5" text-anchor="middle" fill="var(--ink)">
+    <rect x="166" y="232" width="100" height="42" rx="5" fill="var(--lane)"/>
+    <text x="216" y="250">許可外ポート</text><text x="216" y="264">への接続</text>
+    <rect x="270" y="232" width="100" height="42" rx="5" fill="var(--lane)"/>
+    <text x="320" y="250">行きの記録が</text><text x="320" y="264">ない戻り</text>
+    <rect x="374" y="232" width="100" height="42" rx="5" fill="var(--lane)"/>
+    <text x="424" y="250">未分類ドメイン</text><text x="424" y="264">への持ち出し</text>
+    <rect x="478" y="232" width="100" height="42" rx="5" fill="var(--lane)"/>
+    <text x="528" y="250">SQL インジェ</text><text x="528" y="264">クション</text>
+    <rect x="582" y="232" width="100" height="42" rx="5" fill="var(--lane)"/>
+    <text x="632" y="250">同一セグメント</text><text x="632" y="264">内の横移動</text>
+  </g>
+  <text x="0" y="292" font-size="10" fill="var(--muted)">下の段が多層防御の本体——1台で全部は見えないので、見えない層を別の機器が引き取る。</text>
+</svg>
+<figcaption>プロキシと WAF が L3/L4 を「終端する」なのは、通信を一度受け切って自分で張り直すため。攻撃者から見ると、その先の本当のサーバへ直接パケットを届けられなくなる。この性質自体が防御になっている。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.ipa.go.jp/security/rfc/RFC2196-04JA.html">IPA - RFC2196 サイトセキュリティハンドブック（日本語訳）</a></li>
+<li><a href="https://www.ipa.go.jp/security/vuln/websecurity/about.html">IPA - 安全なウェブサイトの作り方</a></li>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/41/r1/final">NIST SP 800-41 Rev.1 - Guidelines on Firewalls and Firewall Policy</a></li>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/207/final">NIST SP 800-207 - Zero Trust Architecture</a></li>
+<li><a href="https://owasp.org/www-community/Web_Application_Firewall">OWASP - Web Application Firewall</a></li>
+<li><a href="https://owasp.org/www-project-top-ten/">OWASP Top 10</a></li>
+</ul>
+
+</main>
+</body>
+</html>
