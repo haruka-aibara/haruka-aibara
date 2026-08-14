@@ -517,7 +517,7 @@ blockquote p{margin:.4rem 0}
     <line x1="122" y1="144" x2="586" y2="144" stroke="var(--c2)" stroke-width="1.6"/>
     <polygon points="114,144 124,140 124,148" fill="var(--c2)"/>
 
-    <text x="350" y="170">④ 鍵交換パラメータ（サーバの秘密鍵で署名）</text>
+    <text x="350" y="170">④ サーバの一時公開鍵（サーバの秘密鍵で署名）— ECDHE の場合</text>
     <line x1="122" y1="176" x2="586" y2="176" stroke="var(--c2)" stroke-width="1.6"/>
     <polygon points="114,176 124,172 124,180" fill="var(--c2)"/>
   </g>
@@ -527,7 +527,7 @@ blockquote p{margin:.4rem 0}
   <text x="172" y="217" font-size="10" fill="var(--muted)" text-anchor="middle">ここを省くと中間者に気づけない</text>
 
   <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
-    <text x="350" y="238">⑥ 鍵交換パラメータ／プレマスタシークレット</text>
+    <text x="350" y="238">⑥ クライアントの一時公開鍵 ／ 暗号化したプレマスタシークレット</text>
     <line x1="114" y1="244" x2="578" y2="244" stroke="var(--c1)" stroke-width="1.6"/>
     <polygon points="586,244 576,240 576,248" fill="var(--c1)"/>
   </g>
@@ -549,58 +549,143 @@ blockquote p{margin:.4rem 0}
     <polygon points="114,390 124,386 124,394" fill="var(--c3)"/>
   </g>
 </svg>
-<figcaption>TLS 1.3 では鍵交換パラメータを ClientHello に相乗りさせて往復を 1 つ減らし、証明書も暗号化されてから送られます。段取り自体は同じで、平文で流れる範囲が狭くなったと捉えるとよいです。SNI は 1.3 でも平文のままで、どのホストに接続したかは経路上から見えます。</figcaption>
+<figcaption>④が ECDHE のときだけ現れる点に注意してください。RSA 鍵交換ではこのメッセージ自体が出てきません（次節）。なお SNI は TLS 1.3 でも平文のままで、どのホストに接続したかは経路上から見えます。</figcaption>
 </figure>
 
 <p>ここで押さえるのは、<strong>①〜④が平文で流れる</strong>ことです。まだ鍵を共有していないのだから当然ですが、これは「最初のやりとりは書き換えられる」ということでもあります。</p>
 
 <p>暗号スイートの合意そのものを改ざんして、弱い暗号だけを選ばせるのが<a href="../Cyber Attacks/23_SSL_TLSダウングレード攻撃.html">ダウングレード攻撃</a>です。これを防いでいるのが最後の <strong>Finished</strong> ——ここまでの全メッセージのハッシュを鍵付きで送り合うので、途中で 1 バイトでも書き換えられていれば値が一致せず、接続が切られます。STEP 3 の構造がそのまま使われています。</p>
 
-<h3>プレマスタシークレット → マスタシークレット → セッション鍵</h3>
+<h3>鍵の共有には 2 通りある — 運ぶか、運ばないか</h3>
 
-<p>⑥で共有した秘密（<strong>プレマスタシークレット</strong>）は、そのまま暗号鍵にはしません。①②で交換した<strong>双方の乱数を混ぜてマスタシークレットを作り</strong>、そこから用途別・方向別のセッション鍵（暗号化用と MAC 用、送信方向と受信方向で別）を導出します。</p>
+<p>④と⑥だけは、方式によって中身がまったく違います。ここが TLS でいちばん誤解されるところです。</p>
 
-<p>乱数を混ぜるのは、同じ鍵が二度と再現されないようにするためです。毎回同じ鍵になるなら、記録しておいた過去の通信をそのまま投げ返す再生攻撃が成立します。鍵の作り方には 2 通りあり、その違いは<a href="プレマスタシークレット.html">プレマスタシークレット</a>にあります。</p>
+<p><strong>RSA 鍵交換（古い方式）</strong>は、STEP 2 の南京錠そのままです。クライアントが秘密の値を 1 つ選び、<strong>サーバの公開鍵で暗号化して⑥で送ります</strong>。開けられるのは秘密鍵を持つサーバだけなので、2 者だけが同じ値を持ちます。値そのものを<strong>運んでいる</strong>方式です。</p>
 
-<h3>盗聴者は、なぜ同じ鍵を作れないのか</h3>
-
-<p>ここで、経路上のやりとりを全部見ている攻撃者の立場に立って確認します。①②の乱数は平文で流れているので、そのまま手に入ります。<strong>それでもセッション鍵は作れません。材料がもう 1 つ足りないからです。</strong></p>
+<p><strong>(EC)DHE</strong>（現在の方式。TLS 1.3 では必須）はまったく違います。<strong>秘密の値はどこにも運ばれません。</strong>両者が公開してよい値を送り合い、それぞれが手元で計算して<strong>同じ値にたどり着きます</strong>。「相手に届ける」というステップが存在しません。ここが一番わかりにくいので、扱う値を 3 種類に分けて図にします。</p>
 
 <figure>
-<svg viewBox="0 0 700 160" role="img" aria-label="盗聴者が手に入れられる材料と、手に入れられない材料">
-  <text x="0" y="14" font-size="11" fill="var(--muted)">経路を盗聴している攻撃者の手元に、揃うもの・揃わないもの</text>
+<svg viewBox="0 0 700 306" role="img" aria-label="Diffie-Hellman鍵交換で、送る値と送らない値を3種類に分けて示した図">
+  <g font-size="11" font-weight="600" fill="var(--ink)" text-anchor="middle">
+    <text x="219" y="16">クライアント</text>
+    <text x="404" y="16">経路を流れるか</text>
+    <text x="589" y="16">サーバ</text>
+  </g>
 
-  <rect x="0" y="24" width="224" height="68" rx="7" fill="var(--card)" stroke="var(--line)"/>
-  <text x="14" y="48" font-size="11" fill="var(--ink)"><tspan font-size="13" fill="var(--c3)">✓</tspan> クライアントの乱数</text>
-  <text x="14" y="68" font-size="10" fill="var(--muted)">① で平文のまま流れる</text>
-  <text x="14" y="84" font-size="10" fill="var(--c3)">手に入る</text>
+  <rect x="0" y="26" width="96" height="56" rx="6" fill="var(--lane)"/>
+  <text x="48" y="49" font-size="10" fill="var(--ink)" text-anchor="middle">一時秘密鍵</text>
+  <text x="48" y="65" font-size="9" fill="var(--muted)" text-anchor="middle">各自が選ぶ</text>
+  <rect x="108" y="26" width="222" height="56" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="120" y="48" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c1)">a</text>
+  <text x="138" y="48" font-size="10.5" fill="var(--ink)">を選ぶ（乱数）</text>
+  <text x="120" y="68" font-size="9.5" fill="var(--muted)">接続ごとに選び直し、終わったら捨てる</text>
+  <rect x="342" y="26" width="124" height="56" rx="6" fill="var(--card)" stroke="var(--stop)" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <text x="404" y="52" font-size="11" font-weight="600" fill="var(--stop)" text-anchor="middle">✗ 送らない</text>
+  <text x="404" y="68" font-size="9.5" fill="var(--muted)" text-anchor="middle">互いに知らない</text>
+  <rect x="478" y="26" width="222" height="56" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="490" y="48" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c2)">b</text>
+  <text x="508" y="48" font-size="10.5" fill="var(--ink)">を選ぶ（乱数）</text>
+  <text x="490" y="68" font-size="9.5" fill="var(--muted)">a とはまったく別の値</text>
 
-  <rect x="238" y="24" width="224" height="68" rx="7" fill="var(--card)" stroke="var(--line)"/>
-  <text x="252" y="48" font-size="11" fill="var(--ink)"><tspan font-size="13" fill="var(--c3)">✓</tspan> サーバの乱数</text>
-  <text x="252" y="68" font-size="10" fill="var(--muted)">② で平文のまま流れる</text>
-  <text x="252" y="84" font-size="10" fill="var(--c3)">手に入る</text>
+  <rect x="0" y="90" width="96" height="56" rx="6" fill="var(--lane)"/>
+  <text x="48" y="113" font-size="10" fill="var(--ink)" text-anchor="middle">一時公開鍵</text>
+  <text x="48" y="129" font-size="9" fill="var(--muted)" text-anchor="middle">計算で求める</text>
+  <rect x="108" y="90" width="222" height="56" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="120" y="112" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c1)">g^a</text>
+  <text x="152" y="112" font-size="10.5" fill="var(--ink)">を計算する</text>
+  <text x="120" y="132" font-size="9.5" fill="var(--muted)">a からは簡単に求まる</text>
+  <rect x="342" y="90" width="124" height="56" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="404" y="108" font-size="11" font-weight="600" fill="var(--c3)" text-anchor="middle">✓ 平文で交換</text>
+  <g stroke="var(--c3)" stroke-width="1.4" fill="var(--c3)">
+    <line x1="352" y1="120" x2="450" y2="120"/><polygon points="458,120 448,116 448,124"/>
+    <line x1="456" y1="136" x2="358" y2="136"/><polygon points="350,136 360,132 360,140"/>
+  </g>
+  <rect x="478" y="90" width="222" height="56" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="490" y="112" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c2)">g^b</text>
+  <text x="522" y="112" font-size="10.5" fill="var(--ink)">を計算する</text>
+  <text x="490" y="132" font-size="9.5" fill="var(--muted)">見られても構わない</text>
 
-  <rect x="476" y="24" width="224" height="68" rx="7" fill="var(--card)" stroke="var(--stop)" stroke-width="1.5"/>
-  <text x="490" y="48" font-size="11" fill="var(--ink)"><tspan font-size="13" fill="var(--stop)">✗</tspan> プレマスタシークレット</text>
-  <text x="490" y="68" font-size="10" fill="var(--muted)">⑥ は公開鍵で暗号化されている</text>
-  <text x="490" y="84" font-size="10" fill="var(--stop)">手に入らない</text>
+  <rect x="0" y="154" width="96" height="56" rx="6" fill="var(--c3)"/>
+  <text x="48" y="177" font-size="10" fill="var(--on)" text-anchor="middle">共有秘密</text>
+  <text x="48" y="193" font-size="9" fill="var(--on)" opacity=".9" text-anchor="middle">各自が計算</text>
+  <rect x="108" y="154" width="222" height="56" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="120" y="176" font-size="10.5" fill="var(--ink)">受け取った g^b を a 乗する</text>
+  <text x="120" y="196" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c3)">(g^b)^a = g^(ab)</text>
+  <rect x="342" y="154" width="124" height="56" rx="6" fill="var(--card)" stroke="var(--stop)" stroke-width="1.3" stroke-dasharray="4 3"/>
+  <text x="404" y="180" font-size="11" font-weight="600" fill="var(--stop)" text-anchor="middle">✗ 送らない</text>
+  <text x="404" y="196" font-size="9.5" fill="var(--c3)" text-anchor="middle">両側で一致する</text>
+  <rect x="478" y="154" width="222" height="56" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="490" y="176" font-size="10.5" fill="var(--ink)">受け取った g^a を b 乗する</text>
+  <text x="490" y="196" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--c3)">(g^a)^b = g^(ab)</text>
 
-  <rect x="0" y="104" width="700" height="50" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
-  <text x="16" y="126" font-size="11.5" fill="var(--ink)">乱数 2 つだけでは、マスタシークレットは作れない。</text>
-  <text x="16" y="145" font-size="11.5" fill="var(--c3)">→ セッション鍵も導出できず、以降の通信は復号できない。</text>
+  <rect x="0" y="222" width="700" height="78" rx="8" fill="var(--card)" stroke="var(--stop)" stroke-width="1.5"/>
+  <text x="16" y="246" font-size="11.5" font-weight="600" fill="var(--stop)">盗聴者に見えているもの</text>
+  <text x="16" y="268" font-size="11" font-family="ui-monospace,monospace" fill="var(--ink)">g, p（あらかじめ決めてある公開の値）, g^a, g^b</text>
+  <text x="16" y="290" font-size="10.5" fill="var(--ink)">それでも g^(ab) は作れない。g^a から a を逆算する計算が現実的な時間で解けないため（離散対数問題）。</text>
 </svg>
-<figcaption>秘密を運んでいるのは 3 つのうち 1 つだけで、残りの 2 つは公開されていて構いません。乱数の役目は秘密を足すことではなく、「今回の接続」という毎回違う印を混ぜることだからです。</figcaption>
+<figcaption>クライアントは <code>b</code> を、サーバは <code>a</code> を知りません。それでも計算結果は一致します。<code>g</code> と <code>p</code> はあらかじめ決めてある公開の値で、秘密ではありません。ECDHE は同じ仕組みを楕円曲線で行う版で、短い鍵で同じ強度が出ます。計算の中身は <a href="../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a>にあります。</figcaption>
 </figure>
 
-<p>プレマスタシークレットは、⑥で<strong>サーバの公開鍵で暗号化して</strong>送られます。開けられるのは、対になる秘密鍵を持つサーバだけです。攻撃者は乱数を 2 つとも持っていても、混ぜる相手がないのでマスタシークレットにたどり着けません。</p>
+<p>用語がひとつ紛らわしいので補っておきます。ここでいう<strong>「共有秘密」は、公開鍵暗号の「秘密鍵」とは別物</strong>です。秘密鍵は鍵ペアの片割れとして持ち主が 1 人で持ち続けるもの、共有秘密は<strong>両者が同じ値を持つ</strong>ものです。名前は似ていますが役割が違います。</p>
 
-<p>ECDHE の場合はもっと単純で、プレマスタシークレットにあたる値は<strong>そもそも経路を流れません</strong>。両者が公開値を送り合い、それぞれ手元で同じ値を計算します。どちらの方式でも、「平文の乱数は見えているが、秘密のほうは見えない」という結論は変わりません。</p>
+<h3>方式によって、証明書の使われ方が変わる</h3>
+
+<p>STEP 4 で検証した証明書には公開鍵が入っています。この公開鍵が何に使われるかも、方式で変わります。</p>
+
+<div class="tw">
+<table>
+<tr><th></th><th>RSA 鍵交換</th><th>(EC)DHE</th></tr>
+<tr><td>証明書の公開鍵の用途</td><td>クライアントが送ってきた秘密の値を、暗号化された状態で受け取るため</td><td>サーバが出した一時公開鍵に署名するため</td></tr>
+<tr><td>鍵交換に関わるか</td><td>関わる。この鍵がないと秘密の値を渡せない</td><td>関わらない。鍵交換は <code>a</code> と <code>b</code> だけで完結する</td></tr>
+</table>
+</div>
+
+<p>ここが重要です。<strong>DH は単体では中間者を防げません。</strong>攻撃者が間に入って両側にそれぞれ自分の一時公開鍵を渡せば、DH が 2 本成立して両方の通信を読めてしまいます。DH は「誰かと安全に共有秘密を作る」仕組みであって、「相手が誰か」は何も言っていないからです。</p>
+
+<p>それを埋めているのが④の署名です。サーバは自分の一時公開鍵に<strong>証明書の秘密鍵で署名し</strong>、クライアントは STEP 4 で検証した証明書の公開鍵でその署名を確かめます。鍵交換と認証を別々の部品が担当している、という分業になっています。</p>
+
+<h3>前方秘匿性 — 記録された通信が、後から読まれるか</h3>
+
+<p>「運ぶか、運ばないか」の差が、いちばんはっきり出るのがここです。</p>
+
+<p>RSA 鍵交換では、秘密の値が<strong>暗号化された形とはいえ回線を流れています</strong>。攻撃者が通信を丸ごと記録しておき、何年か後にサーバの秘密鍵を手に入れたとします。記録の中の⑥を復号すれば秘密の値が出てきて、平文で流れていた乱数と混ぜれば当時のセッション鍵が再現できます。<strong>記録しておいた全通信が、まとめて読めます。</strong></p>
+
+<p>DHE では、秘密の値はどこにも流れていません。回線に残っているのは <code>g^a</code> と <code>g^b</code> だけです。後からサーバの秘密鍵を手に入れても、それは署名に使われた鍵であって鍵交換には関わっていないので、何も開けられません。この性質を<strong>前方秘匿性</strong>と呼びます。</p>
+
+<p>成立の条件は、名前の <strong>E（ephemeral、一時的）</strong>にあります。<code>a</code> と <code>b</code> は接続ごとに選び直し、<strong>使い終わったら捨てます</strong>。捨てるからこそ、後から誰が何を手に入れても再現できません。逆に同じ <code>a</code> を使い回す実装なら、その <code>a</code> が漏れた時点でそれを使った全接続が復号できます。E の付かない DH に前方秘匿性がないのは、この一点の差です。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　攻撃者が今日の通信を丸ごと記録して保存しました。5 年後にサーバの秘密鍵を手に入れたとして、その通信を読めるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>鍵交換の方式によります。</strong></p>
+<p><strong>RSA 鍵交換なら読めます。</strong>⑥で送られた「サーバの公開鍵で暗号化された秘密の値」が記録に残っているので、手に入れた秘密鍵でそれを開けば、あとは平文で流れていた乱数と混ぜるだけで当時のセッション鍵が再現できます。</p>
+<p><strong>ECDHE なら読めません。</strong>記録に残っているのは <code>g^a</code> と <code>g^b</code> だけで、<code>a</code> も <code>b</code> も接続終了時に捨てられています。サーバの秘密鍵は署名の検証に使われただけなので、手に入れても鍵交換には届きません。</p>
+<p>これが、TLS 1.3 が RSA 鍵交換を廃止した理由です。</p>
+</div>
+</details>
+</div>
+
+<h3>プレマスタシークレット → マスタシークレット → セッション鍵</h3>
+
+<p>どちらの方式でも、⑥までで両者の手元に同じ秘密の値（<strong>プレマスタシークレット</strong>）が揃います。ただしこれをそのまま暗号鍵にはしません。①②で交換した<strong>双方の乱数を混ぜてマスタシークレットを作り</strong>、そこから用途別・方向別のセッション鍵（暗号化用と MAC 用、送信方向と受信方向で別）を導出します。</p>
+
+<p>乱数を混ぜるのは、同じ鍵が二度と再現されないようにするためです。毎回同じ鍵になるなら、記録しておいた過去の通信をそのまま投げ返す再生攻撃が成立します。</p>
+
+<p>ここで攻撃者の立場を確認しておきます。①②の乱数は平文なのでそのまま手に入りますが、<strong>それでもセッション鍵は作れません。</strong>混ぜる相手である秘密の値が、RSA 鍵交換なら暗号化されていて開けられず、DHE ならそもそも流れていないからです。乱数の役目は秘密を足すことではなく、「今回の接続」という毎回違う印を混ぜることです。段階を分ける理由は<a href="プレマスタシークレット.html">プレマスタシークレット</a>にあります。</p>
+
+<h3>TLS 1.3 で平文の範囲が狭まった理由</h3>
+
+<p>TLS 1.3 では往復が 1 つ減り、証明書も暗号化されてから送られます。なぜそれができるのかは、DHE の性質から出てきます。</p>
+
+<p>一時公開鍵は、<strong>相手が誰か決まる前に作れます</strong>。相手の値を待つ必要も、証明書を先に受け取る必要もありません。だから 1.3 では、クライアントが ClientHello に自分の一時公開鍵を相乗りさせ、サーバも ServerHello に自分のものを相乗りさせます。</p>
+
+<p>この時点で両者とも相手の一時公開鍵を持っているので、<strong>ServerHello の直後には共有秘密が計算できます</strong>。以降は暗号化できるので、証明書もそこから先で暗号化されて流れます。RSA 鍵交換だと、クライアントは証明書に入っている公開鍵を受け取るまで秘密の値を送れないので、この順序は組めません。<strong>RSA 鍵交換を廃止したから、この短縮ができた</strong>という関係です。</p>
 
 <h3>そのあとを担当する Record プロトコル</h3>
 
-<p>ハンドシェイクが終わってからのデータを扱うのが <strong>Record プロトコル</strong>です。やることは、<strong>扱える大きさに分割し、改ざん検知用の MAC を付け、セッション鍵で暗号化し、ヘッダを付けて TCP に渡す</strong>こと。</p>
-
-<p>MAC がないとどうなるか。暗号文は読めなくても、ビットを反転させて中身を狂わせることはできます。<strong>「読めない」と「変えられない」は別物</strong>で、後者を担うのが MAC です（現在の AEAD 暗号は両方を一体で行います）。詳細は <a href="Recordプロトコル.html">Record プロトコル</a>。</p>
+<p>ハンドシェイクが終わってからのデータを扱うのが <strong>Record プロトコル</strong>です。<strong>扱える大きさに分割し、改ざん検知用の MAC を付け、セッション鍵で暗号化し、ヘッダを付けて TCP に渡します。</strong>暗号文は読めなくてもビットを反転させることはできるので、<strong>「読めない」と「変えられない」は別物</strong>です。後者を担うのが MAC で、詳細は <a href="Recordプロトコル.html">Record プロトコル</a>にあります。</p>
 
 <div class="quiz">
 <p class="q"><b>確認問題</b>　①の ClientHello は平文です。攻撃者がこれを書き換えて、弱い暗号スイートだけが載っているように見せかけたとします。この攻撃はどこで気づけるでしょうか。</p>
@@ -684,21 +769,7 @@ blockquote p{margin:.4rem 0}
 
 <p>OCSP の負荷とプライバシーを緩和する <strong>OCSP ステープリング</strong>は、サーバが自分の分の応答をあらかじめ取得しておき、ハンドシェイクに同梱して渡す方式です。クライアントは発行元に問い合わせずに済みます。詳しくは<a href="../PKI/証明書の失効確認_CRLとOCSP.html">CRL と OCSP</a>。</p>
 
-<h3>登場人物：CA / RA / IA / VA</h3>
-
-<p>ここまで「発行元」とまとめて呼んできましたが、実務では役割が分かれています。</p>
-
-<div class="tw">
-<table>
-<tr><th>役割</th><th>担当</th></tr>
-<tr><td>CA</td><td>認証局全体。ポリシを定め、証明書を発行する主体</td></tr>
-<tr><td>RA</td><td>申請の受付と本人・ドメイン所有の確認（登録局）</td></tr>
-<tr><td>IA</td><td>実際に鍵と証明書を生成する（発行局）</td></tr>
-<tr><td>VA</td><td>失効情報を提供する。CRL や OCSP レスポンダの側（検証局）</td></tr>
-</table>
-</div>
-
-<p>分けている理由は <a href="../PKI/CA_RA_IA_VA.html">CA・RA・IA・VA</a> にあります。</p>
+<p>なお、ここまで「発行元」とまとめて呼んできた認証局は、実務では受付（RA）・発行（IA）・失効情報の提供（VA）に役割が分かれています。分業の中身は <a href="../PKI/CA_RA_IA_VA.html">CA・RA・IA・VA</a> にあります。</p>
 
 <h2>まとめ：そのまま使える説明テンプレート</h2>
 
@@ -713,6 +784,7 @@ blockquote p{margin:.4rem 0}
 <blockquote>
 <p>鍵の共有に公開鍵を使うのは、共通鍵をそのまま経路で渡せないからです（鍵配送問題）。逆に実データを公開鍵で暗号化しないのは、遅すぎるからです。この組み合わせをハイブリッド方式と呼びます。</p>
 <p>証明書は、サーバの公開鍵とホスト名をセットにして認証局が署名したものです。クライアントは、署名の連鎖が端末内蔵のルート証明書まで届くか、有効期限内か、SAN が接続先ホスト名と一致するか、失効していないかの 4 点を確認します。ルート証明書だけは自己署名で、信頼の根拠は OS やブラウザに収録されているという事実そのものです。</p>
+<p>鍵の共有には方式が 2 通りあります。RSA 鍵交換は秘密の値をサーバの公開鍵で暗号化して<strong>運ぶ</strong>方式で、ECDHE は<strong>何も運ばず</strong>、公開してよい値を送り合って両者が手元で同じ値を計算する方式です。運ばないので、通信を記録されて後からサーバの秘密鍵を奪われても過去の通信は読めません（前方秘匿性）。TLS 1.3 が RSA 鍵交換を廃止したのはこのためです。</p>
 <p>ハンドシェイクの前半は平文で流れるので、そこを改ざんして弱い暗号に落とすダウングレード攻撃があります。防いでいるのは最後の Finished で、ここまでの全メッセージのハッシュを送り合って一致を確認しています。</p>
 </blockquote>
 
@@ -752,7 +824,8 @@ blockquote p{margin:.4rem 0}
 <ul>
 <li><strong>なぜ TCP の上で動くのか</strong>：TLS は下位層が「欠けず・重複せず・順番どおり」届けることを前提に作られています。→ <a href="SSL_TLSがTCP上で動作する理由.html">SSL/TLS が TCP 上で動作する理由</a></li>
 <li><strong>UDP の上でやるなら</strong>：欠落と順序入れ替えを自前で吸収して TLS 相当を実現するのが DTLS で、VPN や WebRTC で使われています。→ <a href="DTLS.html">DTLS</a></li>
-<li><strong>鍵をどう共有するか、の中身</strong>：⑥の鍵交換には方式が複数あり、通信後にサーバの秘密鍵が漏れても過去の通信を復号されない性質（前方秘匿性）の有無が変わります。→ <a href="プレマスタシークレット.html">プレマスタシークレット</a> / <a href="../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a></li>
+<li><strong>鍵交換の計算そのもの</strong>：<code>g^a</code> から <code>a</code> を逆算できないのはなぜか（離散対数問題）、楕円曲線版で何が変わるのか。→ <a href="../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a> / <a href="../Cryptography/楕円曲線暗号.html">楕円曲線暗号</a></li>
+<li><strong>鍵を段階に分ける理由</strong>：共有秘密からセッション鍵までの 2 段が、それぞれ何のためにあるのか。→ <a href="プレマスタシークレット.html">プレマスタシークレット</a></li>
 <li><strong>ダウングレード系の攻撃</strong>：合意の段階を狙う攻撃には型がいくつかあります。→ <a href="../Cyber Attacks/23_SSL_TLSダウングレード攻撃.html">SSL/TLS ダウングレード攻撃</a> / <a href="../Cyber Attacks/24_バージョンロールバック攻撃.html">バージョンロールバック攻撃</a> / <a href="../Cyber Attacks/25_POODLE攻撃.html">POODLE 攻撃</a></li>
 <li><strong>証明書の中身をバイト単位で読む</strong>：証明書は ASN.1 という記法で構造化されています。→ <a href="../PKI/ASN1.html">ASN.1</a></li>
 </ul>
@@ -763,6 +836,8 @@ blockquote p{margin:.4rem 0}
 <li><a href="https://www.rfc-editor.org/rfc/rfc5280.html">RFC 5280 - Internet X.509 PKI Certificate and CRL Profile</a></li>
 <li><a href="https://www.rfc-editor.org/rfc/rfc6960.html">RFC 6960 - X.509 Internet PKI Online Certificate Status Protocol (OCSP)</a></li>
 <li><a href="https://www.rfc-editor.org/rfc/rfc6125.html">RFC 6125 - サービス識別のためのドメイン名の照合</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8422.html">RFC 8422 - Elliptic Curve Cryptography (ECC) Cipher Suites for TLS Versions 1.2 and Earlier</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7919.html">RFC 7919 - Negotiated Finite Field Diffie-Hellman Ephemeral Parameters for TLS</a></li>
 <li><a href="https://www.ipa.go.jp/security/crypto/guideline/ssl_crypt_config.html">IPA - TLS 暗号設定ガイドライン</a></li>
 <li><a href="https://developer.mozilla.org/ja/docs/Web/Security/Transport_Layer_Security">MDN - Transport Layer Security</a></li>
 <li><a href="https://www.cabforum.org/working-groups/server/baseline-requirements/documents/">CA/Browser Forum - Baseline Requirements</a></li>
