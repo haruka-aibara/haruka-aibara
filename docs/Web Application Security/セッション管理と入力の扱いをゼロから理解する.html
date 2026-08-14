@@ -43,23 +43,178 @@ pre code{background:none;padding:0}
 ul{padding-left:1.3rem}li{margin:.35rem 0}
 a{color:var(--c1)}
 .hole{color:var(--stop)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:36rem}}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+.rmbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.rmbox .ttl{font-size:.86rem;font-weight:600;margin:0 0 .2rem}
+.rmbox .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
 </style>
 </head>
 <body>
 <main>
 
 <h1>セッション管理と入力の扱いをゼロから理解する</h1>
-<p class="lede">対策の名前は言える。「なぜそれで防げるのか」を説明しろと言われると詰まる——その隙間を埋める。</p>
+<p class="lede">HTTP が「前回を覚えていない」ところから始めて、5 ステップで Web アプリの守り方までたどり着きます。</p>
 
-<h2>名前を覚えても、記述式では書けない</h2>
-<p>プリペアドステートメント、HttpOnly、セッション ID の再発行。名前はすぐ出てくる。ところが「なぜその対策で防げるのか」と問われた瞬間、手が止まる。午後試験で採点されるのはまさにそこだ。</p>
-<p>Web アプリの守りは、突き詰めると <strong>ログイン状態をどう持つか（セッション管理）</strong>と<strong>外から来た値をどこでどう扱うか（入力の扱い）</strong>の 2 本しかない。この 2 本を「何を・どこで・なぜ」で言い切れるところまで整理する。</p>
+<h2>この記事の目的</h2>
 
-<h2>セッション ID は「本人であること」そのもの</h2>
-<p>HTTP はリクエストごとに独立していて、前回誰だったかを覚えていない。そこでサーバは認証に成功した時点でセッション ID を発行し、以降はその ID だけを見て「ログイン済みの誰々」と判断する。</p>
-<p>つまり<strong>セッション ID はパスワードと同じ重みを持つ</strong>。攻撃者はパスワードを知らなくても、有効な ID をひとつ手に入れれば本人として振る舞える。連番や「ユーザ ID + 時刻」から組み立てた ID が危険なのは、他人の値を<em>計算で</em>作れてしまうから。要件は暗号論的な擬似乱数で十分な長さ、そして自作しないこと。</p>
+<p>Web アプリのセキュリティの解説を読んで、途中で分からなくなった経験はありませんか。</p>
 
-<h2>ログイン時に ID を再発行する理由</h2>
+<p>それは読解力の問題ではありません。多くの記事は「セッション ID を再発行する」「プリペアドステートメントを使う」という<strong>対策の一覧</strong>から始まります。この説明が成立するのは、セッション・Cookie・SQL の組み立て方がすでに体に入っている人だけです。名前だけを並べられると、覚えることはできても、なぜそれで防げるのかは分かりません。そして分かっていないと、少し形の違う場面で応用できません。</p>
+
+<p>そこでこの記事は、あえて遠回りします。<strong>「HTTP はリクエストのたびに相手を忘れる」というところから始めて、5 ステップで進みます。</strong>ゴールは対策の名前を覚えることではなく、<strong>「何を・どこで・なぜ」で言い切れるようになること</strong>です。</p>
+
+<div class="rmbox">
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>HTTP は覚えていない</li>
+<li><span class="n">STEP 2</span>番号札を奪う 2 つの型</li>
+<li><span class="n">STEP 3</span>値が命令になる</li>
+<li><span class="n">STEP 4</span>使う場所で守る</li>
+<li><span class="n">STEP 5</span>抜けたときの備え</li>
+</ol>
+</nav>
+<p class="cap">Web アプリの守りは、突き詰めると <strong>ログイン状態をどう持つか（セッション管理）</strong>と<strong>外から来た値をどこでどう扱うか（入力の扱い）</strong>の 2 本しかありません。STEP 1〜2 が前者、STEP 3〜4 が後者、STEP 5 は両方に効く保険の層です。</p>
+</div>
+
+<h2>STEP 1：HTTP は前回を覚えていない</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>HTTP は覚えていない</li>
+<li><span class="n">STEP 2</span>番号札を奪う 2 つの型</li>
+<li><span class="n">STEP 3</span>値が命令になる</li>
+<li><span class="n">STEP 4</span>使う場所で守る</li>
+<li><span class="n">STEP 5</span>抜けたときの備え</li>
+</ol>
+</nav>
+
+<p>銀行の窓口で本人確認を済ませた直後に、もう一度話しかけたら、また一から本人確認をやり直される。<strong>HTTP はそういうプロトコルです。</strong>リクエストは 1 本ずつ独立していて、サーバは前回の相手を覚えていません。これを<strong>ステートレス</strong>と呼びます。</p>
+
+<p>このままだと、ページを開くたびにパスワードを送ることになります。危険ですし、使い物になりません。そこでサーバは、認証に成功した時点で <strong>番号札</strong>を 1 枚発行します。これが<strong>セッション ID</strong> です。</p>
+
+<p>番号札の運び方が <strong>Cookie</strong> です。サーバが <code>Set-Cookie</code> で渡すと、ブラウザは以降そのサイトへのリクエストに自動で付けてくれます。利用者は何もしません。</p>
+
+<figure>
+<svg viewBox="0 0 700 282" role="img" aria-label="ステートレスなHTTPと、セッションIDで状態を持たせた場合の比較">
+  <text x="0" y="12" font-size="13" font-weight="600" fill="var(--stop)">セッション ID がないと — 毎回はじめまして</text>
+  <g font-size="10.5">
+    <rect x="0" y="22" width="224" height="64" rx="6" fill="var(--lane)"/>
+    <text x="12" y="42" fill="var(--muted)">① 1 本目のリクエスト</text>
+    <text x="12" y="60" fill="var(--ink)">「ログインします」</text>
+    <text x="12" y="78" fill="var(--c3)">サーバ：本人確認 OK</text>
+
+    <rect x="238" y="22" width="224" height="64" rx="6" fill="var(--lane)"/>
+    <text x="250" y="42" fill="var(--muted)">② 2 本目のリクエスト</text>
+    <text x="250" y="60" fill="var(--ink)">「注文履歴を見せて」</text>
+    <text x="250" y="78" fill="var(--stop)">サーバ：どちら様ですか？</text>
+
+    <rect x="476" y="22" width="224" height="64" rx="6" fill="var(--lane)"/>
+    <text x="488" y="42" fill="var(--muted)">③ 3 本目のリクエスト</text>
+    <text x="488" y="60" fill="var(--ink)">「またログインします」</text>
+    <text x="488" y="78" fill="var(--stop)">毎回やり直しになる</text>
+  </g>
+  <text x="0" y="106" font-size="11" fill="var(--muted)">リクエストは 1 本ずつ独立していて、サーバは前回の相手を覚えていない（ステートレス）。</text>
+
+  <text x="0" y="146" font-size="13" font-weight="600" fill="var(--c3)">セッション ID があると — 番号札を渡して、毎回見せてもらう</text>
+  <g font-size="10.5">
+    <rect x="0" y="156" width="224" height="64" rx="6" fill="var(--lane)"/>
+    <text x="12" y="176" fill="var(--muted)">① 認証に成功したら</text>
+    <text x="12" y="194" fill="var(--ink)">サーバが番号札を発行</text>
+    <text x="12" y="212" font-family="ui-monospace,monospace" fill="var(--c1)">Set-Cookie: SID=8f3d…</text>
+
+    <rect x="238" y="156" width="224" height="64" rx="6" fill="var(--lane)"/>
+    <text x="250" y="176" fill="var(--muted)">② 以降のリクエスト</text>
+    <text x="250" y="194" fill="var(--ink)">ブラウザが自動で付ける</text>
+    <text x="250" y="212" font-family="ui-monospace,monospace" fill="var(--c1)">Cookie: SID=8f3d…</text>
+
+    <rect x="476" y="156" width="224" height="64" rx="6" fill="var(--c3)"/>
+    <text x="488" y="176" fill="var(--on)">③ サーバ側</text>
+    <text x="488" y="194" fill="var(--on)">番号札を見て「ログイン</text>
+    <text x="488" y="212" fill="var(--on)">済みの誰々」と判断する</text>
+  </g>
+
+  <rect x="0" y="234" width="700" height="38" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="14" y="258" font-size="11.5" fill="var(--ink)">サーバが見ているのは番号札だけ。つまり <tspan font-weight="600" fill="var(--stop)">有効な番号札を持っている人が、本人として扱われる</tspan>。</text>
+</svg>
+<figcaption>この最後の 1 行が、セッション管理の話すべての出発点になります。番号札そのものに「田中さんの札です」とは書かれていません。サーバ側の表に「8f3d… は田中さん」と記録されているだけなので、札の中身が一致しさえすれば誰が持ってきても通ります。</figcaption>
+</figure>
+
+<p>ここから重要な帰結が出ます。<strong>セッション ID はパスワードと同じ重みを持つ</strong>ということです。攻撃者はパスワードを知らなくても、有効な ID を 1 つ手に入れれば本人として振る舞えます。</p>
+
+<p>だから ID の作り方に要件が出ます。連番や「ユーザ ID ＋ 時刻」から組み立てた ID が危険なのは、他人の値を<em>計算で</em>作れてしまうからです。暗号論的な擬似乱数で十分な長さを取ること、そして自作せずフレームワークの実装を使うこと。この 2 つです。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　自分のセッション ID が漏れたことに気づきました。パスワードを変更すれば安全でしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>それだけでは安全になりません。</strong></p>
+<p>サーバは「番号札が有効かどうか」しか見ていません。パスワードを変えても、<strong>サーバ側でそのセッションを破棄しない限り、漏れた ID はそのまま通ります。</strong></p>
+<p>同じ理由で、ログアウト処理が「ブラウザの Cookie を消すだけ」の実装は不十分です。手元の札を捨てても、サーバ側の表に残っていれば、盗まれた札はまだ生きています。<strong>破棄はサーバ側で行う</strong>必要があります。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：番号札を奪う 2 つの型</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>HTTP は覚えていない</li>
+<li class="now"><span class="n">STEP 2</span>番号札を奪う 2 つの型</li>
+<li><span class="n">STEP 3</span>値が命令になる</li>
+<li><span class="n">STEP 4</span>使う場所で守る</li>
+<li><span class="n">STEP 5</span>抜けたときの備え</li>
+</ol>
+</nav>
+
+<p>セッション ID が本人性そのものなら、攻撃者の目的は 1 つに絞られます。<strong>有効な ID を 1 枚手に入れること。</strong>やり方は大きく 2 通りあります。</p>
+
+<ul>
+<li><strong>知る</strong>（セッションハイジャック）：被害者が使っている ID を盗み見る</li>
+<li><strong>使わせる</strong>（セッションフィクセーション）：自分が用意した ID を、被害者にログインさせる</li>
+</ul>
+
+<p>2 つ目が分かりにくいので、時間軸を並べて比べます。</p>
 
 <figure>
 <svg viewBox="0 0 700 300" role="img" aria-label="正常なログインとセッションフィクセーションが成立する場合を同じ時間軸で比較した図">
@@ -115,37 +270,132 @@ a{color:var(--c1)}
   <path d="M686 268 L700 272 L686 276 Z" fill="var(--muted)"/>
   <text x="0" y="290" font-size="10.5" fill="var(--muted)">時間</text>
 </svg>
-<figcaption>③ の 1 マスだけが違い、④ の結果が反転する。ID を利用者に「使わせる」経路は、URL のクエリでセッション ID を運ぶ実装、同一ドメインの別アプリからの Cookie 上書き、XSS など。逆に言えば、③ で作り直してさえいれば ① や ② の経路を全部塞げなくても攻撃は完成しない。</figcaption>
+<figcaption>③ の 1 マスだけが違い、④ の結果が反転します。ID を利用者に「使わせる」経路は、URL のクエリでセッション ID を運ぶ実装、同一ドメインの別アプリからの Cookie 上書き、XSS など。逆に言えば、③ で作り直してさえいれば ① や ② の経路を全部塞げなくても攻撃は完成しません。</figcaption>
 </figure>
 
-<p>言い切る形にするとこうなる——<strong>何を</strong>：セッション ID を新規発行して古い ID を破棄する。<strong>どこで</strong>：認証に成功した直後。<strong>なぜ</strong>：攻撃者が事前に用意・固定した ID が、認証済みの状態と結びつかないようにするため。</p>
-<p class="hole">それでも破られる条件：再発行はフィクセーション専用の対策で、ログイン<em>後</em>に新しい ID が盗聴や XSS で漏れれば、ハイジャックは普通に成立する。</p>
+<p>言い切る形にするとこうなります。<strong>何を</strong>：セッション ID を新規発行して古い ID を破棄する。<strong>どこで</strong>：認証に成功した直後。<strong>なぜ</strong>：攻撃者が事前に用意・固定した ID が、認証済みの状態と結びつかないようにするため。</p>
 
-<h3>ハイジャックとフィクセーションの成立条件</h3>
+<p class="hole">それでも破られる条件：再発行はフィクセーション専用の対策です。ログイン<em>後</em>に新しい ID が盗聴や XSS で漏れれば、ハイジャックは普通に成立します。</p>
+
+<h3>2 つの型は、成立条件がまったく違う</h3>
+
+<div class="tw">
 <table>
 <tr><th></th><th>セッションハイジャック</th><th>セッションフィクセーション</th></tr>
 <tr><th>攻撃者に必要なこと</th><td>被害者の ID を<strong>知る</strong>（盗聴・XSS・Referer やログからの漏えい）</td><td>知る必要はない。自分の ID を<strong>使わせる</strong>だけ</td></tr>
 <tr><th>アプリ側の欠陥</th><td>ID が漏れる経路がある／ID が推測できる</td><td>ログイン前後で ID を変えていない</td></tr>
-<tr><th>効く対策</th><td>推測不能な ID、Secure、HttpOnly、TLS 全面化</td><td>ログイン成功時の ID 再発行</td></tr>
+<tr><th>効く対策</th><td>推測不能な ID、<code>Secure</code>、<code>HttpOnly</code>、TLS 全面化</td><td>ログイン成功時の ID 再発行</td></tr>
 </table>
-<p>対策は交換できない。属性をいくら固めてもフィクセーションは防げず（そもそも漏れていない）、再発行してもハイジャックは防げない。</p>
+</div>
 
-<h2>Cookie の属性は、それぞれ別の穴を塞いでいる</h2>
-<p>セッション ID は普通 Cookie で運ぶ。属性は「まとめて付けておく」ものではなく、1 つずつ塞ぐ穴が違う。<a href="../Networking/HTTP/Cookieの属性.html">属性そのものの構文は別記事</a>にあるので、ここは防御の観点で並べる。</p>
+<div class="quiz">
+<p class="q"><b>確認問題</b>　Cookie の属性（<code>Secure</code> や <code>HttpOnly</code>）をすべて正しく付けました。これでセッションフィクセーションも防げるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>防げません。</strong></p>
+<p>フィクセーションでは、ID はどこからも漏れていません。<strong>攻撃者は最初から知っている ID を使わせているだけ</strong>です。Cookie の属性は「漏らさない」ための道具なので、漏れが関係しないこの攻撃には効きません。</p>
+<p>逆も同じで、ID を再発行してもハイジャックは防げません（ログイン後の新しい ID が漏れれば成立するため）。<strong>2 つの対策は交換できません。</strong>両方要ります。</p>
+</div>
+</details>
+</div>
 
-<table>
-<tr><th>属性</th><th>何を防ぐのか（なぜ）</th><th>それでも破られる条件</th></tr>
-<tr><td><code>Secure</code></td><td>HTTPS のリクエストにしか Cookie を載せない。平文で流れないので、経路上の盗聴で ID を拾われない</td><td>HSTS がないと最初の 1 回が HTTP になりうる。TLS を張る前の段階で剥がされれば意味がない</td></tr>
-<tr><td><code>HttpOnly</code></td><td>JavaScript の <code>document.cookie</code> から読めなくする。XSS が起きても ID を外部サーバへ送り出せない</td><td>XSS 自体は止まらない。スクリプトは被害者のブラウザ内で、Cookie が自動付与された状態のまま送金や設定変更を実行できる</td></tr>
-<tr><td><code>SameSite</code></td><td>他サイト起点のリクエストに Cookie を付けない。攻撃者のページから勝手に投げられたリクエストが認証済み扱いにならない（CSRF）</td><td><code>Lax</code> はトップレベルの GET には付くので、GET で状態を変える実装は守られない。同一サイト内の別サブドメインからは付く</td></tr>
-<tr><td><code>Domain</code></td><td>送信先ドメインを絞る。無関係なホストへ ID が飛ばない</td><td>指定すると<strong>サブドメイン全体</strong>に送られる。脆弱なサブドメインが 1 つあれば、そこから ID を回収できる。狭くしたいなら指定しないほうが狭い</td></tr>
-<tr><td><code>Path</code></td><td>特定パス配下のリクエストにだけ付ける。アプリ間の混線を減らす</td><td>同一オリジンの JavaScript は Path を越えて読み書きできる。セキュリティ境界としては当てにしない</td></tr>
-<tr><td>有効期限<br>（<code>Expires</code> / <code>Max-Age</code>）</td><td>指定しなければブラウザを閉じた時点で消えるセッション Cookie になり、共用端末に残らない</td><td>消えるのはブラウザ側だけ。サーバのセッションが生きていれば、盗まれた ID はまだ使える。ログアウトは<strong>サーバ側の破棄</strong>で行う</td></tr>
-</table>
+<h2>STEP 3：値が「命令」になってしまう</h2>
 
-<h2>SQL インジェクション：値が構文になってしまう</h2>
-<p>危険な文字を渡されることが問題なのではない。<strong>値として渡したはずのものが、命令の一部として解釈されること</strong>が問題。</p>
-<p>文字列連結で SQL を組み立てると、DB が受け取るのは値と命令の区別がない 1 本の文字列になる。パーサは引用符の内側か外側かだけを見て解析するので、値の中に <code>'</code> が現れた瞬間に境界がずれ、そこから先が構文として読まれる。</p>
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>HTTP は覚えていない</li>
+<li class="done"><span class="n">STEP 2 ✓</span>番号札を奪う 2 つの型</li>
+<li class="now"><span class="n">STEP 3</span>値が命令になる</li>
+<li><span class="n">STEP 4</span>使う場所で守る</li>
+<li><span class="n">STEP 5</span>抜けたときの備え</li>
+</ol>
+</nav>
+
+<p>ここからが 2 本目の柱、入力の扱いです。</p>
+
+<p>まず、なぜ「入力」が危ないのか。<strong>危険な文字を渡されることが問題なのではありません。値として渡したはずのものが、命令の一部として解釈されることが問題です。</strong></p>
+
+<p>なぜそんなことが起きるのか。アプリは受け取った値を<strong>文字列に混ぜて</strong>、別のシステムへ渡します。データベースへの SQL、ブラウザへの HTML、OS へのコマンド。渡された側が受け取るのは 1 本の文字列で、<strong>どこまでが値でどこからが命令かは、区切り記号だけで判断されます。</strong>だから値の中に区切り記号を紛れ込ませられると、境界がずれます。</p>
+
+<figure>
+<svg viewBox="0 0 700 252" role="img" aria-label="SQL・HTML・OSコマンドで、値が命令になる仕組みが同じであることを並べた図">
+  <g font-size="10" fill="var(--muted)">
+    <text x="0" y="20">行き先</text>
+    <text x="108" y="20">アプリが組み立てる文字列（□ が値）</text>
+    <text x="452" y="20">値に区切り記号を入れられると</text>
+  </g>
+
+  <rect x="0" y="32" width="96" height="56" rx="6" fill="var(--c1)"/>
+  <text x="48" y="65" font-size="11.5" font-weight="600" fill="var(--on)" text-anchor="middle">SQL</text>
+  <rect x="108" y="32" width="332" height="56" rx="6" fill="var(--lane)"/>
+  <text x="120" y="56" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--ink)">WHERE name = '□'</text>
+  <text x="120" y="76" font-size="10" fill="var(--muted)">値の境界を決めているのは ' の 2 つだけ</text>
+  <rect x="452" y="32" width="248" height="56" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="464" y="55" font-size="10.5" fill="var(--ink)">値に ' を入れると</text>
+  <text x="464" y="75" font-size="10.5" fill="var(--stop)">条件式が生える → 全件返る</text>
+
+  <rect x="0" y="96" width="96" height="56" rx="6" fill="var(--c2)"/>
+  <text x="48" y="129" font-size="11.5" font-weight="600" fill="var(--on)" text-anchor="middle">HTML</text>
+  <rect x="108" y="96" width="332" height="56" rx="6" fill="var(--lane)"/>
+  <text x="120" y="120" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--ink)">&lt;p&gt;□&lt;/p&gt;</text>
+  <text x="120" y="140" font-size="10" fill="var(--muted)">値の境界を決めているのは &lt; と &gt; だけ</text>
+  <rect x="452" y="96" width="248" height="56" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="464" y="119" font-size="10.5" fill="var(--ink)">値に &lt; を入れると</text>
+  <text x="464" y="139" font-size="10.5" fill="var(--stop)">タグが生える → スクリプトが動く</text>
+
+  <rect x="0" y="160" width="96" height="56" rx="6" fill="var(--c4)"/>
+  <text x="48" y="187" font-size="11.5" font-weight="600" fill="var(--on)" text-anchor="middle">OS</text>
+  <text x="48" y="202" font-size="11.5" font-weight="600" fill="var(--on)" text-anchor="middle">コマンド</text>
+  <rect x="108" y="160" width="332" height="56" rx="6" fill="var(--lane)"/>
+  <text x="120" y="184" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--ink)">convert □.jpg out.png</text>
+  <text x="120" y="204" font-size="10" fill="var(--muted)">値の境界を決めているのは空白や ; だけ</text>
+  <rect x="452" y="160" width="248" height="56" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="464" y="183" font-size="10.5" fill="var(--ink)">値に ; を入れると</text>
+  <text x="464" y="203" font-size="10.5" fill="var(--stop)">別のコマンドが増える</text>
+
+  <text x="0" y="240" font-size="11" fill="var(--ink)">攻撃の名前は SQL インジェクション・XSS・OS コマンドインジェクションと別々だが、間違いは同じ 1 つ。</text>
+</svg>
+<figcaption>3 つの行き先で共通しているのは、「値と命令が同じ 1 本の文字列に同居していて、区切りが記号 1 文字で決まっている」という構造です。ここが分かると、対策が「危険な文字を数え上げること」ではないと納得できます。数え上げても、構造そのものは変わらないからです。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　それなら、値を受け取った入口で <code>'</code> や <code>&lt;</code> をまとめて潰しておけば、3 つとも一度に防げるのではないでしょうか。</p>
+<details>
+<summary>考えた結果を確認する</summary>
+<div class="ans">
+<p><strong>防げません。</strong>理由は 3 つあります。</p>
+<p><strong>1. 入口の時点では、その値がどこへ行くのか決まっていない。</strong>同じ値が SQL にも HTML にもシェルにも流れうるのに、潰すべき文字は行き先ごとに違います。</p>
+<p><strong>2. 正当な入力が壊れる。</strong>名前に <code>'</code> が入る人はいますし、本文に <code>&lt;</code> を書きたい場面もあります。潰してしまうとアプリが使えなくなります。</p>
+<p><strong>3. 経路が 1 つでも漏れれば終わり。</strong>入口を全部押さえたつもりでも、バッチ処理や他システム連携で入ってくるデータは入口を通りません。</p>
+<p>ではどこで処理すべきか。それが次のステップです。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：防御は「値を使う場所」でやる</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>HTTP は覚えていない</li>
+<li class="done"><span class="n">STEP 2 ✓</span>番号札を奪う 2 つの型</li>
+<li class="done"><span class="n">STEP 3 ✓</span>値が命令になる</li>
+<li class="now"><span class="n">STEP 4</span>使う場所で守る</li>
+<li><span class="n">STEP 5</span>抜けたときの備え</li>
+</ol>
+</nav>
+
+<p>原則はこれ 1 行です。</p>
+
+<blockquote>
+<p><strong>入口でまとめて無害化せず、値を使う場所で、その場所の作法で処理する。</strong></p>
+</blockquote>
+
+<p>入力時の検証がいらないという意味ではありません。ただしそれは「型・長さ・書式が仕様どおりか」を確かめるものであって、<strong>防御の本体ではない</strong>という位置づけです。</p>
+
+<h3>SQL に渡すとき：静的プレースホルダ</h3>
+
+<p>SQL の場合、そもそも<strong>値を文字列に混ぜないで済ませる</strong>手段があります。骨格だけを先に DB へ送って構文解析を終わらせ、値はあとから別枠で渡す方式です。</p>
 
 <figure>
 <svg viewBox="0 0 700 330" role="img" aria-label="静的プレースホルダと文字列連結で、SQLの構文確定と値の流し込みがどう違うかを比べた図">
@@ -184,7 +434,7 @@ a{color:var(--c1)}
   <text x="160" y="299" font-size="11.5" font-family="ui-monospace,monospace" fill="var(--on)">OR '1'='1'</text>
   <text x="282" y="299" font-size="11" fill="var(--stop)">← 値のはずが条件式になった。常に真 → 全件返る</text>
 </svg>
-<figcaption>違いは「解析の前に値が届いているかどうか」の一点。静的プレースホルダでは、値が到着したときには構文木がもう固まっているので、<code>'</code> を何個入れても構文の形を変えられない。危険文字を数え上げる発想とは筋が違う。</figcaption>
+<figcaption>違いは「解析の前に値が届いているかどうか」の一点です。静的プレースホルダでは、値が到着したときには構文木がもう固まっているので、<code>'</code> を何個入れても構文の形を変えられません。危険文字を数え上げる発想とは筋が違います。</figcaption>
 </figure>
 
 <pre><code># 文字列連結 — 値がそのまま SQL の一部になる
@@ -193,30 +443,90 @@ cur.execute("SELECT * FROM users WHERE name = '" + name + "'")
 # 静的プレースホルダ — 骨格と値を別々に渡す
 cur.execute("SELECT * FROM users WHERE name = %s", (name,))</code></pre>
 
-<h3>バインド機構・プリペアドステートメント・静的／動的</h3>
-<p><strong>バインド機構</strong>は、値を SQL 文字列に埋め込まず別枠で渡す仕組み全般を指す。<strong>プリペアドステートメント</strong>は、その SQL をあらかじめ DB に準備させておく形。準備の段階でパースが終わるので、値は後から差し込むしかなくなる。</p>
+<p><strong>バインド機構</strong>は、値を SQL 文字列に埋め込まず別枠で渡す仕組み全般を指します。<strong>プリペアドステートメント</strong>は、その SQL をあらかじめ DB に準備させておく形です。準備の段階でパースが終わるので、値は後から差し込むしかなくなります。</p>
+
+<div class="tw">
 <table>
 <tr><th></th><th>どこで値を差し込むか</th><th>安全性の根拠と、残る穴</th></tr>
 <tr><td>静的プレースホルダ</td><td><strong>DB サーバ側</strong>。<code>?</code> 付きの SQL を先に送り、構文解析を済ませてから値を送る</td><td>構文が確定した後に値が届くので、原理的に値は構文になれない</td></tr>
 <tr><td>動的プレースホルダ</td><td><strong>ドライバやライブラリ側</strong>。内部でエスケープして 1 本の SQL を組み立て、DB へ送る</td><td class="hole">最終的に文字列連結をしているのは同じ。文字エンコーディングの扱いを誤ると引用符を作れる組合せが残り、実装依存の穴になる</td></tr>
 </table>
-<p class="hole">どちらにも共通して破られる条件：プレースホルダはテーブル名・カラム名・<code>ORDER BY</code> の並び順には使えない。ここだけ連結で書いた実装が実際によく残る。可変にしたいなら、外部入力を SQL に混ぜるのではなく<strong>許可リストから選ばせる</strong>。</p>
+</div>
 
-<h3>エスケープに頼る方式が残す穴</h3>
-<p>「入口で危険文字を潰しておく」方式が破綻するのは、入口の時点では<strong>その値がどこへ行くのかが決まっていない</strong>から。同じ値が SQL にも HTML にもシェルにも流れうるのに、エスケープすべき文字は行き先ごとに違う。多バイト文字の解釈差をつけばすり抜ける組合せも作れるし、経路が 1 つでも漏れれば終わる。</p>
-<p>原則は逆側にある——<strong>入口でまとめて無害化せず、値を使う場所で、その場所の作法で処理する</strong>。入力時の検証は「型・長さ・書式が仕様どおりか」を確かめるものであって、防御の本体ではない。</p>
+<p class="hole">どちらにも共通して破られる条件：プレースホルダはテーブル名・カラム名・<code>ORDER BY</code> の並び順には使えません。ここだけ連結で書いた実装が実際によく残ります。可変にしたいなら、外部入力を SQL に混ぜるのではなく<strong>許可リストから選ばせる</strong>形にします。</p>
 
-<h2>XSS の対策は、出力の側にある</h2>
-<p>XSS も構造は SQL インジェクションと同じで、値がマークアップやスクリプトとして解釈されることが問題。<a href="../Cyber Attacks/18_XSSの3分類とセッションハイジャック.html">反射型・格納型・DOM 型という攻撃側の分類は別記事</a>にあるので、ここは対策側だけを見る。効くのは<strong>値を埋め込む直前</strong>の処理で、しかも埋め込み先の文脈ごとに必要な処理が変わる。</p>
+<h3>HTML に出すとき：文脈ごとのエスケープ</h3>
 
+<p>HTML には、SQL のような「骨格と値を分けて渡す」仕組みがありません。だから<strong>値を埋め込む直前</strong>に、記号を「タグの開始として読まれない形」へ置き換えます。これがエスケープです。</p>
+
+<p>やっかいなのは、<strong>埋め込む場所ごとに必要な処理が変わる</strong>ことです。1 種類のエスケープを全部に使い回すと穴が残ります。</p>
+
+<div class="tw">
 <table>
 <tr><th>埋め込む場所</th><th>必要な処理（なぜ）</th><th>破られる条件</th></tr>
 <tr><td>HTML の本文</td><td><code>&lt; &gt; &amp; " '</code> を文字参照へ。タグの開始として読まれなくなる</td><td>この処理だけを全文脈に使い回すこと</td></tr>
 <tr><td>属性値</td><td>必ず引用符で囲んだうえでエスケープ。囲まないと空白で属性を継ぎ足せる</td><td>引用符なしの <code>&lt;img src=…&gt;</code> に <code>onerror=</code> を足される</td></tr>
 <tr><td><code>&lt;script&gt;</code> 内</td><td>HTML エスケープでは不十分。JS の文字列リテラルに値を直書きせず、JSON として渡す</td><td>文字列を閉じずともテンプレートリテラルやコメントで脱出されうる</td></tr>
 <tr><td><code>href</code> / <code>src</code></td><td>エスケープでは足りない。スキームを <code>http</code> / <code>https</code> の許可リストで確認する</td><td><code>javascript:</code> は文字としては無害なので、エスケープを素通りする</td></tr>
-<tr><td>CSP</td><td>インラインスクリプトを禁じ、XSS が起きても実行される範囲を狭める</td><td>あくまで多層防御。既存アプリへの後付けは重く、単独の対策にはならない</td></tr>
 </table>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　テンプレートエンジンの HTML エスケープを、すべての出力に漏れなくかけました。これで XSS は防げるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>場所によっては防げません。</strong></p>
+<p>いちばん分かりやすいのがリンクです。<code>&lt;a href="ユーザ入力"&gt;</code> に <code>javascript:alert(1)</code> を入れられた場合、この文字列には <strong>HTML エスケープの対象になる文字が 1 つも含まれていません</strong>。エスケープは何も変えずに素通りし、クリックするとスクリプトが動きます。</p>
+<p>ここではエスケープではなく「スキームが <code>http</code> / <code>https</code> か」の確認が必要です。<strong>文脈ごとに必要な処理が違う</strong>というのが、この STEP の核心です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：それでも抜けたときの備え</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>HTTP は覚えていない</li>
+<li class="done"><span class="n">STEP 2 ✓</span>番号札を奪う 2 つの型</li>
+<li class="done"><span class="n">STEP 3 ✓</span>値が命令になる</li>
+<li class="done"><span class="n">STEP 4 ✓</span>使う場所で守る</li>
+<li class="now"><span class="n">STEP 5</span>抜けたときの備え</li>
+</ol>
+</nav>
+
+<p>ここまでが対策の本体です。その上で、<strong>どこか 1 か所抜ける前提</strong>で被害を狭める層を重ねます。</p>
+
+<h3>Cookie の属性 — 1 つずつ塞ぐ穴が違う</h3>
+
+<p>セッション ID を運ぶ Cookie には属性を付けられます。「まとめて付けておくもの」ではなく、1 つずつ役割が違います。<a href="../Networking/HTTP/Cookieの属性.html">属性そのものの構文は別記事</a>にあるので、ここは防御の観点で並べます。</p>
+
+<div class="tw">
+<table>
+<tr><th>属性</th><th>何を防ぐのか（なぜ）</th><th>それでも破られる条件</th></tr>
+<tr><td><code>Secure</code></td><td>HTTPS のリクエストにしか Cookie を載せない。平文で流れないので、経路上の盗聴で ID を拾われない</td><td>HSTS がないと最初の 1 回が HTTP になりうる。TLS を張る前の段階で剥がされれば意味がない</td></tr>
+<tr><td><code>HttpOnly</code></td><td>JavaScript の <code>document.cookie</code> から読めなくする。XSS が起きても ID を外部サーバへ送り出せない</td><td>XSS 自体は止まらない。スクリプトは被害者のブラウザ内で、Cookie が自動付与された状態のまま送金や設定変更を実行できる</td></tr>
+<tr><td><code>SameSite</code></td><td>他サイト起点のリクエストに Cookie を付けない。攻撃者のページから勝手に投げられたリクエストが認証済み扱いにならない（CSRF）</td><td><code>Lax</code> はトップレベルの GET には付くので、GET で状態を変える実装は守られない。同一サイト内の別サブドメインからは付く</td></tr>
+<tr><td><code>Domain</code></td><td>送信先ドメインを絞る。無関係なホストへ ID が飛ばない</td><td>指定すると<strong>サブドメイン全体</strong>に送られる。脆弱なサブドメインが 1 つあれば、そこから ID を回収できる。狭くしたいなら指定しないほうが狭い</td></tr>
+<tr><td><code>Path</code></td><td>特定パス配下のリクエストにだけ付ける。アプリ間の混線を減らす</td><td>同一オリジンの JavaScript は Path を越えて読み書きできる。セキュリティ境界としては当てにしない</td></tr>
+<tr><td>有効期限<br>（<code>Expires</code> / <code>Max-Age</code>）</td><td>指定しなければブラウザを閉じた時点で消えるセッション Cookie になり、共用端末に残らない</td><td>消えるのはブラウザ側だけ。サーバのセッションが生きていれば、盗まれた ID はまだ使える。ログアウトは<strong>サーバ側の破棄</strong>で行う</td></tr>
+</table>
+</div>
+
+<h3>CSP — スクリプトが動く範囲を狭める</h3>
+
+<p><strong>CSP</strong>（Content Security Policy）は、そのページで実行してよいスクリプトの出どころをブラウザに宣言する仕組みです。インラインスクリプトを禁じておけば、XSS で <code>&lt;script&gt;</code> を差し込まれても実行されません。ただし既存アプリへの後付けは重く（インラインを全部外す必要がある）、あくまで多層防御の 1 枚です。</p>
+
+<h3>WAF — どこに置くか</h3>
+
+<p><strong>WAF</strong> はリクエストを検査して遮断する仕組みで、判定方式が 2 つあります。</p>
+
+<ul>
+<li><strong>ポジティブモデル（許可リスト）</strong>：通してよい形だけを定義し、それ以外を落とす。精度は高いが、アプリの全パラメータの仕様を書き出し、改修のたびに追随する必要がある。運用が重い</li>
+<li><strong>ネガティブモデル（シグネチャ）</strong>：既知の攻撃パターンに一致したものを落とす。導入が容易で実際に多いが、<strong>知らない形は通る</strong></li>
+</ul>
+
+<p>根本的な限界は、WAF が見ているのが<strong>リクエストの見た目だけ</strong>で、その値がアプリ内でどう使われるかを知らないことです。エンコードやコメントを混ぜた変形で回避されますし、HTTP を通らずに入るデータ（外部連携ファイル、他システム経由のレコード）は素通りします。誤検知を嫌って緩めれば、緩めた分だけ穴が開きます。</p>
 
 <figure>
 <svg viewBox="0 0 700 250" role="img" aria-label="入力から出力までの経路のどこで何の処理が必要かを重ねた図">
@@ -266,29 +576,88 @@ cur.execute("SELECT * FROM users WHERE name = %s", (name,))</code></pre>
   <text x="0" y="226" font-size="11" fill="var(--stop)">DB に入った値がバッチや管理画面から出ていく経路は、① を通らない。入口だけの防御が届かないのはこの部分。</text>
   <text x="0" y="244" font-size="11" fill="var(--muted)">同じ値でも ② と ③ で必要な処理は別物。片方だけやって「対策済み」にしない。</text>
 </svg>
-<figcaption>格納型 XSS が厄介なのは、③ の手抜きが ① の時点では表面化しないから。保存されるときは無害な文字列で、画面に出す瞬間に初めてスクリプトになる。</figcaption>
+<figcaption>格納型 XSS が厄介なのは、③ の手抜きが ① の時点では表面化しないからです。保存されるときは無害な文字列で、画面に出す瞬間に初めてスクリプトになります。</figcaption>
 </figure>
 
-<h2>その上で、WAF はどこに置くか</h2>
-<p>WAF はリクエストを検査して遮断する仕組みで、判定方式は 2 つある。</p>
-<ul>
-<li><strong>ポジティブモデル（許可リスト）</strong>：通してよい形だけを定義し、それ以外を落とす。精度は高いが、アプリの全パラメータの仕様を書き出し、改修のたびに追随する必要がある。運用が重い。</li>
-<li><strong>ネガティブモデル（シグネチャ）</strong>：既知の攻撃パターンに一致したものを落とす。導入が容易で実際に多いが、<strong>知らない形は通る</strong>。</li>
-</ul>
-<p>根本的な限界は、WAF が見ているのが<strong>リクエストの見た目だけ</strong>で、その値がアプリ内でどう使われるかを知らないこと。エンコードやコメントを混ぜた変形で回避されるし、HTTP を通らずに入るデータ（外部連携ファイル、他システム経由のレコード）は素通りする。誤検知を嫌って緩めれば、緩めた分だけ穴が開く。</p>
 <div class="note">
-<p><strong>提案するときの言い方</strong></p>
+<p><strong>WAF を提案するときの言い方</strong></p>
 <p>「WAF は脆弱性を直すものではなく、直すまでの時間を買うもの。改修に何か月かかるかと、その間どう検知するかがセットで決まっていないなら、入れても止まりません」</p>
 </div>
 
-<h2>「何を・どこで・なぜ」で言い切る</h2>
+<div class="quiz">
+<p class="q"><b>確認問題</b>　WAF を入れれば、見つかった脆弱性の改修は後回しにできるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>できません。</strong></p>
+<p>WAF が見ているのはリクエストの見た目だけで、その値がアプリの中でどう使われるかを知りません。エンコードやコメントを混ぜた変形で回避されますし、HTTP を通らずに入るデータ（バッチ処理、他システム連携）は検査そのものを通りません。</p>
+<p>使いどころは「改修が終わるまでの時間を買う」ことです。<strong>改修の期限とセットで初めて意味を持つ</strong>道具であって、単独の対策にはなりません。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>HTTP は覚えていない</li>
+<li class="done"><span class="n">STEP 2 ✓</span>番号札を奪う 2 つの型</li>
+<li class="done"><span class="n">STEP 3 ✓</span>値が命令になる</li>
+<li class="done"><span class="n">STEP 4 ✓</span>使う場所で守る</li>
+<li class="done"><span class="n">STEP 5 ✓</span>抜けたときの備え</li>
+</ol>
+</nav>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>Web アプリの守りは 2 本柱です。1 つはセッション管理。HTTP は前回の相手を覚えていないので、認証後に発行するセッション ID が本人性そのものになります。だから ID は推測できない値にして、漏らさず、<strong>ログイン成功時に必ず作り直します</strong>。</p>
+<p>もう 1 つは入力の扱い。攻撃の本質は「値として渡したはずのものが、命令として解釈されること」です。だから防御は入口で危険文字を潰すのではなく、<strong>値を使う場所で、その場所の作法で処理します</strong>。SQL なら静的プレースホルダ、HTML なら埋め込み先の文脈に応じたエスケープです。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>セッションへの攻撃には型が 2 つあり、成立条件が違います。ハイジャックは ID を<strong>知る</strong>攻撃なので、推測不能な ID・<code>Secure</code>・<code>HttpOnly</code>・TLS 全面化が効きます。フィクセーションは ID を<strong>使わせる</strong>攻撃で、ID は漏れていないため属性では防げず、ログイン時の再発行だけが効きます。2 つの対策は交換できません。</p>
+<p>入口でまとめて無害化できないのは、入口の時点では値の行き先が決まっていないからです。同じ値が SQL にも HTML にも流れうるのに、必要な処理は行き先ごとに違います。入力時の検証は「型・長さ・書式が仕様どおりか」の確認であって、防御の本体ではありません。</p>
+<p>Cookie の属性・CSP・WAF は、本体が 1 か所抜けたときに被害を狭める層です。特に WAF は脆弱性を直すものではなく、直すまでの時間を買うものとして位置づけます。</p>
+</blockquote>
+
+<h3>「何を・どこで・なぜ」で言い切る</h3>
+
+<div class="tw">
 <table>
 <tr><th>何を</th><th>どこで</th><th>なぜ</th></tr>
 <tr><td>セッション ID を再発行する</td><td>認証に成功した直後</td><td>攻撃者が事前に固定した ID が、認証済み状態と結びつかないようにするため</td></tr>
+<tr><td>セッションを破棄する</td><td>サーバ側のログアウト処理</td><td>Cookie を消しても、サーバ側に残っていれば盗まれた ID がまだ使えるため</td></tr>
 <tr><td><code>HttpOnly</code> を付ける</td><td>Cookie を発行する <code>Set-Cookie</code></td><td>XSS が起きても、スクリプトからセッション ID を読み出せないようにするため</td></tr>
 <tr><td>静的プレースホルダを使う</td><td>SQL を組み立てるアプリ側</td><td>構文を先に確定させ、入力値が構文として解釈されないようにするため</td></tr>
 <tr><td>出力時にエスケープする</td><td>値を HTML に埋め込む直前</td><td>埋め込み先の文脈で、値がタグやスクリプトとして解釈されないようにするため</td></tr>
 </table>
+</div>
+
+<h2>よくある誤解</h2>
+
+<h3>「危険な文字を潰す」で考えない</h3>
+
+<p>この発想でいる限り、行き先が増えるたびに文字の一覧を作り直すことになり、いつか漏れます。考えるべきは文字ではなく<strong>構造</strong>です。値と命令が同じ文字列に同居しているなら危なく、分けて渡せるなら安全。SQL で静的プレースホルダが強いのは、この構造そのものを変えているからです。</p>
+
+<h3><code>HttpOnly</code> を付けても、XSS は止まっていない</h3>
+
+<p>止まるのは「セッション ID を外部へ持ち出すこと」だけです。スクリプトは被害者のブラウザの中で動いていて、Cookie は<strong>そのブラウザが送るリクエストに自動で付きます</strong>。ID を読み出せなくても、その場で送金や設定変更のリクエストを投げることはできます。<code>HttpOnly</code> は被害を狭める保険であって、XSS の対策ではありません。</p>
+
+<h3>ログアウトは「Cookie を消すこと」ではない</h3>
+
+<p>手元の番号札を捨てても、サーバ側の表に「8f3d… は田中さん」と残っていれば、その札はまだ有効です。共用端末やセッション ID が漏れた場面で効くのは、<strong>サーバ側でセッションを破棄すること</strong>だけです。</p>
+
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話があります。ここまで理解できていれば、どれも読めるはずです。</p>
+
+<ul>
+<li><strong>攻撃側から見た分類</strong>：XSS には反射型・格納型・DOM 型があり、経路が違います。→ <a href="../Cyber Attacks/18_XSSの3分類とセッションハイジャック.html">XSS の 3 分類とセッションハイジャック</a> / <a href="../Cyber Attacks/09_セッションフィクセーション.html">セッションフィクセーション</a></li>
+<li><strong>Cookie 属性の構文</strong>：<code>Set-Cookie</code> の書き方そのもの。→ <a href="../Networking/HTTP/Cookieの属性.html">Cookie の属性</a></li>
+<li><strong>盗聴を防ぐ側の仕組み</strong>：<code>Secure</code> が前提にしている TLS の中身。→ <a href="../TLS/TLSハンドシェイクと証明書検証をゼロから理解する.html">TLS ハンドシェイクと証明書検証をゼロから理解する</a> / <a href="../Networking/HSTS.html">HSTS</a></li>
+<li><strong>WAF を置く場所</strong>：ネットワーク全体の中でどこに構えるか。→ <a href="../Network Security/ファイアウォールとDMZ構成をゼロから理解する.html">ファイアウォールと DMZ 構成をゼロから理解する</a></li>
+</ul>
 
 <h2>参考</h2>
 <ul>
