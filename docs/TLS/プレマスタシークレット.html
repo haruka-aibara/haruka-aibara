@@ -41,75 +41,188 @@ code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
 ul{padding-left:1.3rem}li{margin:.35rem 0}
 a{color:var(--c1)}
 .dead{color:var(--muted)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:32rem}}
 </style>
 </head>
 <body>
 <main>
 <h1>プレマスタシークレット — なぜ鍵を何段階も作り直すのか</h1>
-<p class="lede">共有した秘密をそのまま暗号鍵にはしない。間に2段挟むことで、毎回違う鍵と、用途ごとに分かれた鍵を作る。</p>
+<p class="lede">段が 2 つあるのは、目的が 2 つあるから。1 つずつ分けて見れば単純な話。</p>
 
 <h2>何が問題なのか</h2>
-<p>TLS の解説を読むと、<strong>プレマスタシークレット → マスタシークレット → 実際の鍵</strong>と3段階が出てくる。共通鍵を1つ共有すれば済みそうなのに、なぜこんな手間をかけるのか。</p>
-<p>理由は2つある。<strong>同じ相手との通信で毎回違う鍵にしたい</strong>ことと、<strong>用途ごとに別の鍵を使いたい</strong>こと。この2つを満たすために、共有した秘密を材料として何度か加工する。</p>
+
+<p>TLS の解説を読むと、<strong>プレマスタシークレット → マスタシークレット → セッション鍵</strong>と 3 つの名前が出てきます。似た名前が並ぶうえに、共通鍵を 1 つ共有すれば済みそうに見えるので、たいていここで詰まります。</p>
+
+<p>先に正体を言ってしまうと、<strong>3 つとも中身はただのバイト列</strong>です。暗号としての性質に違いはありません。違うのは「どうやって作られたか」と「何に使うか」だけです。</p>
+
+<p>そして<strong>段が 2 つあるのは、やりたいことが 2 つあるから</strong>です。</p>
+
+<ul>
+<li><strong>1 段目</strong>（プレマスタ → マスタ）：<strong>毎回違う鍵にする</strong>ため</li>
+<li><strong>2 段目</strong>（マスタ → セッション鍵）：<strong>用途ごとに切り分ける</strong>ため</li>
+</ul>
+
+<p>この対応さえ押さえれば、あとは 1 段ずつ理由を見ていくだけです。</p>
 
 <figure>
-<svg viewBox="0 0 700 290" role="img" aria-label="プレマスタシークレットからセッション鍵が導出されるまで">
-  <rect x="240" y="16" width="220" height="44" rx="7" fill="var(--c4)"/>
-  <text x="350" y="36" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">プレマスタシークレット</text>
-  <text x="350" y="52" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">鍵交換で両者が手に入れる材料</text>
+<svg viewBox="0 0 700 292" role="img" aria-label="プレマスタシークレットからセッション鍵が導出されるまでの2段階と、各段の目的">
+  <rect x="200" y="14" width="300" height="46" rx="7" fill="var(--c4)"/>
+  <text x="350" y="35" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">プレマスタシークレット</text>
+  <text x="350" y="51" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">鍵交換で、両者の手元に同じものが揃うバイト列</text>
 
-  <rect x="8" y="80" width="200" height="44" rx="7" fill="var(--lane)" stroke="var(--line)"/>
-  <text x="108" y="100" font-size="10.5" fill="var(--ink)" text-anchor="middle">クライアントの乱数</text>
-  <text x="108" y="116" font-size="10.5" fill="var(--ink)" text-anchor="middle">サーバの乱数</text>
-  <text x="108" y="142" font-size="10" fill="var(--muted)" text-anchor="middle">ハンドシェイクの最初に</text>
-  <text x="108" y="156" font-size="10" fill="var(--muted)" text-anchor="middle">平文で交換されている</text>
+  <path d="M350 60 L350 70" stroke="var(--muted)" stroke-width="1.5"/>
+  <polygon points="350,74 344,64 356,64" fill="var(--muted)"/>
 
-  <path d="M350 60 L350 96" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#e1)"/>
-  <path d="M212 102 L262 102" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#e1)"/>
-  <rect x="266" y="96" width="168" height="34" rx="6" fill="var(--lane)" stroke="var(--line)"/>
-  <text x="350" y="118" font-size="11" fill="var(--ink)" text-anchor="middle">混ぜて計算する</text>
+  <rect x="8" y="78" width="176" height="44" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="96" y="98" font-size="10.5" fill="var(--ink)" text-anchor="middle">クライアントの乱数</text>
+  <text x="96" y="114" font-size="10.5" fill="var(--ink)" text-anchor="middle">サーバの乱数</text>
+  <text x="96" y="138" font-size="10" fill="var(--muted)" text-anchor="middle">ハンドシェイクの最初に</text>
+  <text x="96" y="152" font-size="10" fill="var(--muted)" text-anchor="middle">平文で交換されている</text>
 
-  <rect x="240" y="146" width="220" height="40" rx="7" fill="var(--c1)"/>
-  <text x="350" y="171" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">マスタシークレット</text>
-  <path d="M350 130 L350 142" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#e1)"/>
+  <path d="M184 100 L192 100" stroke="var(--muted)" stroke-width="1.5"/>
+  <polygon points="197,100 187,94 187,106" fill="var(--muted)"/>
 
-  <path d="M310 186 L160 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
-  <path d="M336 186 L300 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
-  <path d="M364 186 L400 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
-  <path d="M390 186 L540 216" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#e1)"/>
+  <rect x="200" y="78" width="300" height="44" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="350" y="105" font-size="11" fill="var(--ink)" text-anchor="middle">混ぜて計算する（鍵導出関数）</text>
+
+  <text x="514" y="96" font-size="11.5" font-weight="600" fill="var(--c1)">1 段目</text>
+  <text x="514" y="114" font-size="10.5" fill="var(--muted)">毎回違う鍵にするため</text>
+
+  <path d="M350 122 L350 132" stroke="var(--muted)" stroke-width="1.5"/>
+  <polygon points="350,136 344,126 356,126" fill="var(--muted)"/>
+
+  <rect x="200" y="138" width="300" height="40" rx="7" fill="var(--c1)"/>
+  <text x="350" y="163" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">マスタシークレット</text>
+
+  <text x="514" y="154" font-size="11.5" font-weight="600" fill="var(--c3)">2 段目</text>
+  <text x="514" y="172" font-size="10.5" fill="var(--muted)">用途ごとに切り分けるため</text>
+
+  <g stroke="var(--muted)" stroke-width="1.3" fill="var(--muted)">
+    <path d="M320 178 L90 210"/><polygon points="83,211 94,205 95,214"/>
+    <path d="M340 178 L266 210"/><polygon points="260,213 269,204 273,213"/>
+    <path d="M360 178 L434 210"/><polygon points="440,213 427,213 431,204"/>
+    <path d="M380 178 L610 210"/><polygon points="617,211 605,214 606,205"/>
+  </g>
 
   <g font-size="10">
-    <rect x="80" y="220" width="150" height="40" rx="6" fill="var(--c3)"/>
-    <text x="155" y="238" fill="var(--on)" text-anchor="middle">暗号化鍵</text>
-    <text x="155" y="253" fill="var(--on)" opacity=".9" text-anchor="middle">クライアント→サーバ</text>
-    <rect x="238" y="220" width="150" height="40" rx="6" fill="var(--c3)"/>
-    <text x="313" y="238" fill="var(--on)" text-anchor="middle">暗号化鍵</text>
-    <text x="313" y="253" fill="var(--on)" opacity=".9" text-anchor="middle">サーバ→クライアント</text>
-    <rect x="396" y="220" width="110" height="40" rx="6" fill="var(--c2)"/>
-    <text x="451" y="238" fill="var(--on)" text-anchor="middle">MAC 鍵</text>
-    <text x="451" y="253" fill="var(--on)" opacity=".9" text-anchor="middle">方向ごと</text>
-    <rect x="514" y="220" width="110" height="40" rx="6" fill="var(--c2)"/>
-    <text x="569" y="238" fill="var(--on)" text-anchor="middle">初期化ベクトル</text>
+    <rect x="0" y="214" width="166" height="44" rx="6" fill="var(--c3)"/>
+    <text x="83" y="233" fill="var(--on)" text-anchor="middle">暗号化鍵</text>
+    <text x="83" y="248" fill="var(--on)" opacity=".9" text-anchor="middle">クライアント → サーバ</text>
+    <rect x="178" y="214" width="166" height="44" rx="6" fill="var(--c3)"/>
+    <text x="261" y="233" fill="var(--on)" text-anchor="middle">暗号化鍵</text>
+    <text x="261" y="248" fill="var(--on)" opacity=".9" text-anchor="middle">サーバ → クライアント</text>
+    <rect x="356" y="214" width="166" height="44" rx="6" fill="var(--c2)"/>
+    <text x="439" y="233" fill="var(--on)" text-anchor="middle">MAC 鍵</text>
+    <text x="439" y="248" fill="var(--on)" opacity=".9" text-anchor="middle">こちらも方向ごとに 2 本</text>
+    <rect x="534" y="214" width="166" height="44" rx="6" fill="var(--c2)"/>
+    <text x="617" y="240" fill="var(--on)" text-anchor="middle">初期化ベクトル</text>
   </g>
-  <text x="8" y="282" font-size="11" fill="var(--muted)">1本の秘密から、方向別・用途別に複数の鍵を切り出す。どれか1つが漏れても他の用途には使えない。</text>
-  <defs><marker id="e1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+  <text x="0" y="284" font-size="11" fill="var(--muted)">1 本の秘密から、方向別・用途別に複数の鍵を切り出す。</text>
 </svg>
-<figcaption>平文で流れている乱数を混ぜることに意味がある。乱数はハンドシェイクごとに変わるので、たとえ同じプレマスタシークレットが再び使われても、そこから出てくる鍵は別になる。過去の通信を丸ごと再生する攻撃を、この段階で無効にしている。</figcaption>
+<figcaption>右側の 2 つのラベルが、この記事で説明することのすべてです。段そのものは同じ計算（鍵導出関数）を繰り返しているだけで、複雑なことはしていません。</figcaption>
 </figure>
 
-<h2>プレマスタシークレットの作り方は2通りある</h2>
+<h2>1 段目：毎回違う鍵にする</h2>
+
+<p>プレマスタシークレットは、鍵交換の結果として両者の手元に揃うバイト列です。両者が同じ値を持っているのだから、これをそのままセッション鍵にすればよさそうに見えます。何が困るのでしょうか。</p>
+
+<p>攻撃者が過去のハンドシェイクを丸ごと記録しておき、後日そのまま投げ返す場合を考えます。RSA 鍵交換では、プレマスタシークレットはクライアントが選んでサーバの公開鍵で暗号化して送るだけです。<strong>同じ暗号文を投げれば、サーバには同じプレマスタシークレットが届きます。</strong>そのまま鍵にしていたら、サーバは過去とまったく同じ鍵で暗号化を始めてしまいます。</p>
+
+<p>そこで、ハンドシェイクの最初に平文で交換した<strong>両者の乱数を混ぜてから</strong>鍵にします。乱数は接続のたびにサーバが新しく選ぶので、記録した通信をそのまま投げ返しても、サーバ側の乱数が違えば出てくる鍵も違います。</p>
+
+<h3>平文で流れている乱数を混ぜて、意味があるのか</h3>
+
+<p>ここが引っかかりやすいところです。乱数は経路上から丸見えなのに、それを混ぜて何になるのか。</p>
+
+<blockquote>
+<p>乱数は<strong>秘密を足すため</strong>のものではなく、<strong>毎回違う値を確実に 1 つ混ぜるため</strong>のもの。</p>
+</blockquote>
+
+<p>秘密の部分はプレマスタシークレットが 1 人で担当しています。乱数のほうは、そこに「今回の接続」という印を付ける役です。役割が違うので、見えていても構いません。攻撃者は乱数を知っていても、プレマスタシークレットを知らなければ鍵を作れません。</p>
+
+<h2>2 段目：用途ごとに切り分ける</h2>
+
+<p>マスタシークレットも、まだそのままでは使いません。ここから用途別・方向別に複数の鍵を切り出します。なぜ 1 本で済ませないのか、理由は 2 つあります。</p>
+
+<p><strong>1. 暗号化と改ざん検知で、別のアルゴリズムを使うから。</strong>同じ鍵を 2 つの違う計算に食わせると、片方の出力からもう片方の手がかりが漏れる組合せがありえます。最初から分けておけば、この心配自体が消えます。</p>
+
+<p><strong>2. 送信方向を分けたいから。</strong>これが分かりにくいので図にします。</p>
+
+<figure>
+<svg viewBox="0 0 700 242" role="img" aria-label="両方向で同じ鍵を使った場合と、方向ごとに鍵を分けた場合の、パケット投げ返しへの耐性の比較">
+  <rect x="8" y="8" width="332" height="202" rx="9" fill="var(--card)" stroke="var(--line)"/>
+  <text x="24" y="30" font-size="12.5" font-weight="600" fill="var(--stop)">両方向で同じ鍵 K を使うと</text>
+
+  <rect x="24" y="40" width="300" height="44" rx="7" fill="var(--lane)"/>
+  <text x="36" y="58" font-size="10.5" fill="var(--ink)">① クライアントが暗号文を送る</text>
+  <text x="36" y="75" font-size="10" fill="var(--muted)">鍵 K で暗号化して MAC を付ける</text>
+  <polygon points="174,93 167,83 181,83" fill="var(--muted)"/>
+
+  <rect x="24" y="96" width="300" height="44" rx="7" fill="var(--lane)"/>
+  <text x="36" y="114" font-size="10.5" fill="var(--ink)">② 攻撃者がコピーして、送り主へ投げ返す</text>
+  <text x="36" y="131" font-size="10" fill="var(--muted)">中身は読めていなくてよい</text>
+  <polygon points="174,149 167,139 181,139" fill="var(--muted)"/>
+
+  <rect x="24" y="152" width="300" height="44" rx="7" fill="var(--card)" stroke="var(--stop)" stroke-width="1.4"/>
+  <text x="36" y="170" font-size="10.5" fill="var(--stop)">③ 同じ鍵 K なので復号も MAC も通る</text>
+  <text x="36" y="187" font-size="10" fill="var(--muted)">自分が送ったものを、相手の返事として受け入れる</text>
+
+  <rect x="360" y="8" width="332" height="202" rx="9" fill="var(--card)" stroke="var(--line)"/>
+  <text x="376" y="30" font-size="12.5" font-weight="600" fill="var(--c3)">方向ごとに鍵を分けると</text>
+
+  <rect x="376" y="40" width="300" height="44" rx="7" fill="var(--lane)"/>
+  <text x="388" y="58" font-size="10.5" fill="var(--ink)">① クライアントが暗号文を送る</text>
+  <text x="388" y="75" font-size="10" fill="var(--muted)">送信用の鍵 K1 で暗号化して MAC を付ける</text>
+  <polygon points="526,93 519,83 533,83" fill="var(--muted)"/>
+
+  <rect x="376" y="96" width="300" height="44" rx="7" fill="var(--lane)"/>
+  <text x="388" y="114" font-size="10.5" fill="var(--ink)">② 攻撃者がコピーして、送り主へ投げ返す</text>
+  <text x="388" y="131" font-size="10" fill="var(--muted)">ここまではまったく同じ</text>
+  <polygon points="526,149 519,139 533,139" fill="var(--muted)"/>
+
+  <rect x="376" y="152" width="300" height="44" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/>
+  <text x="388" y="170" font-size="10.5" fill="var(--c3)">③ 受信に使うのは別の鍵 K2</text>
+  <text x="388" y="187" font-size="10" fill="var(--muted)">K1 の暗号文は復号できず、その場で弾かれる</text>
+
+  <text x="8" y="232" font-size="11" fill="var(--muted)">③ の 1 マスだけが違い、結果が反転する。鍵を分けること自体が、この投げ返しを成立しなくさせている。</text>
+</svg>
+<figcaption>MAC 鍵も同じ理由で方向ごとに分けます。結果、最低でも 4 本（暗号化 2 本、MAC 2 本）と初期化ベクトルが必要になります。1 本の材料から必要な長さのバイト列を必要な本数だけ絞り出すのが、鍵導出関数の仕事です。</figcaption>
+</figure>
+
+<h2>プレマスタシークレットの作り方は 2 通りある</h2>
+
+<p>1 段目の入口にあたるプレマスタシークレットそのものを、どうやって両者の手元に揃えるか。方式が 2 つあります。</p>
+
+<div class="tw">
 <table>
 <tr><th></th><th>RSA 鍵交換（古い方式）</th><th>ECDHE（現在）</th></tr>
-<tr><td>作り方</td><td>クライアントが乱数として生成する</td><td>両者の計算で共有秘密を導き出す</td></tr>
-<tr><td>渡し方</td><td>サーバの公開鍵で暗号化して送る</td><td>送らない（各自が計算する）</td></tr>
+<tr><td>やっていること</td><td>クライアントが乱数を 1 つ選び、それを<strong>渡す</strong></td><td>互いに公開値を送り合い、各自の手元で同じ値を<strong>計算して作り出す</strong></td></tr>
+<tr><td>渡し方</td><td>サーバの公開鍵で暗号化して送る</td><td>秘密そのものは経路を流れない</td></tr>
 <tr><td>サーバの秘密鍵が後から漏れたら</td><td class="dead">記録された過去の通信が全部復号できる</td><td>過去の通信は復号できない</td></tr>
 </table>
-<p>この差が前方秘匿性の有無で、TLS 1.3 が RSA 鍵交換を廃止した理由でもある（<a href="../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a>）。TLS 1.3 では「プレマスタシークレット」という語自体が使われなくなり、鍵交換で得た共有秘密を HKDF という導出関数に通す形に整理された。<strong>用語としては TLS 1.2 までのもの</strong>だが、段階を踏んで鍵を作るという考え方は同じまま残っている。</p>
+</div>
+
+<p>最後の行が決定的です。RSA 鍵交換では、プレマスタシークレットが<strong>サーバの公開鍵で暗号化された形で経路を流れています</strong>。攻撃者が通信を丸ごと記録しておき、何年か後にサーバの秘密鍵を手に入れれば、その部分を復号してプレマスタシークレットを取り出し、記録済みの乱数と混ぜて当時の鍵を再現できます。</p>
+
+<p>ECDHE では、秘密そのものがどこにも流れていません。流れているのは公開値だけで、そこから秘密を逆算できないように作られています。だから後日サーバの秘密鍵が漏れても、過去の通信は開けられません。この性質を<strong>前方秘匿性</strong>と呼び、TLS 1.3 が RSA 鍵交換を廃止した理由でもあります（→ <a href="../Cryptography/Diffie-Hellman鍵交換.html">Diffie-Hellman 鍵交換</a>）。</p>
+
+<h2>TLS 1.3 では名前が変わった</h2>
+
+<p>「プレマスタシークレット」は <strong>TLS 1.2 までの用語</strong>です。1.3 ではこの語自体が使われなくなり、鍵交換で得た共有秘密を <strong>HKDF</strong> という鍵導出関数に通す形へ整理されました。名前と段数は変わりましたが、<strong>1 段目で毎回違う鍵にし、2 段目で用途ごとに切り分ける</strong>という考え方はそのまま残っています。</p>
 
 <div class="note">
 <p><strong>マスタシークレットを書き出すと通信が読める</strong></p>
-<p>ブラウザや多くのライブラリには、<code>SSLKEYLOGFILE</code> という環境変数を設定すると<strong>鍵の材料をファイルに書き出す</strong>機能がある。これを Wireshark に読ませれば、暗号化された通信をその場で復号して中身を確認できる。開発時の切り分けには非常に有用だが、<strong>本番環境や共有端末で有効にすれば、そのファイルは通信の中身をすべて開ける鍵束</strong>になる。CI やコンテナのイメージにこの設定が紛れ込んでいないかは、見ておく価値がある。</p>
+<p>ブラウザや多くのライブラリには、<code>SSLKEYLOGFILE</code> という環境変数を設定すると<strong>鍵の材料をファイルに書き出す</strong>機能があります。これを Wireshark に読ませれば、暗号化された通信をその場で復号して中身を確認できます。開発時の切り分けには非常に有用ですが、<strong>本番環境や共有端末で有効にすれば、そのファイルは通信の中身をすべて開ける鍵束</strong>になります。CI やコンテナのイメージにこの設定が紛れ込んでいないかは、見ておく価値があります。</p>
 </div>
+
+<p>ハンドシェイク全体の中でこの鍵導出がどこに位置するかは、<a href="TLSハンドシェイクと証明書検証をゼロから理解する.html">TLS ハンドシェイクと証明書検証をゼロから理解する</a>にあります。</p>
 
 <h2>参考</h2>
 <ul>
