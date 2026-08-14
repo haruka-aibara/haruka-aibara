@@ -197,3 +197,4 @@ AI は放っておくと網羅性重視で盛る。以下は初学者向け記�
 - **メール形式**: `Networking/メール/` に MIME / S/MIME / Base64 を追加済み。`Networking/SOAP.html` あり
 - **ログ管理**: `Logging/syslog.html`（syslog の集約 / ファシリティとプライオリティ / journald との分担 / rsyslog・syslog-ng の設定例）。認証ログの読み方は `Linux/06_サーバー確認/06-02_認証ログ.md` にある
 - **セキュア OS**: `Secure OS/セキュアOSとSELinuxをゼロから理解する.html`（DAC と MAC の対比 / セキュア OS と Trusted OS / Type Enforcement / SELinux の RBAC / 動作モード）。通常のパーミッション（rwx）は `Linux/04_ファイル操作/04-01_ファイルパーミッション.md` にある
+- **境界防御**: `Network Security/ファイアウォールとDMZ構成をゼロから理解する.html`（ペリメータモデル / DMZ / 静的・動的パケットフィルタリング / ステートフルインスペクション / プロキシ / WAF のポジティブ・ネガティブモデル / パーソナルFW を1つの構成図の上で整理）。AWS 固有の WAF・Network Firewall は `Amazon Web Services/04_セキュリティ/ネットワークセキュリティ/` にある
