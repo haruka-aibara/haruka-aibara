@@ -562,6 +562,40 @@ blockquote p{margin:.4rem 0}
 
 <p>乱数を混ぜるのは、同じ鍵が二度と再現されないようにするためです。毎回同じ鍵になるなら、記録しておいた過去の通信をそのまま投げ返す再生攻撃が成立します。鍵の作り方には 2 通りあり、その違いは<a href="プレマスタシークレット.html">プレマスタシークレット</a>にあります。</p>
 
+<h3>盗聴者は、なぜ同じ鍵を作れないのか</h3>
+
+<p>ここで、経路上のやりとりを全部見ている攻撃者の立場に立って確認します。①②の乱数は平文で流れているので、そのまま手に入ります。<strong>それでもセッション鍵は作れません。材料がもう 1 つ足りないからです。</strong></p>
+
+<figure>
+<svg viewBox="0 0 700 160" role="img" aria-label="盗聴者が手に入れられる材料と、手に入れられない材料">
+  <text x="0" y="14" font-size="11" fill="var(--muted)">経路を盗聴している攻撃者の手元に、揃うもの・揃わないもの</text>
+
+  <rect x="0" y="24" width="224" height="68" rx="7" fill="var(--card)" stroke="var(--line)"/>
+  <text x="14" y="48" font-size="11" fill="var(--ink)"><tspan font-size="13" fill="var(--c3)">✓</tspan> クライアントの乱数</text>
+  <text x="14" y="68" font-size="10" fill="var(--muted)">① で平文のまま流れる</text>
+  <text x="14" y="84" font-size="10" fill="var(--c3)">手に入る</text>
+
+  <rect x="238" y="24" width="224" height="68" rx="7" fill="var(--card)" stroke="var(--line)"/>
+  <text x="252" y="48" font-size="11" fill="var(--ink)"><tspan font-size="13" fill="var(--c3)">✓</tspan> サーバの乱数</text>
+  <text x="252" y="68" font-size="10" fill="var(--muted)">② で平文のまま流れる</text>
+  <text x="252" y="84" font-size="10" fill="var(--c3)">手に入る</text>
+
+  <rect x="476" y="24" width="224" height="68" rx="7" fill="var(--card)" stroke="var(--stop)" stroke-width="1.5"/>
+  <text x="490" y="48" font-size="11" fill="var(--ink)"><tspan font-size="13" fill="var(--stop)">✗</tspan> プレマスタシークレット</text>
+  <text x="490" y="68" font-size="10" fill="var(--muted)">⑥ は公開鍵で暗号化されている</text>
+  <text x="490" y="84" font-size="10" fill="var(--stop)">手に入らない</text>
+
+  <rect x="0" y="104" width="700" height="50" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="16" y="126" font-size="11.5" fill="var(--ink)">乱数 2 つだけでは、マスタシークレットは作れない。</text>
+  <text x="16" y="145" font-size="11.5" fill="var(--c3)">→ セッション鍵も導出できず、以降の通信は復号できない。</text>
+</svg>
+<figcaption>秘密を運んでいるのは 3 つのうち 1 つだけで、残りの 2 つは公開されていて構いません。乱数の役目は秘密を足すことではなく、「今回の接続」という毎回違う印を混ぜることだからです。</figcaption>
+</figure>
+
+<p>プレマスタシークレットは、⑥で<strong>サーバの公開鍵で暗号化して</strong>送られます。開けられるのは、対になる秘密鍵を持つサーバだけです。攻撃者は乱数を 2 つとも持っていても、混ぜる相手がないのでマスタシークレットにたどり着けません。</p>
+
+<p>ECDHE の場合はもっと単純で、プレマスタシークレットにあたる値は<strong>そもそも経路を流れません</strong>。両者が公開値を送り合い、それぞれ手元で同じ値を計算します。どちらの方式でも、「平文の乱数は見えているが、秘密のほうは見えない」という結論は変わりません。</p>
+
 <h3>そのあとを担当する Record プロトコル</h3>
 
 <p>ハンドシェイクが終わってからのデータを扱うのが <strong>Record プロトコル</strong>です。やることは、<strong>扱える大きさに分割し、改ざん検知用の MAC を付け、セッション鍵で暗号化し、ヘッダを付けて TCP に渡す</strong>こと。</p>
