@@ -220,6 +220,7 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **HSTS**: `Networking/HSTS.html`
 - **UPnP**: `Networking/UPnP.html`
 - **ファイル転送・リモート操作**: `Networking/ファイル転送とリモート操作/` 配下に 1 トピック 1 ファイル（FTP / パッシブ通信 / PASV / Anonymous FTP / SFTP / FTPS / TFTP / Telnet）
+- **FTP 基礎**: `Networking/ファイル転送とリモート操作/FTPをゼロから理解する.html`（ファイル転送・TCP・ポートから制御/データコネクションまで積み上げる初学者向け）
 - **無線 LAN**: `Networking/無線LAN/` 配下に 1 トピック 1 ファイル（CSMA/CA / アクセス手順 / ビーコン / ESSID / ステルスモード / ANY モード / WEP の IV / WPA・WPA2 / TKIP / CCMP / パーソナル・エンタープライズ / WPA3 / Enhanced Open / IEEE 802.1X / EAPOL / EAP / EAP の種類 / PIAFS）＋ `無線LANセキュリティをゼロから理解する.html`（暗号化と認証の 2 本の柱で全用語をつなぐ初学者向け。個別記事は要点まとめなので棲み分ける）。攻撃者視点の WEP・WPA・ESSID は `Cyber Attacks/12_WEPとWPAとESSID.html` にある
 - **DHCP**: `Networking/DHCP.html`（しくみ＋リレーエージェント）
 - **DNS**: `Networking/DNS/` 配下に 1 トピック 1 ファイル（DNS / サーバの3つの役割 / DNS over TLS / ゾーン / ゾーン転送 / オープンリゾルバ）。DNSSEC・キャッシュポイズニングは `Cyber Attacks/19_カミンスキーアタックとDNSSEC.html` にある（重複記事を作らない）
