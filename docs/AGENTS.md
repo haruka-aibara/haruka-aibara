@@ -223,6 +223,7 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **FTP 基礎**: `Networking/ファイル転送とリモート操作/FTPをゼロから理解する.html`（ファイル転送・TCP・ポートから制御/データコネクションまで積み上げる初学者向け）
 - **無線 LAN**: `Networking/無線LAN/` 配下に 1 トピック 1 ファイル（CSMA/CA / アクセス手順 / ビーコン / ESSID / ステルスモード / ANY モード / WEP の IV / WPA・WPA2 / TKIP / CCMP / パーソナル・エンタープライズ / WPA3 / Enhanced Open / IEEE 802.1X / EAPOL / EAP / EAP の種類 / PIAFS）＋ `無線LANセキュリティをゼロから理解する.html`（暗号化と認証の 2 本の柱で全用語をつなぐ初学者向け。個別記事は要点まとめなので棲み分ける）。攻撃者視点の WEP・WPA・ESSID は `Cyber Attacks/12_WEPとWPAとESSID.html` にある
 - **DHCP**: `Networking/DHCP.html`（しくみ＋リレーエージェント）
+- **SNMP**: `Networking/SNMPをゼロから理解する.html`（監視の必要性から、マネージャ・エージェント / MIB・OID / ポーリング・通知 / v3 の認証・暗号化まで積み上げる初学者向け）
 - **DNS**: `Networking/DNS/` 配下に 1 トピック 1 ファイル（DNS / サーバの3つの役割 / DNS over TLS / ゾーン / ゾーン転送 / オープンリゾルバ）。DNSSEC・キャッシュポイズニングは `Cyber Attacks/19_カミンスキーアタックとDNSSEC.html` にある（重複記事を作らない）
 - **メール**: `Networking/メール/` 配下に 1 トピック 1 ファイル（SMTPとPOP3 / APOP / IMAP4 / POP before SMTP / SMTP-AUTH / SMTPS / 送信ドメイン認証 / SPF / DKIM / DMARC）。`送信ドメイン認証をゼロから理解する.html` は SMTP から DMARC まで積み上げる初学者向け（既存4本は要点まとめなので棲み分ける）
 - **HTTP 基礎**: `Networking/HTTP/` 配下に 1 トピック 1 ファイル（キープアライブ / URLエンコード / HTTPヘッダ / Cookieの属性 / WebDAV）。HTTP2・HTTP3・HSTS は `Networking/` 直下
