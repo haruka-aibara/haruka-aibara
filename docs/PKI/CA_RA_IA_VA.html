@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>認証局の役割分担 CA・RA・IA・VA を図で理解する</title>
+<title>CA・RA・IA・VA をゼロからつなげる</title>
 <style>
 :root{
   --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
@@ -41,24 +41,45 @@ code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
 ul{padding-left:1.3rem}li{margin:.35rem 0}
 a{color:var(--c1)}
 .dead{color:var(--muted)}
+.rmbox{margin:1.4rem 0;padding:1rem 1.1rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+.rm{display:flex;gap:.45rem;align-items:flex-start;margin:.55rem 0;font-size:.92rem}
+.rm b{display:inline-block;flex:0 0 4.3rem;color:var(--c1);font-size:.8rem;letter-spacing:.02em}
+.step{display:inline-block;margin-right:.5rem;color:var(--c1);font-size:.82rem;letter-spacing:.04em}
+.quiz{margin:1.3rem 0;padding:.75rem 1rem;background:var(--lane);border-radius:8px;font-size:.93rem}
+.quiz summary{cursor:pointer;font-weight:600}.quiz p{margin:.5rem 0 0}
 </style>
 </head>
 <body>
 <main>
-<h1>CA・RA・IA・VA — 認証局の中で分かれている4つの役割</h1>
-<p class="lede">受け付ける人、発行する人、有効性を答える人。分けてあるのは守り方が違うから。</p>
+<h1>CA・RA・IA・VA をゼロからつなげる</h1>
+<p class="lede">証明書を「申し込む → 確かめる → 発行する → 使う」の流れで見ると、4つの略語が役割として読めるようになる。</p>
 
-<h2>何が問題なのか</h2>
-<p>認証局（CA）を1つの箱として見ていると、設計や監査の議論についていけなくなる。「登録局はどこに置くか」「検証局は外部サービスでよいか」といった話が出てくるからだ。</p>
-<p>そもそもなぜ分けるのか。<strong>やっていることの性質がまったく違い、必要な守り方も違う</strong>から。申請の受付は人と拠点が要る業務で、証明書への署名は物理的に隔離された装置の中でしか行ってはいけない処理。同じ場所に置くと、どちらかに合わせて過剰か手薄になる。</p>
+<h2>この記事の目的</h2>
+<p>CA・RA・IA・VA は、どれも証明書に関係する略語だが、いきなり4つ並べると「結局、誰が何をするのか」が見えにくい。これは略語を覚える話ではない。<strong>公開鍵と名前を結び付ける仕事を、なぜ分けるのか</strong>をつかむ話である。</p>
+<p>ここでは Web サイトの証明書を例に、いちばん手前の「公開鍵を受け取る」場面から4ステップで進む。読み終える頃には、各略語を日本語にも英語にも置き換えて説明できる状態を目指す。</p>
+
+<div class="rmbox">
+  <div class="rm"><b>STEP 1</b><span>公開鍵だけでは「相手本人の鍵」だと分からない</span></div>
+  <div class="rm"><b>STEP 2</b><span>証明書の申請を受け、名前との結び付きを確認する — RA</span></div>
+  <div class="rm"><b>STEP 3</b><span>確認済みの内容に署名して証明書を発行する — IA</span></div>
+  <div class="rm"><b>STEP 4</b><span>使う時点で、まだ有効かを答える — VA</span></div>
+</div>
+
+<h2><span class="step">STEP 1</span>公開鍵だけでは足りない</h2>
+<p>公開鍵暗号では、公開鍵を相手に渡してよい。けれど、受け取った鍵が本当に <code>example.com</code> のものかは、鍵そのものからは分からない。途中の攻撃者が自分の公開鍵を「example.com の鍵です」と渡しても、見た目だけでは区別できない。</p>
+<p>そこで第三者が、<strong>「この公開鍵はこの名前の持ち主のものだ」と署名する文書</strong>を作る。これがデジタル証明書であり、その第三者を中心とした仕組みが <a href="PKIとは.html">PKI（Public Key Infrastructure、公開鍵基盤）</a> である。</p>
+
+<h2><span class="step">STEP 2</span>申請者を確かめる — RA</h2>
+<p>証明書を発行する前に、「この人は本当にそのドメインを管理しているか」などを確認しなければならない。この受付・確認を担うのが <strong>RA（Registration Authority、登録局）</strong>。申請を受け、必要な確認をして、発行してよいという結果を後段へ渡す。</p>
+<p>RA が鍵を使って証明書に署名するわけではない。たとえば社内証明書なら、所属確認は社内の担当者が行い、発行は別の認証局が行うことがある。この「確かめる仕事」を切り出したものが RA である。</p>
 
 <figure>
 <svg viewBox="0 0 700 262" role="img" aria-label="CA・RA・IA・VAの役割分担と証明書の流れ">
   <rect x="8" y="30" width="684" height="146" rx="10" fill="none" stroke="var(--line)" stroke-width="1.5"/>
-  <text x="24" y="52" font-size="12.5" font-weight="600" fill="var(--ink)">CA（認証局）— 全体の呼び名</text>
+  <text x="24" y="52" font-size="12.5" font-weight="600" fill="var(--ink)">CA（Certification Authority、認証局）— 全体の信頼の責任を担う</text>
 
   <rect x="30" y="66" width="180" height="90" rx="8" fill="var(--c1)"/>
-  <text x="120" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">RA（登録局）</text>
+  <text x="120" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">RA（Registration Authority）</text>
   <text x="120" y="112" font-size="10.5" fill="var(--on)" text-anchor="middle">申請の受付と本人確認</text>
   <text x="120" y="130" font-size="10.5" fill="var(--on)" text-anchor="middle">審査して可否を判断する</text>
   <text x="120" y="148" font-size="10.5" fill="var(--on)" opacity=".85" text-anchor="middle">発行はしない</text>
@@ -66,7 +87,7 @@ a{color:var(--c1)}
   <path d="M214 111 L254 111" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#v1)"/>
 
   <rect x="258" y="66" width="180" height="90" rx="8" fill="var(--c2)"/>
-  <text x="348" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">IA（発行局）</text>
+  <text x="348" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">IA（Issuing Authority）</text>
   <text x="348" y="112" font-size="10.5" fill="var(--on)" text-anchor="middle">証明書に署名して発行</text>
   <text x="348" y="130" font-size="10.5" fill="var(--on)" text-anchor="middle">失効の処理も行う</text>
   <text x="348" y="148" font-size="10.5" fill="var(--on)" opacity=".85" text-anchor="middle">CA の秘密鍵を扱う</text>
@@ -74,7 +95,7 @@ a{color:var(--c1)}
   <path d="M442 111 L482 111" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#v1)"/>
 
   <rect x="486" y="66" width="180" height="90" rx="8" fill="var(--c3)"/>
-  <text x="576" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">VA（検証局）</text>
+  <text x="576" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">VA（Validation Authority）</text>
   <text x="576" y="112" font-size="10.5" fill="var(--on)" text-anchor="middle">「この証明書は今も</text>
   <text x="576" y="130" font-size="10.5" fill="var(--on)" text-anchor="middle">有効か」に答える</text>
   <text x="576" y="148" font-size="10.5" fill="var(--on)" opacity=".85" text-anchor="middle">失効情報を集約して公開</text>
@@ -94,21 +115,40 @@ a{color:var(--c1)}
     <marker id="v2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
   </defs>
 </svg>
-<figcaption>RA は組織の中に置かれることがある。社内の証明書発行で「人事部門が在籍確認をして、発行そのものは外部の認証局が行う」という形は、RA だけを社内に持つ構成。逆に IA を社内に置くには、鍵を守る設備と運用の負担を丸ごと引き受けることになる。</figcaption>
+<figcaption>CA は「証明書を信頼できるものとして発行・運用する責任を持つ主体」を指す大きな呼び名。その中の仕事を、RA・IA・VA という機能に分けて考える。必ずしも別会社・別サーバではない。</figcaption>
 </figure>
 
-<h2>それぞれで守るものが違う</h2>
+<h2><span class="step">STEP 3</span>証明書に署名して発行する — IA</h2>
+<p>RA の確認を受けて、証明書を実際に発行するのが <strong>IA（Issuing Authority、発行局）</strong>。証明書に CA の秘密鍵で電子署名を付ける。ブラウザはこの署名をたどることで、「この公開鍵と名前の結び付きは、信頼している CA の系列が保証した」と確認できる。</p>
+<p>ここで扱う CA の秘密鍵を盗まれると、攻撃者が好きな名前で証明書を発行できてしまう。だから IA は、申請受付とは別に、HSM（Hardware Security Module）のような鍵を守る装置や厳しい承認手順で保護される。</p>
+
+<details class="quiz">
+<summary>確認：RA が「発行してよい」と判断したら、もう証明書は使える？</summary>
+<p>まだ使えない。RA の判断は確認結果であって、証明書そのものではない。IA が CA の秘密鍵で署名して初めて、検証する側が確認できる証明書になる。</p>
+</details>
+
+<h2><span class="step">STEP 4</span>今も使ってよいかを答える — VA</h2>
+<p>証明書には有効期限がある。しかし期限の途中でも、秘密鍵の漏えいなどで無効にしなければならないことがある。接続する側は証明書を受け取ったとき、「期限内か」だけでなく<strong>「今も失効していないか」</strong>を確認する。</p>
+<p>この確認のために失効情報を提供するのが <strong>VA（Validation Authority、検証局）</strong>。代表的な方法は、失効した証明書の一覧を配る <a href="証明書の失効確認_CRLとOCSP.html">CRL</a> と、証明書を指定して有効性を尋ねる OCSP である。VA は、この問い合わせに答える役を担う。</p>
+
+<details class="quiz">
+<summary>確認：VA は「このサイトの運営者は本人か」を最初から調べる？</summary>
+<p>調べない。その確認は申請時の RA の仕事。VA は、すでに発行された証明書が失効していないかを、使う時点で答える役である。</p>
+</details>
+
+<h2>4つを一言で整理する</h2>
 <table>
-<tr><th>役割</th><th>いちばんの脅威</th><th>主な対策</th></tr>
-<tr><td>RA</td><td>なりすまし申請を通してしまう</td><td>本人確認の手順、承認者の分離、申請記録の保存</td></tr>
-<tr><td>IA</td><td>CA の秘密鍵の窃取・不正な発行</td><td>HSM に鍵を封じる、上位のものはネットワークから切り離す、発行ログの監査</td></tr>
-<tr><td>VA</td><td>停止・応答の改ざん</td><td>可用性の確保（止まると検証できない）、応答への署名</td></tr>
+<tr><th>略語（英語）</th><th>日本語</th><th>一言でいうと</th></tr>
+<tr><td>CA<br><small>Certification Authority</small></td><td>認証局</td><td>証明書を信頼できるものとして運用する責任を持つ主体。RA・IA・VA を含む全体を指して使うこともある</td></tr>
+<tr><td>RA<br><small>Registration Authority</small></td><td>登録局</td><td>申請を受け、申請者と名前の結び付きを確認する</td></tr>
+<tr><td>IA<br><small>Issuing Authority</small></td><td>発行局</td><td>確認済みの内容に CA の秘密鍵で署名し、証明書を発行する</td></tr>
+<tr><td>VA<br><small>Validation Authority</small></td><td>検証局</td><td>証明書が失効していないかを確認できるようにする</td></tr>
 </table>
-<p>この分担がそのまま、認証局の運用規程（CP／CPS）に書かれる内容になる。外部の認証局を選ぶときに読むべきなのもここで、<strong>「どこまで本人確認するのか」は認証局ごとに違う</strong>——その差が<a href="ドメイン認証と企業認証とEV認証.html">DV／OV／EV</a> という証明書の種類になっている。</p>
+<p>この分担は、認証局の運用規程である CP（Certificate Policy、証明書ポリシー）や CPS（Certification Practice Statement、認証実務規程）に表れる。特に「RA はどこまで本人確認するか」は認証局ごとに違い、その差が<a href="ドメイン認証と企業認証とEV認証.html">DV／OV／EV</a> の証明書の種類につながる。</p>
 
 <div class="note">
-<p><strong>実物では名前どおりに分かれていないことも多い</strong></p>
-<p>RA・IA・VA は<strong>機能の呼び名</strong>であって、必ず別のサーバや別の組織になっているわけではない。小規模な認証局では1台のソフトウェアが全部を兼ねる。設計図や試験で問われるのは役割の切り分けなので、「どの機能がどこにあるか」で読むとよい。</p>
+<p><strong>4つは「組織の名前」ではなく「機能の名前」</strong></p>
+<p>RA・IA・VA は必ず別のサーバや別組織になっているわけではない。小規模な認証局では1つのサービスが複数の役を兼ねる。設計図や試験では、略語の数ではなく「申請確認・署名発行・失効確認のどの仕事か」で読むと混乱しない。</p>
 </div>
 
 <h2>参考</h2>
