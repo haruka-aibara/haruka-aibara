@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SCAP をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;align-items:center}
+.node{
+  border:1.5px solid var(--c1);border-radius:8px;padding:.4rem .7rem;background:var(--card);
+  font-size:.84rem;text-align:center;line-height:1.5;min-width:5.2rem;
+}
+.node small{display:block;font-size:.72rem;color:var(--muted)}
+.node.sw{border-color:var(--c4)}
+.node.rt{border-color:var(--c2)}
+.node.hi{border-color:var(--c3);background:var(--lane)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;text-align:center}
+.grid4 .lbl{font-size:.74rem;color:var(--muted)}
+.stems{display:grid;grid-template-columns:repeat(4,1fr)}
+.stems i{display:block;height:18px;width:0;border-left:2px solid var(--wire);margin:0 auto}
+.bus{height:0;border-top:2px solid var(--wire);margin:0 12.5%}
+.stem{height:18px;width:0;border-left:2px solid var(--wire);margin:0 auto}
+.link{flex:0 0 2.4rem;height:0;border-top:2px solid var(--wire)}
+.island{
+  border:1.5px dashed var(--c3);border-radius:12px;padding:.7rem;background:var(--lane);
+  display:flex;flex-direction:column;gap:.4rem;align-items:center;
+}
+.island .name{font-size:.76rem;color:var(--c3);font-weight:600}
+.wallbox{
+  border:1.5px solid var(--c4);border-radius:12px;padding:.9rem;
+  display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:center;
+}
+.wall{
+  width:0;align-self:stretch;border-left:3px dashed var(--stop);position:relative;margin:0 1rem;
+}
+.wall span{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  writing-mode:vertical-rl;font-size:.74rem;color:var(--stop);
+  background:var(--card);padding:.3rem 0;
+}
+.pkt{display:flex;flex-wrap:wrap;gap:.35rem;align-items:stretch}
+.pkt div{
+  border-radius:6px;padding:.45rem .5rem;font-size:.76rem;line-height:1.45;text-align:center;
+  border:1.5px solid var(--line);
+}
+.pkt .o1{flex:1 1 8rem;border-color:var(--c1);background:var(--card)}
+.pkt .o2{flex:0 1 5rem;border-color:var(--c1);background:var(--card)}
+.pkt .o3{flex:1 1 8rem;border-color:var(--c4);background:var(--card)}
+.pkt .o4{flex:2 1 12rem;border-color:var(--c3);background:var(--lane)}
+.pkt b{display:block;font-size:.78rem}
+.pkt em{display:block;font-style:normal;font-size:.72rem;color:var(--muted)}
+.pkt .hint{
+  display:block;font-style:normal;font-size:.72rem;line-height:1.45;
+  margin-top:.4rem;padding-top:.35rem;border-top:1px dashed var(--line);
+}
+.pkt .h1{color:var(--c1)}
+.pkt .h3{color:var(--c3)}
+.arrow{align-self:center;color:var(--muted);font-size:1rem}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+
+@media (max-width:640px){
+  .tw table{min-width:30rem}
+  .node{min-width:0}
+  .grid4{gap:.3rem}
+  .grid4 .node{padding:.4rem .2rem;font-size:.78rem}
+  .pkt .o1,.pkt .o2,.pkt .o3,.pkt .o4{flex:1 1 100%}
+  .wallbox{grid-template-columns:1fr;gap:.4rem}
+  .wall{
+    width:auto;height:0;align-self:auto;margin:1rem 0;
+    border-left:none;border-top:3px dashed var(--stop);
+  }
+  .wall span{writing-mode:horizontal-tb;padding:0 .4rem}
+}
+.flow{display:flex;flex-direction:column;gap:.45rem}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.84rem;background:var(--card);
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>SCAP をゼロから理解する</h1>
+<p class="lede">「この端末は基準どおりか」を人が一台ずつ確かめる限界から始め、5 ステップで SCAP の全体像までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+<p>SCAP の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+<p>それは読解力の問題ではありません。多くの記事は「SCAP は CVE・CPE・CVSS・XCCDF・OVAL などの標準の集合です」という、中級者向けの前提から始まるからです。<strong>なぜ標準が 5 つも 6 つも必要なのか</strong>が分からないまま、略語の一覧だけが増えていきます。</p>
+<p>そこでこの記事は、あえて遠回りします。「安全かどうかを人が一台ずつ確かめている」という、いちばん手前の話から始めて 5 ステップで進みます。ゴールは略語を暗記することではなく、<strong>SCAP がどの作業を、なぜ機械に任せられる形にしたのかを自分の言葉で説明できること</strong>です。</p>
+
+<div class="dg rmbox"><p class="ttl">この記事の道のり</p><nav class="rm" aria-label="全体のロードマップ"><ol>
+<li><span class="n">STEP 1</span>一台ずつ人が確かめる限界</li><li><span class="n">STEP 2</span>呼び名をそろえる</li><li><span class="n">STEP 3</span>深刻度を同じものさしで測る</li><li><span class="n">STEP 4</span>点検手順を機械に読ませる</li><li><span class="n">STEP 5</span>SCAP として組み立てる</li>
+</ol></nav><p class="cap">STEP 4 まではすべて前提知識です。本題の SCAP は STEP 5 だけですが、そこに至る 4 ステップがないと「CVE」「CPE」「XCCDF」「OVAL」がばらばらの暗記になります。</p></div>
+
+<h2>STEP 1：一台ずつ人が確かめる限界</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="now"><span class="n">STEP 1</span>一台ずつ人が確かめる限界</li><li><span class="n">STEP 2</span>呼び名をそろえる</li><li><span class="n">STEP 3</span>深刻度を同じものさしで測る</li><li><span class="n">STEP 4</span>点検手順を機械に読ませる</li><li><span class="n">STEP 5</span>SCAP として組み立てる</li></ol></nav>
+<p>「全サーバーで該当製品のバージョンを確認して報告してください」。あるいは「設定基準に沿っているか、監査までに一覧を出してください」。この依頼が来たとき、担当者は表計算ソフトで台帳を作り、サーバーに一台ずつ入り、値を見て、貼り付けていきます。対象が 300 台あれば、それが 300 回です。</p>
+<p>問題は工数だけではありません。人によって「確認した」の中身が違います。ある人は設定ファイルを見て、別の人はコマンドの出力を見ます。そして一か月後には状態が変わっていて、報告書はその日を写した写真でしかありません。</p>
+<figure><svg viewBox="0 0 780 320" role="img" aria-labelledby="s1t s1d"><title id="s1t">人手の点検と、記述して機械に任せる点検</title><desc id="s1d">左は担当者が端末を一台ずつ確認する図、右は点検内容を記述してツールが全台を判定する図</desc>
+<defs><marker id="a1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--wire)"/></marker></defs>
+<line x1="390" y1="20" x2="390" y2="300" stroke="var(--line)" stroke-width="2"/>
+<text x="185" y="30" text-anchor="middle" fill="var(--muted)" font-weight="700">これまで：人が一台ずつ</text>
+<rect x="110" y="50" width="150" height="46" rx="10" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="185" y="80" text-anchor="middle" fill="var(--ink)" font-weight="700">担当者</text>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#a1)"><line x1="170" y1="99" x2="90" y2="200"/><line x1="185" y1="99" x2="185" y2="200"/><line x1="200" y1="99" x2="280" y2="200"/></g>
+<g><rect x="35" y="208" width="95" height="50" rx="8" fill="var(--card)" stroke="var(--c4)"/><text x="82" y="239" text-anchor="middle" fill="var(--ink)">端末</text><rect x="138" y="208" width="95" height="50" rx="8" fill="var(--card)" stroke="var(--c4)"/><text x="185" y="239" text-anchor="middle" fill="var(--ink)">端末</text><rect x="241" y="208" width="95" height="50" rx="8" fill="var(--card)" stroke="var(--c4)"/><text x="288" y="239" text-anchor="middle" fill="var(--ink)">端末</text></g>
+<text x="185" y="288" text-anchor="middle" fill="var(--stop)">判断の基準は人の頭の中</text>
+<text x="585" y="30" text-anchor="middle" fill="var(--muted)" font-weight="700">これから：手順を書き下して機械に</text>
+<rect x="490" y="50" width="190" height="46" rx="10" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/><text x="585" y="80" text-anchor="middle" fill="var(--ink)" font-weight="700">点検内容の記述</text>
+<line x1="585" y1="99" x2="585" y2="126" stroke="var(--wire)" stroke-width="2" marker-end="url(#a1)"/>
+<rect x="505" y="130" width="160" height="44" rx="10" fill="var(--c1)"/><text x="585" y="158" text-anchor="middle" fill="var(--on)" font-weight="700">点検ツール</text>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#a1)"><line x1="565" y1="177" x2="470" y2="200"/><line x1="585" y1="177" x2="585" y2="200"/><line x1="605" y1="177" x2="700" y2="200"/></g>
+<g><rect x="415" y="208" width="95" height="50" rx="8" fill="var(--card)" stroke="var(--c4)"/><text x="462" y="239" text-anchor="middle" fill="var(--ink)">端末</text><rect x="538" y="208" width="95" height="50" rx="8" fill="var(--card)" stroke="var(--c4)"/><text x="585" y="239" text-anchor="middle" fill="var(--ink)">端末</text><rect x="661" y="208" width="95" height="50" rx="8" fill="var(--card)" stroke="var(--c4)"/><text x="708" y="239" text-anchor="middle" fill="var(--ink)">端末</text></g>
+<text x="585" y="288" text-anchor="middle" fill="var(--c3)">全台に同じ判定・何度でも繰り返せる</text></svg><figcaption>この作業を調べ始めるきっかけは、たいてい監査や取引先からの照会です。「今どうなっているか」を毎回集め直さずに答えられる状態が、そもそもの目的になります。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　点検手順を丁寧な手順書にまとめて配れば、この問題は解決するでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>解決しません。</strong> 手順書は人が読んで解釈するもので、解釈の差も実行の手間も残るからです。機械が読んで実行できる形にする必要があります。そこでまず引っかかるのが、「何を指しているのか」が文書ごとにばらばらだという問題です。</p></div></details></div>
+
+<h2>STEP 2：呼び名をそろえる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>一台ずつ人が確かめる限界</li><li class="now"><span class="n">STEP 2</span>呼び名をそろえる</li><li><span class="n">STEP 3</span>深刻度を同じものさしで測る</li><li><span class="n">STEP 4</span>点検手順を機械に読ませる</li><li><span class="n">STEP 5</span>SCAP として組み立てる</li></ol></nav>
+<p>機械に点検させるには、対象を一意に書けなければなりません。ところが現実の呼び名はばらばらです。同じ脆弱性を、あるベンダーは「セキュリティ情報 12345」と呼び、別のベンダーは自社の告知番号で呼び、ニュースは通称で呼びます。これでは同じ穴なのか別の穴なのか突き合わせられません。製品名も「Apache 2.4」「httpd-2.4.58」と表記が揺れます。</p>
+<figure><svg viewBox="0 0 780 285" role="img" aria-labelledby="s2t"><title id="s2t">ばらばらの呼び名を共通の識別子でつなぐ</title>
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c1)"/></marker></defs>
+<g><rect x="25" y="30" width="235" height="58" rx="9" fill="var(--card)" stroke="var(--c2)"/><text x="142" y="54" text-anchor="middle" fill="var(--muted)">ベンダー A の告知</text><text x="142" y="76" text-anchor="middle" fill="var(--ink)">「セキュリティ情報 12345」</text>
+<rect x="25" y="105" width="235" height="58" rx="9" fill="var(--card)" stroke="var(--c2)"/><text x="142" y="129" text-anchor="middle" fill="var(--muted)">ベンダー B の告知</text><text x="142" y="151" text-anchor="middle" fill="var(--ink)">「Bulletin-2024-07」</text>
+<rect x="25" y="180" width="235" height="58" rx="9" fill="var(--card)" stroke="var(--c2)"/><text x="142" y="204" text-anchor="middle" fill="var(--muted)">報道・SNS</text><text x="142" y="226" text-anchor="middle" fill="var(--ink)">通称で呼ばれる</text></g>
+<g stroke="var(--c1)" stroke-width="2.5" marker-end="url(#a2)"><line x1="266" y1="59" x2="435" y2="110"/><line x1="266" y1="134" x2="435" y2="134"/><line x1="266" y1="209" x2="435" y2="158"/></g>
+<rect x="445" y="80" width="300" height="108" rx="12" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="595" y="116" text-anchor="middle" fill="var(--ink)" font-weight="700">すべて同じ脆弱性</text><text x="595" y="152" text-anchor="middle" fill="var(--c1)" font-weight="700" font-size="19">CVE-2021-44228</text>
+<text x="595" y="225" text-anchor="middle" fill="var(--muted)">製品名は CPE、設定項目は CCE で</text><text x="595" y="250" text-anchor="middle" fill="var(--muted)">同じように呼び名をそろえる</text></svg><figcaption>識別子は意味を説明しません。「どれを指しているか」だけを決めます。説明は各ベンダーの告知に任せ、突き合わせは番号でやる、という分担です。</figcaption></figure>
+<div class="tw"><table><thead><tr><th>そろえたいもの</th><th>識別子</th><th>例</th></tr></thead><tbody>
+<tr><td>脆弱性</td><td><strong>CVE</strong></td><td><code>CVE-2021-44228</code></td></tr>
+<tr><td>製品・プラットフォーム</td><td><strong>CPE</strong></td><td><code>cpe:2.3:a:apache:http_server:2.4.58:*:*:*:*:*:*:*</code></td></tr>
+<tr><td>設定項目</td><td><strong>CCE</strong></td><td><code>CCE-80901-2</code>（「root の SSH ログインを禁止する」など）</td></tr>
+</tbody></table></div>
+<p>これで「どの製品の、どの脆弱性か」「どの設定項目か」を、文書やツールをまたいで同じ言葉で書けるようになりました。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　脆弱性に共通の番号が付きました。これで対応の優先順位を決められるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>決められません。</strong> 番号は「どれか」を指すだけで、「どれくらい危ないか」は表さないからです。検出件数が数千になったとき、どこから手を付けるかの基準が要ります。</p></div></details></div>
+
+<h2>STEP 3：深刻度を同じものさしで測る</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>一台ずつ人が確かめる限界</li><li class="done"><span class="n">STEP 2 ✓</span>呼び名をそろえる</li><li class="now"><span class="n">STEP 3</span>深刻度を同じものさしで測る</li><li><span class="n">STEP 4</span>点検手順を機械に読ませる</li><li><span class="n">STEP 5</span>SCAP として組み立てる</li></ol></nav>
+<p>ベンダーはそれぞれ「緊急」「重要」「警告」といった区分を付けますが、判断基準は各社で違います。区分の名前だけを並べても比較になりません。</p>
+<p>そこで、攻撃の条件と影響を決まった項目で評価し、0.0〜10.0 の数値に変換します。これが <strong>CVSS</strong> です。評価するのは、たとえば「ネットワーク越しに攻撃できるか、手元でしか無理か」「攻撃に権限が要るか」「利用者の操作が必要か」「機密性・完全性・可用性のどれがどれだけ損なわれるか」です。同じ計算式を通すので、別のベンダーの脆弱性でも同じ土俵に並べられます。</p>
+<div class="note"><strong>CVSS の点数は、そのまま対応順位ではありません。</strong> 基本値が表すのは製品そのものの性質です。その端末がインターネットに面しているか、実際に攻撃が観測されているか（CISA の悪用確認済み脆弱性カタログなど）を重ねて、自組織での優先度を決めます。</div>
+<div class="quiz"><p class="q"><b>確認問題</b>　名前（CVE）と点数（CVSS）がそろいました。これで自動点検はできるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>できません。</strong> 「この端末が CVE-2021-44228 に該当するか」「この設定は基準どおりか」を<strong>どうやって調べるか</strong>が、まだどこにも書かれていないからです。</p></div></details></div>
+
+<h2>STEP 4：点検手順を機械に読ませる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>一台ずつ人が確かめる限界</li><li class="done"><span class="n">STEP 2 ✓</span>呼び名をそろえる</li><li class="done"><span class="n">STEP 3 ✓</span>深刻度を同じものさしで測る</li><li class="now"><span class="n">STEP 4</span>点検手順を機械に読ませる</li><li><span class="n">STEP 5</span>SCAP として組み立てる</li></ol></nav>
+<p>点検の内容を書き下そうとすると、性質の違う二つの層があることに気づきます。<strong>何を点検し、合格の基準は何か</strong>という一覧と、<strong>その 1 項目を実際にどう調べて判定するか</strong>という手順です。前者は「SSH の root ログインを禁止する」、後者は「<code>/etc/ssh/sshd_config</code> の <code>PermitRootLogin</code> の値が <code>no</code> か」です。</p>
+<p>この二つを別々の書式に分けたのが <strong>XCCDF</strong> と <strong>OVAL</strong> です。</p>
+<figure><svg viewBox="0 0 780 345" role="img" aria-labelledby="s4t"><title id="s4t">XCCDF の点検表と OVAL の判定手順</title>
+<defs><marker id="a4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c1)"/></marker></defs>
+<rect x="25" y="45" width="340" height="185" rx="12" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/><text x="195" y="75" text-anchor="middle" fill="var(--c1)" font-weight="700">XCCDF：何を点検し、何が合格か</text>
+<rect x="45" y="90" width="300" height="34" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="113" text-anchor="middle" fill="var(--muted)">パスワードの最小文字数</text>
+<rect x="45" y="132" width="300" height="34" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="155" text-anchor="middle" fill="var(--muted)">監査ログを保存する</text>
+<rect x="45" y="174" width="300" height="38" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/><text x="195" y="199" text-anchor="middle" fill="var(--ink)" font-weight="700">root の SSH ログインを禁止する</text>
+<line x1="350" y1="193" x2="418" y2="125" stroke="var(--c1)" stroke-width="2.5" marker-end="url(#a4)"/>
+<rect x="425" y="45" width="320" height="102" rx="12" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/><text x="585" y="76" text-anchor="middle" fill="var(--c3)" font-weight="700">OVAL：どう調べて判定するか</text><text x="585" y="103" text-anchor="middle" fill="var(--ink)">sshd_config の PermitRootLogin が</text><text x="585" y="126" text-anchor="middle" fill="var(--ink)">no と一致するか</text>
+<line x1="585" y1="150" x2="585" y2="183" stroke="var(--wire)" stroke-width="2" marker-end="url(#a4)"/>
+<rect x="465" y="187" width="240" height="52" rx="10" fill="var(--lane)" stroke="var(--c4)" stroke-width="2"/><text x="585" y="219" text-anchor="middle" fill="var(--ink)" font-weight="700">対象システムの実際の状態</text>
+<line x1="585" y1="242" x2="585" y2="272" stroke="var(--wire)" stroke-width="2" marker-end="url(#a4)"/>
+<rect x="465" y="276" width="240" height="52" rx="10" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="2"/><text x="585" y="308" text-anchor="middle" fill="var(--stop)" font-weight="700">fail：値が yes だった</text></svg><figcaption>XCCDF には「サーバー向け」「開発端末向け」のように、どのルールを適用するかの組み合わせ（プロファイル）も書けます。同じ点検表から、対象に応じて適用範囲を変えられます。</figcaption></figure>
+<p>CIS Benchmark や DISA STIG といった有名な設定基準は、この形式でも配布されています。だから、基準の文書を人が読んで一台ずつ確認するのではなく、そのままツールに読み込ませて全台に同じ判定をかけられます。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　点検表と判定手順が機械可読になりました。まだ足りないものは何でしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p>これらを<strong>ひとまとめにして受け渡す形</strong>と、「この仕様一式に従う」という取り決めです。識別子・評価・言語がそれぞれ独立したままだと、ツールごとに対応範囲がばらつき、結局コンテンツを作り直すことになります。</p></div></details></div>
+
+<h2>STEP 5：SCAP として組み立てる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>一台ずつ人が確かめる限界</li><li class="done"><span class="n">STEP 2 ✓</span>呼び名をそろえる</li><li class="done"><span class="n">STEP 3 ✓</span>深刻度を同じものさしで測る</li><li class="done"><span class="n">STEP 4 ✓</span>点検手順を機械に読ませる</li><li class="now"><span class="n">STEP 5</span>SCAP として組み立てる</li></ol></nav>
+<p>ここまでの部品を、ひとつの仕様としてまとめたものが <strong>SCAP（Security Content Automation Protocol、セキュリティ設定共通化手順）</strong> です。米国の NIST が策定しています。STEP 2〜4 で出てきた道具は、SCAP では次の位置づけになります。</p>
+<div class="tw"><table><thead><tr><th>ここまでの呼び方</th><th>SCAP の構成要素</th><th>分類</th></tr></thead><tbody>
+<tr><td>脆弱性の共通名</td><td><strong>CVE</strong></td><td rowspan="3">識別（名前をそろえる）</td></tr>
+<tr><td>製品の共通名</td><td><strong>CPE</strong></td></tr>
+<tr><td>設定項目の共通名</td><td><strong>CCE</strong></td></tr>
+<tr><td>深刻度のものさし</td><td><strong>CVSS</strong></td><td>評価（重みを付ける）</td></tr>
+<tr><td>点検表</td><td><strong>XCCDF</strong></td><td rowspan="2">言語（機械可読で書く）</td></tr>
+<tr><td>判定手順</td><td><strong>OVAL</strong></td></tr>
+</tbody></table></div>
+<p>さらに SCAP は、これらをまとめて 1 ファイルで配布する形式（データストリーム）も決めています。SCAP 対応のスキャナはそれを読み込み、対象システムを点検し、結果を出します。</p>
+<figure><svg viewBox="0 0 800 335" role="img" aria-labelledby="s5t"><title id="s5t">SCAP の全体像</title>
+<defs><marker id="a5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="25" y="45" width="210" height="200" rx="14" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/><text x="130" y="78" text-anchor="middle" fill="var(--ink)" font-weight="700">SCAP コンテンツ</text>
+<rect x="45" y="95" width="170" height="38" rx="8" fill="var(--lane)" stroke="var(--c1)"/><text x="130" y="120" text-anchor="middle" fill="var(--ink)">XCCDF（点検表）</text>
+<rect x="45" y="143" width="170" height="38" rx="8" fill="var(--lane)" stroke="var(--c3)"/><text x="130" y="168" text-anchor="middle" fill="var(--ink)">OVAL（判定手順）</text>
+<rect x="45" y="191" width="170" height="38" rx="8" fill="var(--lane)" stroke="var(--c2)"/><text x="130" y="216" text-anchor="middle" fill="var(--ink)">CPE 辞書ほか</text>
+<line x1="242" y1="145" x2="292" y2="145" stroke="var(--wire)" stroke-width="3" marker-end="url(#a5)"/>
+<rect x="300" y="105" width="200" height="80" rx="12" fill="var(--c1)"/><text x="400" y="140" text-anchor="middle" fill="var(--on)" font-weight="700">SCAP 対応スキャナ</text><text x="400" y="166" text-anchor="middle" fill="var(--on)">読み込んで実行</text>
+<line x1="507" y1="145" x2="557" y2="145" stroke="var(--wire)" stroke-width="3" marker-end="url(#a5)"/>
+<rect x="565" y="105" width="210" height="80" rx="12" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/><text x="670" y="152" text-anchor="middle" fill="var(--ink)" font-weight="700">対象システム</text>
+<line x1="400" y1="192" x2="400" y2="238" stroke="var(--wire)" stroke-width="3" marker-end="url(#a5)"/>
+<rect x="250" y="242" width="300" height="72" rx="12" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/><text x="400" y="272" text-anchor="middle" fill="var(--ink)" font-weight="700">点検結果</text><text x="400" y="298" text-anchor="middle" fill="var(--muted)">ルールごとの pass / fail・CVE / CCE 付き</text></svg><figcaption>コンテンツとツールが分離しているのが要点です。CIS が作った基準を別ベンダーのスキャナで実行し、結果をさらに別の管理システムへ取り込む、という組み合わせが成り立ちます。</figcaption></figure>
+<p>つまり SCAP は「スキャンする道具」ではなく、<strong>道具と点検内容が噛み合うための共通仕様</strong>です。実務で目にするのは、Linux 向けのオープンソーススキャナ <a href="https://www.open-scap.org/">OpenSCAP</a>、SCAP 形式で配布される CIS Benchmark や DISA STIG、そして CVE・CVSS を共通言語として使う各種の脆弱性管理ツールです。</p>
+<div class="tw"><table><thead><tr><th>技術的な言い方</th><th>ビジネス側に刺さる言い方</th></tr></thead><tbody>
+<tr><td>SCAP 形式のコンテンツで設定点検を自動化する</td><td>「基準どおり設定されているか」の確認を人の手作業から外し、毎日回せる状態にする</td></tr>
+<tr><td>CVE と CVSS で脆弱性を管理する</td><td>監査や取引先からの照会に、その都度調べ直さずに答えられる</td></tr>
+</tbody></table></div>
+<div class="quiz"><p class="q"><b>確認問題</b>　SCAP 対応スキャナを入れれば準拠状況を自動で確認できます。導入の前に決めておくべきことは何でしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>どの基準に、どの範囲のシステムを合わせるのか。そして fail が出たとき、誰がどう直すのか</strong>です。プロファイルを選ばずに全ルールを流すと大量の fail が出て、「見なかったことにする」運用になります。使い道が決まってから入れます。</p></div></details></div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+<h3>30 秒版</h3><blockquote><p>SCAP は、セキュリティの点検を機械に任せられるようにするための共通仕様の集まりで、NIST が策定しています。脆弱性を CVE、製品を CPE、設定項目を CCE という共通の識別子で表し、深刻度を CVSS の数値で測ります。点検表を XCCDF、その判定手順を OVAL という機械可読の書式で書きます。SCAP 対応ツールにこれらのコンテンツを読み込ませれば、同じ基準で全台を点検できます。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>手作業の点検は、工数だけでなく判断のばらつきと鮮度の問題を抱えます。機械にやらせるには、まず対象を一意に指す名前が要ります。それが CVE・CPE・CCE です。次に、数千件を並べて優先度を判断するための共通のものさしとして CVSS があります。</p><p>そのうえで点検内容を、「何を点検し合格基準は何か」（XCCDF）と「どう調べて判定するか」（OVAL）に分けて書きます。SCAP はこれらをまとめ、データストリームという 1 つの形で配布・実行できるようにした仕様です。だから CIS Benchmark や DISA STIG のような外部の基準を、対応スキャナでそのまま実行できます。なお CVSS の点数は対応順位そのものではなく、公開範囲や実際の悪用状況と合わせて判断します。</p></blockquote>
+
+<h2>よくある誤解</h2>
+<h3>「SCAP はツールの名前」</h3><p>SCAP は仕様の集まりで、それ自体は何も実行しません。実際に点検するのは OpenSCAP などの対応ツールです。「SCAP を導入する」ではなく「SCAP 形式のコンテンツを対応ツールで動かす」が正確な言い方です。</p>
+<h3>「SCAP は脆弱性スキャンの規格」</h3><p>脆弱性（CVE）だけではありません。設定が基準どおりかを確かめる準拠チェック（CCE・XCCDF）が、同じくらい大きな柱です。むしろ監査対応で先に必要になるのはこちらです。</p>
+<h3>「CVSS が高いものから直せばよい」</h3><p>CVSS の基本値は製品そのものの性質を表します。同じ点数でも、インターネットに面したサーバーと閉じた検証環境では緊急度が違います。悪用が実際に観測されているかも合わせて判断します。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では全体像を優先し、次の話には意図的に踏み込みませんでした。</p>
+<ul>
+<li>OVAL の定義の書き方と、XCCDF のプロファイル・テーラリング</li>
+<li>SCAP 1.3 のデータストリーム構成と、結果を表す ARF</li>
+<li>CVSS v4.0 の変更点、EPSS や悪用確認済み脆弱性カタログとの組み合わせ</li>
+<li>実際のスキャナ運用：<a href="../Vuls/Vuls脆弱性スキャナー.md">Vuls 脆弱性スキャナー</a>、<a href="../Amazon Web Services/04_セキュリティ/検知と可視化/Inspector.md">Amazon Inspector</a></li>
+</ul>
+<p>次は検証用の Linux を 1 台用意し、OpenSCAP で配布済みのプロファイルを 1 つだけ流してみるのがおすすめです。XCCDF・OVAL・CCE・pass / fail の関係を、一度の実行でまとめて確認できます。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/projects/security-content-automation-protocol">NIST — Security Content Automation Protocol (SCAP)</a></li>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/126/r3/final">NIST SP 800-126 Rev. 3 — The Technical Specification for SCAP: SCAP Version 1.3</a></li>
+<li><a href="https://www.ipa.go.jp/security/vuln/scap/about.html">IPA — セキュリティ設定共通化手順 SCAP 概説</a></li>
+<li><a href="https://www.cve.org/">CVE Program</a></li>
+<li><a href="https://www.first.org/cvss/v3-1/specification-document">FIRST — CVSS v3.1 Specification Document</a></li>
+<li><a href="https://www.open-scap.org/">OpenSCAP</a></li>
+<li><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog">CISA — Known Exploited Vulnerabilities Catalog</a></li>
+</ul>
+</main></body></html>
