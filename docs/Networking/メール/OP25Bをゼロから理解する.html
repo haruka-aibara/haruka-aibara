@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OP25B をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:32rem}}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figure .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem}
+figcaption{margin-top:.7rem;font-size:.84rem;color:var(--muted);line-height:1.7}
+svg text{font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-size:13px;fill:var(--ink)}
+svg .s{font-size:11px}
+svg .xs{font-size:10px}
+svg .mo{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+svg .mos{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px}
+svg .mu{fill:var(--muted)}
+svg .ok{fill:var(--c3)}
+svg .ng{fill:var(--stop)}
+svg .cb{fill:var(--c2)}
+svg .cc{fill:var(--c4)}
+svg .bx{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+svg .bxl{fill:var(--lane);stroke:var(--line);stroke-width:1.5}
+svg .s1{stroke:var(--c1)}
+svg .s2{stroke:var(--c2)}
+svg .s3{stroke:var(--c3)}
+svg .s4{stroke:var(--c4)}
+svg .sx{stroke:var(--stop)}
+svg .ln{stroke:var(--wire);stroke-width:2;fill:none}
+svg .dash{stroke:var(--wire);stroke-width:1.5;stroke-dasharray:5 4;fill:none}
+svg .dx{stroke:var(--stop)}
+svg .do{stroke:var(--c3)}
+
+/* ---- 確認問題 ---- */
+.quiz{margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;background:var(--card)}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>OP25B をゼロから理解する</h1>
+<p class="lede">メールが 25 番ポートで運ばれるところから始めて、5 ステップで「なぜ送信ポートが 587 なのか」までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+
+<p>メールソフトの設定画面に「送信サーバのポート : 587」と書いてある。あるいは、動いていたバッチが回線を変えた途端にメールを送れなくなり、調べたら「OP25B」という単語が出てきた。そこで解説を読んでも、いまひとつ腑に落ちない。よくある場面です。</p>
+
+<p>OP25B の説明そのものは短く、たいてい 1 行で済まされます。「ISP が外向きの 25 番ポートを塞ぐ迷惑メール対策」。この 1 行が飲み込めないのは、読解力の問題ではありません。<strong>そもそも 25 番ポートで何が起きていたのかを飛ばして書かれている</strong>からです。誰が誰の 25 番に、なぜ繋げていたのかを知らないまま「塞ぐ」と言われても、何が変わったのか像を結びません。</p>
+
+<p>そこでこの記事はあえて遠回りします。メールがサーバからサーバへ渡されるという、いちばん手前の話から始めて 5 ステップで進みます。ゴールは用語を覚えることではなく、<strong>なぜ 25 番を塞ぐ必要があったのかを自分の言葉で説明できるようになること</strong>です。</p>
+
+<figure>
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>メールは 25 番で運ばれる</li>
+<li><span class="n">STEP 2</span>25 番は誰でも叩ける</li>
+<li><span class="n">STEP 3</span>OP25B — 出口を塞ぐ</li>
+<li><span class="n">STEP 4</span>587 と SMTP-AUTH で救う</li>
+<li><span class="n">STEP 5</span>塞げないものと現場</li>
+</ol>
+</nav>
+<figcaption>STEP 4 までは OP25B が生まれるまでの筋道です。実務でぶつかるのは STEP 5 ですが、そこまでの 4 ステップがないと「なぜ塞がれているのか」「どう迂回してよくて、どう迂回してはいけないのか」が判断できません。</figcaption>
+</figure>
+
+<h2>STEP 1：メールは 25 番で運ばれる</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>メールは 25 番で運ばれる</li>
+<li><span class="n">STEP 2</span>25 番は誰でも叩ける</li>
+<li><span class="n">STEP 3</span>OP25B — 出口を塞ぐ</li>
+<li><span class="n">STEP 4</span>587 と SMTP-AUTH で救う</li>
+<li><span class="n">STEP 5</span>塞げないものと現場</li>
+</ol>
+</nav>
+
+<p>メールは、送信者から受信者へ 1 本の線で届くわけではありません。<strong>サーバからサーバへバケツリレーで渡されます</strong>。このリレーの区間で使われるのが TCP の 25 番ポートです。</p>
+
+<figure>
+<p class="ttl">1 通のメールが通る区間と、そこで使うポート</p>
+<svg viewBox="0 0 720 250" role="img" aria-label="送信者のPCから受信者のPCまでの経路。サーバ間の転送は25番ポートを使う">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker></defs>
+<rect x="10" y="60" width="140" height="60" rx="8" class="bx"/>
+<text class="s" x="80" y="86" text-anchor="middle">送信者の PC</text>
+<text class="xs mu" x="80" y="106" text-anchor="middle">メールソフト</text>
+<rect x="200" y="60" width="140" height="60" rx="8" class="bx s1"/>
+<text class="s" x="270" y="86" text-anchor="middle">送信側サーバ</text>
+<text class="xs mu" x="270" y="106" text-anchor="middle">自分の契約先</text>
+<rect x="390" y="60" width="140" height="60" rx="8" class="bx s1"/>
+<text class="s" x="460" y="86" text-anchor="middle">受信側サーバ</text>
+<text class="xs mu" x="460" y="106" text-anchor="middle">相手の会社</text>
+<rect x="580" y="60" width="130" height="60" rx="8" class="bx"/>
+<text class="s" x="645" y="86" text-anchor="middle">受信者の PC</text>
+<text class="xs mu" x="645" y="106" text-anchor="middle">メールソフト</text>
+<line class="ln" x1="152" y1="90" x2="196" y2="90" marker-end="url(#a1)"/>
+<text class="xs mu" x="174" y="52" text-anchor="middle">投函</text>
+<line class="ln" x1="342" y1="90" x2="386" y2="90" marker-end="url(#a1)"/>
+<text class="xs cb" x="364" y="52" text-anchor="middle">転送</text>
+<line class="ln" x1="532" y1="90" x2="576" y2="90" marker-end="url(#a1)"/>
+<text class="xs mu" x="554" y="52" text-anchor="middle">受け取り</text>
+<rect x="290" y="150" width="150" height="34" rx="6" class="bxl s2"/>
+<text class="s cb" x="365" y="172" text-anchor="middle">TCP 25 番</text>
+<line class="dash" x1="364" y1="100" x2="364" y2="146"/>
+<rect x="10" y="200" width="700" height="40" rx="8" class="bx s2"/>
+<text class="s" x="26" y="225">25 番は「世界中のどのサーバからの接続でも受ける」ことが前提の入口</text>
+</svg>
+<figcaption>受信側サーバは、相手が誰であるかを事前に知りません。取引先だろうと海外の見知らぬ組織だろうと、メールが届く以上は 25 番を開けて待つしかない。この「開けて待つしかない」性質が、後のすべての話の土台になります。</figcaption>
+</figure>
+
+<p>ここで押さえておきたいのは、25 番が<strong>サーバ同士のための入口</strong>だという点です。SMTP が設計された当時、インターネットに繋がっているのは身元の知れた研究機関や企業だけでした。サーバ間の転送と、利用者からの投函を区別する理由がなく、どちらも同じ 25 番で受けていました。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　自宅の PC から、契約先のメールサーバを一切経由せず、相手の会社のメールサーバの 25 番に直接繋いでメールを送ることはできるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>技術的にはできます。</strong></p>
+<p>25 番は誰からの接続でも受ける前提で開いているからです。相手のドメインの MX レコードを引いてそのホストの 25 番に TCP 接続し、SMTP の手順どおりに話しかければ、メールは受け取ってもらえます。特別な権限も、事前の登録も要りません。</p>
+<p>つまり<strong>メールを送る資格は、実質的に「インターネットに繋がっていること」だけ</strong>でした。次の STEP では、これが何を招いたかを見ます。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：25 番は誰でも叩ける</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>メールは 25 番で運ばれる</li>
+<li class="now"><span class="n">STEP 2</span>25 番は誰でも叩ける</li>
+<li><span class="n">STEP 3</span>OP25B — 出口を塞ぐ</li>
+<li><span class="n">STEP 4</span>587 と SMTP-AUTH で救う</li>
+<li><span class="n">STEP 5</span>塞げないものと現場</li>
+</ol>
+</nav>
+
+<p>「誰でも直接 25 番に繋げる」は、迷惑メールを送る側から見ると絶好の性質です。ウイルスに感染させた家庭用 PC に送信プログラムを仕込めば、その PC は契約先のメールサーバを経由せず、宛先のサーバへ直接メールを吐き出せます。感染 PC を数万台集めれば、そのまま迷惑メール送信網（ボットネット）になります。</p>
+
+<figure>
+<p class="ttl">感染した PC は、契約先のサーバを素通りして直接 25 番へ出ていく</p>
+<svg viewBox="0 0 720 300" role="img" aria-label="感染PCがISPのメールサーバを経由せず外部の25番に直接送信し、ISPのIPアドレスがブロックリストに載る">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker>
+<marker id="a2x" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--stop)"/></marker></defs>
+<rect x="10" y="20" width="330" height="180" rx="8" class="bxl"/>
+<text class="xs mu" x="26" y="42">ISP の網（契約者の回線）</text>
+<rect x="26" y="56" width="86" height="34" rx="6" class="bx sx"/>
+<text class="xs ng" x="69" y="78" text-anchor="middle">感染 PC</text>
+<rect x="26" y="98" width="86" height="34" rx="6" class="bx sx"/>
+<text class="xs ng" x="69" y="120" text-anchor="middle">感染 PC</text>
+<rect x="26" y="140" width="86" height="34" rx="6" class="bx sx"/>
+<text class="xs ng" x="69" y="162" text-anchor="middle">感染 PC</text>
+<rect x="186" y="98" width="140" height="46" rx="6" class="bx"/>
+<text class="xs mu" x="256" y="118" text-anchor="middle">ISP のメールサーバ</text>
+<text class="xs mu" x="256" y="136" text-anchor="middle">（素通りされる）</text>
+<path class="dash" d="M116 73 C 150 73 152 110 182 116" marker-end="url(#a2)"/>
+<text class="xs mu" x="150" y="66">本来の経路</text>
+<path class="ln dx" d="M116 160 C 210 182 280 180 336 152"/>
+<rect x="400" y="56" width="150" height="40" rx="6" class="bx s1"/>
+<text class="xs" x="475" y="81" text-anchor="middle">A 社の受信サーバ:25</text>
+<rect x="400" y="106" width="150" height="40" rx="6" class="bx s1"/>
+<text class="xs" x="475" y="131" text-anchor="middle">B 社の受信サーバ:25</text>
+<rect x="400" y="156" width="150" height="40" rx="6" class="bx s1"/>
+<text class="xs" x="475" y="181" text-anchor="middle">C 社の受信サーバ:25</text>
+<line class="ln dx" x1="338" y1="150" x2="396" y2="82" marker-end="url(#a2x)"/>
+<line class="ln dx" x1="338" y1="150" x2="396" y2="128" marker-end="url(#a2x)"/>
+<line class="ln dx" x1="338" y1="150" x2="396" y2="172" marker-end="url(#a2x)"/>
+<rect x="580" y="86" width="130" height="80" rx="8" class="bx s2"/>
+<text class="xs cb" x="645" y="112" text-anchor="middle">送信元 IP を記録</text>
+<text class="xs mu" x="645" y="132" text-anchor="middle">＝ ISP の</text>
+<text class="xs mu" x="645" y="150" text-anchor="middle">契約者アドレス</text>
+<line class="ln" x1="554" y1="126" x2="576" y2="126" marker-end="url(#a2)"/>
+<rect x="10" y="220" width="700" height="66" rx="8" class="bx sx"/>
+<text class="s ng" x="26" y="246">結果：ISP のアドレス帯ごとブロックリストに載る</text>
+<text class="xs mu" x="26" y="270">迷惑メールを 1 通も送っていない契約者のメールまで、受信側で弾かれるようになる</text>
+</svg>
+<figcaption>被害を受けるのは受信側だけではありません。送信元として記録されるのは ISP の契約者アドレスなので、<strong>巻き添えを食うのは同じ ISP の他の利用者</strong>です。OP25B が受信側ではなく送信側の ISP から広まったのは、この構図が理由です。</figcaption>
+</figure>
+
+<p>2000 年代半ば、迷惑メールの大半はこの経路で送られていました。受信側でいくらフィルタを強くしても、送信の蛇口そのものは開いたままです。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　「メールを送るときはユーザ認証を必須にすればよい」という対策を思いつきます。これで感染 PC からの送信は止まるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>止まりません。</strong></p>
+<p>認証は「自分のメールサーバを経由して送るとき」の話だからです。感染 PC はそのサーバを素通りして相手の 25 番へ直接繋いでいるので、どれだけ入口を固めても、その入口を通らない通信には効きません。</p>
+<p>入口を固める発想では届かない。ならば<strong>経路そのものを通れなくする</strong>しかない。これが次の STEP の発想です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：OP25B — 出口を塞ぐ</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>メールは 25 番で運ばれる</li>
+<li class="done"><span class="n">STEP 2 ✓</span>25 番は誰でも叩ける</li>
+<li class="now"><span class="n">STEP 3</span>OP25B — 出口を塞ぐ</li>
+<li><span class="n">STEP 4</span>587 と SMTP-AUTH で救う</li>
+<li><span class="n">STEP 5</span>塞げないものと現場</li>
+</ol>
+</nav>
+
+<p>OP25B（Outbound Port 25 Blocking）は、<strong>ISP が自分の契約者の回線から外部へ出ていく TCP 25 番の通信を遮断する</strong>仕組みです。名前のとおり「外向き（outbound）の 25 番を塞ぐ」だけで、それ以上でも以下でもありません。</p>
+
+<p>ポイントは、塞ぐ主体と場所と範囲です。<strong>誰が</strong>＝メールを受け取る側ではなく、送信元を抱える ISP 自身。<strong>どこで</strong>＝自網の出口。<strong>何を</strong>＝契約者回線から外に出ていく 25 番だけ。</p>
+
+<figure>
+<p class="ttl">ISP の出口で、通す通信と落とす通信</p>
+<svg viewBox="0 0 720 290" role="img" aria-label="OP25Bの遮断位置。契約者回線から外部25番はドロップ、ISPメールサーバからの外部25番と契約者から587は通す">
+<defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--wire)"/></marker></defs>
+<rect x="10" y="14" width="270" height="230" rx="8" class="bxl"/>
+<text class="xs mu" x="26" y="36">ISP の網</text>
+<rect x="28" y="52" width="120" height="40" rx="6" class="bx"/>
+<text class="xs" x="88" y="77" text-anchor="middle">契約者の PC</text>
+<rect x="28" y="150" width="120" height="46" rx="6" class="bx s1"/>
+<text class="xs" x="88" y="170" text-anchor="middle">ISP の</text>
+<text class="xs" x="88" y="188" text-anchor="middle">メールサーバ</text>
+<line class="ln do" x1="90" y1="94" x2="90" y2="146" marker-end="url(#a3)"/>
+<text class="xs ok" x="98" y="118">587 ＋認証</text>
+<rect x="310" y="14" width="70" height="230" rx="8" class="bx s2"/>
+<text class="xs cb" x="345" y="44" text-anchor="middle">出口</text>
+<text class="xs cb" x="345" y="62" text-anchor="middle">ルータ</text>
+<text class="xs mu" x="345" y="112" text-anchor="middle">OP25B</text>
+<line class="ln dx" x1="150" y1="76" x2="330" y2="76"/>
+<text class="ng" x="345" y="82" text-anchor="middle" font-size="16">✕</text>
+<text class="xs ng" x="160" y="64">外部の 25 番へ直接</text>
+<line class="ln do" x1="150" y1="173" x2="426" y2="173" marker-end="url(#a3)"/>
+<text class="xs ok" x="160" y="163">外部の 25 番へ（正規の転送）</text>
+<rect x="430" y="130" width="150" height="46" rx="6" class="bx s1"/>
+<text class="xs" x="505" y="158" text-anchor="middle">相手の受信サーバ:25</text>
+<rect x="10" y="256" width="700" height="26" rx="6" class="bxl"/>
+<text class="xs mu" x="26" y="274">塞ぐのは「契約者回線から外へ出ていく 25 番」だけ。外から来る 25 番も、自社サーバから出ていく 25 番も通す</text>
+</svg>
+<figcaption>同じ 25 番でも、出どころによって扱いが変わります。判断材料は宛先ではなく<strong>送信元がどのアドレス帯か</strong>で、一般利用者に割り当てる動的アドレスの範囲が対象になります。</figcaption>
+</figure>
+
+<p>感染した PC 側は何も変わりません。マルウェアはこれまでどおり 25 番へ繋ごうとし、そこで通信が落ちます。<strong>端末を直せないまま、被害だけを止められる</strong>のがこの方式の強みです。日本では 2005 年前後から主要 ISP が順次導入し、いまでは一般家庭向けの回線ではまず塞がっていると考えてよい状態です。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　OP25B を入れると、迷惑メールを送っていない正規の利用者のうち、誰が困るでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>契約先の ISP 以外のメールサーバを使っている人です。</strong></p>
+<p>自宅の回線から勤務先のメールサーバに 25 番で繋いで送信していた人、自前でメールサーバを動かしていた人などが該当します。ISP のメールサーバを使っている人は、そもそも網の外へ 25 番で出ていないので影響を受けません。</p>
+<p>ここで問題が 1 つ残ります。<strong>正規の利用者が外部のサーバへメールを投函する道が消えてしまった。</strong>その代わりをどう用意するかが、次の STEP です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：587 と SMTP-AUTH で救う</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>メールは 25 番で運ばれる</li>
+<li class="done"><span class="n">STEP 2 ✓</span>25 番は誰でも叩ける</li>
+<li class="done"><span class="n">STEP 3 ✓</span>OP25B — 出口を塞ぐ</li>
+<li class="now"><span class="n">STEP 4</span>587 と SMTP-AUTH で救う</li>
+<li><span class="n">STEP 5</span>塞げないものと現場</li>
+</ol>
+</nav>
+
+<p>STEP 1 で見たとおり、25 番は「サーバ間の転送」と「利用者からの投函」を兼ねていました。この 2 つを別のポートに分ければ、投函の側だけを別扱いにできます。利用者からの投函に使う入口として用意されたのが<strong>サブミッションポート 587 番</strong>で、ここでは認証（SMTP-AUTH）が必須です。</p>
+
+<figure>
+<p class="ttl">兼務していた 25 番を、役割ごとに 2 つに割る</p>
+<svg viewBox="0 0 720 250" role="img" aria-label="25番はサーバ間転送専用、587番は認証つきの利用者投函専用という役割分離">
+<rect x="10" y="20" width="340" height="140" rx="8" class="bx s1"/>
+<text class="s" x="30" y="48">25 番 — サーバ間の転送</text>
+<text class="xs mu" x="30" y="76">誰からの接続でも受ける（受けざるを得ない）</text>
+<text class="xs mu" x="30" y="98">認証なし</text>
+<text class="xs mu" x="30" y="120">使うのはメールサーバ同士</text>
+<rect x="30" y="130" width="300" height="16" rx="4" class="bxl"/>
+<text class="xs cb" x="36" y="143">OP25B の対象はこちらの経路（契約者回線からの外向き）</text>
+<rect x="370" y="20" width="340" height="140" rx="8" class="bx s3"/>
+<text class="s" x="390" y="48">587 番 — 利用者からの投函</text>
+<text class="xs mu" x="390" y="76">自分のサーバの利用者だけを受ける</text>
+<text class="xs ok" x="390" y="98">SMTP-AUTH による認証が必須</text>
+<text class="xs mu" x="390" y="120">使うのはメールソフト・アプリ</text>
+<rect x="390" y="130" width="300" height="16" rx="4" class="bxl"/>
+<text class="xs ok" x="396" y="143">OP25B では塞がない。だから正規の送信は通せる</text>
+<rect x="10" y="178" width="700" height="60" rx="8" class="bx s2"/>
+<text class="s cb" x="30" y="204">587 を塞がなくてよい理由 ＝ 誰が送ったか分かるから</text>
+<text class="xs mu" x="30" y="226">認証を通らなければ 1 通も送れず、悪用されればそのアカウントだけを止められる</text>
+</svg>
+<figcaption>25 番と 587 番の違いはポート番号ではなく<strong>責任の所在</strong>です。587 に投函されたメールには必ずアカウントが紐づくので、送信元の特定も停止も後から効きます。25 番直行の匿名送信には、その手段がありませんでした。</figcaption>
+</figure>
+
+<p>暗号化は STARTTLS で 587 の途中から TLS に切り替えるのが基本形です。接続直後から TLS で包む 465 番（submissions）も現役で、こちらを推奨する事業者も増えています。どちらでも OP25B とは無関係に通ります。</p>
+
+<div class="note">
+<p><strong>設定を直すときの原則</strong>：送れなくなったら、ポートを 25 から 587（または 465）へ変え、認証情報を設定する。OP25B を「回避」しているのではなく、<strong>最初から想定されている正しい経路に戻している</strong>だけです。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　「攻撃者も 587 番を使えばよいのだから、OP25B は無意味では」という指摘は成り立つでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>成り立ちません。ただし完全でもありません。</strong></p>
+<p>587 で送るにはメールアカウントの認証情報が要ります。感染した PC がやみくもに大量送信する、という以前のやり方はここで成立しなくなります。仮に送れても、アカウント単位で足がつき、そのアカウントを止めれば終わりです。<strong>匿名で無制限に送れる経路が消えた</strong>ことが OP25B の成果です。</p>
+<p>一方で、フィッシングなどで盗んだ正規のアカウントを使われれば 587 は通ります。<strong>OP25B は経路を絞る仕組みであって、なりすまし対策ではない。</strong>この線引きが最後の STEP です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：塞げないものと現場</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>メールは 25 番で運ばれる</li>
+<li class="done"><span class="n">STEP 2 ✓</span>25 番は誰でも叩ける</li>
+<li class="done"><span class="n">STEP 3 ✓</span>OP25B — 出口を塞ぐ</li>
+<li class="done"><span class="n">STEP 4 ✓</span>587 と SMTP-AUTH で救う</li>
+<li class="now"><span class="n">STEP 5</span>塞げないものと現場</li>
+</ol>
+</nav>
+
+<p>ここまで来ると、OP25B が守っている範囲がはっきり見えます。塞いでいるのは「自網の契約者回線から外へ出る 25 番」という 1 本の経路だけです。</p>
+
+<figure>
+<p class="ttl">OP25B が止められるものと、素通りするもの</p>
+<svg viewBox="0 0 720 240" role="img" aria-label="OP25Bが止められる経路と止められない経路の対比">
+<rect x="10" y="14" width="340" height="200" rx="8" class="bx s3"/>
+<text class="s ok" x="30" y="42">止められる</text>
+<text class="xs mu" x="30" y="72">感染 PC が外部の 25 番へ直接ばらまく</text>
+<text class="xs mu" x="30" y="98">契約者回線に勝手に立てた送信専用サーバ</text>
+<text class="xs mu" x="30" y="124">送信元を隠した匿名の大量送信</text>
+<rect x="30" y="146" width="300" height="52" rx="6" class="bxl"/>
+<text class="xs mu" x="42" y="166">共通点：認証もアカウントも介さず</text>
+<text class="xs mu" x="42" y="186">25 番へ出ていく通信</text>
+<rect x="370" y="14" width="340" height="200" rx="8" class="bx sx"/>
+<text class="s ng" x="390" y="42">素通りする</text>
+<text class="xs mu" x="390" y="72">盗んだアカウントで 587 から送る</text>
+<text class="xs mu" x="390" y="98">Web メール・API 送信（HTTPS）</text>
+<text class="xs mu" x="390" y="124">OP25B のない事業者・海外の回線</text>
+<rect x="390" y="146" width="300" height="52" rx="6" class="bxl"/>
+<text class="xs mu" x="402" y="166">共通点：差出人のなりすましは</text>
+<text class="xs mu" x="402" y="186">まったく防いでいない</text>
+</svg>
+<figcaption>右側が残るのは設計上の限界ではなく、そもそも OP25B の担当範囲ではないためです。誰が名乗っているかを検証するのは <a href="送信ドメイン認証をゼロから理解する.html">送信ドメイン認証</a>（SPF・DKIM・DMARC）の仕事で、両者は競合しません。</figcaption>
+</figure>
+
+<h3>現場でぶつかるのはこの 3 つ</h3>
+
+<p>OP25B が話題になるのは、たいてい「送れなくなった」ときです。パターンは限られています。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>場面</th><th>起きること</th><th>対処</th></tr></thead>
+<tbody>
+<tr><td>社内の機器やバッチが外部サーバの 25 番へ送っている</td><td>回線や拠点を変えた途端に送信が失敗する</td><td>送信先を 587＋認証に変える。機器が対応していなければ社内にリレー用の MTA を置く</td></tr>
+<tr><td>オフィスや自宅の回線で自前の MTA を運用したい</td><td>外向き 25 番が出られず、他社サーバへ転送できない</td><td>法人向けの固定 IP 契約に変える、または ISP に OP25B の解除を申請する</td></tr>
+<tr><td>クラウド上のアプリからメールを送りたい</td><td>25 番が事業者側で制限されていて届かない</td><td>メール送信サービスを使い、API か 587／465 で投函する</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>クラウドの 25 番制限は ISP の OP25B とは別の仕組みですが、<strong>動機は同じ</strong>です。誰でも安価に大量のインスタンスを立てられる環境から 25 番を開放すれば、そのアドレス帯が丸ごとブロックリスト行きになります。だから既定では絞られていて、必要なら申請して解除する形になっています。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　OP25B がこれだけ普及したのに、SPF・DKIM・DMARC のような送信ドメイン認証がいまも必要とされるのはなぜでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>見ているものが違うからです。</strong></p>
+<p>OP25B が判断しているのは「この通信はどのアドレス帯から、どのポートへ出ていくか」だけで、メールの中身も差出人も見ていません。正規の経路に乗ってさえいれば、他社を名乗ったメールも問題なく通ります。</p>
+<p>また、OP25B は各 ISP が自網に対して任意で実施するものなので、導入していない事業者から送られたメールには何の効果もありません。<strong>送信の蛇口を絞る対策と、届いたメールの差出人を検証する対策は、別々に要る</strong>ということです。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>メールは 25 番で運ばれる</li>
+<li class="done"><span class="n">STEP 2 ✓</span>25 番は誰でも叩ける</li>
+<li class="done"><span class="n">STEP 3 ✓</span>OP25B — 出口を塞ぐ</li>
+<li class="done"><span class="n">STEP 4 ✓</span>587 と SMTP-AUTH で救う</li>
+<li class="done"><span class="n">STEP 5 ✓</span>塞げないものと現場</li>
+</ol>
+</nav>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>メールはサーバ同士が 25 番ポートで受け渡します。25 番は誰からの接続でも受ける前提なので、ウイルスに感染した PC が契約先のサーバを素通りして直接ばらまけました。そこで ISP が、自分の契約者の回線から外へ出ていく 25 番だけを遮断したのが OP25B です。正規の利用者は代わりに 587 番へ投函します。587 は認証が必須なので、誰が送ったかが必ず残ります。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>ISP が動いた理由は、被害が受信側だけの話ではなかったからです。送信元として記録されるのは ISP の契約者アドレスなので、放置すればアドレス帯ごとブロックリストに載り、迷惑メールを送っていない契約者のメールまで弾かれます。</p>
+<p>25 番はもともと「サーバ間の転送」と「利用者からの投函」を兼ねていました。587 番はその投函だけを切り出した入口で、SMTP-AUTH による認証が必須です。認証があるから、悪用されてもアカウント単位で止められる。だから 587 は塞がなくてよいわけです。暗号化は STARTTLS か、接続直後から TLS で包む 465 番を使います。</p>
+<p>ただし OP25B が見ているのは経路だけで、差出人の詐称はまったく防ぎません。盗まれたアカウントからの 587 送信も、Web メールや API 経由の送信も素通りします。名乗りの検証は SPF・DKIM・DMARC の担当で、両方が要ります。</p>
+</blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>「OP25B は迷惑メールを止める仕組み」</h3>
+
+<p>止めているのは<strong>特定の経路を通る送信</strong>だけです。中身がどうであれ、契約者回線から外向きの 25 番なら落とし、正規の経路なら迷惑メールでも通します。フィルタではなく通信制御だと捉えると、範囲を見誤りません。</p>
+
+<h3>「25 番が塞がれているのは自分の会社の方針」</h3>
+
+<p>OP25B を実施しているのは、送信元が契約している ISP です。社内のファイアウォールで 25 番を止めているケースも実際に多いので、切り分けが必要になります。<strong>社内から出られないのか、ISP の網から出られないのか</strong>で、相談先も対処も変わります。</p>
+
+<h3>「587 に変えれば安全になる」</h3>
+
+<p>587 が加えているのは認証であって、暗号化ではありません。STARTTLS も 465 も使わずに 587 で送れば、パスワードも本文も平文で流れます。ポート番号を変えることと、通信を保護することは別の設定です。</p>
+
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話があります。ここまで理解できていれば、どれも読めるはずです。</p>
+
+<ul>
+<li><strong>送信ドメイン認証</strong>：OP25B が担当しない「差出人の検証」の側です。<a href="送信ドメイン認証をゼロから理解する.html">送信ドメイン認証をゼロから理解する</a></li>
+<li><strong>認証と暗号化の中身</strong>：SMTP-AUTH がどう認証しているか、STARTTLS と 465 の違いは何か。<a href="SMTP-AUTH.html">SMTP-AUTH</a> / <a href="SMTPS.html">SMTPS</a></li>
+<li><strong>587 以前のやり方</strong>：認証の仕組みがなかった時代の間に合わせ。<a href="POPbeforeSMTP.html">POP before SMTP</a></li>
+<li><strong>ポート番号の側から見た整理</strong>：<a href="../TCPとUDP/サブミッションポート.html">サブミッションポート</a></li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5321">RFC 5321 — Simple Mail Transfer Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5068">RFC 5068 — Email Submission Operations: Access and Accountability Requirements</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6409">RFC 6409 — Message Submission for Mail</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4954">RFC 4954 — SMTP Service Extension for Authentication</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8314">RFC 8314 — Cleartext Considered Obsolete: Use of TLS for Email Submission and Access</a></li>
+</ul>
+
+</main>
+</body>
+</html>
