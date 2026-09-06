@@ -250,3 +250,4 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **デジタルフォレンジックス**: `Digital Forensics/揮発性の高い順に保全する_RFC3227の証拠収集順序.md`（RFC 3227 の Order of Volatility 7段階 / やってはいけないこと / Chain of Custody の記録項目）
 - **SCAP**: `SCAP/SCAPをゼロから理解する.html`（手作業点検の限界から CVE・CPE・CCE / CVSS / XCCDF・OVAL まで積み上げる初学者向け）
 - **CIS Controls**: `CIS Controls/資料ダウンロードリンク.md`（v8.1 日本語版ホワイトペーパーの配布ページのリンクメモ）
+- **DuckDB**: `DuckDB/DuckDBをゼロから理解する.html`（組み込み型・列指向・ファイル直読みまで積み上げる初学者向け）。OLTP と OLAP・データウェアハウス等の一般論は `Data Engineering/` にある
