@@ -249,3 +249,4 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **Web アプリセキュリティ**: `Web Application Security/セッション管理と入力の扱いをゼロから理解する.html`（セッション ID とは何か / ハイジャックとフィクセーション / 値が命令になる構造 / 静的プレースホルダと文脈別エスケープ / Cookie 属性・CSP・WAF）。攻撃者視点の XSS 3分類・セッションフィクセーションは `Cyber Attacks/18`・`09` にある
 - **デジタルフォレンジックス**: `Digital Forensics/揮発性の高い順に保全する_RFC3227の証拠収集順序.md`（RFC 3227 の Order of Volatility 7段階 / やってはいけないこと / Chain of Custody の記録項目）
 - **SCAP**: `SCAP/SCAPをゼロから理解する.html`（手作業点検の限界から CVE・CPE・CCE / CVSS / XCCDF・OVAL まで積み上げる初学者向け）
+- **CIS Controls**: `CIS Controls/資料ダウンロードリンク.md`（v8.1 日本語版ホワイトペーパーの配布ページのリンクメモ）
