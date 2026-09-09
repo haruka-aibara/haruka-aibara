@@ -251,3 +251,4 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **SCAP**: `SCAP/SCAPをゼロから理解する.html`（手作業点検の限界から CVE・CPE・CCE / CVSS / XCCDF・OVAL まで積み上げる初学者向け）
 - **CIS Controls**: `CIS Controls/資料ダウンロードリンク.md`（v8.1 日本語版ホワイトペーパーの配布ページのリンクメモ）
 - **DuckDB**: `DuckDB/DuckDBをゼロから理解する.html`（組み込み型・列指向・ファイル直読みまで積み上げる初学者向け）。OLTP と OLAP・データウェアハウス等の一般論は `Data Engineering/` にある
+- **AWS DevOps Agent**: `Amazon Web Services/06_運用とDevOps/AWS DevOps Agentをゼロから理解する.html`（障害対応の時間配分からエージェントのループ・起点・承認まで積み上げる初学者向け）。SRE・SLO・OpenTelemetry の一般論は `DevOps/` にある
