@@ -12,7 +12,7 @@ ADR（Architecture Decision Record）はこの問題への古典的な回答だ�
 - ADR に値する変更を含む PR を作ろうとすると、AI が「これは ADR として残すべき決定を含んでいます」と言い、ADR 案を作って PR に含める
 - ADR に値しない変更なら、AI は会話では ADR に言及せず黙って PR を進める（「不要と判断しました」という報告すらしない。PR 本文のチェック欄だけが判断の痕跡として残る）
 
-以下、AWS アカウントのセキュリティ機能（CloudTrail・GuardDuty・Security Hub・AWS Config 等）を Terraform で管理するリポジトリを題材に、この状態を作るためのファイル一式を示す。**そのままコピーして固有名詞を差し替えれば使える**ことを目的に、仕組みを構成する 5 ファイルの全文を載せる（`terraform/` 配下とルートの README.md は各自の実装・説明なので範囲外）。
+以下、AWS アカウントのセキュリティ機能（CloudTrail・GuardDuty・Security Hub CSPM・AWS Config 等）を Terraform で管理するリポジトリを題材に、この状態を作るためのファイル一式を示す。**そのままコピーして固有名詞を差し替えれば使える**ことを目的に、仕組みを構成する 5 ファイルの全文を載せる（`terraform/` 配下とルートの README.md は各自の実装・説明なので範囲外）。
 
 ## リポジトリ構造
 
@@ -53,7 +53,7 @@ ADR（Architecture Decision Record）はこの問題への古典的な回答だ�
 ```markdown
 # リポジトリ概要
 
-AWS アカウントのセキュリティ機能（CloudTrail・GuardDuty・Security Hub・AWS Config 等）を
+AWS アカウントのセキュリティ機能（CloudTrail・GuardDuty・Security Hub CSPM・AWS Config 等）を
 Terraform で管理するリポジトリ。運用手順書（docs/runbooks/）と運用スクリプト（scripts/）も
 ここに置く。
 
@@ -83,9 +83,9 @@ PR を作成する前に、その変更が「記録すべき意思決定」を�
 **ADR を書くべき変更**（1 つでも当てはまれば該当）：
 
 - 複数の妥当な選択肢から 1 つを選んだ
-  （例：Findings の通知経路を EventBridge → SNS 直結にするか Security Hub 集約にするか）
+  （例：Findings の通知経路を EventBridge → SNS 直結にするか Security Hub CSPM 集約にするか）
 - セキュリティと運用負荷・コストのトレードオフを取った
-  （例：あえて有効化しない Security Hub コントロール、CloudTrail ログの保持期間）
+  （例：あえて有効化しない Security Hub CSPM コントロール、CloudTrail ログの保持期間）
 - 後から元に戻すコストが高い
   （例：ログアーカイブ用 S3 バケットの構成、KMS キーの構成、ステート管理方式）
 - モジュールを横断する規約・方針を決めた

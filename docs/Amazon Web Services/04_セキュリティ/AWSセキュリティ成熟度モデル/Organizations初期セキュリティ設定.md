@@ -15,7 +15,7 @@ AWS Organizations では**管理アカウント（マスターアカウント）
 - 管理アカウントへのアクセスは MFA + 記録（CloudTrail）が必須
 
 ```bash
-# Security Hub の委任管理者を設定する（管理アカウントで実行）
+# Security Hub CSPM の委任管理者を設定する（管理アカウントで実行）
 aws organizations enable-aws-service-principal \
   --service-principal securityhub.amazonaws.com
 
@@ -87,7 +87,7 @@ for region in $(aws ec2 describe-regions --query 'Regions[].RegionName' --output
 done
 ```
 
-#### ④ Security Hub を有効化して FSBP を有効にする
+#### ④ Security Hub CSPM を有効化して FSBP を有効にする
 
 ```bash
 aws securityhub enable-security-hub \
@@ -124,7 +124,7 @@ aws s3control put-public-access-block \
 
 #### ⑦ セキュリティ連絡先を全アカウントに設定する
 
-Security Hub の Account.1 コントロールの対処。管理アカウントが漏洩したときに AWS から連絡を受け取れる状態にする。
+Security Hub CSPM の Account.1 コントロールの対処。管理アカウントが漏洩したときに AWS から連絡を受け取れる状態にする。
 
 ```bash
 # セキュリティ連絡先を設定（個人メールではなく配布リスト）
@@ -182,9 +182,9 @@ aws accessanalyzer create-analyzer \
 
 ---
 
-## 設定後の確認：Security Hub スコアを見る
+## 設定後の確認：Security Hub CSPM スコアを見る
 
-上記を設定した後、Security Hub で現在のスコアを確認する。初回は 30-50% 程度が多い。
+上記を設定した後、Security Hub CSPM で現在のスコアを確認する。初回は 30-50% 程度が多い。
 
 ```bash
 # CRITICAL・HIGH の FAILED コントロールを確認
@@ -194,15 +194,15 @@ aws securityhub get-findings \
   --output table | head -30
 ```
 
-CRITICAL と HIGH の FAILED を潰していくのが次のステップ（詳細は「Security Hub FSBP コントロールの優先順位の付け方」参照）。
+CRITICAL と HIGH の FAILED を潰していくのが次のステップ（詳細は「Security Hub CSPM FSBP コントロールの優先順位の付け方」参照）。
 
 ---
 
 ## よくある順序の間違い
 
-**❌ Security Hub より先に Config を個別設定する**
+**❌ Security Hub CSPM より先に Config を個別設定する**
 
-Security Hub を有効化すると自動で Config が有効になる（FSBP に必要なため）。個別に設定する前に Security Hub を先に有効化する。
+Security Hub CSPM を有効化すると自動で Config が有効になる（FSBP に必要なため）。個別に設定する前に Security Hub CSPM を先に有効化する。
 
 **❌ GuardDuty を一部リージョンだけ有効化する**
 

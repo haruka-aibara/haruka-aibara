@@ -1,6 +1,6 @@
 # SCP で組織の安全ネットを張る
 
-GuardDuty や Security Hub は「やらかしてから検知する」仕組みだ。一方で SCP（Service Control Policy）は「そもそもやらかせない状態にする」——これが**予防的コントロール**の考え方。
+GuardDuty や Security Hub CSPM は「やらかしてから検知する」仕組みだ。一方で SCP（Service Control Policy）は「そもそもやらかせない状態にする」——これが**予防的コントロール**の考え方。
 
 「個々のアカウントで IAM 設定を頑張る」より「組織レベルで特定の操作を物理的に不可能にする」ほうが強い。SCP はその仕組みで、**ルートアカウントを含むすべての IAM ユーザー・ロールに上位から適用される**。
 
@@ -23,7 +23,7 @@ SCP は「許可の上限」を定めるもの。IAM ポリシーで Allow し�
 
 ## 組織全体に張るべき安全ネット
 
-### ① GuardDuty・CloudTrail・Security Hub の無効化を禁止する
+### ① GuardDuty・CloudTrail・Security Hub CSPM の無効化を禁止する
 
 攻撃者が侵入後に最初にやることの一つが「証拠隠滅（ログの無効化）」。SCP でそもそも無効化できなくする。
 
@@ -212,7 +212,7 @@ aws iam simulate-principal-policy \
 
 ## 検知（GuardDuty）と予防（SCP）の使い分け
 
-| | 検知（GuardDuty・Security Hub） | 予防（SCP） |
+| | 検知（GuardDuty・Security Hub CSPM） | 予防（SCP） |
 |---|---|---|
 | タイミング | やらかした後に気づく | そもそもやらかせない |
 | カバレッジ | 幅広い異常を検知できる | 明示的に設定した操作だけ防げる |

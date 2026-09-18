@@ -95,7 +95,7 @@ gcloud access-context-manager perimeters create my-perimeter \
 
 ## Security Command Center でリスクを一覧する
 
-AWS Security Hub に相当する。misconfig・脆弱性・脅威を一元管理。
+AWS Security Hub CSPM に相当する。misconfig・脆弱性・脅威を一元管理。
 
 ```bash
 # HIGH/CRITICAL の検知結果を確認

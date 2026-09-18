@@ -61,7 +61,7 @@ aws inspector2 enable \
   --region ap-northeast-1
 ```
 
-有効化後は ECR コンソール → 対象イメージ → 「脆弱性」タブから結果を確認できる。Security Hub と統合して一元管理することもできる。
+有効化後は ECR コンソール → 対象イメージ → 「脆弱性」タブから結果を確認できる。Security Hub CSPM と統合して一元管理することもできる。
 
 ---
 

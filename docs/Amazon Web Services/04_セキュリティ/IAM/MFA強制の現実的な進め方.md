@@ -25,7 +25,7 @@ Organizations でメンバーアカウントが多い場合、各アカウント
 # ルート MFA が未設定のアカウントを一覧表示
 aws organizations list-accounts --query 'Accounts[*].[Id, Name, Status]' --output table
 
-# Security Hub の IAM.6 コントロールで一括検知
+# Security Hub CSPM の IAM.6 コントロールで一括検知
 aws securityhub get-findings \
   --filters '{"ProductFields": [{"Key": "ControlId", "Value": "IAM.6", "Comparison": "EQUALS"}], "ComplianceStatus": [{"Value": "FAILED", "Comparison": "EQUALS"}]}' \
   --query 'Findings[*].[AwsAccountId, Title]' \
@@ -128,7 +128,7 @@ aws identitystore list-users \
 ### シナリオ A：既存 IAM ユーザーが多数いる環境
 
 1. まずルートアカウントの MFA を全アカウントで設定
-2. Security Hub IAM.6・IAM.5 で MFA 未設定ユーザーを検出
+2. Security Hub CSPM IAM.6・IAM.5 で MFA 未設定ユーザーを検出
 3. MFA 設定期限をアナウンス（例：2週間後）
 4. 期限後に SCP で MFA なしアクセスを Deny
 5. 段階的に IAM Identity Center へ移行
@@ -165,6 +165,6 @@ Identity Center の「デバイスの信頼」は、一度認証したデバイ�
 
 ## 参考
 
-- [Security Hub IAM コントロール一覧](https://docs.aws.amazon.com/securityhub/latest/userguide/iam-controls.html)
+- [Security Hub CSPM IAM コントロール一覧](https://docs.aws.amazon.com/securityhub/latest/userguide/iam-controls.html)
 - [IAM Identity Center での MFA 設定](https://docs.aws.amazon.com/singlesignon/latest/userguide/mfa-types.html)
 - [Organizations での MFA 強制（SCP）](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_aws_mfa-dates.html)

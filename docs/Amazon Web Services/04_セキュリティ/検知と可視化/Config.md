@@ -86,4 +86,4 @@ aws configservice put-delivery-channel \
   }'
 ```
 
-Security Hub と連携すると Config の違反を Security Hub のダッシュボードで一元確認できる。
+Security Hub CSPM と連携すると Config の違反を Security Hub CSPM のダッシュボードで一元確認できる。

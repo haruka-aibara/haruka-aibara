@@ -85,7 +85,7 @@ GuardDuty は「攻撃者の行動」を見るが、**設定ミスによるリ�
 - IAM ロールに AdministratorAccess がついている
 - RDS がパブリックサブネットに置かれている
 
-**対策**：Security Hub（FSBP）・AWS Config・IAM Access Analyzer。これらは「現在の設定が安全かどうか」を継続的にチェックする。
+**対策**：Security Hub CSPM（FSBP）・AWS Config・IAM Access Analyzer。これらは「現在の設定が安全かどうか」を継続的にチェックする。
 
 ---
 
@@ -127,7 +127,7 @@ done
 
 ```
 GuardDuty          ← 異常な挙動・脅威の検知（インフラ層）
-Security Hub       ← 設定ミス・コンプライアンス違反（CSPM）
+Security Hub CSPM       ← 設定ミス・コンプライアンス違反（CSPM）
 Inspector          ← 脆弱性（CVE）のスキャン
 WAF                ← アプリ層の攻撃（SQLi・XSS・DDoS）
 Macie              ← S3 内の機密データ検出・不正アクセス
@@ -142,5 +142,5 @@ GuardDuty が「今何か異常が起きているか」を見るのに対して�
 ## 参考
 
 - [GuardDuty Finding Types](https://docs.aws.amazon.com/guardduty/latest/ug/guardduty_finding-types-active.html)
-- [AWS Security Hub — FSBP](https://docs.aws.amazon.com/securityhub/latest/userguide/fsbp-standard.html)
+- [AWS Security Hub CSPM — FSBP](https://docs.aws.amazon.com/securityhub/latest/userguide/fsbp-standard.html)
 - [AWS の共有責任モデル](https://aws.amazon.com/compliance/shared-responsibility-model/)

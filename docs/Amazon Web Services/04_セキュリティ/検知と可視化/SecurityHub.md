@@ -1,10 +1,12 @@
-# AWS Security Hub
+# AWS Security Hub CSPM
 
-GuardDuty・Config・Inspector・Macie などのセキュリティツールを個別に確認していると、どこにどんな問題があるか全体像がつかめない。Security Hub はこれらのサービスからの検知結果を一箇所に集約して、アカウント全体のセキュリティ状況をスコア化して見せてくれる。
+GuardDuty・Config・Inspector・Macie などのセキュリティツールを個別に確認していると、どこにどんな問題があるか全体像がつかめない。Security Hub CSPM はこれらのサービスからの検知結果を一箇所に集約して、アカウント全体のセキュリティ状況をスコア化して見せてくれる。
+
+> **名前について**：2025 年末に、従来の「AWS Security Hub」は **AWS Security Hub CSPM** に改名され、「AWS Security Hub」は別の新しいサービスの名前になった。この記事で扱うのは CSPM のほう（検知結果の集約とセキュリティ基準の準拠評価）。なお API・CLI・Terraform リソースの名前は `securityhub` / `aws_securityhub_*` のままで変わっていない。
 
 ---
 
-## Security Hub が集約するもの
+## Security Hub CSPM が集約するもの
 
 | ソース | 内容 |
 |---|---|
@@ -19,7 +21,7 @@ GuardDuty・Config・Inspector・Macie などのセキュリティツールを�
 
 ## セキュリティ基準
 
-Security Hub には業界標準のセキュリティ基準が組み込まれていて、自分のアカウントがどれだけ準拠しているかスコアで確認できる。
+Security Hub CSPM には業界標準のセキュリティ基準が組み込まれていて、自分のアカウントがどれだけ準拠しているかスコアで確認できる。
 
 | 基準 | 内容 |
 |---|---|
@@ -33,7 +35,7 @@ Security Hub には業界標準のセキュリティ基準が組み込まれて�
 ## 有効化
 
 ```bash
-# Security Hub を有効化（東京リージョン）
+# Security Hub CSPM を有効化（東京リージョン）
 aws securityhub enable-security-hub \
   --region ap-northeast-1 \
   --enable-default-standards
@@ -90,10 +92,10 @@ HIGH / CRITICAL の検知結果が出たら Slack や PagerDuty に通知する�
 
 ## マルチアカウント環境での活用
 
-Organizations と連携して、全アカウントの検知結果を管理アカウントの Security Hub に集約できる。
+Organizations と連携して、全アカウントの検知結果を管理アカウントの Security Hub CSPM に集約できる。
 
 ```
-管理アカウント（Security Hub 管理者）
+管理アカウント（Security Hub CSPM 管理者）
 ├── 本番アカウント → 検知結果を集約
 ├── 開発アカウント → 検知結果を集約
 └── データアカウント → 検知結果を集約

@@ -45,7 +45,7 @@ aws inspector2 list-findings \
   }'
 ```
 
-検出結果は Security Hub に自動集約される。Security Hub の画面から一元確認できる。
+検出結果は Security Hub CSPM に自動集約される。Security Hub CSPM の画面から一元確認できる。
 
 ---
 

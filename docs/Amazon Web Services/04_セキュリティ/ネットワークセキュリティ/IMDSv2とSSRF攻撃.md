@@ -84,7 +84,7 @@ aws ec2 describe-instances \
   --output table
 ```
 
-Security Hub の FSBP に「EC2.8: EC2 instances should use IMDSv2」というルールがある。有効化すると v1 のインスタンスが自動で検出される。
+Security Hub CSPM の FSBP に「EC2.8: EC2 instances should use IMDSv2」というルールがある。有効化すると v1 のインスタンスが自動で検出される。
 
 ---
 
@@ -126,5 +126,5 @@ aws cloudtrail lookup-events \
 ## 参考
 
 - [IMDSv2 を使用するようにインスタンスを設定する](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/configuring-instance-metadata-service.html)
-- [EC2.8 — Security Hub FSBP](https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html#ec2-8)
+- [EC2.8 — Security Hub CSPM FSBP](https://docs.aws.amazon.com/securityhub/latest/userguide/ec2-controls.html#ec2-8)
 - [Capital One データ漏洩事件の概要（2019）](https://krebsonsecurity.com/2019/07/capital-one-data-theft-impacts-106m-people/)

@@ -23,7 +23,7 @@
 | 25% | 一部アカウント（管理アカウント等）のみ設定済み。個人メールアドレスを使用 |
 | 50% | 半数以上のアカウントに設定済みだが、DL（配布リスト）ではなく個人メール |
 | 75% | 全アカウントに設定済みだが、DLでない or 2名未満のものがある |
-| 100% | **全アカウント**にDL（2名以上）で設定。退職者なし。Security Hub **Account.1** が全アカウントでPASSED |
+| 100% | **全アカウント**にDL（2名以上）で設定。退職者なし。Security Hub CSPM **Account.1** が全アカウントでPASSED |
 
 > **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。アカウント設定 → 連絡先情報から設定できる。Organizations管理権限は不要。
 
@@ -156,13 +156,13 @@
 
 | 達成度 | 基準 |
 |--------|------|
-| 0% | Security Hub未有効化 |
-| 25% | 管理アカウントのみSecurity Hub有効化 |
+| 0% | Security Hub CSPM未有効化 |
+| 25% | 管理アカウントのみSecurity Hub CSPM有効化 |
 | 50% | 複数アカウントで有効化済みだが組織全体ではない。標準チェックが一部のみ |
 | 75% | 全アカウント有効化＋CIS/基礎ベストプラクティス有効。ただしスコアのKPI追跡がない |
 | 100% | **全アカウント・全リージョンで有効化**。CIS/AWS基礎ベストプラクティスの標準チェック有効。スコアを**KPIとして追跡**し改善トレンドが出ている。専任の修復チームがアサイン |
 
-> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。Security Hubの有効化・標準チェック・スコアのKPI追跡はすべてアカウント内で完結する。
+> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。Security Hub CSPMの有効化・標準チェック・スコアのKPI追跡はすべてアカウント内で完結する。
 > ただし評価基準の「全アカウント・全リージョン」という表現は満たせない。アセスメント時は「このアカウントに限ったスコープでの達成度」と明記する。
 
 ### Phase 2: Foundational
@@ -204,9 +204,9 @@
 | 25% | 一部のエビデンス（CloudTrailログ等）は自動取得しているが大半は手動 |
 | 50% | Audit Managerで主要エビデンスを自動収集。手動補完が多い |
 | 75% | 大半のエビデンスが自動収集。手動アップロードは例外的なもののみ |
-| 100% | **Audit Managerで自動収集が最大化**。CloudTrail・Security Hubから自動連携。**最小限の手作業**でレポート生成可能 |
+| 100% | **Audit Managerで自動収集が最大化**。CloudTrail・Security Hub CSPMから自動連携。**最小限の手作業**でレポート生成可能 |
 
-> **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。Audit Manager + CloudTrail + Security HubはすべてアカウントレベルのAPIで完結する。
+> **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。Audit Manager + CloudTrail + Security Hub CSPMはすべてアカウントレベルのAPIで完結する。
 
 ---
 
@@ -222,7 +222,7 @@
 | 25% | 全rootアカウントにMFA設定済みだが、仮想MFA（ソフトウェア） |
 | 50% | rootにハードウェアMFA。特権IAMユーザーにもMFA設定済み |
 | 75% | 全IAMユーザー/IdP連携ユーザーにMFA必須。ただしCognito等の顧客向けMFAが未対応 |
-| 100% | **全rootにハードウェアMFA**。**全IAMユーザー/IdPユーザーにMFA必須**。顧客向けアプリにもMFA設定。Security Hub IAM.4 / IAM.9 / IAM.6 全PASSED |
+| 100% | **全rootにハードウェアMFA**。**全IAMユーザー/IdPユーザーにMFA必須**。顧客向けアプリにもMFA設定。Security Hub CSPM IAM.4 / IAM.9 / IAM.6 全PASSED |
 
 > **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。rootおよびIAMユーザーのMFA設定はアカウント内で完結。顧客向けCognito MFAもアカウント内で設定可能。
 
@@ -301,7 +301,7 @@
 | 25% | 新規起動のデフォルトをv2に変更したが、既存は未対応 |
 | 50% | 既存インスタンスの半数以上をv2に移行済み |
 | 75% | ほぼ全インスタンスがv2。数台の残存あり |
-| 100% | **全EC2インスタンスがIMDSv2**。新規起動のデフォルトがv2。Security Hub **EC2.8** がPASSED。自動コンプライアンス監視が有効 |
+| 100% | **全EC2インスタンスがIMDSv2**。新規起動のデフォルトがv2。Security Hub CSPM **EC2.8** がPASSED。自動コンプライアンス監視が有効 |
 
 > **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。`modify-instance-metadata-defaults` でアカウントレベルのIMDSv2デフォルト設定が可能。既存インスタンスの変更もアカウント内で完結する。
 
@@ -553,10 +553,10 @@
 | 0% | 0.0.0.0/0 → ポート22/3389が許可されたSGが複数存在 |
 | 25% | 問題のあるSGを特定し、一部を修正 |
 | 50% | 大半のSGから0.0.0.0/0→22/3389を削除。ただし代替アクセス手段（SSM等）が未整備 |
-| 75% | 全SGから削除済み＋SSM Fleet Managerを導入。ただしSecurity Hubコントロールがまだ一部FAILED |
-| 100% | **全SGで0.0.0.0/0→ポート22/3389への許可なし**。Security Hub **EC2.13 / EC2.14** がPASSED。**SSM Fleet Managerで管理に移行** |
+| 75% | 全SGから削除済み＋SSM Fleet Managerを導入。ただしSecurity Hub CSPMコントロールがまだ一部FAILED |
+| 100% | **全SGで0.0.0.0/0→ポート22/3389への許可なし**。Security Hub CSPM **EC2.13 / EC2.14** がPASSED。**SSM Fleet Managerで管理に移行** |
 
-> **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。Security GroupsはアカウントのVPC内で管理でき、SSM Fleet Managerもアカウント内のEC2に適用できる。Security Hubコントロール（EC2.13/EC2.14）の修復もアカウント内で完結する。
+> **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。Security GroupsはアカウントのVPC内で管理でき、SSM Fleet Managerもアカウント内のEC2に適用できる。Security Hub CSPMコントロール（EC2.13/EC2.14）の修復もアカウント内で完結する。
 
 ### Phase 2: Foundational
 
@@ -688,7 +688,7 @@
 | 25% | 一部アカウントでS3 BPAを有効化 |
 | 50% | 全アカウントでS3 BPA有効化。ただしEC2 AMI/EBSスナップショットのBPAが未設定 |
 | 75% | S3＋EC2のBPA有効化。ただしSCPでBPA解除を防止していない or 正当なパブリック用途が未文書化 |
-| 100% | **全アカウントでS3 BPA有効**。**EC2 AMI/EBSスナップショットBPA有効**。**SCPでBPA解除防止**。Security Hub S3.1 / S3.2 / EC2.1 PASSED。正当なパブリック用途は文書化 |
+| 100% | **全アカウントでS3 BPA有効**。**EC2 AMI/EBSスナップショットBPA有効**。**SCPでBPA解除防止**。Security Hub CSPM S3.1 / S3.2 / EC2.1 PASSED。正当なパブリック用途は文書化 |
 
 > **メンバーアカウントのみ（SCP/CT不可）：** 上限75%相当。S3 BPA・EC2 AMI/EBSスナップショットBPAはアカウント内で設定できる。
 > ただし「SCPでBPA解除防止」はOrg管理者のみが設定できる。代替：S3バケットポリシーで `s3:PutBucketPublicAccessBlock` のDenyを追加する方法もあるが、アカウント内のIAM管理者権限で解除できてしまう。Org管理者へのSCP適用依頼が必要。
@@ -715,7 +715,7 @@
 | 25% | AWS管理キーで暗号化（デフォルト暗号化のみ） |
 | 50% | 重要データにカスタマー管理KMSキーを使用。ただし全リソースではない |
 | 75% | 全重要データがカスタマー管理キーで暗号化。ただし鍵ローテーションポリシーやクロスアカウント共有が未設定 |
-| 100% | **全重要データがカスタマー管理KMSキーで暗号化**。**鍵ローテーションポリシー設定済み**。Security Hub EC2.3 / RDS.3 PASSED。IR用に**クロスアカウントで鍵共有** |
+| 100% | **全重要データがカスタマー管理KMSキーで暗号化**。**鍵ローテーションポリシー設定済み**。Security Hub CSPM EC2.3 / RDS.3 PASSED。IR用に**クロスアカウントで鍵共有** |
 
 > **メンバーアカウントのみ（SCP/CT不可）：** 100%達成可能。KMS・カスタマー管理キー・鍵ローテーションポリシー・クロスアカウント鍵共有はすべてアカウント内で設定できる（クロスアカウントは相手側の合意のみ必要）。
 
@@ -880,13 +880,13 @@
 | 達成度 | 基準 |
 |--------|------|
 | 0% | Findingsを確認していない |
-| 25% | Security Hub/GuardDutyのダッシュボードを時々確認する程度 |
+| 25% | Security Hub CSPM/GuardDutyのダッシュボードを時々確認する程度 |
 | 50% | SNS/Slack通知を設定。ただし担当者が不明確で対応プロセスがない |
-| 75% | 通知設定＋担当者アサイン＋Security Hubで組織横断集約。ただしAWS CIRTの認識やリスク/インシデントの判別基準がない |
-| 100% | **Critical Findingsの通知設定済み**（複数名・複数チャネル）。**担当者アサイン**。Security Hub組織横断集約。**AWS CIRTの存在を認識**し連携可能。リスクとインシデントを判別可能 |
+| 75% | 通知設定＋担当者アサイン＋Security Hub CSPMで組織横断集約。ただしAWS CIRTの認識やリスク/インシデントの判別基準がない |
+| 100% | **Critical Findingsの通知設定済み**（複数名・複数チャネル）。**担当者アサイン**。Security Hub CSPM組織横断集約。**AWS CIRTの存在を認識**し連携可能。リスクとインシデントを判別可能 |
 
-> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。Critical Findingsの通知設定・担当者アサイン・Security Hub集約（アカウント内スコープ）・AWS CIRTとの連携準備はすべてアカウント内で完結する。
-> 「Security Hub組織横断集約」は自アカウントのFindingsを管理アカウントに委任することで実現されるが、その設定はOrg管理者が行う。自アカウント単体の集約は可能。
+> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。Critical Findingsの通知設定・担当者アサイン・Security Hub CSPM集約（アカウント内スコープ）・AWS CIRTとの連携準備はすべてアカウント内で完結する。
+> 「Security Hub CSPM組織横断集約」は自アカウントのFindingsを管理アカウントに委任することで実現されるが、その設定はOrg管理者が行う。自アカウント単体の集約は可能。
 
 ### Phase 2: Foundational
 
@@ -923,10 +923,10 @@
 | 0% | 全て手動対応 |
 | 25% | 一部のアクション（SGの変更等）をLambdaで自動化 |
 | 50% | Automated Security Response on AWSをデプロイ。一部シナリオの自動対応が稼働 |
-| 75% | 主要シナリオの自動対応＋Security Hub自動化ルール設定。ただし対応時間の短縮を定量的に確認していない |
-| 100% | **Automated Security Response on AWS**デプロイ。**Security Hub自動化ルール設定**。頻発シナリオの自動対応稼働。**インシデント対応時間が大幅短縮**（定量的に確認） |
+| 75% | 主要シナリオの自動対応＋Security Hub CSPM自動化ルール設定。ただし対応時間の短縮を定量的に確認していない |
+| 100% | **Automated Security Response on AWS**デプロイ。**Security Hub CSPM自動化ルール設定**。頻発シナリオの自動対応稼働。**インシデント対応時間が大幅短縮**（定量的に確認） |
 
-> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。Automated Security Response on AWS・Security Hub自動化ルール・Lambda自動対応はすべてアカウント内で構築できる。
+> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。Automated Security Response on AWS・Security Hub CSPM自動化ルール・Lambda自動対応はすべてアカウント内で構築できる。
 
 #### セキュリティ調査と原因分析
 
@@ -934,11 +934,11 @@
 |--------|------|
 | 0% | Detective未使用。調査は手動でログを個別確認 |
 | 25% | Detectiveを有効化したが、活用方法が不明 |
-| 50% | Detective有効化＋GuardDuty/Security Hub統合。基本的な調査に利用 |
+| 50% | Detective有効化＋GuardDuty/Security Hub CSPM統合。基本的な調査に利用 |
 | 75% | 統合済みで調査に活用。ただし正常行動パターンのベースライン確立や誤検知判別の精度が不十分 |
-| 100% | **Detective有効化**＋GuardDuty/Security Hub/VPC Flow Logs/CloudTrail統合。**根本原因を特定**可能。**誤検知と実脅威を識別**。**正常行動パターンのベースラインが確立** |
+| 100% | **Detective有効化**＋GuardDuty/Security Hub CSPM/VPC Flow Logs/CloudTrail統合。**根本原因を特定**可能。**誤検知と実脅威を識別**。**正常行動パターンのベースラインが確立** |
 
-> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。DetectiveはOrg管理なしでアカウント内から有効化でき、GuardDuty/Security Hub/VPC Flow Logs/CloudTrail統合・根本原因分析・誤検知判別・ベースライン確立はすべてアカウント内で完結する。
+> **メンバーアカウントのみ（SCP/CT不可）：** アカウント単体では100%達成可能。DetectiveはOrg管理なしでアカウント内から有効化でき、GuardDuty/Security Hub CSPM/VPC Flow Logs/CloudTrail統合・根本原因分析・誤検知判別・ベースライン確立はすべてアカウント内で完結する。
 
 ### Phase 4: Optimized
 

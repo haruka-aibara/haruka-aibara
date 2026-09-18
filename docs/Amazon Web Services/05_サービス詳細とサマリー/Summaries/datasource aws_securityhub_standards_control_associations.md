@@ -1,15 +1,15 @@
 この記事は生成AIで作成されているので正確な情報は公式ドキュメントなどを参照してください。
 
-# AWS Security Hub Standards Control Associationsデータソースの活用法
+# AWS Security Hub CSPM Standards Control Associationsデータソースの活用法
 
 ## 疑問
-AWS Security HubのStandards Control Associationsデータソースの使い方と高度な活用例を教えてください。
+AWS Security Hub CSPMのStandards Control Associationsデータソースの使い方と高度な活用例を教えてください。
 
 ## 回答
 
-この記事はLevel 200です。AWS Security Hubの基本的な知識を持つ中級者向けです。
+この記事はLevel 200です。AWS Security Hub CSPMの基本的な知識を持つ中級者向けです。
 
-AWS Security HubのStandards Control Associationsデータソースは、セキュリティ管理とコンプライアンスの自動化に役立つ強力なツールです。このデータソースを使用することで、Security Hubの標準コントロールに関する詳細情報を取得し、セキュリティ態勢の管理を効率化できます。
+AWS Security Hub CSPMのStandards Control Associationsデータソースは、セキュリティ管理とコンプライアンスの自動化に役立つ強力なツールです。このデータソースを使用することで、Security Hub CSPMの標準コントロールに関する詳細情報を取得し、セキュリティ態勢の管理を効率化できます。
 
 ### 基本的な使い方
 
@@ -98,4 +98,4 @@ output "cis_compliance_report" {
 
 このコードは、CIS AWS Foundations Benchmarkに関連するすべてのコントロールの状態を分析し、簡単なコンプライアンスレポートを生成します。
 
-これらの例は、AWS Security HubのStandards Control Associationsデータソースを活用して、セキュリティ管理とコンプライアンスプロセスを自動化し、効率化する方法を示しています。実際の環境に適用する際は、組織の特定のニーズと要件に合わせてカスタマイズすることをお勧めします。
+これらの例は、AWS Security Hub CSPMのStandards Control Associationsデータソースを活用して、セキュリティ管理とコンプライアンスプロセスを自動化し、効率化する方法を示しています。実際の環境に適用する際は、組織の特定のニーズと要件に合わせてカスタマイズすることをお勧めします。

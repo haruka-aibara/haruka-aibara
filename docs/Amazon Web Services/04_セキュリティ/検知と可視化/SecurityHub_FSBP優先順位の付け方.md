@@ -1,6 +1,6 @@
-# Security Hub FSBP コントロールの優先順位の付け方
+# Security Hub CSPM FSBP コントロールの優先順位の付け方
 
-Security Hub を有効化した直後、画面には「FAILED: 500件以上」という数字が並ぶ。何から手をつければいいのか途方に暮れる——これが Security Hub あるあるだ。
+Security Hub CSPM を有効化した直後、画面には「FAILED: 500件以上」という数字が並ぶ。何から手をつければいいのか途方に暮れる——これが Security Hub CSPM あるあるだ。
 
 FSBP（Foundational Security Best Practices）は AWS が定義したセキュリティ基準で、コントロール数は 300 を超える。全部を順番に直していくのは現実的ではない。「今のフェーズで何が最も効いて、何は後回しでいいか」を判断できることが、Quick Wins を効率よく進める鍵になる。
 
@@ -8,7 +8,7 @@ FSBP（Foundational Security Best Practices）は AWS が定義したセキュ�
 
 ## まず数字より「クリティカル」と「HIGH」だけ見る
 
-Security Hub のコントロールには重大度（CRITICAL / HIGH / MEDIUM / LOW）がついている。
+Security Hub CSPM のコントロールには重大度（CRITICAL / HIGH / MEDIUM / LOW）がついている。
 
 ```bash
 # CRITICAL・HIGH の FAILED コントロールだけ抽出
@@ -76,7 +76,7 @@ MEDIUM 以下は後回しでいい。まず CRITICAL と HIGH をゼロにする
 
 ## 「適用除外」の使い方
 
-Security Hub には「対応不要」とマークできるサプレッション機能がある。コントロールをスコアから除外できる。
+Security Hub CSPM には「対応不要」とマークできるサプレッション機能がある。コントロールをスコアから除外できる。
 
 ```bash
 # 特定のコントロールをサプレッションに設定
@@ -92,7 +92,7 @@ aws securityhub update-findings \
 
 ## スコアの読み方
 
-Security Hub のスコアは「PASSED / (PASSED + FAILED)」の割合。**100% を目指す必要はない**。
+Security Hub CSPM のスコアは「PASSED / (PASSED + FAILED)」の割合。**100% を目指す必要はない**。
 
 - **Quick Wins フェーズの現実的な目標**: CRITICAL・HIGH の FAILED をゼロにする
 - **Foundational フェーズの目標**: 全体スコア 80% 以上
@@ -104,7 +104,7 @@ Security Hub のスコアは「PASSED / (PASSED + FAILED)」の割合。**100% �
 
 ## 組織全体のスコアを一括確認する
 
-Organizations で複数アカウントある場合、委任管理者（Security Hub 管理アカウント）から全アカウントの集計を見られる。
+Organizations で複数アカウントある場合、委任管理者（Security Hub CSPM 管理アカウント）から全アカウントの集計を見られる。
 
 ```bash
 # 管理アカウントから全アカウントの標準スコアを取得
@@ -121,5 +121,5 @@ aws securityhub list-standards-control-associations \
 ## 参考
 
 - [AWS Foundational Security Best Practices コントロール一覧](https://docs.aws.amazon.com/securityhub/latest/userguide/fsbp-standard.html)
-- [Security Hub のスコアの計算方法](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-results.html)
+- [Security Hub CSPM のスコアの計算方法](https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-standards-results.html)
 - [コントロールの無効化とサプレッション](https://docs.aws.amazon.com/securityhub/latest/userguide/controls-findings-create-update.html)

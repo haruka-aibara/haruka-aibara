@@ -25,7 +25,7 @@
 **人**
 - これを専任でやれるセキュリティエンジニアがチームにいるか
 
-これを踏まえると、**多くのチームには GuardDuty + Security Hub + AWS Chatbot の AWS ネイティブ構成で十分**というのが現実的な答えになる。
+これを踏まえると、**多くのチームには GuardDuty + Security Hub CSPM + AWS Chatbot の AWS ネイティブ構成で十分**というのが現実的な答えになる。
 
 | | AWS ネイティブ構成 | フル SIEM |
 |---|---|---|
@@ -40,7 +40,7 @@ SIEM を本格的に建てるのは「GuardDuty が出してくれる以上の�
 
 ## Amazon Security Lake の位置づけ
 
-Security Lake は AWS ログを OCSF（Open Cybersecurity Schema Framework）形式に正規化して自分の S3 バケットに集約するサービス。対象は CloudTrail・VPC Flow Logs・Route53 クエリログ・Security Hub findings・GuardDuty 等。
+Security Lake は AWS ログを OCSF（Open Cybersecurity Schema Framework）形式に正規化して自分の S3 バケットに集約するサービス。対象は CloudTrail・VPC Flow Logs・Route53 クエリログ・Security Hub CSPM findings・GuardDuty 等。
 
 ```bash
 # 有効化（マネジメントコンソールからでも可）
@@ -61,11 +61,11 @@ aws securitylake create-data-lake \
 
 ## AWS ネイティブ検知レイヤー
 
-Security Lake の上に GuardDuty と Security Hub を乗せるのが AWS ネイティブの基本構成。
+Security Lake の上に GuardDuty と Security Hub CSPM を乗せるのが AWS ネイティブの基本構成。
 
 **GuardDuty**：ML ベースの脅威検知。CloudTrail の異常・VPC Flow の不審通信・DNS ベースの C2 検知などを設定ゼロで行う。EC2・EKS・S3・RDS・Lambda への保護オプションもある。カスタム検知ルールは書けない（AWS の検知ロジックを使う形）。
 
-**Security Hub**：GuardDuty・Inspector・Macie・Config・IAM Access Analyzer の findings を一箇所に集約する。CSPM 的な用途にも使える。EventBridge と組み合わせて Slack への通知ルーティングに使う。
+**Security Hub CSPM**：GuardDuty・Inspector・Macie・Config・IAM Access Analyzer の findings を一箇所に集約する。CSPM 的な用途にも使える。EventBridge と組み合わせて Slack への通知ルーティングに使う。
 
 この2つだけでも相当なカバレッジになるが、**複数サービスをまたいだ相関分析・カスタム検知ルール・非 AWS ソースのログ取り込み**は別途 SIEM が必要になる。
 
@@ -108,7 +108,7 @@ IDC の調査では 3 年 ROI が 407%、投資回収 7 ヶ月未満という数
 - Microsoft 365・Entra ID・Defender との連携は他の追随を許さない
 - E5 ライセンス保有者は大量の無料データ枠が使える
 - Logic Apps 経由の Slack 通知は成熟している
-- AWS 連携は CloudTrail・GuardDuty・Security Hub のコネクタが存在するが、AWS ネイティブほど洗練されていない
+- AWS 連携は CloudTrail・GuardDuty・Security Hub CSPM のコネクタが存在するが、AWS ネイティブほど洗練されていない
 - Cribl と組み合わせて Splunk からの移行先として使われることが多い
 
 Microsoft スタックが中心でない場合はやや割高感があるが、スケールしたときのコスト効率は Splunk に比べて大幅に優れる。
@@ -121,7 +121,7 @@ Microsoft スタックが中心でない場合はやや割高感があるが、�
 #### Datadog Cloud SIEM
 **既存の Datadog 環境に追加するなら最もシンプル。**
 
-- CloudTrail・GuardDuty・Security Hub・WAF・S3 アクセスログ等の AWS 連携がネイティブ
+- CloudTrail・GuardDuty・Security Hub CSPM・WAF・S3 アクセスログ等の AWS 連携がネイティブ
 - Security Lake の subscriber 連携も対応
 - インフラメトリクス・APM トレース・セキュリティシグナルを同じ画面で見られるのが唯一の価値
 - Slack 通知はファーストクラスの対応
@@ -143,7 +143,7 @@ DevOps 寄りのチームが「シフトレフトでセキュリティも見た�
 **既存で Falcon（EDR）を使っているなら最有力の統合先。**
 
 - Index-free アーキテクチャで従来型 SIEM より高速・低コストをうたう（150 倍高速、50% ストレージ削減）
-- 2025 年 11 月に AWS Quick Launch が公開され、CloudTrail・GuardDuty・Security Hub との自動連携が整備された
+- 2025 年 11 月に AWS Quick Launch が公開され、CloudTrail・GuardDuty・Security Hub CSPM との自動連携が整備された
 - AI ベースの UEBA が組み込み
 - Falcon SOAR（Fusion）経由で Slack 通知対応
 - 検知コンテンツの成熟度は Splunk ES や Chronicle に比べるとまだ発展途上
@@ -152,7 +152,7 @@ DevOps 寄りのチームが「シフトレフトでセキュリティも見た�
 **コスト最小で本番運用したいなら。**
 
 - OSS ライセンスで無償。商用サポートは Wazuh Inc. から別途
-- Wazuh 4.12（2025 年 5 月）で ARM 対応・eBPF ファイル整合性監視・AWS Security Hub 統合が追加
+- Wazuh 4.12（2025 年 5 月）で ARM 対応・eBPF ファイル整合性監視・AWS Security Hub CSPM 統合が追加
 - AWS Marketplace に AMI が公開されている
 - PCI-DSS・CIS・HIPAA のコンプライアンスフレームワークが組み込み
 - Gartner Peer Insights 4.7/5（実務者レビュー）
@@ -214,13 +214,13 @@ per-GB 課金の SIEM（Splunk・Sentinel・Datadog 等）を使っている環�
 
 **AWS ネイティブ（SIEM 不要）**：
 ```
-Security Hub findings → EventBridge → AWS Chatbot → Slack
+Security Hub CSPM findings → EventBridge → AWS Chatbot → Slack
 ```
 Lambda 不要。ただしメッセージフォーマットのカスタマイズは限定的。
 
 **カスタムフォーマットが必要な場合**：
 ```
-Security Hub findings → EventBridge → Lambda → Slack Webhook
+Security Hub CSPM findings → EventBridge → Lambda → Slack Webhook
 ```
 
 各 SIEM を使う場合は、SOAR 機能（Chronicle の SOAR・Splunk SOAR・Falcon Fusion 等）または単純な Webhook 設定で対応する。
@@ -232,7 +232,7 @@ Security Hub findings → EventBridge → Lambda → Slack Webhook
 ```
 Security Lake（全員必須・ログのホーム）
       ↓
-GuardDuty + Security Hub（AWS ネイティブ検知）
+GuardDuty + Security Hub CSPM（AWS ネイティブ検知）
       ↓（必要に応じて Cribl でフィルタリング）
 SIEM を1つ選ぶ
   ├ 検知品質・ロードマップ最優先  → Google Chronicle

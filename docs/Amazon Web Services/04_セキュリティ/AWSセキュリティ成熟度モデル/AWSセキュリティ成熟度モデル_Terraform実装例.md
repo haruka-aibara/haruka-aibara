@@ -111,11 +111,11 @@
 - `aws_auditmanager_control`
 
 #### 監査証拠の収集自動化
-> **最善**: CloudTrail + Security Hub + Audit Manager を連携して自動エビデンス収集  
+> **最善**: CloudTrail + Security Hub CSPM + Audit Manager を連携して自動エビデンス収集  
 > **妥協点**: CloudTrail を有効化してログを S3 に残すだけ（証拠のソースとして利用）  
 > **デメリット**: CloudTrail のみでは証拠の整理・提出は手動。Audit Manager の設定・維持コストが高く、初期構築に工数がかかる
 
-- `aws_auditmanager_assessment`（CloudTrail / Security Hub からの自動エビデンス収集）
+- `aws_auditmanager_assessment`（CloudTrail / Security Hub CSPM からの自動エビデンス収集）
 - `aws_cloudtrail`（エビデンスのソース）
 
 ---
@@ -239,7 +239,7 @@
 ## 4. 脅威検出
 
 #### 基本の脅威検出
-> **最善**: GuardDuty + Organizations 全アカウント自動有効化 + EventBridge → Security Hub 集約 + 通知自動化  
+> **最善**: GuardDuty + Organizations 全アカウント自動有効化 + EventBridge → Security Hub CSPM 集約 + 通知自動化  
 > **妥協点**: `aws_guardduty_detector` をアカウント単体で有効化のみ  
 > **デメリット**: アカウントごとの有効化では見落としリスク。Findings の通知設定がないと検出だけで対応されない。GuardDuty 単体では自動対応できず、Lambda 連携が別途必要
 
@@ -596,8 +596,8 @@
 ## 9. インシデント対応
 
 #### 重大なセキュリティ検出結果への対応
-> **最善**: Security Hub → EventBridge → Lambda (自動トリアージ・重要度フィルタリング) + Slack 通知  
-> **妥協点**: Security Hub 有効化 + SNS 通知のみ（手動対応）  
+> **最善**: Security Hub CSPM → EventBridge → Lambda (自動トリアージ・重要度フィルタリング) + Slack 通知  
+> **妥協点**: Security Hub CSPM 有効化 + SNS 通知のみ（手動対応）  
 > **デメリット**: 通知のみだと対応が遅延する。アラートが多すぎるとアラート疲れで重要な Findings が埋もれる。自動トリアージなしでは全 Findings が同じ優先度に見える
 
 - `aws_securityhub_account`（集約）
@@ -621,16 +621,16 @@
 - Terraform で管理するものは特になし（AWS Jam / CloudSaga はコンソール操作）
 
 #### 重要なプレイブックの自動化
-> **最善**: Security Hub Automation Rules + EventBridge + Lambda で検出から対応まで自動化  
+> **最善**: Security Hub CSPM Automation Rules + EventBridge + Lambda で検出から対応まで自動化  
 > **妥協点**: EventBridge で通知だけ自動化し、対応は手動  
 > **デメリット**: 自動対応は誤検知時に正常リソースを停止するリスクがある。Lambda の権限が強すぎると攻撃者に悪用される可能性がある。自動化の範囲を慎重に設計する必要がある
 
-- `aws_securityhub_automation_rule`（Security Hub 自動化ルール）
+- `aws_securityhub_automation_rule`（Security Hub CSPM 自動化ルール）
 - `aws_cloudwatch_event_rule` + `aws_lambda_function`（EventBridge + Lambda 自動対応）
 - `aws_ssm_document` + `aws_ssm_association`（SSM Automation）
 
 #### セキュリティ調査と原因分析
-> **最善**: Detective + GuardDuty + Security Hub の連携でグラフ分析  
+> **最善**: Detective + GuardDuty + Security Hub CSPM の連携でグラフ分析  
 > **妥協点**: CloudTrail + Athena で手動クエリによる調査  
 > **デメリット**: Detective は有効化から数週間でベースラインを構築するため、事後有効化では直近のデータしか使えない。コストが高い。Athena による手動調査は時間がかかりインシデント対応が遅くなる
 

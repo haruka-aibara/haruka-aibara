@@ -178,7 +178,7 @@ npm の場合は `package-lock.json` を必ず git 管理し、CI では `npm ci
 
 tfsec は 2024 年に Trivy へ統合・開発終了となった。`tfsec .` は `trivy config .` に移行する。Trivy 1 本で Terraform・Kubernetes マニフェスト・Helm チャート・CloudFormation・Dockerfile のミスコンフィグを検出できる。
 
-Trivy は CNCF のコンテナレジストリ Harbor のデフォルトスキャナーであり、GitLab・AWS Security Hub との公式インテグレーションも持つ。GitHub スター数は 2026 年時点で 31,000 を超えており、コンテナ・IaC 領域のデファクトスタンダードになっている。
+Trivy は CNCF のコンテナレジストリ Harbor のデフォルトスキャナーであり、GitLab・AWS Security Hub CSPM との公式インテグレーションも持つ。GitHub スター数は 2026 年時点で 31,000 を超えており、コンテナ・IaC 領域のデファクトスタンダードになっている。
 
 | スキャン対象 | コマンド |
 |---|---|
