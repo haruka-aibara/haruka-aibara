@@ -254,3 +254,4 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **CIS Controls**: `CIS Controls/資料ダウンロードリンク.md`（v8.1 日本語版ホワイトペーパーの配布ページのリンクメモ）
 - **DuckDB**: `DuckDB/DuckDBをゼロから理解する.html`（組み込み型・列指向・ファイル直読みまで積み上げる初学者向け）。OLTP と OLAP・データウェアハウス等の一般論は `Data Engineering/` にある
 - **AWS DevOps Agent**: `Amazon Web Services/06_運用とDevOps/AWS DevOps Agentをゼロから理解する.html`（障害対応の時間配分からエージェントのループ・起点・承認まで積み上げる初学者向け）。SRE・SLO・OpenTelemetry の一般論は `DevOps/` にある
+- **Prowler**: `Prowler/Prowlerをゼロから理解する.html`（設定ミスが通知されない話から CIS・FSBP などの外部基準 / 読み取り専用スキャンの仕組み / Mutelist とトリアージ / 導入判断と運用で増える手間まで積み上げる初学者向け）。継続監視側の Security Hub・Config は `Amazon Web Services/04_セキュリティ/検知と可視化/` にある
