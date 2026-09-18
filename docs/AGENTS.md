@@ -202,6 +202,7 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **Linux**: `Linux/` 配下に 01〜17 章執筆済み（17 は学習コンテンツ）。重複記事を作らないこと
 - **Docker**: `Docker/` 配下に 00〜13 章執筆済み。重複記事を作らないこと
 - **Python**: `Python/` 配下は全ファイル執筆済み（00〜18 章）
+- **pytest と moto**: `Python/18_テスト/pytestとmotoをゼロから理解する.html`（確かめたい状態を本物では作れない、という問題から pytest・外部依存の切り分け・モックとフェイクの違い・moto まで積み上げる初学者向け。題材は Trusted Advisor 検出を Slack に流す Lambda。`18-05_pytest.md`・`18-08_extra_mock.md` は要点まとめなので棲み分ける）
 - **GitHub**: `GitHub/` 配下は全ファイル執筆済み
 - **Code Review**: `AIがコードを書くなら、AIレビューは何を見ているのか.md`、`AI時代のCI：何を入れて何を入れないか.md` あり
 - **生成AIパスポート**: `AI and Machine Learning/生成AIパスポート/` 配下に学習ルート記事あり
