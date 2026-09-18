@@ -190,7 +190,7 @@ prowler aws</code></pre>
 <text x="683" y="218" text-anchor="middle" fill="var(--stop)" font-size="12">作成・変更・削除の</text>
 <text x="683" y="240" text-anchor="middle" fill="var(--stop)" font-size="12">矢印はひとつもない</text></svg><figcaption>右上の矢印が <code>Describe</code> / <code>List</code> しかないことが、そのまま導入の説得材料になります。本番アカウントに渡すのは読み取り権限だけで、Prowler 側が環境を壊すことはありえない、と権限で示せます。</figcaption></figure>
 <p>対応するのは AWS だけではありません。Azure・Google Cloud・Kubernetes・Microsoft 365・GitHub など 20 を超えるプロバイダに対応していて、AWS だけでも 600 を超えるチェック、フレームワークは全体で 50 以上あります。同じコマンド体系・同じ出力形式で扱えるのが、単一クラウド向けのツールとの大きな違いです。</p>
-<div class="quiz"><p class="q"><b>確認問題</b>　AWS には Trusted Advisor も Config も Security Hub CSPM もあります。設定ミスに気づくだけなら、Prowler は要らないのではないでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>もっともな疑問で、多くの場合そのとおりです。</strong> CIS や FSBP のチェック内容はかなり重なります。違いは点検の精度ではなく、<strong>使い始めるのに何が要るか</strong>と<strong>アカウントに何を残すか</strong>です。この比較は STEP 5 で正面から扱います。その前に、もっと手前の問題があります——<strong>実行したら FAIL が数百件出ました。どうしますか。</strong></p></div></details></div>
+<div class="quiz"><p class="q"><b>確認問題</b>　AWS には Trusted Advisor も Config も Security Hub CSPM もあります。設定ミスに気づくだけなら、Prowler は要らないのではないでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>もっともな疑問で、多くの場合そのとおりです。</strong> CIS や FSBP のチェック内容はかなり重なります。違いは 2 つあります。<strong>使い始めるのに何が要るか</strong>と、もっと大きいのが<strong>そもそも何を見ているか</strong>です。純正の仕組みが最初から見ていない領域があります。この比較は STEP 5 で正面から扱います。その前に、もっと手前の問題があります——<strong>実行したら FAIL が数百件出ました。どうしますか。</strong></p></div></details></div>
 
 <h2>STEP 4：出てきた結果をどう扱うか</h2>
 <nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>設定ミスは誰も教えてくれない</li><li class="done"><span class="n">STEP 2 ✓</span>「正しい」の基準を外から借りる</li><li class="done"><span class="n">STEP 3 ✓</span>基準を実行する道具＝Prowler</li><li class="now"><span class="n">STEP 4</span>出てきた結果をどう扱うか</li><li><span class="n">STEP 5</span>入れる判断と、増える手間</li></ol></nav>
@@ -241,9 +241,48 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <tr><td>費用</td><td>サポートプランに含む</td><td>記録した構成項目ごと</td><td>チェック件数・取り込み件数ごと</td><td>ツールは無償</td></tr>
 <tr><td>アカウントに残るもの</td><td>なし</td><td>レコーダー・ルール</td><td>レコーダー・ルール・検出結果</td><td>なし</td></tr>
 <tr><td>AWS 以外</td><td>×</td><td>×</td><td>△（取り込みは可）</td><td>◯（同じ道具で）</td></tr>
+<tr><td>設定値の<strong>中身</strong>まで読むか</td><td>×</td><td>自作すれば◯（カスタムルール）</td><td>×</td><td>◯（用意済み）</td></tr>
 <tr><td>見え方</td><td>線（定期更新）</td><td>線（変更のたび）</td><td>線（変更のたび）</td><td>点（実行したときだけ）</td></tr>
 </tbody></table></div>
-<p>表の下 2 行が、そのまま答えになっています。<strong>Prowler の特徴は「機能が優れていること」ではなく、クラウド側に何も作らず、何も有効化せず、点で見ること</strong>です。同じ「CIS に準拠しているか」を答える道具でも、成り立ちが逆を向いています。</p>
+<p>運用面（上 5 行）だけを見ると「常設の仕組みがあるならそれでいい」に見えます。ですが、本当に効いてくるのは下から 2 行目です。<strong>そもそも検知できる中身が違います。</strong></p>
+
+<h3>Prowler にしかないチェックがある</h3>
+<p>Trusted Advisor も Config も Security Hub CSPM も、見ているのは<strong>設定項目が基準どおりか</strong>です。「暗号化が ON か」「パブリックアクセスがブロックされているか」——設定の状態を確認しています。</p>
+<p>Prowler には、それに加えて<strong>値の中身を読んで「秘密が直書きされていないか」を探すチェック</strong>があります。</p>
+<div class="tw"><table><thead><tr><th>チェック</th><th>何を見るか</th></tr></thead><tbody>
+<tr><td><code>awslambda_function_no_secrets_in_variables</code></td><td>Lambda の<strong>環境変数</strong>に API キー・トークン・パスワードらしき値が入っていないか</td></tr>
+<tr><td><code>ec2_instance_secrets_user_data</code></td><td>EC2 の<strong>ユーザーデータ</strong>に認証情報が書かれていないか</td></tr>
+<tr><td><code>ecs_task_definitions_no_environment_secrets</code></td><td>ECS タスク定義の環境変数に秘密が入っていないか</td></tr>
+<tr><td><code>cloudformation_stack_outputs_find_secrets</code></td><td>CloudFormation のスタック出力に秘密が露出していないか</td></tr>
+<tr><td><code>cloudwatch_log_group_no_secrets_in_logs</code></td><td>ログ本文に秘密が出力されていないか</td></tr>
+<tr><td><code>ssm_document_secrets</code></td><td>SSM ドキュメントに秘密が埋め込まれていないか</td></tr>
+</tbody></table></div>
+<pre><code>prowler aws --categories secrets</code></pre>
+<p>これらは設定の ON / OFF ではなく、<strong>文字列を読んで「秘密らしいか」を判定</strong>しています（Yelp の <code>detect-secrets</code> を使用）。純正のマネージドルールやコントロールには、これに当たるものがありません。</p>
+<div class="note"><strong>似たものが AWS 側にもある場合との違い。</strong> Config には <code>ecs-no-environment-secrets</code> という似たルールがありますが、これは<strong>あらかじめ指定したキー名と一致するか</strong>を見るものです。<code>DB_PASSWORD</code> という名前なら引っかかりますが、<code>X1</code> という名前で同じ値を入れれば通ります。なお Lambda の<strong>コード</strong>内の直書きは Amazon Inspector のコードスキャンでも検出できます。上の表で AWS 純正に該当がないのは、環境変数・ユーザーデータ・スタック出力・SSM ドキュメントといった<strong>設定側に置かれた値</strong>のほうです。</div>
+<p>秘密以外にも、フレームワークとは別の「観点」で束ねた区分があります。<code>--categories</code> に <code>encryption</code> / <code>forensics-ready</code> / <code>internet-exposed</code> / <code>logging</code> / <code>secrets</code> / <code>threat-detection</code> / <code>trustboundaries</code> を指定すると、「CIS の何番」ではなく<strong>「インターネットに露出しているものを全部出して」</strong>という聞き方ができます。</p>
+<h3>「カスタムルールを書けばいいのでは」の答え</h3>
+<p>ここで当然こう思います。<strong>Config にはカスタムルールがあるのだから、Lambda を書けば同じことができるのでは？</strong></p>
+<p>できます。できるのですが、<strong>その「書けば」が本体</strong>です。1 つのチェックを自作すると、こういう内訳になります。</p>
+<figure><svg viewBox="0 0 780 350" role="img" aria-labelledby="f7t f7d"><title id="f7t">同じ検知を自作する場合とProwlerを使う場合</title><desc id="f7d">左はカスタムルールを自作するのに必要な要素の積み上げ、右はProwlerが用意済みであることを示す</desc>
+<rect x="20" y="40" width="350" height="290" rx="14" fill="var(--card)" stroke="var(--c2)" stroke-width="2"/>
+<text x="195" y="72" text-anchor="middle" fill="var(--c2)" font-weight="700" font-size="14">Config のカスタムルールで自作する</text>
+<rect x="40" y="88" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="111" text-anchor="middle" fill="var(--ink)" font-size="12">検知ロジックの設計（何を秘密とみなすか）</text>
+<rect x="40" y="130" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="153" text-anchor="middle" fill="var(--ink)" font-size="12">Lambda 関数のコード</text>
+<rect x="40" y="172" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="195" text-anchor="middle" fill="var(--ink)" font-size="12">値の取得（構成項目にない分は自分で API）</text>
+<rect x="40" y="214" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="237" text-anchor="middle" fill="var(--ink)" font-size="12">IAM ロール・アカウント×リージョンへ配布</text>
+<rect x="40" y="256" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="279" text-anchor="middle" fill="var(--ink)" font-size="12">ランタイム更新・テストの保守</text>
+<text x="195" y="314" text-anchor="middle" fill="var(--stop)" font-weight="700" font-size="14">× チェックの数だけ</text>
+<rect x="400" y="40" width="360" height="290" rx="14" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/>
+<text x="580" y="72" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="14">Prowler を使う</text>
+<rect x="430" y="100" width="300" height="46" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="580" y="129" text-anchor="middle" fill="var(--ink)" font-family="monospace" font-size="13">pip install prowler</text>
+<text x="580" y="184" text-anchor="middle" fill="var(--ink)" font-size="13">検知ロジックは最初から入っている</text>
+<text x="580" y="212" text-anchor="middle" fill="var(--c1)" font-weight="700" font-size="22">AWS だけで 600 超</text>
+<text x="580" y="248" text-anchor="middle" fill="var(--muted)" font-size="12">新サービスへの対応は上流が追従する</text>
+<text x="580" y="276" text-anchor="middle" fill="var(--muted)" font-size="12">秘密の判定は detect-secrets に任せる</text>
+<text x="580" y="314" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="14">自分で保守するコードはゼロ</text></svg><figcaption>左でいちばん重いのは、じつは Lambda のコードではなく先頭の行です。「何をもって秘密とみなすか」はそれ自体が 1 つの問題で、雑に作ると誤検知だらけになり、厳しくすると素通りします。ここを既製品に任せられるかどうかが分かれ目になります。</figcaption></figure>
+<p>データの取得も自明ではありません。たとえば <strong>EC2 のユーザーデータは Config の構成項目に含まれていない</strong>ので、カスタムルールから <code>DescribeInstanceAttribute</code> を自分で呼ぶ必要があります。「Config に記録されているものを評価する」という前提がそもそも成り立たない項目があります。</p>
+<p>これをチェックの数だけ繰り返します。秘密の検査だけでも 9 個です。<strong>Prowler の価値は「純正で見られないものが見られる」よりも、「見るための道具一式を自分で作って保守しなくていい」と言うほうが正確です。</strong></p>
 <figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f6t f6d"><title id="f6t">点で見るProwlerと線で見るAWS側の仕組み</title><desc id="f6d">左は実行した時点だけを見るProwler、右は有効化して動き続けるAWS側の常設の仕組み</desc>
 <rect x="25" y="40" width="345" height="230" rx="14" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/>
 <text x="197" y="74" text-anchor="middle" fill="var(--c1)" font-weight="700" font-size="15">Prowler：点で見る</text>
@@ -259,12 +298,14 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <text x="582" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">変更のたびに評価される</text>
 <text x="582" y="196" text-anchor="middle" fill="var(--c2)" font-size="12">有効化とコストが先に必要</text>
 <text x="582" y="234" text-anchor="middle" fill="var(--ink)" font-size="12">日々の検知と是正の運用</text>
-<text x="582" y="256" text-anchor="middle" fill="var(--ink)" font-size="12">継続的なスコアの追跡</text></svg><figcaption>穴が空いている時間の長さで見ると、線のほうが明らかに強いことが分かります。だからこの図は Prowler の優位を示すものではありません。<strong>常設の仕組みを入れられるなら、そちらが本命</strong>です。</figcaption></figure>
+<text x="582" y="256" text-anchor="middle" fill="var(--ink)" font-size="12">継続的なスコアの追跡</text></svg><figcaption>穴が空いている時間の長さで見れば、線のほうが強いのは明らかです。ただしこれは<strong>同じものを見ている範囲での話</strong>。前節のとおり、そもそも線側が見ていない領域については、点でも見ないよりはるかにましです。</figcaption></figure>
 <p>だから、正直な結論はこうなります。</p>
-<div class="note"><strong>AWS 単一環境で、継続的に見張るのが目的なら、Security Hub CSPM を有効化するほうが素直です。</strong> そこに Prowler を足しても、同じ CIS の項目をもう一度見るだけになります。</div>
+<div class="note"><strong>CIS や FSBP の範囲を継続的に見張るのが目的で、対象が AWS だけなら、Security Hub CSPM を有効化するほうが素直です。</strong> その範囲に限れば、Prowler を足しても同じ項目をもう一度見るだけになります。<br>逆に言えば、<strong>範囲の外に用がある</strong>なら話は別です。</div>
 <h3>入れるとよい場面</h3>
-<p>そのうえで、常設の仕組みでは届かない場面があります。次のどれかに当てはまるなら、Prowler を選ぶ理由が立ちます。</p>
+<p>次のどれかに当てはまるなら、Prowler を選ぶ理由が立ちます。</p>
 <ul>
+<li><strong>設定値の中身まで見たいが、自作したくない</strong>：環境変数・ユーザーデータ・スタック出力の秘密の直書きを、カスタムルールを何本も書かずに洗い出したい</li>
+<li><strong>「CIS の何番」以外の切り口で聞きたい</strong>：インターネットに露出しているもの、ログが取れていないところを、カテゴリ単位で一度に出したい</li>
 <li><strong>まだ何も入っていない</strong>：有効化する前に「そもそも何が起きているか」を知りたい。常設の仕組みを入れる提案をするための材料集めにもなる</li>
 <li><strong>有効化できない・したくない</strong>：権限がない、短期の検証アカウントで課金を増やしたくない、他社の環境を預かって見ている</li>
 <li><strong>アカウントに何も残したくない</strong>：レコーダーもルールも作らないので、点検したこと自体が環境に痕跡を残さない</li>
@@ -282,8 +323,9 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <li><strong>初回のトリアージ</strong>：数百〜数千件の FAIL を「直す／除外する／受容する」に仕分ける作業が、最初に一度まとめて発生します。ここは自動化できません。この時間を確保できないなら、入れても一覧が増えるだけです</li>
 <li><strong>例外の管理</strong>：Mutelist は書いた瞬間から腐り始めます。リソースを消したのにエントリだけ残る、書いた本人が異動する。<strong>理由と見直し時期をセットで残す</strong>運用が要ります</li>
 <li><strong>実行基盤の設計</strong>：誰がどこから、どの権限で、どの頻度で回すか。手元の端末から本番アカウントに入るのか、専用ロールを引き受けるのか。定期実行するなら実行場所と結果の保管先も決めます</li>
-<li><strong>バージョン追従</strong>：Prowler は活発に更新され、チェックが増えます。アップグレードすると、昨日まで見えなかった FAIL が増えます。「増えた＝悪化した」ではないことを説明できる状態にしておかないと、報告のたびに混乱します</li>
-<li><strong>API 呼び出し量</strong>：全チェックを全リージョンで回すと読み取り API を大量に叩きます。大規模アカウントではスロットリングに当たったり、実行時間が伸びたりします。範囲を絞る設計が要ります</li>
+<li><strong>バージョン追従</strong>：更新でチェックが増えるため、環境が変わらなくても FAIL が増えます。「増えた＝悪化した」ではないと説明できる状態にしておきます</li>
+<li><strong>API 呼び出し量</strong>：全チェックを全リージョンで回すと読み取り API を大量に叩きます。大規模アカウントではスロットリングや実行時間の問題が出るので、範囲を絞る設計が要ります</li>
+<li><strong>誤検知の仕分け</strong>：値の中身を読むチェックは、その性質上どうしても誤検知が出ます（<code>MYSQL_ALLOW_EMPTY_PASSWORD=yes</code> のような値を秘密と判定するなど）。Mutelist の出番がいちばん多いのもこのカテゴリです</li>
 <li><strong>直す人の確保</strong>：検出は入口でしかありません。修正する担当と、修正が本番に入るまでの経路（チケット・変更管理・IaC の修正）がないと、件数は減りません</li>
 </ol>
 <div class="note"><strong>Prowler の実行はスナップショットです。</strong> 実行と実行の間に開いたポートは、次に回すまで見えません。「常時見張ってくれる」ものだと思って入れると、期待と実態がずれます。</div>
@@ -297,12 +339,13 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <div class="quiz"><p class="q"><b>確認問題</b>　「無償だし、とりあえず入れて定期的に回しておけば結果が溜まる」——これは導入理由になるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>なりません。</strong> 誰がその一覧を見て、誰が直すのかが決まっていなければ、FAIL の山が積み上がって誰も開かなくなります。「次の監査までに CIS の critical をゼロにする」「引き継いだアカウント 5 つの現状を今月中に把握する」のように、<strong>出口を先に決めてから入れます</strong>。用途が決まっていない道具は、入れた瞬間から負債です。</p></div></details></div>
 
 <h2>まとめ：そのまま使える説明テンプレート</h2>
-<h3>30 秒版</h3><blockquote><p>Prowler は、クラウドの設定が基準どおりかを点検するオープンソースのツールです。読み取り専用の権限で API を叩き、チェックごとに PASS / FAIL を出します。AWS・Azure・Google Cloud・Kubernetes などに対応していて、CIS Benchmark や PCI DSS といったフレームワーク単位でレポートを出せます。クラウド側で何かを有効化する必要がないので、引き継いだアカウントの棚卸しや、監査・取引先照会への回答に向いています。</p></blockquote>
-<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>クラウドの設定ミスは、誰も教えてくれません。危ない設定でもエラーにならず、作った日は正しくても状態は動くからです。かといって何を点検すべきかを自分で列挙するのは現実的ではないので、CIS や FSBP といった外部の基準を借ります。その基準を実行できる形にしたのが Prowler です。</p><p>ただし、入れると手間も増えます。初回は数百〜数千件の FAIL が出るので、直す・除外する・受容するの仕分けが丸ごと発生します。除外した理由を残す運用、誰がどこで定期実行するかの設計、バージョンアップでチェックが増えることへの説明も要ります。そして Prowler の実行はスナップショットなので、常時の検知は Security Hub CSPM や Config 側の役割です。AWS 単一環境で継続監視が目的なら、そちらを有効化するほうが素直です。Prowler が効くのは、まだ何も入っていない環境の把握、有効化できない事情がある場合、AWS 以外もある場合、そして成果物をファイルで持ち出したい場合です。</p></blockquote>
+<h3>30 秒版</h3><blockquote><p>Prowler は、クラウドの設定が基準どおりかを点検するオープンソースのツールです。読み取り専用の権限で API を叩き、チェックごとに PASS / FAIL を出します。AWS・Azure・Google Cloud・Kubernetes などに対応していて、CIS Benchmark や PCI DSS といったフレームワーク単位でレポートを出せます。クラウド側で何かを有効化する必要がないので、引き継いだアカウントの棚卸しや、監査・取引先照会への回答に向いています。加えて、環境変数やユーザーデータに秘密が直書きされていないかといった、純正のマネージドルールにはない検査が最初から入っています。同じことを Config のカスタムルールで自作すると、チェックの数だけ Lambda を書いて保守することになります。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>クラウドの設定ミスは、誰も教えてくれません。危ない設定でもエラーにならず、作った日は正しくても状態は動くからです。かといって何を点検すべきかを自分で列挙するのは現実的ではないので、CIS や FSBP といった外部の基準を借ります。その基準を実行できる形にしたのが Prowler です。</p><p>ただし、入れると手間も増えます。初回は数百〜数千件の FAIL が出るので、直す・除外する・受容するの仕分けが丸ごと発生します。除外した理由を残す運用、誰がどこで定期実行するかの設計、バージョンアップでチェックが増えることへの説明も要ります。そして Prowler の実行はスナップショットなので、常時の検知は Security Hub CSPM や Config 側の役割です。CIS や FSBP の範囲を AWS だけで見張るなら、そちらを有効化するほうが素直です。<strong>ただし範囲そのものが違います。</strong>Lambda の環境変数や EC2 のユーザーデータに秘密が直書きされていないか、といった「値の中身を読む」チェックは、純正のマネージドルールにはありません。Config のカスタムルールを書けば実現はできますが、検知ロジックの設計から Lambda の保守までをチェックの数だけ抱えることになります。<strong>その一式が最初から入っていることが、Prowler を選ぶいちばんの理由です。</strong></p></blockquote>
 
 <h2>よくある誤解</h2>
 <h3>「Prowler を入れれば継続的に監視される」</h3><p>Prowler が出すのは実行した瞬間のスナップショットです。定期実行の仕組みは自分で用意する必要がありますし、実行間隔より短い期間の変更は捉えられません。常時の検知が要るなら、それは Security Hub CSPM・Config・GuardDuty 側の役割です。</p>
 <h3>「FAIL の件数がセキュリティレベルを表す」</h3><p>対象リソースが多いだけで件数は増えますし、意図的な設計が FAIL になることもあります。バージョンアップでチェックが増えれば、環境が何も変わらなくても件数は増えます。見るべきは総数ではなく、<strong>深刻度別の件数</strong>と<strong>判断済み／未判断の内訳</strong>です。</p>
+<h3>「同じことは Config のカスタムルールでもできる」</h3><p>できます。違うのは実現できるかどうかではなく、<strong>自分で書いて保守する量</strong>です。検知ロジックの設計・Lambda・IAM・配布・ランタイム更新を、チェックの数だけ抱えるか、既製の 600 超をそのまま使うかの差です。逆に言えば、自社固有の 1〜2 個だけが欲しいなら、カスタムルールで書くほうが素直なこともあります。</p>
 <h3>「Prowler が環境を直してくれる」</h3><p>Prowler は読み取り専用です。修正方法は検出結果に書かれますが、適用するのは人（または IaC などの別の仕組み）です。これは制約ではなく利点でもあります。本番アカウントに書き込み権限を渡さずに導入できる、というのは稟議を通すときの材料になります。</p>
 
 <h2>次の一歩</h2>
@@ -323,6 +366,10 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <li><a href="https://docs.prowler.com/">Prowler Documentation</a></li>
 <li><a href="https://docs.prowler.com/user-guide/providers/aws/authentication">Prowler Documentation — AWS Authentication（必要な IAM 権限）</a></li>
 <li><a href="https://docs.prowler.com/user-guide/cli/tutorials/reporting">Prowler Documentation — Reporting（出力形式）</a></li>
+<li><a href="https://hub.prowler.com/">Prowler HUB — チェック一覧（カテゴリ・深刻度から探せる）</a></li>
+<li><a href="https://hub.prowler.com/check/awslambda_function_no_secrets_in_variables">Prowler HUB — awslambda_function_no_secrets_in_variables</a></li>
+<li><a href="https://github.com/Yelp/detect-secrets">Yelp/detect-secrets</a></li>
+<li><a href="https://docs.aws.amazon.com/config/latest/developerguide/ecs-no-environment-secrets.html">AWS Config — ecs-no-environment-secrets</a></li>
 <li><a href="https://prowler.com/prowler-oss">Prowler Open Source — CLI, SDK &amp; Self-Hosted Platform</a></li>
 <li><a href="https://www.cisecurity.org/benchmark/amazon_web_services">CIS Amazon Web Services Foundations Benchmark</a></li>
 <li><a href="https://docs.aws.amazon.com/securityhub/latest/userguide/fsbp-standard.html">AWS Foundational Security Best Practices standard — AWS Security Hub CSPM</a></li>
