@@ -37,6 +37,9 @@ code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
 pre{background:var(--lane);border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;overflow-x:auto;font-size:.85rem;line-height:1.6}
 pre code{background:none;padding:0}
 ul{padding-left:1.3rem}li{margin:.35rem 0}
+table{width:100%;border-collapse:collapse;margin:1.4rem 0;font-size:.9rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left}
+th{background:var(--lane);font-weight:600}
 a{color:var(--c1)}
 </style>
 </head>
@@ -107,6 +110,55 @@ resource "tfe_team_token" "green" {
 <div class="note">
 <p><strong>トレードオフ：</strong><code>expired_at</code> を縮めるほど、run が止まったときに全トークンが失効して手動ブートストラップに戻るまでの猶予も縮む。23-07 の注意①と同じく定期 run が回っていることが前提で、止まったら検知すべき異常として扱う。</p>
 </div>
+
+<h2>周期を変えたら expired_at も引き直す</h2>
+<p>上の <code>-648h</code>（27日）は<strong>周期60日に合わせて計算した定数</strong>だ。周期だけ変えてこの値を据え置くと静かに壊れる。たとえば周期を160日にして <code>-648h</code> のままだと、トークンの寿命は 160 − 27 = <strong>133日</strong>になる。「認証情報は90日以内に失効させること」のような要件があるなら、これは気づきにくい違反になる。</p>
+
+<p>覚えるのは関係式ひとつでいい。</p>
+
+<ul>
+  <li>引き継ぎ ＝ 半周期（<code>rotation_days ÷ 2</code>）</li>
+  <li>トークンの寿命 ＝ 引き継ぎ ＋ バッファ</li>
+  <li><code>expired_at</code> で引く値 ＝ 半周期 − バッファ</li>
+</ul>
+
+<p>バッファ3日のときの対応は次のとおり。</p>
+
+<table>
+<thead>
+<tr><th><code>rotation_days</code></th><th>引き継ぎ</th><th>トークンの寿命</th><th>引く値</th></tr>
+</thead>
+<tbody>
+<tr><td>60日</td><td>30日</td><td>33日</td><td><code>-648h</code>（27日）</td></tr>
+<tr><td>160日</td><td>80日</td><td>83日</td><td><code>-1848h</code>（77日）</td></tr>
+<tr><td>174日</td><td>87日</td><td>90日</td><td><code>-2016h</code>（84日）</td></tr>
+</tbody>
+</table>
+
+<p>要件から逆算するなら、許される寿命の上限を L として <strong><code>rotation_days ≤ (L − バッファ) × 2</code></strong>。L が90日・バッファが3日なら周期174日が天井で、ここは寿命がちょうど90日に張り付く。数日の余裕がほしければ周期を短くとる（160日なら寿命83日で7日の余裕）。逆にここで引き継ぎを90日にしたくなるが、それだと寿命が93日になって要件を割るので注意。</p>
+
+<p>この定数を手で管理していると周期変更のときに引き直しを忘れる。変数から導出しておけば連動する。</p>
+
+<pre><code>variable "rotation_days" { default = 160 }
+variable "buffer_days"   { default = 3 }
+
+resource "time_rotating" "green" {
+  rotation_days = var.rotation_days
+}
+
+resource "tfe_team_token" "green" {
+  team_id     = tfe_team.manager.id
+  description = "manager green ${time_rotating.green.rotation_rfc3339}"
+
+  # 半周期 − バッファ だけ手前に引く
+  expired_at = timeadd(
+    time_rotating.green.rotation_rfc3339,
+    "-${(var.rotation_days / 2 - var.buffer_days) * 24}h"
+  )
+}
+</code></pre>
+
+<p>なお 23-07 のままの <code>expired_at</code>（<code>timeadd(rotation_rfc3339, "336h")</code>）は「周期 ＋ 14日」なので、寿命は必ず周期より長くなる。失効期限に要件があるなら、23-07 の形では満たせない。本記事の引き算型にする必要がある。</p>
 
 <h2>定期ローテーションに PR は要らない</h2>
 <p>見落としやすいが、<strong>周期ローテーションではコードが1文字も変わらない</strong>。<code>time_rotating</code> が state に持っている「次にローテーションする時刻」を plan のたびにプロバイダが現在時刻と比べていて、過ぎていれば置き換えを要求する——という仕掛けなので（<a href="23-07_管理用ワークスペースのトークン自動ローテーション.html#time-rotating">23-07 の仕組み</a>）、周期の日を過ぎた最初の plan に、誰も何も変更していないのに差分が現れる。</p>
