@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>トークンローテーションを1回の PR で完了させる — そして Vault ならどうなるか</title>
+<title>トークンローテーションを1回の run で完了させる — そして Vault ならどうなるか</title>
 <style>
 :root{
   --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
@@ -43,8 +43,8 @@ a{color:var(--c1)}
 <body>
 <main>
 
-<h1>トークンローテーションを1回の PR で完了させる — そして Vault ならどうなるか</h1>
-<p class="lede"><a href="23-07_管理用ワークスペースのトークン自動ローテーション.html">23-07</a> の自己ローテーションは、PR をマージしても古いトークンがしばらく生き残る。「旧トークンが無効になるまで」を完了と呼ぶなら、それを1回の PR で終わらせる方法。そして Vault があれば、この問いごと消せる。</p>
+<h1>トークンローテーションを1回の run で完了させる — そして Vault ならどうなるか</h1>
+<p class="lede"><a href="23-07_管理用ワークスペースのトークン自動ローテーション.html">23-07</a> の自己ローテーションは、run が1回走って切替が済んでも、古いトークンがしばらく生き残る。「旧トークンが無効になるまで」を完了と呼ぶなら、それを1回の run で終わらせる方法。そして Vault があれば、この問いごと消せる。</p>
 
 <h2>「切替」で終わった気になっていないか</h2>
 <p>23-07 のブルーグリーン構成では、run が1回走ると新トークンの発行と <code>TFE_TOKEN</code> の切替までは終わる。しかし直前まで使っていた旧トークンはまだ有効なままだ。Terraform がそれを revoke するのは、半周期後にその色を作り直す次の run。つまり「旧トークンで API を叩けなくなった時点」をローテーションの完了とすると、完了は run 2回分先で、しかも2回目の run がいつ走るかに依存する。漏えい対応や監査で「無効化はいつ終わるのか」と聞かれたとき、これでは答えに詰まる。</p>
@@ -58,7 +58,7 @@ a{color:var(--c1)}
   </defs>
 
   <line x1="230" y1="36" x2="230" y2="192" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" opacity=".6"/>
-  <text x="230" y="26" font-size="10.5" fill="var(--muted)" text-anchor="middle">▼ PR マージ（ここで切替は完了）</text>
+  <text x="230" y="26" font-size="10.5" fill="var(--muted)" text-anchor="middle">▼ 切替の run（ここで切替は完了）</text>
 
   <text x="8" y="66" font-size="11" fill="var(--muted)">23-07 のまま</text>
   <text x="8" y="80" font-size="10" fill="var(--muted)">次の run が消す</text>
@@ -78,16 +78,16 @@ a{color:var(--c1)}
 
   <line x1="90" y1="200" x2="660" y2="200" stroke="var(--muted)" stroke-width="1"/>
   <g font-size="10.5" fill="var(--muted)" text-anchor="middle">
-    <text x="230" y="220">マージ</text>
+    <text x="230" y="220">切替</text>
     <text x="270" y="220">+3日</text>
     <text x="480" y="220">+30日（半周期後の run 予定）</text>
   </g>
 </svg>
-<figcaption>薄い部分が「もう使っていないのに API を叩ける」期間。上段ではこれが半周期続き、しかも終わりは次の run が走るかどうかに依存する。下段は期限で切るので、マージ時点で完了時刻の上限が決まる。</figcaption>
+<figcaption>薄い部分が「もう使っていないのに API を叩ける」期間。上段ではこれが半周期続き、しかも終わりは次の run が走るかどうかに依存する。下段は期限で切るので、切替の run の時点で完了時刻の上限が決まる。</figcaption>
 </figure>
 
 <h2>なぜ1回の apply では完了できないのか</h2>
-<p>apply は、自分が認証に使っているトークンを消せない。途中で消すと残りの API 呼び出しが 401 になり、管理用ワークスペースが文鎮化する（<a href="23-07_管理用ワークスペースのトークン自動ローテーション.html">23-07</a> の落とし穴）。旧トークンを API で消せるのは「新トークンで認証した次の run」だけ。つまり <strong>revoke という操作にこだわる限り、run は最低2回必要</strong>で、1回の PR には収まらない。</p>
+<p>apply は、自分が認証に使っているトークンを消せない。途中で消すと残りの API 呼び出しが 401 になり、管理用ワークスペースが文鎮化する（<a href="23-07_管理用ワークスペースのトークン自動ローテーション.html">23-07</a> の落とし穴）。旧トークンを API で消せるのは「新トークンで認証した次の run」だけ。つまり <strong>revoke という操作にこだわる限り、run は最低2回必要</strong>で、1回の run には収まらない。</p>
 
 <h2>消すのをやめて、期限に任せる</h2>
 <p>発想を変えて、revoke を構成から消す。1回の apply がやるのは発行と切替だけ。旧トークンの無効化は <code>expired_at</code> に任せ、期限を「次の色へ引き継いだ直後」まで縮める。</p>
@@ -107,6 +107,27 @@ resource "tfe_team_token" "green" {
 <div class="note">
 <p><strong>トレードオフ：</strong><code>expired_at</code> を縮めるほど、run が止まったときに全トークンが失効して手動ブートストラップに戻るまでの猶予も縮む。23-07 の注意①と同じく定期 run が回っていることが前提で、止まったら検知すべき異常として扱う。</p>
 </div>
+
+<h2>定期ローテーションに PR は要らない</h2>
+<p>見落としやすいが、<strong>周期ローテーションではコードが1文字も変わらない</strong>。<code>time_rotating</code> が state に持っている「次にローテーションする時刻」を plan のたびにプロバイダが現在時刻と比べていて、過ぎていれば置き換えを要求する——という仕掛けなので（<a href="23-07_管理用ワークスペースのトークン自動ローテーション.html#time-rotating">23-07 の仕組み</a>）、周期の日を過ぎた最初の plan に、誰も何も変更していないのに差分が現れる。</p>
+
+<p>だからやることは <strong>Plan &amp; Apply を1回通すだけ</strong>。その apply の中で発行・切替・失効時刻の確定まで終わるので、2回目の run も PR も要らない。PR が要るのは次節の予定外ローテーションだけだ。</p>
+
+<p>ただしこの「1回」には締切がある。トークン作成からの経過時間で並べるとこうなる。</p>
+
+<ul>
+  <li><strong>0日</strong>：green 発行、使用開始</li>
+  <li><strong>30日</strong>：blue が作り直され、<code>TFE_TOKEN</code> が blue へ切り替わる ← <strong>この run が必要</strong></li>
+  <li><strong>33日</strong>：green が <code>expired_at</code> で自動失効</li>
+</ul>
+
+<div class="note">
+<p><strong>走らせ忘れると文鎮化する：</strong>34日目に Plan &amp; Apply を押しても、使用中の green はすでに失効していて認証が通らない。初回と同じ手動ブートストラップからやり直しになる。つまり <code>expired_at</code> のバッファは、そのまま「run を走らせ損ねても許される日数」だ。3日という値は毎日スケジュール run が回っている前提であって、人が思い出して押す運用と組み合わせてはいけない。</p>
+</div>
+
+<p>逆に早く走らせるぶんには無害で、周期前なら <code>time_rotating</code> がまだ回っていないので差分ゼロの no-op になる。安全側の運用は「こまめに走らせる」——つまり定期 run に行き着く。手で押す運用にしたいなら、<code>expired_at</code> は 23-07 の <code>timeadd(rotation_rfc3339, "336h")</code>（切替の44日後に失効）のままにして、完了時刻が確定するというメリットのほうを諦める。<strong>バッファを何日にするかが、そのまま「誰が run を走らせるか」の宣言になる。</strong></p>
+
+<p>なお、差分が出たことを知らせる仕組みは用意されていない。plan を走らせて初めて分かるので、そこも定期 run に寄せる理由になる。</p>
 
 <h2>予定外のローテーションを PR で起こす</h2>
 <p>周期を待たずに今すぐ回したい（漏えいの疑いなど）ときは、<code>description</code> に世代番号を仕込んでおき、それを上げる PR を出す。<code>description</code> が変わればトークンは作り直されるので、マージ→run で切替まで終わる。</p>
