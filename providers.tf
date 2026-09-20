@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/integrations/github/latest/docs
 provider "github" {
-  owner = "haruka-aibara"
+  owner = local.github_owner
   # GITHUB_TOKEN is already set as an environment variable on HCP Terraform Cloud
 }
 

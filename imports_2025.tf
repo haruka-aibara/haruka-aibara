@@ -75,7 +75,7 @@ import {
 
 import {
   to = module.haruka-aibara.github_repository.this
-  id = "haruka-aibara"
+  id = "works"
 }
 
 # =========================================

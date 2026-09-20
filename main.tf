@@ -2,27 +2,31 @@
 # for personal use only
 # =========================================
 
-# Personal Profile Repository
+# Terraform meta repository (monorepo)
+# Renamed from "haruka-aibara" and transferred to the organization. The old
+# owner/name combination is retired by GitHub and cannot be reused.
 module "haruka-aibara" {
   source = "./modules/repository"
 
-  repository_name = "haruka-aibara"
-  description     = "Personal profile repository"
+  repository_name = "works"
+  description     = "Terraform-managed GitHub repositories and HCP Terraform workspaces"
 
-  topics = ["profile"]
+  topics = ["terraform", "github", "iac"]
 }
 
 # =========================================
 # My Learning Repositories
 # =========================================
 
-# haruka-aibara-public Confluence Repository
+# Learning notes, published with GitHub Pages.
+# Renamed from "haruka-aibara-public" and transferred to the organization. The
+# old owner/name combination is retired by GitHub, so the Pages URL changed.
 module "haruka-aibara-public" {
   source = "./modules/repository"
 
-  repository_name = "haruka-aibara-public"
+  repository_name = "docs"
   description     = "A repository for documenting everything I learn"
-  homepage_url    = "https://haruka-aibara.github.io/haruka-aibara-public/"
+  homepage_url    = "https://haruka-aibara.github.io/docs/"
 
   topics = ["learning", "documentation"]
 }
