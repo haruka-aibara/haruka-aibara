@@ -35,6 +35,8 @@ GitHub App 認証に切り替える。provider が毎 run、App 秘密鍵から 
 
 GitHub App の installation token では **個人アカウント配下に新規リポジトリを作成できない**。`POST /user/repos` は installation token を受け付けず `Resource not accessible by integration` で失敗する。一方 Organization の `POST /orgs/{org}/repos` は正常に動作する。
 
+これは GitHub 公式の OpenAPI 仕様で確認できる。`POST /user/repos` は `"enabledForGitHubApps": false`、`POST /orgs/{org}/repos` は `"enabledForGitHubApps": true` である。なお「`/user/repos` は GitHub App に対応」と記述する資料があるが、それは **user access token**（ユーザー本人として動作し、ブラウザでの対話認可を要する）の話であり、Terraform の `app_auth` が使う **installation access token** とは別物である。
+
 org 化しない場合、新規リポジトリのみ Web UI で作成してから `import` する運用になる。org 化すれば Terraform が全ライフサイクルを管理できる。
 
 ### 1.5 なぜ rename が必要か
@@ -441,8 +443,10 @@ team token は API で発行・失効できるため、PEM と異なり自動ロ
 ## 付録 A: 参照
 
 - [Username changes — GitHub Docs](https://docs.github.com/en/account-and-profile/concepts/username-changes)
+- [Moving your work to an organization — GitHub Docs](https://docs.github.com/en/account-and-profile/how-tos/account-management/moving-your-work-to-an-organization)
 - [Deprecation of user to organization account transformation — GitHub Changelog (2026-01-12)](https://github.blog/changelog/2026-01-12-deprecation-of-user-to-organization-account-transformation/)
 - [GitHub's plans — GitHub Docs](https://docs.github.com/get-started/learning-about-github/githubs-products)
+- [github/rest-api-description — GitHub 公式 OpenAPI 仕様](https://github.com/github/rest-api-description)（`POST /user/repos` は `enabledForGitHubApps: false`、`POST /orgs/{org}/repos` は `true`）
 - [Create a repository using a GitHub App Installation Token · community · Discussion #137174](https://github.com/orgs/community/discussions/137174)
 - [Unable to create a Personal Access Token via API · community · Discussion #148626](https://github.com/orgs/community/discussions/148626)
 - [GitHub Provider — integrations/github (Terraform Registry)](https://registry.terraform.io/providers/integrations/github/latest/docs)
