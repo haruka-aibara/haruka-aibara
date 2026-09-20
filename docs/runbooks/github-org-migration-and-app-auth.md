@@ -53,7 +53,7 @@ GitHub は**ユーザー名と Organization 名で単一のグローバル名前
 
 | 対象 | Before | After |
 |---|---|---|
-| 個人アカウント | `haruka-aibara` | `haruka-aibara-dev`（例） |
+| 個人アカウント | `haruka-aibara` | `haruka-aibara-dev` |
 | Organization | なし | `haruka-aibara`（GitHub Free, $0） |
 | メタ repo（この repo） | `haruka-aibara/haruka-aibara`（個人） | `haruka-aibara/haruka-aibara`（**org・URL 不変**） |
 | プロフィール README | メタ repo と同居 | `haruka-aibara-dev/haruka-aibara-dev`（新設・Terraform 管理外） |
@@ -111,6 +111,8 @@ org 化にあたり、この 2 つを分離する。
 
 この Phase は移行日より前に単独でマージしてよい。現状を壊さない。
 
+> **注意:** `tfe_workspace.haruka-aibara` は `auto_apply = true` である。main へマージした時点で apply が即座に走る。移行完了後に適用すべき変更を、移行前の PR に混ぜてはならない。
+
 - [ ] **0-1. `github_owner` を `tfe_organization` から分離する**
 
 `locals.tf` の `tfe_organization` が **HCP Terraform の org 名**と **GitHub の owner 名**の両方に使われている。今回は同名 org を取るため値は変わらないが、意味の異なる 2 つの概念が 1 変数に同居しているのは誤りなので分離しておく。
@@ -144,9 +146,9 @@ HCP Terraform は state の履歴バージョンを自動で保持している�
 
 ロールバック時に必要。App 認証の検証が完了するまで削除しない。
 
-- [ ] **0-4. 新しい個人ユーザー名を決める**
+- [ ] **0-4. 新しい個人ユーザー名**
 
-本手順書では `haruka-aibara-dev` を例として使う。
+`haruka-aibara-dev` に決定済み。本手順書はこの名前を前提に記述する。
 
 - [ ] **0-5. 対象リポジトリを棚卸しする**
 
@@ -363,7 +365,20 @@ https://github.com/haruka-aibara-dev に README と stats バッジが表示さ�
 
 `main.tf` にテスト用 module を 1 件追加して apply し、**installation token でリポジトリが作成できること**を確認する（org 化の主目的）。確認後は削除してよいが、`prevent_destroy = true` のため削除には lifecycle の一時解除が必要。
 
-- [ ] **10-6. 退避した PAT を破棄する**
+- [ ] **10-6. メタ repo の description と topics を更新する（別 PR）**
+
+`main.tf` の `module "haruka-aibara"` は、プロフィール repo だった頃の記述のまま残っている。
+
+```hcl
+description = "Personal profile repository"
+topics      = ["profile"]
+```
+
+§6 で README を移した時点でこの repo は Terraform メタ repo になっているため、実態に合わせて更新する。
+
+`auto_apply = true` のため、**移行がすべて完了して apply が安定してから別 PR で実施する**こと。移行前の PR に混ぜると、まだ切り替わっていない状態で適用されてしまう。
+
+- [ ] **10-7. 退避した PAT を破棄する**
 
 すべての検証完了後、GitHub 上で PAT を revoke し、退避していた値も削除する。
 
