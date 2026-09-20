@@ -1,4 +1,4 @@
-# haruka-aibara
+# works
 
 GitHub リポジトリと HCP Terraform ワークスペースを Terraform で一元管理するメタリポジトリ。
 
@@ -15,7 +15,7 @@ GitHub リポジトリと HCP Terraform ワークスペースを Terraform で�
 
 ## 適用方法
 
-HCP Terraform の VCS 駆動ワークスペース `haruka-aibara` が apply を実行する。
+HCP Terraform の VCS 駆動ワークスペース `works` が apply を実行する。
 
 **`auto_apply = true` のため、main へのマージ時点で apply が走る。**
 

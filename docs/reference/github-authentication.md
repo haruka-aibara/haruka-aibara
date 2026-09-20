@@ -37,7 +37,7 @@ access token     これが実際にリポジトリを操作する
 
 ## 2. workspace の変数
 
-workspace `haruka-aibara`（リポジトリ `haruka-aibara/works`）に設定されている。
+workspace `works`（リポジトリ `haruka-aibara/works`）に設定されている。
 
 ### Environment variables
 

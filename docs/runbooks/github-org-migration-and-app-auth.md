@@ -55,9 +55,11 @@ GitHub は**ユーザー名と Organization 名で単一のグローバル名前
 |---|---|---|
 | 個人アカウント | `haruka-aibara` | `haruka-aibara-dev` |
 | Organization | なし | `haruka-aibara`（GitHub Free, $0） |
-| メタ repo（この repo） | `haruka-aibara/haruka-aibara`（個人） | `haruka-aibara/haruka-aibara`（**org・URL 不変**） |
+| メタ repo（この repo） | `haruka-aibara/haruka-aibara`（個人） | **`haruka-aibara/works`**（旧名が retire、§3.2） |
+| 学習ノート repo | `haruka-aibara/haruka-aibara-public` | **`haruka-aibara/docs`**（同上） |
+| HCP Terraform workspace | `haruka-aibara` | **`works`**（UI でリネーム、§9.3） |
 | プロフィール README | メタ repo と同居 | `haruka-aibara-dev/haruka-aibara-dev`（新設・Terraform 管理外） |
-| Pages URL | `haruka-aibara.github.io/haruka-aibara-public/` | **同一** |
+| Pages URL | `haruka-aibara.github.io/haruka-aibara-public/` | **`haruka-aibara.github.io/docs/`**（変更された） |
 | provider 認証 | `GITHUB_TOKEN`（PAT） | `GITHUB_APP_*`（installation token） |
 
 ### 2.1 同名 org を取る実利と、その限界
@@ -138,7 +140,7 @@ retire された名前を持つリポジトリは、**転送先の名前欄に�
 
 この Phase は移行日より前に単独でマージしてよい。現状を壊さない。
 
-> **注意:** `tfe_workspace.haruka-aibara` は `auto_apply = true` である。main へマージした時点で apply が即座に走る。移行完了後に適用すべき変更を、移行前の PR に混ぜてはならない。
+> **注意:** `tfe_workspace.works`（当時の名前は `haruka-aibara`）は `auto_apply = true` である。main へマージした時点で apply が即座に走る。移行完了後に適用すべき変更を、移行前の PR に混ぜてはならない。
 
 - [ ] **0-1. `github_owner` を `tfe_organization` から分離する**
 
@@ -316,7 +318,7 @@ Move work によって全リポジトリが org に移るため、`hcp_terraform
 
 ただし手作業で復旧する必要があるのは**メタ repo の workspace 1 つだけ**でよい。残りの 8 つは、そのメタ repo から apply すれば Terraform が `github_app_installation_id` の新しい値で貼り直す。
 
-メタ repo の workspace だけは自分自身の VCS 連携を管理しているため（`tfe_workspace.haruka-aibara`）、Terraform で直せない。ここだけ UI で先に復旧する。
+メタ repo の workspace だけは自分自身の VCS 連携を管理しているため（`tfe_workspace.works`）、Terraform で直せない。ここだけ UI で先に復旧する。
 
 - [ ] **9-0. Claude GitHub App を org にインストールする**
 
@@ -324,7 +326,7 @@ Move work によって全リポジトリが org に移るため、`hcp_terraform
 
 - [ ] **9-1. メタ repo の workspace の VCS 連携を UI で貼り直す**
 
-workspace `haruka-aibara` → Settings → Version Control → 新しい org のインストールを選択し、`haruka-aibara/haruka-aibara` に再接続する。
+メタ repo の workspace → Settings → Version Control → 新しい org のインストールを選択し、転送後のリポジトリに再接続する。
 
 - [ ] **9-2. installation id はデータソースから引く**
 
@@ -356,7 +358,7 @@ locals {
 UI で VCS 連携を貼り直すと、その workspace の `vcs_repo.github_app_installation_id` だけが state 上で新しくなる。`var.github_app_installation_id` が古いままだと、plan は**貼り直した接続を元に戻そうとする**。
 
 ```
-# tfe_workspace.haruka-aibara will be updated in-place
+# tfe_workspace.works will be updated in-place
   ~ vcs_repo {
       ~ github_app_installation_id = (sensitive value)
     }
@@ -400,7 +402,7 @@ apply 後、各 workspace の Version Control 設定が新しい org のイン�
 
 ```hcl
 resource "tfe_variable" "github_app_pem_file" {
-  workspace_id = tfe_workspace.haruka-aibara.id
+  workspace_id = tfe_workspace.works.id
   key          = "GITHUB_APP_PEM_FILE"
   value        = "set-in-ui"
   category     = "env"
@@ -460,6 +462,40 @@ PR を作成して speculative plan を走らせる。
 | 403 | permission 不足（特に Workflows） |
 | 返ってこない | 資格情報が無効で匿名アクセスになっている |
 
+### 9.3 workspace のリネーム（任意）
+
+workspace 名をリポジトリ名に揃える場合。**Terraform では実行できない。**
+
+HCP Terraform はワークスペースのリネームを、そのワークスペースの全 run が終了状態のときしか受け付けない。リネームする apply 自体が実行中の run なので、自己リネームは必ず次のエラーで失敗する。
+
+```
+Name cannot be changed while a run has not completed
+```
+
+- [ ] **9-8. 進行中の run が無いことを確認する**
+- [ ] **9-9. UI でリネームする** — workspace Settings → General → Name
+- [ ] **9-10. 直後にコードを合わせて push する**
+
+順序を逆にすると、まだ旧名のワークスペースに対して新名を要求する run になり、リネームも失敗して詰まる。
+
+コード側で名前を持っている箇所は以下。**`terraform.tf` の `cloud` ブロックを忘れやすい。**
+
+| ファイル | 箇所 |
+|---|---|
+| `terraform.tf` | `cloud` ブロックの `workspaces.name` |
+| `hcp_terraform.tf` | リソースラベル、`name`、`description` |
+| `workspace_variables.tf` | `tfe_workspace.<label>.id` の参照 |
+| `imports_2025.tf` | import の address と id |
+| `moved_2026.tf` | ラベル変更を吸収する `moved` ブロック |
+| `README.md` / `docs/` | 文中の参照 |
+| `ci/templates/*.tftpl` | 配布先に書き込まれる `Managed by Terraform (...)` の出典表記 |
+
+workspace は ID で識別されるためリネームしても state は壊れず、再 import も不要である。
+
+UI で設定を保存すると `terraform_version` の制約文字列が正規化され（`~> 1.16.0` → `~>1.16.0`）、一度だけ差分として現れることがある。apply すれば元に戻る。
+
+---
+
 ---
 
 ## 10. Phase 6: 後片付けと検証
@@ -473,7 +509,7 @@ PR を作成して speculative plan を走らせる。
 リダイレクトは旧ユーザー名が未取得である限りしか保証されない。
 
 ```bash
-git remote set-url origin git@github.com:haruka-aibara/haruka-aibara.git
+git remote set-url origin git@github.com:haruka-aibara/works.git
 ```
 
 - [ ] **10-3. Pages の動作を確認する**
