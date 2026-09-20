@@ -29,4 +29,5 @@ CI では `terraform fmt` / `tflint` / `trivy`（IaC misconfig）が走る。
 
 ## ドキュメント
 
-- [GitHub Organization 移行 + GitHub App 認証 移行手順書](docs/runbooks/github-org-migration-and-app-auth.md)
+- [GitHub 認証のしくみ](docs/reference/github-authentication.md) — workspace の変数や GitHub App が何者かを調べるとき
+- [GitHub Organization 移行 + GitHub App 認証 移行手順書](docs/runbooks/github-org-migration-and-app-auth.md) — この構成に至った経緯
