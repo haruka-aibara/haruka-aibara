@@ -102,10 +102,10 @@ resource "tfe_workspace" "generate-dev-io-summary" {
 }
 
 # Haruka Aibara Workspace
-resource "tfe_workspace" "haruka-aibara" {
-  name                          = "haruka-aibara"
+resource "tfe_workspace" "works" {
+  name                          = "works"
   organization                  = local.tfe_organization
-  description                   = "haruka-aibara"
+  description                   = "Terraform-managed GitHub repositories and HCP Terraform workspaces"
   auto_apply                    = true
   auto_apply_run_trigger        = false
   file_triggers_enabled         = false

@@ -24,7 +24,7 @@
 # nothing about the organization's App.
 
 resource "tfe_variable" "github_app_id" {
-  workspace_id = tfe_workspace.haruka-aibara.id
+  workspace_id = tfe_workspace.works.id
   key          = "GITHUB_APP_ID"
   value        = "set-in-ui"
   category     = "env"
@@ -33,7 +33,7 @@ resource "tfe_variable" "github_app_id" {
 }
 
 resource "tfe_variable" "github_app_installation_id" {
-  workspace_id = tfe_workspace.haruka-aibara.id
+  workspace_id = tfe_workspace.works.id
   key          = "GITHUB_APP_INSTALLATION_ID"
   value        = "set-in-ui"
   category     = "env"
@@ -42,7 +42,7 @@ resource "tfe_variable" "github_app_installation_id" {
 }
 
 resource "tfe_variable" "github_app_pem_file" {
-  workspace_id = tfe_workspace.haruka-aibara.id
+  workspace_id = tfe_workspace.works.id
   key          = "GITHUB_APP_PEM_FILE"
   value        = "set-in-ui"
   category     = "env"

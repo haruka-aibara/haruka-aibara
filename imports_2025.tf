@@ -108,8 +108,8 @@ import {
 }
 
 import {
-  to = tfe_workspace.haruka-aibara
-  id = "haruka-aibara/haruka-aibara"
+  to = tfe_workspace.works
+  id = "haruka-aibara/works"
 }
 
 import {
