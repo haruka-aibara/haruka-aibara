@@ -324,9 +324,30 @@ Move work によって全リポジトリが org に移るため、`hcp_terraform
 
 workspace `haruka-aibara` → Settings → Version Control → 新しい org のインストールを選択し、`haruka-aibara/haruka-aibara` に再接続する。
 
-- [ ] **9-2. workspace 変数 `github_app_installation_id` を更新する**
+- [ ] **9-2. installation id はデータソースから引く**
 
-§7-1 で控えた新しい installation ID に差し替える（Terraform variable、sensitive）。
+`vcs_repo.github_app_installation_id` が要求するのは **HCP Terraform 内部の識別子（`ghain-...`）**であり、GitHub の設定画面 URL に出る数値 ID ではない。両者は別物で、数値を入れると apply が次のエラーで落ちる。
+
+```
+Error: Error updating workspace ws-...: unprocessable content
+GitHub App installation does not exist
+```
+
+手入力せず、データソースで解決する。
+
+```hcl
+data "tfe_github_app_installation" "this" {
+  name = local.github_owner
+}
+```
+
+```hcl
+locals {
+  github_app_installation_id = data.tfe_github_app_installation.this.id
+}
+```
+
+こうしておくと、App を入れ直して識別子が変わっても設定の変更が要らない。手入力用の変数は不要なので、workspace 変数からも削除してよい。
 
 - [ ] **9-2a. apply の前に必ず plan を読む**
 

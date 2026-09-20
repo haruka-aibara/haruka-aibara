@@ -2,6 +2,14 @@
 # HCP Terraform Management
 # =========================================
 
+# vcs_repo.github_app_installation_id wants HCP Terraform's own identifier for
+# the installation (ghain-...), not GitHub's numeric installation id from the
+# settings URL. Look it up by the account the app is installed on, so
+# reinstalling the app does not require editing a stored value.
+data "tfe_github_app_installation" "this" {
+  name = local.github_owner
+}
+
 # AWS Cost Allocation Tags Workspace
 resource "tfe_workspace" "aws-cost-allocation-tags" {
   name                          = "aws-cost-allocation-tags"
