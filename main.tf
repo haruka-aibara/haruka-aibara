@@ -18,13 +18,15 @@ module "haruka-aibara" {
 # My Learning Repositories
 # =========================================
 
-# haruka-aibara-public Confluence Repository
+# Learning notes, published with GitHub Pages.
+# Renamed from "haruka-aibara-public" and transferred to the organization. The
+# old owner/name combination is retired by GitHub, so the Pages URL changed.
 module "haruka-aibara-public" {
   source = "./modules/repository"
 
-  repository_name = "haruka-aibara-public"
+  repository_name = "docs"
   description     = "A repository for documenting everything I learn"
-  homepage_url    = "https://haruka-aibara.github.io/haruka-aibara-public/"
+  homepage_url    = "https://haruka-aibara.github.io/docs/"
 
   topics = ["learning", "documentation"]
 }
