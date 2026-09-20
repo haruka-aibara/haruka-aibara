@@ -6,5 +6,5 @@ locals {
   # 移行後は Organization を指す。tfe_organization とは別概念なので分離している。
   github_owner = "haruka-aibara"
 
-  github_app_installation_id = var.github_app_installation_id
+  github_app_installation_id = data.tfe_github_app_installation.this.id
 }
