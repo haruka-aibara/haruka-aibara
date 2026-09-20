@@ -60,14 +60,18 @@ GitHub は**ユーザー名と Organization 名で単一のグローバル名前
 | Pages URL | `haruka-aibara.github.io/haruka-aibara-public/` | **同一** |
 | provider 認証 | `GITHUB_TOKEN`（PAT） | `GITHUB_APP_*`（installation token） |
 
-### 2.1 同名 org を取る実利
+### 2.1 同名 org を取る実利と、その限界
 
-見た目の問題ではなく、以下が保たれる。
+同名 org を取ると、転送後もリポジトリの URL が変わらない。外部リンク・Pages URL・`vcs_repo.identifier` がそのまま使える。
 
-- **Pages URL が一文字も変わらない**（`main.tf` の `homepage_url` を書き換えずに済む）
-- **メタ repo の URL が不変**なため、`hcp_terraform.tf` の `vcs_repo.identifier = "${local.tfe_organization}/haruka-aibara"` がそのまま動く
-- `providers.tf` の `owner = "haruka-aibara"` も変更不要
-- repo 転送後、外部リンクが最終的に元の URL に収束する
+**ただしメタ repo はこの恩恵を受けられなかった。** §3.2 の名前 retire に該当したためである。実績は以下のとおり。
+
+| 対象 | 想定 | 実際 |
+|---|---|---|
+| メタ repo | `haruka-aibara/haruka-aibara` のまま | **`haruka-aibara/works` に改名**（旧名が retire） |
+| その他のリポジトリ | URL 不変 | 名前が retire されていなければ不変 |
+
+`providers.tf` の `owner` は org 名が同じなので変更不要のまま。
 
 ### 2.2 メタ repo とプロフィール repo の分離
 
@@ -94,6 +98,29 @@ org 化にあたり、この 2 つを分離する。
 | 旧ユーザー名を含む gist URL | リダイレクトされない | 手動で参照を更新 |
 
 コミットの contribution 紐付けはメールアドレス基準のため、rename しても維持される。
+
+### 3.2 リポジトリ名の retire（最大の落とし穴）
+
+アカウントをリネームすると、条件に該当したリポジトリの `OLD-OWNER/REPOSITORY-NAME` の組み合わせが**永久に使用不可**になる。GitHub の仕様である。
+
+> If the account namespace includes any public repositories that contain an action listed on GitHub Marketplace, **or that had more than 100 clones or more than 100 uses of GitHub Actions in the week prior to you renaming your account**, GitHub permanently retires the old owner name and repository name combination.
+
+**解除手段は存在しない。** self-service の解除は無く、GitHub Support も security 上の理由でまず応じない。
+
+CI が動いているリポジトリは週 100 Actions 実行を容易に超えるため、**能動的に開発しているリポジトリほど該当しやすい**。本移行では、push ごとに 3 ジョブ走るメタ repo が該当し、`haruka-aibara/haruka-aibara` が使用不可になった。
+
+対象は `OWNER/NAME` の組み合わせ単位であり、名前空間全体ではない。該当しなかったリポジトリは元の名前のまま転送できる。
+
+#### 転送フォームの挙動
+
+retire された名前を持つリポジトリは、**転送先の名前欄に別名を入れても弾かれる**。フォームが「現在のリポジトリ名 + 転送先 owner」の組み合わせを検証するため、`haruka-aibara/haruka-aibara` が評価されてしまう。
+
+回避するには、**転送の前にリポジトリ自体をリネームする**。
+
+1. Settings → Repository name で `haruka-aibara` → `works` にリネーム
+2. その後 `haruka-aibara-dev/works` を org へ転送（名前は `works` のまま）
+
+この順序なら retire 済みの組み合わせが一度も評価されない。
 
 ### 3.1 失うと復旧できないもの
 
@@ -264,6 +291,12 @@ Settings → Organizations → "Move to an organization" セクション → **M
 
 **選択しないもの**: §6 で作成した新しいプロフィール repo（`haruka-aibara-dev/haruka-aibara-dev`）。これは個人アカウントに残す必要がある
 
+- [ ] **8-1a. retire された名前のリポジトリを先にリネームする**
+
+転送時に "The repository `NAME` has been retired and cannot be reused" が出たリポジトリは、§3.2 の手順で**先にリネームしてから**転送する。転送フォームの名前欄を変えるだけでは通らない。
+
+リネーム後の名前で Terraform 側の参照も更新が必要になる（`main.tf` の `repository_name`、`terraform_ci.tf` / `python_ci.tf` の `for_each` キー、`hcp_terraform.tf` の `vcs_repo.identifier`）。
+
 - [ ] **8-2. 転送結果を確認する**
 
 ```bash
@@ -282,6 +315,10 @@ Move work によって全リポジトリが org に移るため、`hcp_terraform
 ただし手作業で復旧する必要があるのは**メタ repo の workspace 1 つだけ**でよい。残りの 8 つは、そのメタ repo から apply すれば Terraform が `github_app_installation_id` の新しい値で貼り直す。
 
 メタ repo の workspace だけは自分自身の VCS 連携を管理しているため（`tfe_workspace.haruka-aibara`）、Terraform で直せない。ここだけ UI で先に復旧する。
+
+- [ ] **9-0. Claude GitHub App を org にインストールする**
+
+個人アカウントへのインストールは org に引き継がれない。https://github.com/apps/claude/installations/select_target で org を選んでインストールする。これを行うまで Claude Code からの push が 403 で拒否される。
 
 - [ ] **9-1. メタ repo の workspace の VCS 連携を UI で貼り直す**
 
