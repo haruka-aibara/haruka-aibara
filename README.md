@@ -1,4 +1,4 @@
-# haruka-aibara
+# works
 
 GitHub リポジトリと HCP Terraform ワークスペースを Terraform で一元管理するメタリポジトリ。
 
@@ -15,7 +15,7 @@ GitHub リポジトリと HCP Terraform ワークスペースを Terraform で�
 
 ## 適用方法
 
-HCP Terraform の VCS 駆動ワークスペース `haruka-aibara` が apply を実行する。
+HCP Terraform の VCS 駆動ワークスペース `works` が apply を実行する。
 
 **`auto_apply = true` のため、main へのマージ時点で apply が走る。**
 
@@ -29,4 +29,5 @@ CI では `terraform fmt` / `tflint` / `trivy`（IaC misconfig）が走る。
 
 ## ドキュメント
 
-- [GitHub Organization 移行 + GitHub App 認証 移行手順書](docs/runbooks/github-org-migration-and-app-auth.md)
+- [GitHub 認証のしくみ](docs/reference/github-authentication.md) — workspace の変数や GitHub App が何者かを調べるとき
+- [GitHub Organization 移行 + GitHub App 認証 移行手順書](docs/runbooks/github-org-migration-and-app-auth.md) — この構成に至った経緯

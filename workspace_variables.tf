@@ -4,6 +4,9 @@
 # The github provider reads GitHub App credentials from GITHUB_APP_* environment
 # variables, so switching away from a PAT needs no provider block change.
 #
+# What these credentials are, and why the setup looks like this:
+# docs/reference/github-authentication.md
+#
 # Terraform declares these variables; the UI holds their values. The placeholder
 # below is written once, at creation, and is then left alone: HCP Terraform never
 # returns a sensitive variable's value, so the provider carries the last known
@@ -21,7 +24,7 @@
 # nothing about the organization's App.
 
 resource "tfe_variable" "github_app_id" {
-  workspace_id = tfe_workspace.haruka-aibara.id
+  workspace_id = tfe_workspace.works.id
   key          = "GITHUB_APP_ID"
   value        = "set-in-ui"
   category     = "env"
@@ -30,7 +33,7 @@ resource "tfe_variable" "github_app_id" {
 }
 
 resource "tfe_variable" "github_app_installation_id" {
-  workspace_id = tfe_workspace.haruka-aibara.id
+  workspace_id = tfe_workspace.works.id
   key          = "GITHUB_APP_INSTALLATION_ID"
   value        = "set-in-ui"
   category     = "env"
@@ -39,7 +42,7 @@ resource "tfe_variable" "github_app_installation_id" {
 }
 
 resource "tfe_variable" "github_app_pem_file" {
-  workspace_id = tfe_workspace.haruka-aibara.id
+  workspace_id = tfe_workspace.works.id
   key          = "GITHUB_APP_PEM_FILE"
   value        = "set-in-ui"
   category     = "env"
