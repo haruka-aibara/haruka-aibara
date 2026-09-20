@@ -366,12 +366,67 @@ https://github.com/haruka-aibara-dev に README と stats バッジが表示さ�
 
 ## 12. 移行後に残る長期シークレット
 
-| シークレット | 保管先 | API 経由の発行 | ローテーション方法 |
-|---|---|---|---|
-| GitHub App 秘密鍵 (PEM) | HCP Terraform workspace 変数 | 不可 | **複数鍵を同時有効化できるため無停止で可能**（新鍵生成 → 変数差し替え → 旧鍵削除） |
-| `TFE_TOKEN` | HCP Terraform workspace 変数 | 可（team token） | 有効期限付き team token + 期限通知で運用。自己更新は chicken-and-egg になるため自動化の費用対効果は低い |
+### 12.1 結論
 
-PAT と異なり、GitHub App の秘密鍵は複数を同時に有効化できるため、ダウンタイム無しでローテーションできる。
+PEM は **HCP Terraform の workspace 変数に保管する**。これを前提とする。
+
+| シークレット | 保管先 | 有効期限 | 発行 API | 削除 API | 自動ローテ |
+|---|---|---|---|---|---|
+| GitHub App 秘密鍵 (PEM) | workspace 変数 | **なし（無期限）** | **なし** | **なし** | **不可** |
+| `TFE_TOKEN` | workspace 変数 | 設定可 | あり（team token） | あり | 可 |
+
+### 12.2 PEM のローテーションは自動化できない
+
+GitHub は App 秘密鍵の**生成・削除ともに API を提供していない**。どちらも Web UI での操作のみで、GitHub Support も「そのような API は存在しない」と回答している。BYO Key / 公開鍵登録の feature request は提出済みだが未実装。
+
+したがって以下が確定する。
+
+- 新しい PEM を機械的に作れないため、**ローテーションの起点が必ず手作業になる**
+- 起点以降（変数への投入）はスクリプト化できるが、**半自動が上限**
+- 鍵の生成・削除は **Audit Log にも記録されない**
+
+補足として、`POST /app-manifests/{code}/conversions` は PEM を返すが、これは **App を新規作成するときだけ**の API であり、事前にブラウザでのハンドシェイク（有効1時間の `code` 取得）を要する。ヘッドレスで実行できず、かつ App ID と installation ID が変わるため、ローテーション手段にはならない。
+
+### 12.3 運用方針
+
+PEM は無期限のため、**放置しても認証は壊れない**。期限切れによる停止は発生しない。
+
+ローテーションが必要になった場合（鍵の漏洩、定期的な衛生管理）は、以下の手順で**無停止**で実施できる。GitHub App は最大 25 本の鍵を同時に有効化でき、鍵が 1 本しかない場合は新鍵を生成するまで旧鍵を削除できない仕様になっている。
+
+1. Web UI で新しい秘密鍵を生成する（**手作業**）
+2. workspace 変数 `GITHUB_APP_PEM_FILE` を新しい値に差し替える
+3. speculative plan で新鍵が機能することを確認する
+4. Web UI で旧鍵を削除する（**手作業**）
+
+手順 2 以降はスクリプト化できるが、1 と 4 は UI 操作が必要である。
+
+### 12.4 検討して採用しなかった案
+
+いずれも「PEM の定期自動ローテーション」という当初の要件を**満たさない**。要件を満たせないのは GitHub 側の制約であり、設計の問題ではない。
+
+**A. ブラウザ自動化（Playwright で GitHub UI を操作）**
+
+要件は満たせるが採用しない。GitHub アカウントの ID / パスワード / TOTP シードを自動化基盤に常駐させる必要があり、これは PEM より遥かに強い権限（全リポジトリ、全 App、組織設定、課金）を持つ。**保護対象より強い認証情報を新たに置くことになり、正味で悪化する。**
+
+**B. KMS sign-only 化**
+
+AWS KMS に `Origin=EXTERNAL` で PEM をインポートすると、鍵は取り出せなくなり `Sign` API での署名のみ可能になる（GitHub App の JWT が要求する `RSASSA_PKCS1_V1_5_SHA_256` に対応）。侵害されても鍵を持ち出せず、IAM 権限の剥奪で即座に停止でき、CloudTrail に署名履歴が残る。
+
+ただし **PEM のローテーション自体は依然として不可能**であり、得られるのは漏洩耐性のみ。Lambda / KMS / IAM / OIDC の構築と運用、AWS への依存（AWS 障害時に GitHub 管理も停止）、KMS 鍵の月額費用に対して、個人のリポジトリ管理という用途では利得が見合わない。
+
+なお、この構成を採る場合は `ephemeral "aws_lambda_invocation"` で run 開始時にトークンを取得する形になり、cron による定期実行は不要になる。将来必要になった場合の参考として記録しておく。
+
+**C. トークンをローテーションして変数に書き込むブローカー**
+
+スケジューラが installation token を発行して workspace 変数を更新する方式。`app_auth` を使えば provider が run ごとに自前でトークンを発行するため、**消費者がこの workspace 1 つだけなら利点がない**。加えて installation token は 1 時間で失効するため、スケジューラの遅延によって残り時間の少ないトークンを掴む危険がある。
+
+ブローカー方式が正当化されるのは、App 認証に非対応のツールなど**複数の消費者にトークンを配布する必要がある場合**に限られる。
+
+### 12.5 `TFE_TOKEN` について
+
+team token は API で発行・失効できるため、PEM と異なり自動ローテーションが可能である（`POST /teams/:team_id/authentication-token`、`expired-at` 指定可）。ローテーション手順は「削除 → 再作成」であり、発行済みトークンの有効期限は変更できない。
+
+ただし自己更新は chicken-and-egg になるため、実行するには別の認証情報を持つ外部の実行環境が必要になる。
 
 ---
 
@@ -384,5 +439,12 @@ PAT と異なり、GitHub App の秘密鍵は複数を同時に有効化でき�
 - [Unable to create a Personal Access Token via API · community · Discussion #148626](https://github.com/orgs/community/discussions/148626)
 - [GitHub Provider — integrations/github (Terraform Registry)](https://registry.terraform.io/providers/integrations/github/latest/docs)
 - [Permissions required for fine-grained personal access tokens — GitHub Docs](https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens)
+- [Managing private keys for GitHub Apps — GitHub Docs](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/managing-private-keys-for-github-apps)
+- [API to Automate Rotation of Private Keys for Github App · community · Discussion #39274](https://github.com/community/community/discussions/39274)
+- [Feature Request: BYO Key / Programmatic Key Generation for Apps · community · Discussion #18603](https://github.com/orgs/community/discussions/18603)
+- [private key operations do not generate an audit-log entry · community · Discussion #172472](https://github.com/orgs/community/discussions/172472)
+- [Registering a GitHub App from a manifest — GitHub Docs](https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest)
+- [/teams/:team_id/authentication-tokens API reference for HCP Terraform](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/team-tokens)
+- [aws_lambda_invocation | Ephemeral Resources | hashicorp/aws](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/ephemeral-resources/lambda_invocation)
 - [Dynamic provider credentials in HCP Terraform](https://developer.hashicorp.com/terraform/cloud-docs/dynamic-provider-credentials)
 - [Constraints and limitations — HCP Vault Dedicated](https://developer.hashicorp.com/hcp/docs/vault/get-started/deployment-considerations/constraints-and-limitations)
