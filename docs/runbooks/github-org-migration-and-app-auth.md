@@ -241,42 +241,50 @@ Organization repository の作成に必要なのは Organization permissions で
 
 ## 8. Phase 4: リポジトリ転送
 
-- [ ] **8-1. メタ repo 以外を org へ転送する**
+GitHub の **Move work to an organization** フローを使う。リポジトリと Projects を**まとめて選択して一括で移せる**ため、リポジトリごとに Danger Zone を開く必要はない。
 
-各 repo の Settings → Danger Zone → Transfer ownership → `haruka-aibara`
+- [ ] **8-1. Move work フローを実行する**
 
-転送により旧 URL から自動リダイレクトが設定される。さらに org 名が旧ユーザー名と同一のため、転送完了時点で **URL は移行前と同じ文字列に戻る**。
+Settings → Organizations → "Move to an organization" セクション → **Move work to an organization**
 
-- [ ] **8-2. メタ repo（この repo）を最後に転送する**
+プロンプトに従い、移動対象を選択して **Move to an organization** をクリックする。
 
-他の repo の転送が完了してから実施する。メタ repo を先に移すと HCP Terraform の VCS 連携が切れた状態で作業することになる。
+**選択するもの**: `main.tf` が管理する全リポジトリ（メタ repo `haruka-aibara` を含む）
 
-- [ ] **8-3. 転送結果を確認する**
+**選択しないもの**: §6 で作成した新しいプロフィール repo（`haruka-aibara-dev/haruka-aibara-dev`）。これは個人アカウントに残す必要がある
+
+- [ ] **8-2. 転送結果を確認する**
 
 ```bash
 curl -s "https://api.github.com/orgs/haruka-aibara/repos?per_page=100" \
   | grep '"name"' | wc -l
 ```
 
----
+転送により旧 URL から自動リダイレクトが設定される。さらに org 名が旧ユーザー名と同一のため、転送完了時点で **URL は移行前と同じ文字列に戻る**。
 
 ## 9. Phase 5: HCP Terraform / Terraform の切り替え
 
 ### 9.1 VCS 連携の復旧（chicken-and-egg に注意）
 
-メタ repo の workspace は **自分自身の VCS 連携を Terraform で管理している**（`tfe_workspace.haruka-aibara`）。転送により VCS 連携が切れるため、UI で先に復旧してから state を整合させる。
+Move work によって全リポジトリが org に移るため、`hcp_terraform.tf` が管理する **9 つの workspace すべての VCS 連携が同時に切れる**。これらは個人アカウント側の GitHub App インストールを参照していたためである。
 
-- [ ] **9-1. HCP Terraform UI で workspace の VCS 連携を貼り直す**
+ただし手作業で復旧する必要があるのは**メタ repo の workspace 1 つだけ**でよい。残りの 8 つは、そのメタ repo から apply すれば Terraform が `github_app_installation_id` の新しい値で貼り直す。
+
+メタ repo の workspace だけは自分自身の VCS 連携を管理しているため（`tfe_workspace.haruka-aibara`）、Terraform で直せない。ここだけ UI で先に復旧する。
+
+- [ ] **9-1. メタ repo の workspace の VCS 連携を UI で貼り直す**
 
 workspace `haruka-aibara` → Settings → Version Control → 新しい org のインストールを選択し、`haruka-aibara/haruka-aibara` に再接続する。
 
 - [ ] **9-2. workspace 変数 `github_app_installation_id` を更新する**
 
-7-1 で控えた新しい installation ID に差し替える（Terraform variable、sensitive）。
+§7-1 で控えた新しい installation ID に差し替える（Terraform variable、sensitive）。
 
-- [ ] **9-3. 他の workspace の VCS 連携も同様に確認する**
+- [ ] **9-3. apply して残り 8 つの workspace を収束させる**
 
-`hcp_terraform.tf` が管理する 9 つの workspace すべてが新しい installation を参照する必要がある。9-2 の変数更新が反映されれば apply で収束するが、apply 前に VCS が切れている workspace は UI で先に復旧する。
+メタ repo の VCS が復旧していれば、apply により他の workspace の `vcs_repo.github_app_installation_id` が新しい値に更新される。UI で 1 つずつ貼り直す必要はない。
+
+apply 後、各 workspace の Version Control 設定が新しい org のインストールを指していることを確認する。
 
 ### 9.2 provider 認証の切り替え
 
