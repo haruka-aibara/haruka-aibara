@@ -221,6 +221,7 @@ CSS はリファレンス実装からそのままコピーする（`.rm` / `.rmb
 - **GitHub**: `GitHub/` 配下は全ファイル執筆済み
 - **Code Review**: `AIがコードを書くなら、AIレビューは何を見ているのか.md`、`AI時代のCI：何を入れて何を入れないか.md` あり
 - **生成AIパスポート**: `AI and Machine Learning/生成AIパスポート/` 配下に学習ルート記事あり
+- **Jev（判断特化AI）の外部リンクメモ**: `AI and Machine Learning/Jevの関連記事リンク.md`（Qiita のまとめ記事のリンク＋Jev の前提と想定用途）
 - **スライド作成**: `Presentations/` 配下に `AIでスライドを作る.md`、`Claudeでパワポ生成.md`、`Gamma.md`、`エンタープライズ観点での比較.md` あり（Markdown ベースのスライドは `Marp/`）
 - **IPA試験再編**: `IPA/セキスペはいつ受けるか_2026年度CBT化と2027年度試験再編.md` あり
 - **ISMS**: `ISMS/ISMSと関連規格をゼロから理解する.html`（規格の系譜・認証審査・ポリシ3階層）
