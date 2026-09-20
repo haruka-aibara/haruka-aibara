@@ -328,6 +328,41 @@ workspace `haruka-aibara` → Settings → Version Control → 新しい org の
 
 §7-1 で控えた新しい installation ID に差し替える（Terraform variable、sensitive）。
 
+- [ ] **9-2a. apply の前に必ず plan を読む**
+
+UI で VCS 連携を貼り直すと、その workspace の `vcs_repo.github_app_installation_id` だけが state 上で新しくなる。`var.github_app_installation_id` が古いままだと、plan は**貼り直した接続を元に戻そうとする**。
+
+```
+# tfe_workspace.haruka-aibara will be updated in-place
+  ~ vcs_repo {
+      ~ github_app_installation_id = (sensitive value)
+    }
+```
+
+9 つの workspace のうち UI で触った 1 つだけが差分を出していたら、この状態である。**変数を更新せずに apply すると、直したばかりの接続が切れる。**
+
+- [ ] **9-2b. 転送漏れを plan で検出する**
+
+plan 冒頭の "Objects have changed outside of Terraform" に、`full_name` が `haruka-aibara-dev/...` へ変わったリポジトリが並ぶ。**これらは org へ移っていない。**
+
+```
+~ full_name = "haruka-aibara/NAME" -> "haruka-aibara-dev/NAME"
+```
+
+provider は 301 リダイレクトを追うため、転送漏れがあっても plan は通ってしまう。ただし org 側に同名リポジトリが作られた時点でリダイレクトが壊れるため、放置してはならない。ここに挙がったものを転送してから次に進む。
+
+Pages を持つリポジトリが残っていると、`homepage_url` が実際の URL と一致しなくなる点にも注意する。
+
+- [ ] **9-2c. secret_scanning の再有効化を確認する**
+
+転送するとセキュリティ設定がリセットされ、plan が全リポジトリに対して以下を出す。
+
+```
+~ secret_scanning { status = "disabled" -> "enabled" }
+```
+
+これは設定どおりの状態に戻す正しい動作なので、件数が多くても問題ない。
+
 - [ ] **9-3. apply して残り 8 つの workspace を収束させる**
 
 メタ repo の VCS が復旧していれば、apply により他の workspace の `vcs_repo.github_app_installation_id` が新しい値に更新される。UI で 1 つずつ貼り直す必要はない。
