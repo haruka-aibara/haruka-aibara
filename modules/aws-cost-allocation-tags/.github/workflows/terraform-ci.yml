@@ -1,4 +1,4 @@
-# Managed by Terraform (haruka-aibara/haruka-aibara). Do not edit directly.
+# Managed by Terraform (haruka-aibara/works). Do not edit directly.
 name: Terraform CI
 
 on:
