@@ -106,7 +106,7 @@ resource "tfe_workspace" "haruka-aibara" {
   terraform_version             = "~> 1.16.0"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/haruka-aibara"
+    identifier                 = "${local.github_owner}/works"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }

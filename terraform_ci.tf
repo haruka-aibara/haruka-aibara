@@ -13,7 +13,7 @@ locals {
     "bedrock-slack-ai-chatbot"                  = { working_directory = "." }
     "deploy-hcp-vault-dedicated-with-terraform" = { working_directory = "." }
     "generate-dev-io-summary"                   = { working_directory = "." }
-    "haruka-aibara"                             = { working_directory = "." }
+    "works"                                     = { working_directory = "." }
     "iam-access-analyzer-policy-generate"       = { working_directory = "." }
     "terraform-aws-budget-slack-notifier"       = { working_directory = "." }
     "google-cloud-hands-on"                     = { working_directory = "." }

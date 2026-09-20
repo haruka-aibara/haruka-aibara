@@ -2,14 +2,16 @@
 # for personal use only
 # =========================================
 
-# Personal Profile Repository
+# Terraform meta repository (monorepo)
+# Renamed from "haruka-aibara" and transferred to the organization. The old
+# owner/name combination is retired by GitHub and cannot be reused.
 module "haruka-aibara" {
   source = "./modules/repository"
 
-  repository_name = "haruka-aibara"
-  description     = "Personal profile repository"
+  repository_name = "works"
+  description     = "Terraform-managed GitHub repositories and HCP Terraform workspaces"
 
-  topics = ["profile"]
+  topics = ["terraform", "github", "iac"]
 }
 
 # =========================================
