@@ -1,8 +1,9 @@
 # AWS Budgets がグローバルサービス（us-east-1）のため、SNSトピックも us-east-1 に作成する必要あり
 
 resource "aws_sns_topic" "notify_slack" {
-  provider = aws.us-east-1
-  name     = "${local.project_name}_topic"
+  provider          = aws.us-east-1
+  name              = "${local.project_name}_topic"
+  kms_master_key_id = aws_kms_key.notify_slack.key_id
 }
 
 resource "aws_sns_topic_policy" "notify_slack" {
