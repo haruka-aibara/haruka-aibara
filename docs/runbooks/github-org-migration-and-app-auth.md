@@ -250,6 +250,8 @@ HCP Terraform → Settings → Providers → GitHub App から、org `haruka-aib
 https://github.com/organizations/haruka-aibara/settings/installations/<INSTALLATION_ID>
 ```
 
+> **App 自体は Terraform 管理できない。** GitHub 公式の OpenAPI 仕様において、App に対する書き込み系エンドポイントは webhook 設定・インストールの削除/停止・トークン発行のみで、**App の作成・permissions の変更・秘密鍵の生成・org へのインストールに対応する API が存在しない**。`POST /app-manifests/{code}/conversions` は新規作成専用かつブラウザでのハンドシェイクを要する。provider にあるのは `github_app_installation_repository` 系（インストール済み App とリポジトリの紐付け）だけで、All repositories でインストールするなら出番はない。本節が UI 操作ばかりなのはこのためである。
+
 - [ ] **7-2. Terraform provider 用の GitHub App を自前で作成する**
 
 org の Settings → Developer settings → GitHub Apps → New GitHub App
@@ -392,41 +394,71 @@ apply 後、各 workspace の Version Control 設定が新しい org のイン�
 
 ### 9.2 provider 認証の切り替え
 
-- [ ] **9-4. App 認証用の環境変数を workspace に追加する**
+- [ ] **9-4. App 認証用の環境変数を宣言する**
 
-workspace `haruka-aibara` の **Environment variables** に以下を追加する。
-
-| 変数名 | 値 | sensitive |
-|---|---|---|
-| `GITHUB_APP_ID` | App ID | — |
-| `GITHUB_APP_INSTALLATION_ID` | Installation ID | — |
-| `GITHUB_APP_PEM_FILE` | PEM の中身 | **Yes** |
-
-PEM は改行を `\n` に置換した 1 行でも受け付けられる。
-
-```bash
-# PEM を 1 行化する
-awk 'BEGIN{ORS="\\n"} {print}' your-app.private-key.pem
-```
-
-**provider のコード変更は不要。** `integrations/github` provider は `app_auth` ブロックが無くても `GITHUB_APP_` prefix の環境変数を参照する。`providers.tf` はコメントの更新のみでよい。
+3 変数は `workspace_variables.tf` で `tfe_variable` として宣言済みである。値は書かれておらず、作成時にプレースホルダ `set-in-ui` が入るだけになっている。
 
 ```hcl
-provider "github" {
-  owner = local.github_owner
-  # GitHub App authentication (GITHUB_APP_ID / GITHUB_APP_INSTALLATION_ID /
-  # GITHUB_APP_PEM_FILE) is configured as environment variables on HCP Terraform.
-  # The provider mints a 1-hour installation access token per run.
+resource "tfe_variable" "github_app_pem_file" {
+  workspace_id = tfe_workspace.haruka-aibara.id
+  key          = "GITHUB_APP_PEM_FILE"
+  value        = "set-in-ui"
+  category     = "env"
+  sensitive    = true
 }
 ```
 
-- [ ] **9-5. `GITHUB_TOKEN` を削除する**
+HCP Terraform は sensitive 変数の値を API で返さないため、provider は読み取りのたびに **state 上の最後の値をそのまま持ち越す**。設定側の `value` を変えない限り新しい値を書き込むことはないので、`ignore_changes` は不要である。
 
-`GITHUB_TOKEN` が残っていると App 認証より優先される可能性があるため、切り替えの検証時には削除する。値は 0-3 で退避済みであること。
+その裏返しとして、**Terraform はこれらの値を一切認識できない**。UI で鍵が消されても破損しても検知せず、plan はクリーンなままになる。
 
-- [ ] **9-6. 投機的 plan で検証する**
+- [ ] **9-5. apply 直後に UI で実際の値を設定する**
 
-PR を作成して speculative plan を走らせ、**差分が出ないこと**を確認する。ここで 403 が出る場合は 7-2 の permission（特に Workflows）を見直す。
+apply の時点では 3 変数とも `set-in-ui` である。**次の run が走る前に**差し替える。
+
+| 変数 | 取得元 |
+|---|---|
+| `GITHUB_APP_ID` | App の General ページ |
+| `GITHUB_APP_INSTALLATION_ID` | org の installations URL 末尾の数値 |
+| `GITHUB_APP_PEM_FILE` | PEM 全文 |
+
+ここでの `GITHUB_APP_INSTALLATION_ID` は **GitHub 側の数値 ID** である。§9-2 の `vcs_repo.github_app_installation_id`（HCP Terraform 内部の `ghain-...`）とは別物なので混同しない。provider が GitHub API を直接叩くため、こちらは GitHub の ID を使う。
+
+#### PEM は 1 行化が必須
+
+HCP Terraform の環境変数は**改行を含められない**。そのまま貼ると次のエラーになる。
+
+```
+Error saving variable
+Value cannot contain newlines in environment variables
+```
+
+改行を `\n` の 2 文字に置換して 1 行にする。provider 側が実際の改行に戻す。
+
+```bash
+awk '{printf "%s\\n", $0}' your-app.private-key.pem
+```
+
+`-----BEGIN` から `-----END ...-----` まで全体を含めること。
+
+**provider のコード変更は不要。** `integrations/github` provider は `app_auth` ブロックが無くても `GITHUB_APP_` prefix の環境変数を参照する。`providers.tf` はコメントの更新のみでよい。
+
+- [ ] **9-6. `GITHUB_TOKEN` を削除する**
+
+値は §4 0-3 で退避済みであること。
+
+**削除は PEM を設定した後に行う。** 先に削除すると workspace に GitHub の資格情報が一切無い状態になり、provider が匿名でリクエストして 60 req/hour の制限に当たる。30 前後のリポジトリを refresh する途中でリトライに入るため、**plan が失敗もせず延々返ってこない**という分かりにくい詰まり方をする。
+
+- [ ] **9-7. 投機的 plan で検証する**
+
+PR を作成して speculative plan を走らせる。
+
+| 結果 | 意味 |
+|---|---|
+| 成功 | App 認証で GitHub API を叩けている |
+| 401 | PEM の 1 行化ミス、または ID の不整合 |
+| 403 | permission 不足（特に Workflows） |
+| 返ってこない | 資格情報が無効で匿名アクセスになっている |
 
 ---
 
