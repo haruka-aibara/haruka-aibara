@@ -7,8 +7,8 @@ resource "tfe_workspace" "aws-cost-allocation-tags" {
   name                          = "aws-cost-allocation-tags"
   organization                  = local.tfe_organization
   description                   = "aws cost allocation tags"
-  auto_apply                    = true
-  auto_apply_run_trigger        = true
+  auto_apply                    = false
+  auto_apply_run_trigger        = false
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
@@ -25,7 +25,7 @@ resource "tfe_workspace" "aws-cost-allocation-tags" {
 resource "tfe_workspace" "bedrock-slack-ai-agent" {
   name                          = "bedrock-slack-ai-agent"
   organization                  = local.tfe_organization
-  auto_apply                    = true
+  auto_apply                    = false
   auto_apply_run_trigger        = false
   file_triggers_enabled         = false
   queue_all_runs                = false
@@ -43,8 +43,8 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
 resource "tfe_workspace" "bedrock-slack-ai-chatbot" {
   name                          = "bedrock-slack-ai-chatbot"
   organization                  = local.tfe_organization
-  auto_apply                    = true
-  auto_apply_run_trigger        = true
+  auto_apply                    = false
+  auto_apply_run_trigger        = false
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
@@ -79,8 +79,8 @@ resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
 resource "tfe_workspace" "generate-dev-io-summary" {
   name                          = "generate-dev-io-summary"
   organization                  = local.tfe_organization
-  auto_apply                    = true
-  auto_apply_run_trigger        = true
+  auto_apply                    = false
+  auto_apply_run_trigger        = false
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
@@ -116,8 +116,8 @@ resource "tfe_workspace" "haruka-aibara" {
 resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
   name                          = "iam-access-analyzer-policy-generate"
   organization                  = local.tfe_organization
-  auto_apply                    = true
-  auto_apply_run_trigger        = true
+  auto_apply                    = false
+  auto_apply_run_trigger        = false
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
@@ -134,8 +134,8 @@ resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
 resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
   name                          = "terraform-aws-budget-slack-notifier"
   organization                  = local.tfe_organization
-  auto_apply                    = true
-  auto_apply_run_trigger        = true
+  auto_apply                    = false
+  auto_apply_run_trigger        = false
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
@@ -153,8 +153,8 @@ resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
 resource "tfe_workspace" "google-cloud-hands-on" {
   name                          = "google-cloud-hands-on"
   organization                  = local.tfe_organization
-  auto_apply                    = true
-  auto_apply_run_trigger        = true
+  auto_apply                    = false
+  auto_apply_run_trigger        = false
   file_triggers_enabled         = false
   queue_all_runs                = false
   structured_run_output_enabled = false
