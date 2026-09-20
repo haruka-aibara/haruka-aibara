@@ -15,7 +15,7 @@ resource "tfe_workspace" "aws-cost-allocation-tags" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/aws-cost-allocation-tags"
+    identifier                 = "${local.github_owner}/aws-cost-allocation-tags"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -33,7 +33,7 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/bedrock-slack-ai-agent"
+    identifier                 = "${local.github_owner}/bedrock-slack-ai-agent"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -51,7 +51,7 @@ resource "tfe_workspace" "bedrock-slack-ai-chatbot" {
   terraform_version             = "~> 1.16.0"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/bedrock-slack-ai-chatbot"
+    identifier                 = "${local.github_owner}/bedrock-slack-ai-chatbot"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -69,7 +69,7 @@ resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/deploy-hcp-vault-dedicated-with-terraform"
+    identifier                 = "${local.github_owner}/deploy-hcp-vault-dedicated-with-terraform"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -87,7 +87,7 @@ resource "tfe_workspace" "generate-dev-io-summary" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/generate-dev-io-summary"
+    identifier                 = "${local.github_owner}/generate-dev-io-summary"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -106,7 +106,7 @@ resource "tfe_workspace" "haruka-aibara" {
   terraform_version             = "~> 1.16.0"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/haruka-aibara"
+    identifier                 = "${local.github_owner}/haruka-aibara"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -124,7 +124,7 @@ resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/iam-access-analyzer-policy-generate"
+    identifier                 = "${local.github_owner}/iam-access-analyzer-policy-generate"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -142,7 +142,7 @@ resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/terraform-aws-budget-slack-notifier"
+    identifier                 = "${local.github_owner}/terraform-aws-budget-slack-notifier"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
@@ -161,7 +161,7 @@ resource "tfe_workspace" "google-cloud-hands-on" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.tfe_organization}/google-cloud-hands-on"
+    identifier                 = "${local.github_owner}/google-cloud-hands-on"
     github_app_installation_id = local.github_app_installation_id
     ingress_submodules         = false
   }
