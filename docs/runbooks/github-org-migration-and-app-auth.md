@@ -95,6 +95,16 @@ org 化にあたり、この 2 つを分離する。
 
 コミットの contribution 紐付けはメールアドレス基準のため、rename しても維持される。
 
+### 3.1 失うと復旧できないもの
+
+この 3 つだけは確実に保全する。他は失敗しても取り返しがつく。
+
+| 対象 | 理由 |
+|---|---|
+| **現行 PAT の値**（§4 0-3） | App 認証が動かなかった場合の唯一の戻り道。PAT は API で再発行できないため、削除すると復旧できない |
+| **org 作成画面の事前待機**（§5 5-1） | 旧ユーザー名の奪取を防ぐ唯一の緩和策 |
+| **App 秘密鍵 (PEM)**（§7 7-4） | 再ダウンロード不可。紛失した場合は鍵の生成からやり直し |
+
 ---
 
 ## 4. Phase 0: 事前準備（無停止・いつでも実施可）
@@ -126,12 +136,9 @@ resource "tfe_workspace" "aws-cost-allocation-tags" {
 
 `providers.tf` の `owner` も local を参照するようにしてよい。
 
-- [ ] **0-2. 現状のバックアップを取る**
+- [ ] **0-2. state のバックアップは不要**
 
-```bash
-# state のバックアップ（HCP Terraform UI からも取得可）
-terraform state pull > /tmp/tfstate-backup-$(date +%Y%m%d).json
-```
+HCP Terraform は state の履歴バージョンを自動で保持している。workspace の States タブから任意のバージョンを選び、Advanced トグルから rollback できる（workspace のロックと state 作成権限が必要）。手動でのバックアップ取得は行わない。
 
 - [ ] **0-3. 現行 PAT の値を安全な場所に退避する**
 
@@ -368,7 +375,7 @@ https://github.com/haruka-aibara-dev に README と stats バッジが表示さ�
 |---|---|
 | Phase 1 で org 名を奪われた | 別名 org で続行するか、移行自体を中止。中止する場合は個人アカウントを元の名前に rename で戻す（未取得なら可能） |
 | Phase 5 で App 認証が動かない | `GITHUB_TOKEN` を復元し、`GITHUB_APP_*` を削除。PAT は org repo に対しても有効（org 側で PAT 制限を設けていない場合） |
-| state 不整合 | 0-2 のバックアップから復元 |
+| state 不整合 | HCP Terraform の States タブから直前のバージョンに rollback |
 
 **注意:** Phase 1（rename と org 作成）は実質的に巻き戻せない。Phase 4 以降の失敗は PAT へのフォールバックで復旧可能なため、リスクは Phase 1 に集中している。
 
@@ -457,6 +464,7 @@ team token は API で発行・失効できるため、PEM と異なり自動ロ
 - [private key operations do not generate an audit-log entry · community · Discussion #172472](https://github.com/orgs/community/discussions/172472)
 - [Registering a GitHub App from a manifest — GitHub Docs](https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest)
 - [/teams/:team_id/authentication-tokens API reference for HCP Terraform](https://developer.hashicorp.com/terraform/cloud-docs/api-docs/team-tokens)
+- [Manage workspace state in HCP Terraform](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/state)
 - [aws_lambda_invocation | Ephemeral Resources | hashicorp/aws](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/ephemeral-resources/lambda_invocation)
 - [Dynamic provider credentials in HCP Terraform](https://developer.hashicorp.com/terraform/cloud-docs/dynamic-provider-credentials)
 - [Constraints and limitations — HCP Vault Dedicated](https://developer.hashicorp.com/hcp/docs/vault/get-started/deployment-considerations/constraints-and-limitations)
