@@ -21,17 +21,17 @@
 
 ## 記事を書くときのルール
 
-記事（HTML / markdown）の書き方ルールは、毎回コンテキストに載せないよう `.claude/skills/article-writing/` に分離した。**内容はここにあったものと同じ**（想定読者の置き方・分量の目安・inline SVG 中心の HTML の作り方・「ゼロから理解する」テンプレート・セキュリティ記事での追加視点）。
+記事（HTML / markdown）の書き方ルールは、毎回コンテキストに載せないよう **リポジトリルートの** `.claude/skills/article-writing/` に分離した。**内容はここにあったものと同じ**（想定読者の置き方・分量の目安・inline SVG 中心の HTML の作り方・「ゼロから理解する」テンプレート・セキュリティ記事での追加視点）。
 
 - **Claude Code**: 記事作成を頼まれた時点で `article-writing` スキルとして読み込まれるので、このファイルからは何もしなくてよい
-- **他のエージェント（Codex / Gemini CLI 等）**: 記事を書く前に `.claude/skills/article-writing/SKILL.md` を読む。「ゼロから理解する」形式のときは `.claude/skills/article-writing/references/zero-from-scratch.md` も読む
+- **他のエージェント（Codex / Gemini CLI 等）**: 記事を書く前にリポジトリルートの `.claude/skills/article-writing/SKILL.md` を読む。「ゼロから理解する」形式のときは同ディレクトリの `references/zero-from-scratch.md` も読む
 - 置き場所の判断は上の「リポジトリ構造」、重複確認は下の「既存コンテンツの状況」を見る（どちらもこのファイル内に残している）
 
 記事の書き方ルールを追加・変更するときは、このファイルではなくスキル側に書く。
 
 ## リポジトリ内のスキル
 
-`.claude/skills/` 配下にこのリポジトリで使う Claude Code スキルを置く（`~/.claude/` は devcontainer 再起動で消えるため、残すものはリポジトリ内に置く）。
+スキルは **リポジトリルートの `.claude/skills/` に置く**（`docs/.claude/` ではない）。Claude Code がプロジェクトスキルを探すのはリポジトリルートだけで、サブディレクトリに置くと読み込まれない。`~/.claude/` は devcontainer 再起動で消えるので、残すものはリポジトリ内に置く。
 
 - `article-writing`: このリポジトリに記事（HTML / markdown）を書くときのルール一式。「HTML記事作成して」「ゼロから理解する形式で」等で発動する。「ゼロから理解する」形式のテンプレートは `references/zero-from-scratch.md` に分けてあり、その形式を頼まれたときだけ読む
 - `story-breakdown`: 大きめのストーリーをサブタスクと「いつまでに何が終わっていれば大丈夫か」の基準線に分解する。見積もり精度ではなくズレ検出が目的
@@ -42,7 +42,7 @@
 
 - 作業ルール・判断軸・既存コンテンツ情報はこの `AGENTS.md` に追記する
 - **ツール別の指示ファイル（`CLAUDE.md` / `GEMINI.md` 等）は作らない。** 特定ツールだけに効く注意も、そのツール名を添えてこのファイルに書く。`AGENTS.md` を自動で読まないツールを使うときは、転送用ファイルを足すのではなくツール側の設定で `AGENTS.md` を指す
-- 記事の書き方に関するルールは `AGENTS.md` ではなく `.claude/skills/article-writing/` に書く
+- 記事の書き方に関するルールは `AGENTS.md` ではなくリポジトリルートの `.claude/skills/article-writing/` に書く
 - 追記する内容は、次回以降も具体的に役立つ情報に限る
   - 既存コンテンツの状況（何がどこにあるかの1行のみ。記事の要約・背景は書かない）
   - ツールの既知バグや運用上のハマりポイント
