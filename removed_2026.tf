@@ -25,17 +25,8 @@ removed {
 # Unlike haruka-aibara-private above, this repository really is meant to go
 # away, so it is a plain destroy rather than a `removed` block -- see
 # modules/repository/main.tf for the matching prevent_destroy lifecycle note.
-
-# The old bedrock-slack-ai-chatbot HCP Terraform workspace's own AWS
-# resources are now managed by module.bedrock_slack_ai_chatbot_infra instead
-# (imported into this workspace's state). The old workspace was force-deleted
-# by hand in the HCP Terraform UI -- a plain destroy here would otherwise
-# refuse to run while resources were still listed in its own state -- so
-# there is nothing left for Terraform to destroy.
-removed {
-  from = tfe_workspace.bedrock-slack-ai-chatbot
-
-  lifecycle {
-    destroy = false
-  }
-}
+#
+# tfe_workspace.bedrock-slack-ai-chatbot is on the same path (real destroy,
+# not `removed`), but needs force_delete = true recorded in state first --
+# see hcp_terraform.tf -- before the block itself can be deleted in a
+# follow-up PR.

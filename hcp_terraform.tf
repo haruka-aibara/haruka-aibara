@@ -53,6 +53,31 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
   }
 }
 
+# Bedrock Slack AI Chatbot Workspace -- being decommissioned now that its AWS
+# infra is imported into module.bedrock_slack_ai_chatbot_infra (see
+# docs/runbooks/bedrock-slack-ai-chatbot-state-merge.md). force_delete is set
+# here first so it lands in state; only once that's applied is it safe to
+# remove this block entirely in a follow-up PR, otherwise the destroy call
+# would still hit HCP Terraform's default safe-delete and fail because this
+# workspace's own state still lists resources.
+resource "tfe_workspace" "bedrock-slack-ai-chatbot" {
+  name                          = "bedrock-slack-ai-chatbot"
+  organization                  = local.tfe_organization
+  auto_apply                    = false
+  auto_apply_run_trigger        = false
+  file_triggers_enabled         = false
+  queue_all_runs                = false
+  structured_run_output_enabled = false
+  terraform_version             = "~> 1.16.0"
+  force_delete                  = true
+
+  vcs_repo {
+    identifier         = "${local.github_owner}/bedrock-slack-ai-chatbot"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
+  }
+}
+
 # Deploy HCP Vault Dedicated with Terraform Workspace
 resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
   name                          = "deploy-hcp-vault-dedicated-with-terraform"

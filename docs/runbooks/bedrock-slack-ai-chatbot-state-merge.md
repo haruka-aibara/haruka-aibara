@@ -110,35 +110,39 @@
 
 ## 5. Phase D: 旧環境の廃止(カットオーバー確認後、別 PR)
 
-- [ ] **D-1. 旧ワークスペースの state を空にする、またはワークスペースごと削除する**
+旧ワークスペース・旧リポジトリのどちらも、**手動で先に消すのではなく Terraform に実 destroy させる**(このリポジトリの存在意義そのものがライフサイクルをコードで管理することなので、手動削除は最後の手段)。ただしどちらも安全装置(safe delete / `prevent_destroy`)があるため、2段階のPRに分ける。
 
-  旧 `bedrock-slack-ai-chatbot` ワークスペースの state にも同じリソースが引き続き載っている(import は `works` 側に state エントリを追加するだけで、旧 state からは何も削除しない)。放置すると同じ AWS リソースを2つの state が管理してしまい、どちらかで誤って `apply`/`destroy` が走ると衝突する。
+### D-1. 旧ワークスペース: force_delete を先に効かせる(PR その1)
 
-  HCP Terraform UI の該当ワークスペース → Settings → Destruction and Deletion から、**force delete**(state ごと削除。実 AWS リソースは削除しない)を行う。
+`hcp_terraform.tf` の `tfe_workspace.bedrock-slack-ai-chatbot` に `force_delete = true` を追加して apply する(ブロック自体はまだ消さない)。
 
-- [ ] **D-2. `hcp_terraform.tf` から `tfe_workspace.bedrock-slack-ai-chatbot` を外す**
+```hcl
+resource "tfe_workspace" "bedrock-slack-ai-chatbot" {
+  # ...既存の引数はそのまま...
+  force_delete = true
+}
+```
 
-  `removed_2026.tf` の `module.haruka-aibara-private` と同じ形で:
+`force_delete` は「破棄時に、このワークスペースの state に他の Terraform 管理リソースが残っていても強制的に削除する(実リソースは削除しない)」という意味の通常の resource 引数であり、`prevent_destroy` のような lifecycle メタ引数ではない。**state に値が載って初めて意味を持つ**ため、このブロックをまだ削除してはいけない(削除と同じ apply でやると、まだ `force_delete=true` が state に反映されておらず通常の safe delete のまま失敗する)。
 
-  ```hcl
-  removed {
-    from = tfe_workspace.bedrock-slack-ai-chatbot
+- [ ] このPRを apply する
+- [ ] apply 成功後、旧ワークスペースの Variables ページ等で `force_delete` が効いていることを確認してよい(任意)
 
-    lifecycle {
-      destroy = false
-    }
-  }
-  ```
+### D-2. 旧ワークスペース: ブロックを削除して実 destroy させる(PR その2、D-1 の apply 成功後)
 
-  (D-1 で実体を既に消しているため `destroy = false` でよい。)`imports_2025.tf` の対応する import ブロックも削除する。
+`hcp_terraform.tf` から `tfe_workspace.bedrock-slack-ai-chatbot` のブロックを丸ごと削除する。`removed` ブロックではなく、素直に消して destroy させる(D-1 で state に `force_delete=true` が乗っているので、safe delete ではなく force delete の API が呼ばれ、旧ワークスペースの state だけが破棄される。実 AWS リソースは無関係)。
 
-- [ ] **D-3. 旧 GitHub リポジトリを削除する**
+- [ ] このPRの speculative plan で `tfe_workspace.bedrock-slack-ai-chatbot` が **destroy** になっていることを確認
+- [ ] `imports_2025.tf` の対応する import ブロックが残っていれば削除する(既に state にあるので実害はないが、掃除する)
 
-  GitHub 上で `haruka-aibara/bedrock-slack-ai-chatbot` を削除する。
+### D-3. 旧 GitHub リポジトリ: prevent_destroy を外して実 destroy させる
 
-- [ ] **D-4. `main.tf` から `module "bedrock-slack-ai-chatbot"`(github_repository)を外す**
+`main.tf` から `module "bedrock-slack-ai-chatbot"`(github_repository)を削除し、同じPRで `modules/repository/main.tf` の `lifecycle { prevent_destroy = true }` を **一時的に** `false` にする。
 
-  `modules/repository` の `github_repository.this` は `lifecycle { prevent_destroy = true }` なので、`removed` ブロックだけでは destroy が prevent_destroy に阻まれる可能性がある。D-3 で実体を先に消していれば `destroy = false` の `removed` ブロックで外すだけでよい(既に存在しないリソースの destroy は発生しない)。
+外さないと `github_repository.this` が「削除しようとしたが prevent_destroy に阻まれた」というエラーで apply が失敗する(このモジュールは全リポジトリ共通なので、この間は全リポジトリの削除保護が外れる点に注意)。
+
+- [ ] speculative plan で `bedrock-slack-ai-chatbot` の `github_repository` / `github_repository_vulnerability_alerts` / `github_branch_protection` が **destroy**、それ以外の既存リポジトリに diff が出ていないことを確認
+- [ ] apply 成功を確認したら **速やかに** `prevent_destroy = true` へ戻す別PRを出す(保護が外れた状態を長く放置しない)
 
 ---
 
