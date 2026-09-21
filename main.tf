@@ -123,6 +123,9 @@ module "deploy-hcp-vault-dedicated-with-terraform" {
 # =========================================
 
 # VS Code DevContainer Templates
+# テンプレートの定義とリリースは devcontainer-templates/ に移した。このリポジトリは
+# ロールバック先兼、旧 ghcr package の置き場として残してある。畳む手順は
+# docs/runbooks/devcontainer-template-monorepo-migration.md。
 module "devcontainer-templates" {
   source = "./modules/repository"
 

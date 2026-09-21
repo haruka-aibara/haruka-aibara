@@ -37,4 +37,6 @@ override.tf.json
 terraform.rc
 
 # devcontainer
-.devcontainer
+# ルート直下だけを無視する。テンプレートの中身
+# (devcontainer-templates/src/*/.devcontainer/) は追跡対象。
+/.devcontainer
