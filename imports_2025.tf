@@ -59,11 +59,6 @@ import {
 }
 
 import {
-  to = module.bedrock-slack-ai-chatbot.github_repository.this
-  id = "bedrock-slack-ai-chatbot"
-}
-
-import {
   to = module.github-actions-test-events-deep-dive.github_repository.this
   id = "github-actions-test-events-deep-dive"
 }
@@ -90,11 +85,6 @@ import {
 import {
   to = tfe_workspace.bedrock-slack-ai-agent
   id = "haruka-aibara/bedrock-slack-ai-agent"
-}
-
-import {
-  to = tfe_workspace.bedrock-slack-ai-chatbot
-  id = "haruka-aibara/bedrock-slack-ai-chatbot"
 }
 
 import {
