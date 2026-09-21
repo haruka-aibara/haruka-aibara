@@ -57,40 +57,18 @@ resource "tfe_variable" "github_app_pem_file" {
 # returns a sensitive variable's value, so these are declared once with a
 # placeholder and the real value is set in the UI afterward.
 #
-# ignore_changes on value: two of these (the Slack ones) were created by hand
-# in the UI before this code landed, so they were adopted with an `import`
-# block (see imports_2026.tf) rather than created fresh. HCP Terraform never
-# returns a sensitive value, so after import the provider has no way to know
-# it already matches "set-in-ui" and would otherwise plan to overwrite the
-# real secret with the placeholder. ignore_changes makes that impossible for
-# all four, not just the imported two, since none of these are meant to be
-# written from code again after their first value is set in the UI.
-
-resource "tfe_variable" "aws_access_key_id" {
-  workspace_id = tfe_workspace.works.id
-  key          = "AWS_ACCESS_KEY_ID"
-  value        = "set-in-ui"
-  category     = "env"
-  sensitive    = true
-  description  = "AWS credentials for the bedrock-slack-ai-chatbot module. Set this value in the UI."
-
-  lifecycle {
-    ignore_changes = [value]
-  }
-}
-
-resource "tfe_variable" "aws_secret_access_key" {
-  workspace_id = tfe_workspace.works.id
-  key          = "AWS_SECRET_ACCESS_KEY"
-  value        = "set-in-ui"
-  category     = "env"
-  sensitive    = true
-  description  = "AWS credentials for the bedrock-slack-ai-chatbot module. Set this value in the UI."
-
-  lifecycle {
-    ignore_changes = [value]
-  }
-}
+# AWS itself is authenticated via dynamic provider credentials (OIDC), not
+# static keys -- see providers.tf -- so there is no AWS_ACCESS_KEY_ID /
+# AWS_SECRET_ACCESS_KEY here.
+#
+# ignore_changes on value: these two were created by hand in the UI before
+# this code landed, so they were adopted with an `import` block (see
+# imports_2026.tf) rather than created fresh. HCP Terraform never returns a
+# sensitive value, so after import the provider has no way to know it already
+# matches "set-in-ui" and would otherwise plan to overwrite the real secret
+# with the placeholder. ignore_changes makes that impossible, since neither
+# is meant to be written from code again after their first value is set in
+# the UI.
 
 resource "tfe_variable" "bedrock_slack_ai_chatbot_slack_bot_token" {
   workspace_id = tfe_workspace.works.id
