@@ -8,7 +8,7 @@
 # Add a line here to onboard a new repo.
 locals {
   python_ci_repos = {
-    "works" = { working_directory = "bedrock-slack-ai-chatbot" }
+    "works" = { working_directory = "modules/bedrock-slack-ai-chatbot" }
   }
 }
 
