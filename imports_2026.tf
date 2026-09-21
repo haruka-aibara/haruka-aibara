@@ -130,10 +130,10 @@ import {
 # 既存アダプトが必要だった。
 import {
   to = tfe_variable.bedrock_slack_ai_chatbot_slack_bot_token
-  id = "ws-cYcvfFLEd1NNgQfJ/var-fkaEBQ2HRia4ZZNy"
+  id = "haruka-aibara/works/var-fkaEBQ2HRia4ZZNy"
 }
 
 import {
   to = tfe_variable.bedrock_slack_ai_chatbot_slack_signing_secret
-  id = "ws-cYcvfFLEd1NNgQfJ/var-aJ6VhgiSG2jfRoFH"
+  id = "haruka-aibara/works/var-aJ6VhgiSG2jfRoFH"
 }
