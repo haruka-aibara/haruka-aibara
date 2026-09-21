@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ドメイン認証・企業認証・EV認証を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>DV・OV・EV — 証明書の値段の差は「何を確認したか」の差</h1>
+<p class="lede">暗号の強さは同じ。違うのは認証局がどこまで身元を調べたか。</p>
+
+<h2>何が問題なのか</h2>
+<p>サーバ証明書には無料のものから年間十数万円のものまである。<strong>暗号の強度はどれも変わらない</strong>のに、なぜ値段が違うのか。「高いほうが安全なんですよね」と聞かれたときに答えられないと、選定の議論ができない。</p>
+<p>差は1点だけ。<strong>認証局が発行前にどこまで調べたか</strong>。証明書の中身の話ではなく、審査という人手の作業のコストが値段になっている。</p>
+
+<figure>
+<svg viewBox="0 0 700 260" role="img" aria-label="DV・OV・EVで確認される範囲の違い">
+  <g>
+    <rect x="8" y="16" width="684" height="70" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="26" y="40" font-size="13" font-weight="600" fill="var(--c1)">DV（ドメイン認証）</text>
+    <text x="26" y="62" font-size="11.5" fill="var(--ink)">確認するのは1つだけ：申請者がそのドメインを支配していること</text>
+    <text x="26" y="79" font-size="11" fill="var(--muted)">DNS にレコードを置かせる、指定のファイルを置かせる、管理者アドレス宛のメールに応答させる → 全自動・数分・無料も可</text>
+  </g>
+  <g>
+    <rect x="8" y="98" width="684" height="70" rx="9" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="26" y="122" font-size="13" font-weight="600" fill="var(--c2)">OV（企業認証）</text>
+    <text x="26" y="144" font-size="11.5" fill="var(--ink)">＋ 申請者の組織が実在すること</text>
+    <text x="26" y="161" font-size="11" fill="var(--muted)">登記情報や第三者データベースとの突き合わせ、代表番号への電話確認など → 数日かかる。組織名が証明書に入る</text>
+  </g>
+  <g>
+    <rect x="8" y="180" width="684" height="70" rx="9" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="26" y="204" font-size="13" font-weight="600" fill="var(--c3)">EV（Extended Validation）</text>
+    <text x="26" y="226" font-size="11.5" fill="var(--ink)">＋ 業界共通の厳格な基準に沿った審査</text>
+    <text x="26" y="243" font-size="11" fill="var(--muted)">事業の実在性、申請者の権限、署名者の意思確認まで手順が定められている → 最も高価で時間もかかる</text>
+  </g>
+</svg>
+<figcaption>上に積み上がる形なので、EV は DV の確認も当然含む。逆に言えば DV は「ドメインを持っている誰か」しか保証しない——攻撃者が自分で取得したドメインに DV 証明書を取ることは何の問題もなくできる。鍵マークが付いていることは、その運営者が信用できることを意味しない。</figcaption>
+</figure>
+
+<h2>EV の見た目の優位はなくなった</h2>
+<p>かつて EV 証明書のサイトはアドレスバーが緑色になり、組織名が表示された。これが EV を買う最大の理由だったが、<strong>主要ブラウザは 2019 年ごろにこの表示をやめた</strong>。利用者が緑色を見て判断している証拠が乏しく、むしろ「緑でなければ危険」という誤解を招いていたため。</p>
+<p>現在はどの種類でも見た目は同じ鍵マーク1つ。EV の価値は、証明書の中身を確認する仕組みを自前で持っている場合（社内システム、機器の相互認証など）に限られてきている。</p>
+
+<h2>選ぶときの考え方</h2>
+<ul>
+<li><strong>一般的な Web サイト・API</strong>：DV で足りる。自動更新できることのほうが運用上ずっと重要。</li>
+<li><strong>組織名を示す必要がある場合</strong>：取引先の審査や業界の要件で「証明書に組織名が入っていること」が求められるなら OV。要件があるかどうかで決める話で、安全性の議論ではない。</li>
+<li><strong>更新の自動化を最優先に</strong>：証明書の事故で圧倒的に多いのは失効でも偽造でもなく<strong>更新忘れによる期限切れ</strong>。有効期間は年々短縮されているため、手動更新は現実的でなくなりつつある。</li>
+</ul>
+
+<div class="note">
+<p><strong>提案するときの言い方</strong></p>
+<p>「高い証明書にすれば安全になる」という前提で予算が組まれていることがある。<strong>「証明書の値段は暗号の強さではなく、認証局が身元を調べる手間の差。攻撃者も無料の証明書を使えるので、価格帯を上げても偽サイト対策にはならない。同じ予算を使うなら、更新の自動化と監視に回すほうが事故を減らせる」</strong>と、コストの向き先を変える提案にすると通りやすい。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://cabforum.org/working-groups/server/baseline-requirements/documents/">CA/Browser Forum - Baseline Requirements</a></li>
+<li><a href="https://cabforum.org/working-groups/server/extended-validation/">CA/Browser Forum - Extended Validation Guidelines</a></li>
+<li><a href="https://letsencrypt.org/ja/how-it-works/">Let's Encrypt - 仕組み</a></li>
+</ul>
+
+</main>
+</body>
+</html>

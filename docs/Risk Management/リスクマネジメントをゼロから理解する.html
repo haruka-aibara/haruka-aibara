@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>リスクマネジメントをゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+.tw{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+@media (max-width:640px){table{min-width:34rem}}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+<marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>
+</defs></svg>
+
+<main>
+
+<h1>リスクマネジメントをゼロから理解する</h1>
+<p class="lede">リスク管理という言葉は分かる。分からないのは、何から手をつけて、どの順で進めるのか。</p>
+
+<h2>何から手をつけるのか</h2>
+
+<p>「リスクを管理しよう」と言われても、月曜の朝に何をするのかは出てこない。対策製品を入れる話なのか、保険に入る話なのか。どれもリスク管理ではあるが、そこから始めると費用のかけどころを外す。</p>
+
+<p>順番は決まっている。まず<strong>測る</strong>、それから<strong>どうするか決める</strong>。前半がリスクアセスメント、後半がリスク対応で、この 2 つは別の工程。「このリスクはどれくらい大きいか」を出す作業と、「だから低減する／保険をかける」と選ぶ作業を混ぜないことが最初のコツになる。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="リスク特定・分析・評価・対応・残留リスクの受容という一本の流れ">
+  <line x1="4" y1="52" x2="4" y2="44" stroke="var(--c1)" stroke-width="1.5"/>
+  <line x1="4" y1="44" x2="408" y2="44" stroke="var(--c1)" stroke-width="1.5"/>
+  <line x1="408" y1="44" x2="408" y2="52" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="206" y="30" font-size="13" font-weight="600" fill="var(--c1)" text-anchor="middle">リスクアセスメント — 測る</text>
+
+  <line x1="436" y1="52" x2="436" y2="44" stroke="var(--c2)" stroke-width="1.5"/>
+  <line x1="436" y1="44" x2="696" y2="44" stroke="var(--c2)" stroke-width="1.5"/>
+  <line x1="696" y1="44" x2="696" y2="52" stroke="var(--c2)" stroke-width="1.5"/>
+  <text x="566" y="30" font-size="13" font-weight="600" fill="var(--c2)" text-anchor="middle">リスク対応 — 決める</text>
+
+  <g>
+    <rect x="4" y="66" width="116" height="60" rx="7" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="62" y="90" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">リスク特定</text>
+    <text x="62" y="110" font-size="10.5" fill="var(--muted)" text-anchor="middle">洗い出す</text>
+
+    <rect x="148" y="66" width="116" height="60" rx="7" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="206" y="90" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">リスク分析</text>
+    <text x="206" y="110" font-size="10.5" fill="var(--muted)" text-anchor="middle">大きさを出す</text>
+
+    <rect x="292" y="66" width="116" height="60" rx="7" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="350" y="90" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">リスク評価</text>
+    <text x="350" y="110" font-size="10.5" fill="var(--muted)" text-anchor="middle">基準と比べる</text>
+
+    <rect x="436" y="66" width="116" height="60" rx="7" fill="var(--c2)"/>
+    <text x="494" y="90" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">リスク対応</text>
+    <text x="494" y="110" font-size="10.5" fill="var(--on)" text-anchor="middle" opacity=".85">4 つから選ぶ</text>
+
+    <rect x="580" y="66" width="116" height="60" rx="7" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/>
+    <text x="638" y="90" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">残留リスク</text>
+    <text x="638" y="110" font-size="10.5" fill="var(--muted)" text-anchor="middle">経営者が受容</text>
+
+    <line x1="122" y1="96" x2="144" y2="96" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <line x1="266" y1="96" x2="288" y2="96" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#a1)"/>
+    <line x1="410" y1="96" x2="432" y2="96" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#a2)"/>
+    <line x1="554" y1="96" x2="576" y2="96" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#a2)"/>
+  </g>
+
+  <line x1="350" y1="186" x2="350" y2="132" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#am)"/>
+  <rect x="4" y="188" width="692" height="52" rx="7" fill="var(--lane)"/>
+  <text x="24" y="211" font-size="12.5" font-weight="600" fill="var(--c4)">リスク基準 — アセスメントを始める前に決めておく</text>
+  <text x="24" y="231" font-size="11" fill="var(--muted)">どこからを「対応が必要」とみなすか、どこまでなら受け入れるかの線引き</text>
+</svg>
+<figcaption>基準を後から決めると、出てきた数字を見てから線を引くことになり、結論を都合よく動かせてしまう。だから先に決める。残留リスクが受容されて初めて 1 周が終わり、状況が変われば同じ流れをまた回す。</figcaption>
+</figure>
+
+<h2>測る：特定 → 分析 → 評価</h2>
+
+<p><strong>リスク特定</strong>は洗い出し。守るべき情報資産を挙げ、それぞれに何が起こりうるか（脅威）と、つけ込まれる弱点（脆弱性）を並べる。</p>
+
+<p><strong>リスク分析</strong>は大きさを出す工程。よく使うのは「資産価値 × 脅威の起こりやすさ × 脆弱性の大きさ」をそれぞれ段階値にして掛け合わせる形。ここで詰まりやすいのが<strong>資産価値</strong>で、これは購入額ではなく<strong>失われたときにどれだけ困るか</strong>で測る。顧客名簿の値段は紙代ではなく、漏れたときの賠償と信用の損失。機密性・完全性・可用性それぞれが損なわれた場合の影響を点数化し、その最大値や合計を資産価値とする。</p>
+
+<p><strong>リスク評価</strong>は、出た値を先に決めたリスク基準と照らして、対応が必要かどうかと優先順位を判定する。ここまでが測る工程で、まだ何も対策は選んでいない。</p>
+
+<h2>分析のやり方は 4 つある</h2>
+
+<div class="tw">
+<table>
+<tr><th>手法</th><th>やり方</th><th>向き・不向き</th></tr>
+<tr><td><strong>ベースラインアプローチ</strong></td><td>既存の基準やガイドラインをものさしにして、達しているかを一律にチェックする</td><td>速くて安いが、組織固有の事情は拾えない</td></tr>
+<tr><td><strong>詳細リスク分析</strong></td><td>資産・脅威・脆弱性を洗い出し、1 件ずつ評価する</td><td>精度は高いが、時間と工数がかかる</td></tr>
+<tr><td><strong>非形式的アプローチ</strong></td><td>担当者や専門家の経験と知識で判断する</td><td>最も速いが属人的で、再現性と説明力に欠ける</td></tr>
+<tr><td><strong>組合せアプローチ</strong></td><td>重要な領域は詳細リスク分析、それ以外はベースライン</td><td>実務の基本形。工数を重要度に寄せられる</td></tr>
+</table>
+</div>
+
+<h2>決める：4 つのリスク対応</h2>
+
+<p>評価が終わると、リスクごとに取れる手は 4 つに整理できる。<strong>低減</strong>（対策を打って発生確率や影響を下げる）、<strong>回避</strong>（原因になる活動そのものをやめる）、<strong>移転</strong>（保険や委託で他者に移す。共有とも呼ぶ）、<strong>保有</strong>（何もせず受け入れる）。</p>
+
+<figure>
+<svg viewBox="0 0 700 336" role="img" aria-label="発生確率と影響度のマトリクスに4つのリスク対応を当てはめた図">
+  <rect x="112" y="26" width="256" height="124" rx="6" fill="var(--c1)" opacity=".18"/>
+  <rect x="368" y="26" width="256" height="124" rx="6" fill="var(--stop)" opacity=".18"/>
+  <rect x="112" y="150" width="256" height="124" rx="6" fill="var(--c3)" opacity=".18"/>
+  <rect x="368" y="150" width="256" height="124" rx="6" fill="var(--c4)" opacity=".18"/>
+
+  <text x="240" y="70" font-size="15" font-weight="700" fill="var(--c1)" text-anchor="middle">低減</text>
+  <text x="240" y="94" font-size="11.5" fill="var(--ink)" text-anchor="middle">対策を打って確率か影響を下げる</text>
+  <text x="240" y="116" font-size="11" fill="var(--muted)" text-anchor="middle">例：多要素認証、バックアップ、パッチ適用</text>
+
+  <text x="496" y="70" font-size="15" font-weight="700" fill="var(--stop)" text-anchor="middle">回避</text>
+  <text x="496" y="94" font-size="11.5" fill="var(--ink)" text-anchor="middle">原因になる活動自体をやめる</text>
+  <text x="496" y="116" font-size="11" fill="var(--muted)" text-anchor="middle">例：その機能を提供しない、収集をやめる</text>
+
+  <text x="240" y="194" font-size="15" font-weight="700" fill="var(--c3)" text-anchor="middle">保有</text>
+  <text x="240" y="218" font-size="11.5" fill="var(--ink)" text-anchor="middle">対策せず、そのまま受け入れる</text>
+  <text x="240" y="240" font-size="11" fill="var(--muted)" text-anchor="middle">例：対策費用が損失額を上回る場合</text>
+
+  <text x="496" y="194" font-size="15" font-weight="700" fill="var(--c4)" text-anchor="middle">移転（共有）</text>
+  <text x="496" y="218" font-size="11.5" fill="var(--ink)" text-anchor="middle">他者に肩代わりしてもらう</text>
+  <text x="496" y="240" font-size="11" fill="var(--muted)" text-anchor="middle">例：サイバー保険、外部への委託</text>
+
+  <line x1="112" y1="150" x2="624" y2="150" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="368" y1="26" x2="368" y2="274" stroke="var(--line)" stroke-width="1.5"/>
+
+  <line x1="96" y1="290" x2="96" y2="20" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#am)"/>
+  <line x1="96" y1="290" x2="640" y2="290" stroke="var(--muted)" stroke-width="1.2" marker-end="url(#am)"/>
+  <text x="52" y="92" font-size="12" font-weight="600" fill="var(--muted)" text-anchor="middle">発生</text>
+  <text x="52" y="110" font-size="12" font-weight="600" fill="var(--muted)" text-anchor="middle">確率</text>
+  <text x="82" y="42" font-size="11.5" fill="var(--muted)" text-anchor="end">高</text>
+  <text x="82" y="266" font-size="11.5" fill="var(--muted)" text-anchor="end">低</text>
+  <text x="240" y="308" font-size="11.5" fill="var(--muted)" text-anchor="middle">小</text>
+  <text x="496" y="308" font-size="11.5" fill="var(--muted)" text-anchor="middle">大</text>
+  <text x="368" y="328" font-size="12" font-weight="600" fill="var(--muted)" text-anchor="middle">影響度</text>
+</svg>
+<figcaption>右上ほど手厚く、左下ほど手を抜く。移転が右下に来るのは、めったに起きないが起きたら耐えられない損害が保険の得意分野だから。逆に頻発するものは保険料が損失に見合わず、低減で確率を下げるほうが安い。</figcaption>
+</figure>
+
+<p>4 つのうちどれを選んでも、リスクはゼロにならない。対応後に残る分が<strong>残留リスク</strong>で、これを「ここまでは受け入れる」と決めるのは現場ではなく<strong>経営者</strong>。保有を選んだリスクだけでなく、低減した後の残りも受容の対象になる。</p>
+
+<div class="note">
+<p><strong>用語の入れ子に注意</strong></p>
+<p>「リスクマネジメント」が全体、その中の測る部分が「リスクアセスメント」、さらにその中の 1 工程が「リスク分析」。3 語がほぼ同義のように使われるので、広い順に<strong>マネジメント ＞ アセスメント ＞ 分析</strong>と覚えておく。</p>
+</div>
+
+<h2>JIS Q 31000 と JIS Q 31010</h2>
+
+<p>進め方を定めた規格が 2 本ある。役割は分業になっている。</p>
+
+<ul>
+<li><strong>JIS Q 31000</strong>（リスクマネジメント — 指針）：組織としてリスクマネジメントをどう位置づけ、どういう枠組みとプロセスで回すかを示す。情報セキュリティに限らず、あらゆる分野のリスクに使える一般規格。</li>
+<li><strong>JIS Q 31010</strong>（リスクアセスメント技法）：31000 のうちアセスメント部分について、具体的な技法をカタログとして並べたもの。ブレーンストーミング、チェックリスト、シナリオ分析、FMEA、HAZOP など。</li>
+</ul>
+
+<p>ひとことで言えば、<strong>31000 が「どう進めるか」、31010 が「どの道具を使うか」</strong>。情報セキュリティに特化した枠組みである ISMS 側の規格については <a href="../ISMS/ISMSと関連規格をゼロから理解する.html">ISMS と関連規格をゼロから理解する</a> にまとめてある。</p>
+
+<h2>それでも起きたとき：BCP・コンティンジェンシープラン・BCM</h2>
+
+<p>対応を尽くしても事故は起きる。起きた後を扱うのが事業継続の領域で、似た 3 語が並ぶ。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="平常時・インシデント発生・復旧の時間軸にBCP・コンティンジェンシープラン・BCMを並べた図">
+  <rect x="16" y="24" width="668" height="42" rx="7" fill="var(--c4)" opacity=".2"/>
+  <text x="32" y="44" font-size="12.5" font-weight="700" fill="var(--c4)">BCM（事業継続マネジメント）</text>
+  <text x="32" y="60" font-size="11" fill="var(--ink)">計画をつくり、訓練し、見直して改善し続ける仕組み。全期間を通して回り続ける</text>
+
+  <rect x="16" y="82" width="264" height="40" rx="7" fill="none" stroke="var(--c2)" stroke-width="1.4" stroke-dasharray="5 4"/>
+  <text x="148" y="107" font-size="11.5" fill="var(--muted)" text-anchor="middle">BCP の策定・訓練は平常時に</text>
+
+  <rect x="280" y="82" width="330" height="40" rx="7" fill="var(--c2)"/>
+  <text x="296" y="99" font-size="12.5" font-weight="700" fill="var(--on)">BCP（事業継続計画）</text>
+  <text x="296" y="115" font-size="11" fill="var(--on)" opacity=".9">中核事業を止めない／目標復旧時間内に戻すための計画</text>
+
+  <rect x="280" y="136" width="172" height="40" rx="7" fill="var(--c1)"/>
+  <text x="294" y="153" font-size="11.5" font-weight="700" fill="var(--on)">コンティンジェンシープラン</text>
+  <text x="294" y="169" font-size="11" fill="var(--on)" opacity=".9">発生直後の緊急対応・初動手順</text>
+
+  <line x1="16" y1="212" x2="684" y2="212" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#am)"/>
+  <line x1="280" y1="76" x2="280" y2="224" stroke="var(--stop)" stroke-width="1.6"/>
+  <circle cx="280" cy="212" r="6" fill="var(--stop)"/>
+  <circle cx="610" cy="212" r="6" fill="var(--c2)"/>
+
+  <text x="148" y="238" font-size="12" font-weight="600" fill="var(--muted)" text-anchor="middle">平常時</text>
+  <text x="280" y="238" font-size="12" font-weight="600" fill="var(--stop)" text-anchor="middle">インシデント発生</text>
+  <text x="610" y="238" font-size="12" font-weight="600" fill="var(--c2)" text-anchor="middle">復旧</text>
+
+  <line x1="280" y1="258" x2="610" y2="258" stroke="var(--c2)" stroke-width="1" stroke-dasharray="4 3"/>
+  <line x1="280" y1="252" x2="280" y2="264" stroke="var(--c2)" stroke-width="1"/>
+  <line x1="610" y1="252" x2="610" y2="264" stroke="var(--c2)" stroke-width="1"/>
+  <text x="445" y="280" font-size="11.5" fill="var(--muted)" text-anchor="middle">目標復旧時間（RTO）— BCP はこの長さを先に決めておく</text>
+</svg>
+<figcaption>3 つは同じ層のものではない。BCM だけが「仕組み」で、BCP とコンティンジェンシープランは BCM が生み出す「文書」にあたる。計画を書いただけで訓練も見直しもしていない状態は、BCP はあるが BCM がない状態と言える。</figcaption>
+</figure>
+
+<p>違いはカバーする範囲にある。<strong>コンティンジェンシープラン</strong>は起きた直後にどう動くかの緊急対応手順で、被害の拡大を止めるところまで。<strong>BCP</strong> はその先まで見て、<strong>どの事業を優先して、いつまでに、どの水準まで戻すか</strong>を目標復旧時間つきで決める。止めない・早く戻すことが目的なので、代替拠点や代替手段まで含む。</p>
+
+<p><strong>BCM</strong> はそれらを回す仕組みのほう。計画の策定、周知と訓練、結果を踏まえた見直しという PDCA そのものを指す。BCP は成果物、BCM は活動、と押さえると取り違えにくい。策定の実務指針は、内閣府の<strong>事業継続ガイドライン</strong>が国内の拠りどころになっている。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.jisc.go.jp/app/jis/general/GnrJISSearch.html">日本産業標準調査会 — JIS 検索（JIS Q 31000 / JIS Q 31010 の閲覧）</a></li>
+<li><a href="https://www.iso.org/standard/65694.html">ISO 31000 Risk management — Guidelines</a></li>
+<li><a href="https://www.bousai.go.jp/kyoiku/kigyou/keizoku/sk.html">内閣府 防災情報 — 事業継続ガイドライン</a></li>
+<li><a href="https://www.ipa.go.jp/security/guide/sme/about.html">IPA — 中小企業の情報セキュリティ対策ガイドライン</a></li>
+<li><a href="https://www.ipa.go.jp/security/reports/rm/index.html">IPA — 情報セキュリティマネジメントとリスク管理</a></li>
+<li><a href="https://www.ipa.go.jp/shiken/kubun/sc.html">IPA — 情報処理安全確保支援士試験</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>スイッチングハブ</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>スイッチングハブ</h1>
+<p class="lede">いま「ハブ」と言えばこれ。宛先を見て、必要なポートにだけフレームを送る機器。</p>
+
+<h2>全ポートにばらまくのをやめた</h2>
+<p>リピータハブは受け取った信号を全ポートに流していた。つまり<strong>関係ない機器にも中身が届く</strong>し、全員が 1 本の回線を取り合うので衝突も起きる。</p>
+<p>スイッチングハブ（L2 スイッチ）は、フレームの宛先 MAC アドレスを見て<strong>その機器がつながっているポートにだけ</strong>送る。結果として次の 2 つが同時に手に入る。</p>
+<ul>
+<li><strong>速い</strong> — ポートごとに独立した通信ができるので、A↔B と C↔D が同時に全速度で通信できる</li>
+<li><strong>覗かれにくい</strong> — 自分宛てでないフレームは物理的に届かない</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="スイッチングハブの動作。MACアドレステーブルを学習し、既知の宛先はそのポートにのみ転送、未知の宛先とブロードキャストは全ポートに送る">
+<defs>
+<marker id="wa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+<marker id="wb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+</defs>
+<rect x="270" y="86" width="160" height="52" rx="7" fill="var(--c1)" opacity=".18"/>
+<rect x="270" y="86" width="160" height="52" rx="7" fill="none" stroke="var(--c1)" stroke-width="1.8"/>
+<text x="350" y="110" font-size="12" fill="var(--ink)" text-anchor="middle">スイッチングハブ</text>
+<text x="350" y="128" font-size="9" fill="var(--c1)" text-anchor="middle">ポート 1〜4</text>
+
+<g font-size="10" fill="var(--ink)" text-anchor="middle">
+<rect x="40" y="40" width="80" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="80" y="58">PC-A ポート1</text>
+<rect x="40" y="156" width="80" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="80" y="174">PC-B ポート2</text>
+<rect x="580" y="40" width="80" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="620" y="58">PC-C ポート3</text>
+<rect x="580" y="156" width="80" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="620" y="174">PC-D ポート4</text>
+</g>
+<line x1="122" y1="56" x2="268" y2="94" stroke="var(--line)" stroke-width="1.3"/>
+<line x1="122" y1="168" x2="268" y2="130" stroke="var(--line)" stroke-width="1.3"/>
+<line x1="432" y1="94" x2="578" y2="56" stroke="var(--line)" stroke-width="1.3"/>
+<line x1="432" y1="130" x2="578" y2="168" stroke="var(--line)" stroke-width="1.3"/>
+
+<path d="M124 52 C 220 52, 240 44, 576 44" fill="none" stroke="var(--c3)" stroke-width="1.7" marker-end="url(#wa)"/>
+<text x="350" y="34" font-size="10" fill="var(--c3)" text-anchor="middle">A→C：ポート 3 にだけ送る（B・D には届かない）</text>
+
+<path d="M124 176 C 240 200, 460 200, 576 180" fill="none" stroke="var(--c2)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#wb)"/>
+<text x="350" y="212" font-size="10" fill="var(--c2)" text-anchor="middle">同時刻に B→D も全速度で通信できる（ポートが独立しているため）</text>
+
+<text x="350" y="244" font-size="10.5" fill="var(--muted)" text-anchor="middle">宛先が表にない場合とブロードキャストのときだけ、全ポートに送る（フラッディング）</text>
+<text x="350" y="262" font-size="10.5" fill="var(--muted)" text-anchor="middle">＝ ブロードキャストドメインは分割されない。分けたければ VLAN かルータが要る</text>
+</svg>
+<figcaption>宛先を覚える仕組みは <a href="ブリッジ.html">ブリッジ</a> と同じ MAC アドレステーブルの学習。スイッチは「それを多ポート化して専用チップで高速化したもの」と捉えるとよい。</figcaption>
+</figure>
+
+<h2>転送方式の違い</h2>
+<p>フレームを「どこまで受け取ってから転送するか」に方式がある。</p>
+<table>
+<tr><th>方式</th><th>動作</th><th>特徴</th></tr>
+<tr><td>ストア&amp;フォワード</td><td>フレーム全体を受信し、FCS で誤りを確認してから転送</td><td>壊れたフレームを流さない。遅延はやや大きい。現在の主流</td></tr>
+<tr><td>カットスルー</td><td>宛先 MAC（先頭 6 バイト）を読んだ時点で転送開始</td><td>低遅延だが、壊れたフレームもそのまま流す</td></tr>
+</table>
+
+<div class="note">
+<p><strong>セキュリティ上の注意：</strong>「スイッチなら盗聴されない」とは言い切れない。MAC アドレステーブルには容量があり、偽の MAC を大量に流し込んで表を溢れさせると、スイッチはフラッディング動作に戻る（MAC フラッディング攻撃）。そうなると全ポートにフレームが流れ、リピータハブと同じ状態になる。ポートごとに学習できる MAC 数を制限する機能（ポートセキュリティ）が対策になる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://standards.ieee.org/ieee/802.1D/3390/">IEEE 802.1D — MAC Bridges</a></li>
+<li><a href="https://standards.ieee.org/ieee/802.3/7071/">IEEE 802.3 — Ethernet</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XSS の 3 分類とセッションハイジャック</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.88rem;line-height:1.6}
+pre code{background:none;padding:0}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>XSS の 3 分類とセッションハイジャック</h1>
+<p class="lede">「入力値をエスケープしましょう」で終わる説明では、なぜそこまで重要なのかが伝わらない。経路を最後まで追う。</p>
+
+<h2>何が問題なのか</h2>
+<p>XSS（クロスサイトスクリプティング）は、<strong>攻撃者の書いた JavaScript を、被害者のブラウザ上で、被害者が見ているサイトのオリジンとして実行させる</strong>脆弱性。「オリジンとして」の部分が効く——同一オリジンポリシーの内側に入り込むので、そのサイトの Cookie も localStorage も画面の中身も、全部読める。</p>
+<p>攻撃者のゴールはたいてい<strong>セッションの乗っ取り</strong>。パスワードを盗まなくても、ログイン済みという状態そのものを持っていける。</p>
+
+<h2>セッションハイジャックまでの流れ</h2>
+
+<figure>
+<svg viewBox="0 0 700 320" role="img" aria-label="XSSによるセッションハイジャックの5ステップと、各段階での防御">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">攻撃の流れ（左）と、各段階を止める防御（右）</text>
+
+  <g>
+    <rect x="0" y="26" width="400" height="46" rx="7" fill="var(--lane)"/>
+    <circle cx="26" cy="49" r="12" fill="var(--c2)"/><text x="26" y="53" font-size="12" fill="var(--on)" text-anchor="middle">1</text>
+    <text x="50" y="46" font-size="11.5" font-weight="600" fill="var(--ink)">仕込む</text>
+    <text x="50" y="63" font-size="10.5" fill="var(--muted)">ユーザ入力がエスケープされず HTML に出る箇所を探す</text>
+    <text x="416" y="55" font-size="11" fill="var(--c3)">出力時のエスケープ ★根本対策</text>
+  </g>
+  <g>
+    <rect x="0" y="82" width="400" height="46" rx="7" fill="var(--lane)"/>
+    <circle cx="26" cy="105" r="12" fill="var(--c2)"/><text x="26" y="109" font-size="12" fill="var(--on)" text-anchor="middle">2</text>
+    <text x="50" y="102" font-size="11.5" font-weight="600" fill="var(--ink)">被害者に到達させる</text>
+    <text x="50" y="119" font-size="10.5" fill="var(--muted)">罠 URL を踏ませる／保存済みの投稿を開かせる</text>
+    <text x="416" y="111" font-size="11" fill="var(--muted)">（利用者教育。あてにはできない）</text>
+  </g>
+  <g>
+    <rect x="0" y="138" width="400" height="46" rx="7" fill="var(--lane)"/>
+    <circle cx="26" cy="161" r="12" fill="var(--c2)"/><text x="26" y="165" font-size="12" fill="var(--on)" text-anchor="middle">3</text>
+    <text x="50" y="158" font-size="11.5" font-weight="600" fill="var(--ink)">被害者のオリジンで実行される</text>
+    <text x="50" y="175" font-size="10.5" fill="var(--muted)">document.cookie / localStorage / 画面の中身が読める</text>
+    <text x="416" y="160" font-size="11" fill="var(--c3)">Cookie に HttpOnly</text>
+    <text x="416" y="176" font-size="10.5" fill="var(--muted)">→ document.cookie で読めなくなる</text>
+  </g>
+  <g>
+    <rect x="0" y="194" width="400" height="46" rx="7" fill="var(--lane)"/>
+    <circle cx="26" cy="217" r="12" fill="var(--c2)"/><text x="26" y="221" font-size="12" fill="var(--on)" text-anchor="middle">4</text>
+    <text x="50" y="214" font-size="11.5" font-weight="600" fill="var(--ink)">外部へ送り出す</text>
+    <text x="50" y="231" font-size="10.5" fill="var(--muted)">画像読み込みに見せかけて URL に載せる（＝Web ビーコン）</text>
+    <text x="416" y="216" font-size="11" fill="var(--c3)">CSP で送信先を制限</text>
+    <text x="416" y="232" font-size="10.5" fill="var(--muted)">img-src / connect-src</text>
+  </g>
+  <g>
+    <rect x="0" y="250" width="400" height="46" rx="7" fill="var(--stop)" opacity=".85"/>
+    <circle cx="26" cy="273" r="12" fill="var(--on)"/><text x="26" y="277" font-size="12" fill="var(--stop)" text-anchor="middle">5</text>
+    <text x="50" y="270" font-size="11.5" font-weight="600" fill="var(--on)">なりすます</text>
+    <text x="50" y="287" font-size="10.5" fill="var(--on)">受け取ったセッション ID を自分のブラウザにセットするだけ</text>
+    <text x="416" y="272" font-size="11" fill="var(--c3)">重要操作で再認証</text>
+    <text x="416" y="288" font-size="10.5" fill="var(--muted)">ログイン時のセッション ID 再生成</text>
+  </g>
+  <text x="0" y="314" font-size="11" fill="var(--muted)">パスワードは一度も登場しない。だから「パスワードを強くする」も MFA も、この経路には効かない。</text>
+</svg>
+<figcaption>MFA を突破できるのは、認証が完了した<em>後</em>の状態を盗んでいるため。攻撃者は再ログインしないので、ログイン時の追加認証を通る必要がない。セッションハイジャック全般に共通する性質。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>HttpOnly を付けても XSS が無害になるわけではない</strong></p>
+<p>Cookie が読めなくても、スクリプトが動いている時点で<em>被害者の権限で任意の操作を代行できる</em>。パスワード変更、送金、メールアドレスの書き換え——Cookie を持ち出さずその場で実行するほうが、今はむしろ主流。HttpOnly は被害を狭める緩和策であって、根本対策は 1 の出力エスケープ。</p>
+</div>
+
+<h2>Web ビーコン — 情報を外に運ぶ経路</h2>
+<p>1×1 の透明画像などを読み込ませ、その<strong>リクエストそのものを情報伝達に使う</strong>仕組み。もとはメールの開封計測や Web 解析のための正規技術で、トラッキングピクセルとも呼ばれる。</p>
+
+<figure>
+<svg viewBox="0 0 700 208" role="img" aria-label="Webビーコンが画像リクエストのURLに情報を載せて外部へ送る仕組み">
+  <rect x="0" y="24" width="290" height="120" rx="8" fill="var(--lane)"/>
+  <text x="145" y="48" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">被害者のブラウザ</text>
+  <rect x="24" y="62" width="242" height="30" rx="5" fill="var(--card)" stroke="var(--line)"/>
+  <text x="145" y="82" font-size="11" fill="var(--ink)" text-anchor="middle">画面上は何も表示されない（1×1 透明）</text>
+  <rect x="24" y="100" width="242" height="30" rx="5" fill="var(--c2)"/>
+  <text x="145" y="120" font-size="11" fill="var(--on)" text-anchor="middle">読み込むだけで通信が発生する</text>
+
+  <line x1="290" y1="84" x2="452" y2="84" stroke="var(--c2)" stroke-width="2.5"/>
+  <polygon points="462,84 448,78 448,90" fill="var(--c2)"/>
+  <text x="376" y="72" font-size="10.5" fill="var(--c2)" text-anchor="middle">GET /p.gif?c=SESSIONID...</text>
+  <text x="376" y="106" font-size="10.5" fill="var(--muted)" text-anchor="middle">情報は URL のクエリに載っている</text>
+
+  <rect x="462" y="24" width="238" height="120" rx="8" fill="var(--stop)" opacity=".85"/>
+  <text x="581" y="70" font-size="11.5" font-weight="600" fill="var(--on)" text-anchor="middle">攻撃者のサーバ</text>
+  <text x="581" y="94" font-size="11" fill="var(--on)" text-anchor="middle">アクセスログを見るだけで</text>
+  <text x="581" y="112" font-size="11" fill="var(--on)" text-anchor="middle">中身が手に入る</text>
+
+  <text x="0" y="176" font-size="11" fill="var(--muted)">画像の読み込みはクロスオリジンでも止められない（同一オリジンポリシーは「読み込み」ではなく「読み取り」を制限する）。</text>
+  <text x="0" y="196" font-size="11" fill="var(--muted)">応答を読む必要がないので、fetch と違って CORS の許可も要らない。だから外部送信の手段として選ばれる。</text>
+</svg>
+<figcaption>正規の用途でも同じ仕組みが働く。フィッシングメールに仕込めば「そのアドレスが生きているか」「いつ開いたか」「どの IP・どの端末か」が分かる。メールクライアントが画像の自動読み込みを既定でオフにしているのはこのため。</figcaption>
+</figure>
+
+<h2>3 つの分類 — 悪意のスクリプトがどこに存在するか</h2>
+<p>XSS は攻撃の効果ではなく、<strong>スクリプトがどの経路でブラウザに届くか</strong>で 3 つに分かれる。分ける実益は、対策する場所が変わる点にある。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="Reflected・Stored・DOM BasedのXSSでスクリプトが通る経路の違い">
+  <g font-size="10.5" text-anchor="middle">
+    <text x="86" y="14" fill="var(--muted)">攻撃者</text>
+    <text x="286" y="14" fill="var(--muted)">サーバ</text>
+    <text x="456" y="14" fill="var(--muted)">DB</text>
+    <text x="614" y="14" fill="var(--muted)">被害者のブラウザ</text>
+  </g>
+
+  <text x="0" y="42" font-size="12" font-weight="600" fill="var(--c1)">Reflected XSS — 反射する</text>
+  <rect x="24" y="52" width="124" height="30" rx="5" fill="var(--lane)"/><text x="86" y="72" font-size="10.5" fill="var(--ink)" text-anchor="middle">罠 URL を送る</text>
+  <line x1="148" y1="67" x2="216" y2="67" stroke="var(--c1)" stroke-width="2"/><polygon points="226,67 213,62 213,72" fill="var(--c1)"/>
+  <rect x="226" y="52" width="120" height="30" rx="5" fill="var(--lane)"/><text x="286" y="72" font-size="10.5" fill="var(--ink)" text-anchor="middle">そのまま出力</text>
+  <line x1="346" y1="67" x2="542" y2="67" stroke="var(--c1)" stroke-width="2"/><polygon points="552,67 539,62 539,72" fill="var(--c1)"/>
+  <rect x="552" y="52" width="124" height="30" rx="5" fill="var(--c1)"/><text x="614" y="72" font-size="10.5" fill="var(--on)" text-anchor="middle">実行</text>
+  <text x="456" y="96" font-size="10" fill="var(--muted)" text-anchor="middle">保存されない・1 人ずつ踏ませる必要がある</text>
+
+  <text x="0" y="134" font-size="12" font-weight="600" fill="var(--c2)">Stored XSS — 保存される</text>
+  <rect x="24" y="144" width="124" height="30" rx="5" fill="var(--lane)"/><text x="86" y="164" font-size="10.5" fill="var(--ink)" text-anchor="middle">投稿する</text>
+  <line x1="148" y1="159" x2="216" y2="159" stroke="var(--c2)" stroke-width="2"/><polygon points="226,159 213,154 213,164" fill="var(--c2)"/>
+  <rect x="226" y="144" width="120" height="30" rx="5" fill="var(--lane)"/><text x="286" y="164" font-size="10.5" fill="var(--ink)" text-anchor="middle">受け取る</text>
+  <line x1="346" y1="159" x2="396" y2="159" stroke="var(--c2)" stroke-width="2"/><polygon points="406,159 393,154 393,164" fill="var(--c2)"/>
+  <rect x="406" y="144" width="100" height="30" rx="5" fill="var(--c2)"/><text x="456" y="164" font-size="10.5" fill="var(--on)" text-anchor="middle">保存される</text>
+  <line x1="506" y1="159" x2="542" y2="159" stroke="var(--c2)" stroke-width="2"/><polygon points="552,159 539,154 539,164" fill="var(--c2)"/>
+  <rect x="552" y="144" width="124" height="30" rx="5" fill="var(--c2)"/><text x="614" y="164" font-size="10.5" fill="var(--on)" text-anchor="middle">閲覧者全員で実行</text>
+  <text x="350" y="188" font-size="10" fill="var(--stop)" text-anchor="middle">踏ませる工程が不要 ＝ 影響範囲が最大</text>
+
+  <text x="0" y="226" font-size="12" font-weight="600" fill="var(--c4)">DOM Based XSS — サーバを通らない</text>
+  <rect x="24" y="236" width="124" height="30" rx="5" fill="var(--lane)"/><text x="86" y="256" font-size="10.5" fill="var(--ink)" text-anchor="middle">罠 URL（#以降）</text>
+  <rect x="226" y="236" width="120" height="30" rx="5" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+  <text x="286" y="256" font-size="10.5" fill="var(--muted)" text-anchor="middle">届かない</text>
+  <path d="M148 251 C 200 214, 460 214, 542 251" fill="none" stroke="var(--c4)" stroke-width="2"/>
+  <polygon points="552,251 538,246 539,256" fill="var(--c4)"/>
+  <rect x="552" y="236" width="124" height="30" rx="5" fill="var(--c4)"/><text x="614" y="256" font-size="10.5" fill="var(--on)" text-anchor="middle">JS が DOM に書く</text>
+  <text x="350" y="288" font-size="10" fill="var(--stop)" text-anchor="middle">URL の # 以降はサーバに送信されない ＝ アクセスログにも WAF にも残らない</text>
+</svg>
+<figcaption>DOM Based はサーバのレスポンスに一切現れないため、レスポンスを検査する型の対策がまるごと空振りする。攻撃の痕跡を後から追うこともできない。</figcaption>
+</figure>
+
+<table>
+<tr><th>種類</th><th>典型的な入口</th><th>直す場所</th></tr>
+<tr><td>Reflected</td><td>検索キーワードの再表示、エラーメッセージ、リダイレクト先の表示</td><td rowspan="2">サーバ側の<strong>出力時エスケープ</strong>。テンプレートエンジンの自動エスケープを切らない</td></tr>
+<tr><td>Stored</td><td>掲示板・コメント・プロフィール。<em>管理画面のログ表示</em>も狙われる（管理者権限を取れる）</td></tr>
+<tr><td>DOM Based</td><td><code>location.hash</code> や <code>location.search</code> を JS が DOM に流し込む箇所、SPA のルーティング</td><td><strong>サーバ側では直せない</strong>。危険なシンクを使わない</td></tr>
+</table>
+
+<p>DOM Based で言う「危険なシンク」は <code>innerHTML</code> / <code>outerHTML</code> / <code>document.write</code> / <code>insertAdjacentHTML</code> / <code>eval</code> あたり。文字列として表示したいだけなら <code>textContent</code> を使う。React や Vue の標準のバインディングは自動でエスケープするので、<code>dangerouslySetInnerHTML</code> や <code>v-html</code> を使わない限りは踏みにくい。</p>
+
+<pre><code>// 危険：URL の中身がそのまま HTML として解釈される
+el.innerHTML = decodeURIComponent(location.hash.slice(1));
+
+// 安全：文字列としてしか扱われない
+el.textContent = decodeURIComponent(location.hash.slice(1));</code></pre>
+
+<h2>最初に手を入れるなら</h2>
+<ul>
+<li><strong>出力エスケープ</strong>：HTML 本文・属性値・JavaScript 内・URL でエスケープの仕方が違う。フレームワークの機構に任せ、自前で書かない</li>
+<li><strong>セッション Cookie に <code>HttpOnly</code> と <code>Secure</code> と <code>SameSite</code></strong>：3 つセットで付ける。設定 1 行で被害の幅が変わる</li>
+<li><strong>CSP</strong>：外部送信先とスクリプト実行元を制限する。まず <code>Content-Security-Policy-Report-Only</code> で流して、壊れないことを確認してから強制に切り替える</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://owasp.org/www-community/attacks/xss/">OWASP - Cross Site Scripting (XSS)</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html">OWASP Cheat Sheet - XSS Prevention</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/DOM_based_XSS_Prevention_Cheat_Sheet.html">OWASP Cheat Sheet - DOM based XSS Prevention</a></li>
+<li><a href="https://www.ipa.go.jp/security/vuln/websecurity/index.html">IPA - 安全なウェブサイトの作り方</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/CSP">MDN - コンテンツセキュリティポリシー (CSP)</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/Cookies">MDN - HTTP Cookie の使用</a></li>
+</ul>
+
+</main>
+</body>
+</html>

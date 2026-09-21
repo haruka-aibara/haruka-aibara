@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>耐タンパ性を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>タンパ明示性・タンパ検知性 — 機器が攻撃者の手元にあるとき何ができるか</h1>
+<p class="lede">分解される前提で守る。防げないなら痕跡を残す、検知する、鍵を消す。</p>
+
+<h2>何が問題なのか</h2>
+<p>普段のセキュリティ対策は「攻撃者はネットワークの向こう側にいる」ことを前提にしている。ところが<strong>機器そのものが攻撃者の手元にある</strong>状況では、その前提が崩れる。IC カード、決済端末、IoT のセンサー、車載機器、鍵を保管する HSM。これらは物理的に持ち出され、分解され、基板にプローブを当てられる。</p>
+<p>この状況ではソフトウェアの対策は無力で、<strong>筐体と回路の作りで守る</strong>ことになる。その考え方が耐タンパ性（tamper：いじる、細工する）。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="耐タンパ性の4段階">
+  <g>
+    <rect x="8" y="16" width="684" height="50" rx="8" fill="var(--c1)"/>
+    <text x="26" y="38" font-size="12.5" font-weight="600" fill="var(--on)">① 耐タンパ性（tamper resistance）— 開けにくくする</text>
+    <text x="26" y="57" font-size="11" fill="var(--on)" opacity=".92">樹脂で基板を丸ごと固める、特殊なネジを使う、チップの配線を微細化して読み取りにくくする</text>
+  </g>
+  <g>
+    <rect x="8" y="76" width="684" height="50" rx="8" fill="var(--c2)"/>
+    <text x="26" y="98" font-size="12.5" font-weight="600" fill="var(--on)">② タンパ明示性（tamper evidence）— 開けたら痕跡が残る</text>
+    <text x="26" y="117" font-size="11" fill="var(--on)" opacity=".92">剥がすと「VOID」が浮き出る封印シール、割れる素材のラベル。<strong>攻撃は防げないが、人が見れば分かる</strong></text>
+  </g>
+  <g>
+    <rect x="8" y="136" width="684" height="50" rx="8" fill="var(--c4)"/>
+    <text x="26" y="158" font-size="12.5" font-weight="600" fill="var(--on)">③ タンパ検知性（tamper detection）— 機器自身が気づく</text>
+    <text x="26" y="177" font-size="11" fill="var(--on)" opacity=".92">筐体内に張り巡らせたメッシュ配線の断線、光・温度・電圧・振動のセンサー。<strong>人の目を介さずに分かる</strong></text>
+  </g>
+  <g>
+    <rect x="8" y="196" width="684" height="50" rx="8" fill="var(--c3)"/>
+    <text x="26" y="218" font-size="12.5" font-weight="600" fill="var(--on)">④ タンパ応答（tamper response）— 検知したら鍵を消す</text>
+    <text x="26" y="237" font-size="11" fill="var(--on)" opacity=".92">内蔵電池で常時監視し、異常を検知した瞬間にメモリ上の鍵を消去する（ゼロ化）</text>
+  </g>
+</svg>
+<figcaption>下に行くほど強く、そのぶん高価になる。②と③の違いが要点で、<strong>明示性は「後から人が確認する」</strong>ことで成り立つ。定期点検の手順がなければ、封印シールは何の対策にもならない——技術ではなく運用とセットで初めて効く。</figcaption>
+</figure>
+
+<h2>分解しない攻撃もある</h2>
+<p>物理攻撃は筐体をこじ開けるものだけではない。機器を<strong>普通に動作させたまま外から観測する</strong>手口があり、これはサイドチャネル攻撃と呼ばれる。</p>
+<ul>
+<li><strong>消費電力の解析</strong>：暗号処理中の電流の波形から、鍵のビットを推定する</li>
+<li><strong>処理時間の測定</strong>：計算にかかる時間が鍵の値で変わることを利用する</li>
+<li><strong>電磁波の観測</strong>：チップから漏れる電磁波を拾う</li>
+<li><strong>故障の誘発</strong>：電源電圧を一瞬下げる、レーザーを当てるなどして計算を誤らせ、誤った結果から鍵を割り出す</li>
+</ul>
+<p>対策はアルゴリズムの実装側で行う。処理時間を入力によらず一定にする、ダミーの演算やノイズを混ぜる、といった作り込みで、<strong>暗号ライブラリを自作してはいけない理由の1つ</strong>でもある。</p>
+
+<h2>基準として使えるもの</h2>
+<p>製品選定や要件定義では、暗号モジュールの評価基準である <strong>FIPS 140-3</strong> の認証レベルが共通言語になる。レベルが上がるほど物理的な要求が厳しくなり、上位のレベルでは検知と応答（ゼロ化）まで求められる。「耐タンパの製品を選ぶ」ではなく<strong>「求めるレベルの認証を取得している製品を選ぶ」</strong>と言えると、調達の要件として書ける。</p>
+
+<div class="note">
+<p><strong>提案するときの言い方</strong></p>
+<p>「鍵をソフトウェアで持つな、HSM を使え」だけでは費用対効果の議論に負ける。<strong>「その鍵が漏れたときに何が起きるか」から逆算する</strong>——署名鍵が漏れれば自社名義の偽アプリが作られ、回収に数か月かかる。決済端末の鍵が漏れればカード情報が複製される。<br>
+逆に、漏れても影響が限定的な鍵に高価な物理対策を要求するのは過剰。鍵ごとに守り方の強さを変える、という設計の話に持ち込む。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/pubs/fips/140-3/final">NIST FIPS 140-3 - Security Requirements for Cryptographic Modules</a></li>
+<li><a href="https://www.pcisecuritystandards.org/document_library/">PCI PTS - POI Modular Security Requirements</a></li>
+<li><a href="https://www.ipa.go.jp/security/reports/technicalwatch/index.html">IPA - 技術レポート（サイドチャネル攻撃を含む）</a></li>
+</ul>
+
+</main>
+</body>
+</html>

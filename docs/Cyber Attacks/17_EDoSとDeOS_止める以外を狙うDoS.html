@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EDoS と DeOS — 止める以外を狙う DoS</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>EDoS と DeOS — 止める以外を狙う DoS</h1>
+<p class="lede">サービスは動いているのに攻撃が成立している状態と、止まったまま二度と戻らない状態。</p>
+
+<h2>何が問題なのか</h2>
+<p>DoS 対策の議論は、たいてい「サービスを止めさせない」という前提で組み立てられる。ところが目的が違う攻撃が 2 つある。片方は<strong>止めずに金を払わせる</strong>、もう片方は<strong>止めたうえで戻れなくする</strong>。どちらも「可用性を守る」という枠組みだけでは、検知にも復旧計画にも引っかからない。</p>
+
+<figure>
+<svg viewBox="0 0 700 208" role="img" aria-label="DoS・EDoS・DeOSの狙いの違いを比較した図">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">同じ「サービス妨害」でも、狙っているものが違う</text>
+
+  <rect x="0" y="26" width="222" height="150" rx="8" fill="var(--lane)"/>
+  <text x="111" y="52" font-size="12.5" font-weight="600" fill="var(--c1)" text-anchor="middle">DoS / DDoS</text>
+  <text x="111" y="80" font-size="11" fill="var(--muted)" text-anchor="middle">狙い：止める</text>
+  <line x1="24" y1="94" x2="198" y2="94" stroke="var(--line)"/>
+  <text x="111" y="118" font-size="11" fill="var(--ink)" text-anchor="middle">サービスが落ちる</text>
+  <text x="111" y="146" font-size="11" fill="var(--c3)" text-anchor="middle">攻撃が止めば戻る</text>
+
+  <rect x="239" y="26" width="222" height="150" rx="8" fill="var(--lane)"/>
+  <text x="350" y="52" font-size="12.5" font-weight="600" fill="var(--c2)" text-anchor="middle">EDoS</text>
+  <text x="350" y="80" font-size="11" fill="var(--muted)" text-anchor="middle">狙い：払わせる</text>
+  <line x1="263" y1="94" x2="437" y2="94" stroke="var(--line)"/>
+  <text x="350" y="118" font-size="11" fill="var(--ink)" text-anchor="middle">サービスは落ちない</text>
+  <text x="350" y="140" font-size="11" fill="var(--c2)" text-anchor="middle">請求額だけが伸びる</text>
+  <text x="350" y="160" font-size="10.5" fill="var(--muted)" text-anchor="middle">運用が続けられなくなる</text>
+
+  <rect x="478" y="26" width="222" height="150" rx="8" fill="var(--lane)"/>
+  <text x="589" y="52" font-size="12.5" font-weight="600" fill="var(--stop)" text-anchor="middle">DeOS</text>
+  <text x="589" y="80" font-size="11" fill="var(--muted)" text-anchor="middle">狙い：戻れなくする</text>
+  <line x1="502" y1="94" x2="676" y2="94" stroke="var(--line)"/>
+  <text x="589" y="118" font-size="11" fill="var(--ink)" text-anchor="middle">サービスが落ちる ＋</text>
+  <text x="589" y="140" font-size="11" fill="var(--stop)" text-anchor="middle">バックアップも壊される</text>
+  <text x="589" y="160" font-size="10.5" fill="var(--muted)" text-anchor="middle">復旧手段が残らない</text>
+
+  <text x="0" y="200" font-size="11" fill="var(--muted)">可用性の監視は左 1 つしか見ていない。EDoS はコストの監視、DeOS はバックアップの完全性の監視に引っかかる。</text>
+</svg>
+<figcaption>EDoS と DeOS は攻撃手法の名前ではなく、<em>目的の分類</em>。使われるパケットは既存の攻撃と同じこともある。同じ手法でも狙いが違えば、見るべき指標と備え方が変わる。</figcaption>
+</figure>
+
+<h2>EDoS — 落ちないことが攻撃になる</h2>
+<p>Economic Denial of Sustainability（経済的な持続不可能性）。</p>
+<p>オンプレの時代、負荷が上限を超えればサービスは落ちた。クラウドではオートスケールが効いて<strong>落ちない</strong>——代わりに請求額が伸びる。可用性は 100% のまま、事業として続けられなくなる。</p>
+<p>攻撃側から見れば手軽だ。サービスを落とすほどの規模はいらない。<strong>課金単位に効く操作</strong>を淡々と繰り返せばいい。</p>
+
+<figure>
+<svg viewBox="0 0 700 226" role="img" aria-label="負荷が増えたときの、オンプレとクラウドでの現れ方の違い">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">同じ負荷をかけたとき、どこに現れるか</text>
+
+  <text x="12" y="40" font-size="11.5" fill="var(--muted)">固定容量（従来）</text>
+  <line x1="150" y1="96" x2="150" y2="34" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="150" y1="96" x2="330" y2="96" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="150" y1="54" x2="330" y2="54" stroke="var(--stop)" stroke-width="1" stroke-dasharray="4 3"/>
+  <text x="334" y="58" font-size="10" fill="var(--stop)">容量上限</text>
+  <path d="M150 92 L200 80 L240 62 L262 54 L262 96 Z" fill="var(--c1)" opacity=".55"/>
+  <path d="M150 92 L200 80 L240 62 L262 54" fill="none" stroke="var(--c1)" stroke-width="2"/>
+  <line x1="262" y1="54" x2="330" y2="54" stroke="var(--stop)" stroke-width="2.5"/>
+  <text x="150" y="116" font-size="11" fill="var(--stop)">→ 上限で頭打ち＝サービスが落ちる（すぐ気づく）</text>
+
+  <text x="12" y="164" font-size="11.5" fill="var(--muted)">オートスケール</text>
+  <line x1="150" y1="212" x2="150" y2="140" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="150" y1="212" x2="330" y2="212" stroke="var(--line)" stroke-width="1.5"/>
+  <path d="M150 208 L200 196 L240 176 L280 158 L330 144 L330 212 L150 212 Z" fill="var(--c2)" opacity=".5"/>
+  <path d="M150 208 L200 196 L240 176 L280 158 L330 144" fill="none" stroke="var(--c2)" stroke-width="2.5"/>
+  <text x="334" y="148" font-size="10" fill="var(--c2)">請求額</text>
+  <text x="150" y="232" font-size="11" fill="var(--c2)">→ 落ちないまま伸び続ける（請求日まで気づかない）</text>
+
+  <rect x="400" y="30" width="300" height="182" rx="8" fill="var(--lane)"/>
+  <text x="416" y="52" font-size="11.5" font-weight="600" fill="var(--ink)">課金単位に効く操作の例</text>
+  <g font-size="11" fill="var(--muted)">
+    <text x="416" y="78">・Lambda / Fargate の実行回数</text>
+    <text x="416" y="100">・S3 / CloudFront のアウトバウンド転送量</text>
+    <text x="416" y="122">・SMS 送信、決済処理の手数料</text>
+    <text x="416" y="144">・翻訳 API、LLM の推論トークン</text>
+    <text x="416" y="166">・NAT Gateway の処理データ量</text>
+    <text x="416" y="196" font-size="10.5">いずれも「1 回あたりは小さいが上限がない」もの</text>
+  </g>
+</svg>
+<figcaption>2022 年には、寄付サイトの決済フォームが繰り返し実行され、決済処理手数料として数十万円規模の負担が発生した事例が報告されている。サービスは止まっていない。止まっていないから、可用性のアラートは 1 つも鳴らない。</figcaption>
+</figure>
+
+<p><strong>予算アラートは対策ではない</strong>。AWS Budgets の通知は「起きたことを知る」だけで、課金は止まらない。止めるための制御を別に置く必要がある。</p>
+<ul>
+<li><strong>入口で減らす</strong>：CloudFront を前段に置く（オリジンへの到達自体を減らす）、AWS WAF のレートベースルール、Bot Control、フォームには CAPTCHA</li>
+<li><strong>上限を持たせる</strong>：Lambda の予約済み同時実行数、API Gateway のスロットリング、SQS 経由での平準化</li>
+<li><strong>気づける形にする</strong>：AWS Cost Anomaly Detection で<em>コストの異常検知</em>を可用性監視と同列に置く</li>
+</ul>
+<p>設計時の問いは 1 つ——<strong>「認証なしで叩けて、叩くたびに課金が発生する経路はどれか」</strong>。ここに上限がなければ EDoS が成立する。</p>
+
+<h2>DeOS — 復旧させないことが目的</h2>
+<p>Destruction of Service。Cisco が 2017 年中期サイバーセキュリティレポートで提示した呼び方で、<strong>復旧手段そのものを破壊する</strong>攻撃を指す。</p>
+<p>背景にあるのは同年の WannaCry と NotPetya（Nyetya）。特に NotPetya は身代金を要求する体裁をとりながら、実際には復号できない構造になっていた。金銭目的に見えて、目的は破壊だった。</p>
+
+<div class="note">
+<p><strong>DeOS への備えは、突き詰めると 1 つの質問に答えられるかどうか</strong></p>
+<p>「侵害された管理者権限で、<em>バックアップまで消せるか</em>？」——消せるなら、それはバックアップではなくコピーの一種でしかない。</p>
+</div>
+
+<table>
+<tr><th>よくある状態</th><th>DeOS 想定での見直し</th></tr>
+<tr><td>本番と同じ IAM 権限でスナップショットを削除できる</td><td>AWS Backup の Vault Lock（コンプライアンスモード）で削除自体を不可能にする。S3 なら Object Lock</td></tr>
+<tr><td>バックアップが本番と同一アカウント・同一リージョンにある</td><td>別アカウント（できれば別リージョン）へコピー。アカウントを取られた時点で全損になる構成を避ける</td></tr>
+<tr><td>復旧手順書はあるが、実行したことがない</td><td>年 1 回でも実際に復元まで通す。試していない手順は「無い」と同じ</td></tr>
+</table>
+
+<p>提案するときの言い方——「バックアップを取っているかではなく、<strong>攻撃者が管理者権限を取ったあとでもバックアップが残るか</strong>で見てください。ここの差が、数時間の停止で済むか事業データを全部失うかの分かれ目です」。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://blogs.cisco.com/security/adversaries-new-strategy-cyber-attacks-designed-for-destruction-not-just-disruption">Cisco Blogs - Cyber Attacks Designed for Destruction, Not Just Disruption（DeOS）</a></li>
+<li><a href="https://blog.flatt.tech/entry/edos_aws">GMO Flatt Security - EDoS Attack: クラウド利用料金でサービスを止められるって本当？</a></li>
+<li><a href="https://scan.netsecurity.ne.jp/article/2022/11/07/48443.html">ScanNetSecurity - クラウドサービス等の課金システムを悪用、「EDoS 攻撃」とは</a></li>
+<li><a href="https://docs.aws.amazon.com/aws-backup/latest/devguide/vault-lock.html">AWS - AWS Backup Vault Lock</a></li>
+<li><a href="https://docs.aws.amazon.com/cost-management/latest/userguide/manage-ad.html">AWS - Cost Anomaly Detection</a></li>
+<li><a href="https://www.ipa.go.jp/security/ransomware/index.html">IPA - ランサムウェア対策特設ページ</a></li>
+</ul>
+
+</main>
+</body>
+</html>

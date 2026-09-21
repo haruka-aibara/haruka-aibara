@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prowler をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:10px;padding:.9rem 1.1rem;overflow-x:auto;margin:1.2rem 0}
+pre code{background:none;padding:0;font-size:.88rem;line-height:1.7}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){ .tw table{min-width:34rem} }
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Prowler をゼロから理解する</h1>
+<p class="lede">「クラウドの設定が正しいか」は誰も教えてくれない、という話から始めて、5 ステップで「他の仕組みとの違い」「入れるとよい場面」「入れたら増える手間」まで自分で判断できるところまで進みます。</p>
+
+<h2>この記事の目的</h2>
+<p>Prowler の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+<p>それは読解力の問題ではありません。多くの記事は「Prowler はマルチクラウド対応の CSPM ツールで、CIS・PCI DSS・ISO 27001 などに対応しています」という、中級者向けの前提から始まるからです。<strong>なぜ既存の仕組みでは足りないのか</strong>が分からないまま、対応フレームワークの一覧だけが増えていきます。</p>
+<p>そこでこの記事は、あえて遠回りします。「クラウドの設定ミスは誰も教えてくれない」といういちばん手前の話から始めて 5 ステップで進みます。ゴールは機能を暗記することではなく、<strong>自分の環境に入れるべきか、入れたら何の作業が増えるのかを自分の言葉で説明できること</strong>です。</p>
+
+<div class="dg"><p class="ttl">この記事の道のり</p><nav class="rm" aria-label="全体のロードマップ"><ol>
+<li><span class="n">STEP 1</span>設定ミスは誰も教えてくれない</li><li><span class="n">STEP 2</span>「正しい」の基準を外から借りる</li><li><span class="n">STEP 3</span>基準を実行する道具＝Prowler</li><li><span class="n">STEP 4</span>出てきた結果をどう扱うか</li><li><span class="n">STEP 5</span>入れる判断と、増える手間</li>
+</ol></nav><p class="cap">STEP 4 まではすべて前提知識です。本題は STEP 5 だけですが、そこに至る 4 ステップがないと「無償だし入れておいたほうがよさそう」以上の判断ができません。</p></div>
+
+<h2>STEP 1：設定ミスは誰も教えてくれない</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="now"><span class="n">STEP 1</span>設定ミスは誰も教えてくれない</li><li><span class="n">STEP 2</span>「正しい」の基準を外から借りる</li><li><span class="n">STEP 3</span>基準を実行する道具＝Prowler</li><li><span class="n">STEP 4</span>出てきた結果をどう扱うか</li><li><span class="n">STEP 5</span>入れる判断と、増える手間</li></ol></nav>
+<p>クラウドは数クリックでリソースを作れます。そして、危ない設定でも同じように作れてしまいます。S3 バケットを公開にする、セキュリティグループで <code>0.0.0.0/0</code> から SSH を開ける、ルートユーザに MFA を付けない。どれもエラーになりません。責任共有モデルでは基盤の安全は事業者の担当ですが、<strong>その上の設定が妥当かどうかを判定してくれるものは、標準では何も動いていません</strong>。</p>
+<p>しかも、作った日は正しくても状態は動きます。検証のために一時的に開けたポート、消し忘れた退職者のアクセスキー、障害対応中にコンソールから触った設定。どれも「後で戻す」つもりで残ります。</p>
+<figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f1t f1d"><title id="f1t">構築時の状態と数か月後の状態</title><desc id="f1d">左は設計どおりの状態、右は時間が経って変わった状態。中央に、どちらもエラーや通知が出ないことを示す</desc>
+<defs><marker id="a1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="190" y="32" text-anchor="middle" fill="var(--muted)" font-weight="700" font-size="14">構築した日</text>
+<rect x="50" y="50" width="280" height="140" rx="12" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/>
+<text x="190" y="85" text-anchor="middle" fill="var(--ink)" font-size="13">SG は必要なポートだけ</text>
+<text x="190" y="120" text-anchor="middle" fill="var(--ink)" font-size="13">S3 バケットは非公開</text>
+<text x="190" y="155" text-anchor="middle" fill="var(--ink)" font-size="13">ルートユーザに MFA</text>
+<line x1="336" y1="120" x2="442" y2="120" stroke="var(--wire)" stroke-width="2.5" marker-end="url(#a1)"/>
+<text x="389" y="105" text-anchor="middle" fill="var(--muted)" font-size="12">3 か月</text>
+<text x="590" y="32" text-anchor="middle" fill="var(--muted)" font-weight="700" font-size="14">いまの状態</text>
+<rect x="450" y="50" width="280" height="140" rx="12" fill="var(--card)" stroke="var(--stop)" stroke-width="2"/>
+<text x="590" y="85" text-anchor="middle" fill="var(--ink)" font-size="13">検証で開けた 0.0.0.0/0</text>
+<text x="590" y="120" text-anchor="middle" fill="var(--ink)" font-size="13">共有用に公開したバケット</text>
+<text x="590" y="155" text-anchor="middle" fill="var(--ink)" font-size="13">退職者のアクセスキー</text>
+<rect x="175" y="228" width="430" height="50" rx="10" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="2"/>
+<text x="390" y="259" text-anchor="middle" fill="var(--stop)" font-weight="700" font-size="14">どちらもエラーは出ない・通知も来ない</text></svg><figcaption>右側の 3 つは、それ自体が攻撃されたわけではありません。誰かが正しい権限で、正しい手順で作った状態です。だから監視やアラートの対象にもならず、次に誰かが見に行くまで残り続けます。</figcaption></figure>
+<p>では手で確認すればよいか。対象は「アカウント × リージョン × サービス × リソース」です。1 アカウント 100 リソースなら何とかなりますが、アカウントが 20 個あればもう現実的ではありません。そして一度確認しても、それは<strong>その日を写した写真</strong>にすぎません。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　「作るときにレビューする」というルールを徹底すれば、この問題は解決するでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>解決しません。</strong> 作成時のレビューは作成時点しか見ていないからです。時間が経って変わった状態は捉えられませんし、レビューを通さずに作られたリソースも残ります。必要なのは「いまどうなっているか」を繰り返し確かめる仕組みです。ただし、ここで次の問題にぶつかります——<strong>何をもって「正しい」とするのか</strong>です。</p></div></details></div>
+
+<h2>STEP 2：「正しい」の基準を外から借りる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>設定ミスは誰も教えてくれない</li><li class="now"><span class="n">STEP 2</span>「正しい」の基準を外から借りる</li><li><span class="n">STEP 3</span>基準を実行する道具＝Prowler</li><li><span class="n">STEP 4</span>出てきた結果をどう扱うか</li><li><span class="n">STEP 5</span>入れる判断と、増える手間</li></ol></nav>
+<p>点検しようとして最初に詰まるのは、<strong>何を点検するかが決まっていない</strong>ことです。「S3 は公開禁止」くらいはすぐ思いつきます。しかし KMS 鍵のローテーション、CloudTrail のログファイル検証、RDS のバックアップ保持期間、IAM パスワードポリシーの再利用防止……と並べていくと、思いつきでは必ず抜けが出ます。そして<strong>抜けていること自体に気づけません</strong>。</p>
+<p>そこで、点検項目を自分で発明せず、公開されている基準を借ります。</p>
+<ul>
+<li><strong>CIS Benchmark</strong>（CIS AWS Foundations Benchmark など）— ベンダー中立の設定基準。監査でもよく名前が出る</li>
+<li><strong>AWS Foundational Security Best Practices（FSBP）</strong> — AWS 自身が定めたベストプラクティス</li>
+<li><strong>PCI DSS / ISO 27001 / SOC 2 / HIPAA</strong> — 業界・制度側の要求事項</li>
+</ul>
+<p>ここで押さえておきたいのは、これらが 2 層になっていることです。実際に値を見て合否を決める<strong>チェック</strong>と、そのチェックをどう選んで何番として数えるかという<strong>フレームワーク</strong>です。「ルートユーザに MFA が付いているか」という同じチェックが、CIS にも FSBP にも PCI DSS にも、それぞれ別の番号で登場します。</p>
+<figure><svg viewBox="0 0 780 335" role="img" aria-labelledby="f2t f2d"><title id="f2t">フレームワークとチェックの2層構造</title><desc id="f2d">上に3つのフレームワーク、下にチェックの集合。複数のフレームワークが同じチェックを参照する</desc>
+<defs><marker id="a2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c1)"/></marker></defs>
+<text x="390" y="28" text-anchor="middle" fill="var(--muted)" font-size="13">フレームワーク（どれを選び、何番として数えるか）</text>
+<rect x="45" y="45" width="210" height="56" rx="10" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/><text x="150" y="80" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="14">CIS Benchmark</text>
+<rect x="285" y="45" width="210" height="56" rx="10" fill="var(--card)" stroke="var(--c2)" stroke-width="2"/><text x="390" y="80" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="14">AWS FSBP</text>
+<rect x="525" y="45" width="210" height="56" rx="10" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/><text x="630" y="80" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="14">PCI DSS</text>
+<g stroke="var(--c1)" stroke-width="2" marker-end="url(#a2)" fill="none">
+<line x1="150" y1="104" x2="215" y2="196"/><line x1="390" y1="104" x2="390" y2="196"/><line x1="630" y1="104" x2="565" y2="196"/></g>
+<rect x="90" y="205" width="600" height="96" rx="14" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/>
+<text x="390" y="230" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="13">チェック（実際に API を読んで合否を決める判定）</text>
+<rect x="105" y="243" width="135" height="42" rx="7" fill="var(--card)" stroke="var(--line)"/><text x="172" y="269" text-anchor="middle" fill="var(--ink)" font-size="10">ルートに MFA</text>
+<rect x="250" y="243" width="135" height="42" rx="7" fill="var(--card)" stroke="var(--line)"/><text x="317" y="269" text-anchor="middle" fill="var(--ink)" font-size="10">S3 の公開ブロック</text>
+<rect x="395" y="243" width="135" height="42" rx="7" fill="var(--card)" stroke="var(--line)"/><text x="462" y="269" text-anchor="middle" fill="var(--ink)" font-size="10">証跡の全リージョン化</text>
+<rect x="540" y="243" width="135" height="42" rx="7" fill="var(--card)" stroke="var(--line)"/><text x="607" y="269" text-anchor="middle" fill="var(--ink)" font-size="10">RDS の暗号化</text>
+<text x="390" y="325" text-anchor="middle" fill="var(--muted)" font-size="12">同じチェックが、複数のフレームワークから別の番号で参照される</text></svg><figcaption>この 2 層が分かると、「CIS 対応」と「PCI DSS 対応」が別々の作業ではないと分かります。叩く API も判定も同じで、違うのは<strong>どれを選び、何番として報告するか</strong>だけ。つまり監査対応は、点検そのものではなくラベル付けの問題に近づきます。</figcaption></figure>
+<p>点検内容を機械可読な形で配る、という考え方そのものは Prowler に固有のものではありません。標準仕様としてまとめたものが SCAP です（<a href="../SCAP/SCAPをゼロから理解する.html">SCAP をゼロから理解する</a>）。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　CIS Benchmark の文書を手に入れました。これで点検できるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>できません。</strong> 配布されているのは人が読む前提の文書で、「確認手順：<code>aws iam get-account-summary</code> を実行し、返り値を確認する」といった調子で書かれているからです。数百項目を人が一つずつ叩くのは、STEP 1 と同じ話に戻ります。基準を<strong>そのまま実行できる形にした道具</strong>が要ります。</p></div></details></div>
+
+<h2>STEP 3：基準を実行する道具＝Prowler</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>設定ミスは誰も教えてくれない</li><li class="done"><span class="n">STEP 2 ✓</span>「正しい」の基準を外から借りる</li><li class="now"><span class="n">STEP 3</span>基準を実行する道具＝Prowler</li><li><span class="n">STEP 4</span>出てきた結果をどう扱うか</li><li><span class="n">STEP 5</span>入れる判断と、増える手間</li></ol></nav>
+<p>ここでようやく Prowler です。Prowler は、<strong>クラウドの API を読み取り専用で叩いて、チェック項目ごとに PASS / FAIL を出すツール</strong>です。Apache License 2.0 のオープンソースとして公開されています。</p>
+<p>やっていることは 3 つだけです。</p>
+<ol>
+<li>手元にある認証情報でクラウドの API を呼ぶ（読み取りのみ）</li>
+<li>チェックを 1 つずつ実行する</li>
+<li>リソース単位で PASS / FAIL に深刻度を付けて出力する</li>
+</ol>
+<pre><code>pip install prowler
+prowler aws</code></pre>
+<p>これだけです。エージェントを入れる必要も、クラウド側で何かを有効化する必要もありません。<strong>いま自分が持っている権限で見える範囲を、そのまま点検します</strong>。AWS なら <code>SecurityAudit</code> と <code>ViewOnlyAccess</code>（どちらも AWS 管理ポリシー）に、一部のチェック用の読み取り権限を足した構成が推奨されています。書き込み権限は要りません。</p>
+<figure><svg viewBox="0 0 800 320" role="img" aria-labelledby="f3t f3d"><title id="f3t">Prowler の動き</title><desc id="f3d">読み取り専用の認証情報でクラウドAPIを呼び、チェックを実行し、PASS/FAILを出力する。書き込みの矢印はない</desc>
+<defs><marker id="a3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="20" y="68" width="190" height="80" rx="10" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/>
+<text x="115" y="102" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="14">手元の認証情報</text>
+<text x="115" y="128" text-anchor="middle" fill="var(--muted)" font-size="11">読み取り権限だけでよい</text>
+<line x1="214" y1="108" x2="262" y2="108" stroke="var(--wire)" stroke-width="2.5" marker-end="url(#a3)"/>
+<rect x="270" y="58" width="230" height="100" rx="14" fill="var(--c1)"/>
+<text x="385" y="98" text-anchor="middle" fill="var(--on)" font-weight="700" font-size="18">Prowler</text>
+<text x="385" y="126" text-anchor="middle" fill="var(--on)" font-size="12">チェックを 1 つずつ実行</text>
+<text x="535" y="52" text-anchor="middle" fill="var(--muted)" font-size="11">Describe / Get / List</text>
+<line x1="505" y1="88" x2="563" y2="88" stroke="var(--wire)" stroke-width="2.5" marker-end="url(#a3)"/>
+<line x1="563" y1="128" x2="505" y2="128" stroke="var(--wire)" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#a3)"/>
+<text x="535" y="152" text-anchor="middle" fill="var(--muted)" font-size="11">設定の値</text>
+<rect x="570" y="68" width="205" height="80" rx="10" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/>
+<text x="672" y="102" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="14">クラウドの API</text>
+<text x="672" y="128" text-anchor="middle" fill="var(--muted)" font-size="11">AWS / Azure / GCP / K8s …</text>
+<line x1="385" y1="161" x2="385" y2="203" stroke="var(--wire)" stroke-width="2.5" marker-end="url(#a3)"/>
+<rect x="215" y="208" width="340" height="82" rx="12" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/>
+<text x="385" y="242" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="15">チェックごとの PASS / FAIL</text>
+<text x="385" y="268" text-anchor="middle" fill="var(--muted)" font-size="12">対象リソース・深刻度・修正方法つき</text>
+<text x="683" y="218" text-anchor="middle" fill="var(--stop)" font-size="12">作成・変更・削除の</text>
+<text x="683" y="240" text-anchor="middle" fill="var(--stop)" font-size="12">矢印はひとつもない</text></svg><figcaption>右上の矢印が <code>Describe</code> / <code>List</code> しかないことが、そのまま導入の説得材料になります。本番アカウントに渡すのは読み取り権限だけで、Prowler 側が環境を壊すことはありえない、と権限で示せます。</figcaption></figure>
+<p>対応するのは AWS だけではありません。Azure・Google Cloud・Kubernetes・Microsoft 365・GitHub など 20 を超えるプロバイダに対応していて、AWS だけでも 600 を超えるチェック、フレームワークは全体で 50 以上あります。同じコマンド体系・同じ出力形式で扱えるのが、単一クラウド向けのツールとの大きな違いです。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　AWS には Trusted Advisor も Config も Security Hub CSPM もあります。設定ミスに気づくだけなら、Prowler は要らないのではないでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>もっともな疑問で、多くの場合そのとおりです。</strong> CIS や FSBP のチェック内容はかなり重なります。違いは 2 つあります。<strong>使い始めるのに何が要るか</strong>と、もっと大きいのが<strong>そもそも何を見ているか</strong>です。純正の仕組みが最初から見ていない領域があります。この比較は STEP 5 で正面から扱います。その前に、もっと手前の問題があります——<strong>実行したら FAIL が数百件出ました。どうしますか。</strong></p></div></details></div>
+
+<h2>STEP 4：出てきた結果をどう扱うか</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>設定ミスは誰も教えてくれない</li><li class="done"><span class="n">STEP 2 ✓</span>「正しい」の基準を外から借りる</li><li class="done"><span class="n">STEP 3 ✓</span>基準を実行する道具＝Prowler</li><li class="now"><span class="n">STEP 4</span>出てきた結果をどう扱うか</li><li><span class="n">STEP 5</span>入れる判断と、増える手間</li></ol></nav>
+<p>初回実行の結果は、たいてい心が折れる量になります。600 を超えるチェックをリソースの数だけ回すので、FAIL だけで数千行になることも珍しくありません。<strong>ここからが実際の作業</strong>です。</p>
+<p>まず、1 件の結果に何が入っているかを見ます。</p>
+<figure><svg viewBox="0 0 780 312" role="img" aria-labelledby="f4t f4d"><title id="f4t">1件の検出結果の中身</title><desc id="f4d">チェックID・判定・深刻度・対象リソース・対応する基準・推奨対応が1件に含まれる</desc>
+<rect x="60" y="30" width="660" height="255" rx="14" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/>
+<text x="90" y="70" fill="var(--muted)" font-size="12">チェック ID</text><text x="300" y="70" fill="var(--ink)" font-family="monospace" font-size="12">s3_bucket_public_access</text>
+<text x="90" y="105" fill="var(--muted)" font-size="12">判定</text><text x="300" y="105" fill="var(--stop)" font-weight="700" font-size="13">FAIL</text>
+<text x="90" y="140" fill="var(--muted)" font-size="12">深刻度</text><text x="300" y="140" fill="var(--c2)" font-weight="700" font-size="13">critical</text>
+<text x="90" y="175" fill="var(--muted)" font-size="12">対象リソース</text><text x="300" y="175" fill="var(--ink)" font-family="monospace" font-size="12">arn:aws:s3:::example-logs</text>
+<text x="90" y="210" fill="var(--muted)" font-size="12">対応する基準</text><text x="300" y="210" fill="var(--ink)" font-size="12">CIS 2.1.5 ／ FSBP S3.8 ／ PCI DSS 1.2.1</text>
+<text x="90" y="245" fill="var(--muted)" font-size="12">推奨される対応</text><text x="300" y="245" fill="var(--c3)" font-size="12">ブロックパブリックアクセスを有効にする</text>
+<line x1="80" y1="85" x2="700" y2="85" stroke="var(--line)"/><line x1="80" y1="120" x2="700" y2="120" stroke="var(--line)"/>
+<line x1="80" y1="155" x2="700" y2="155" stroke="var(--line)"/><line x1="80" y1="190" x2="700" y2="190" stroke="var(--line)"/>
+<line x1="80" y1="225" x2="700" y2="225" stroke="var(--line)"/></svg><figcaption>「対応する基準」の行があるおかげで、検出結果をそのまま監査の回答に使えます。逆に言えば、この行を見ずに件数だけを追うと、直しても報告に結びつかない作業になりがちです。</figcaption></figure>
+<p>出力形式は用途で選びます。<strong>CSV</strong>（表計算で並べ替える）、<strong>JSON</strong>（OCSF 形式。SIEM やデータレイクに流す）、<strong>HTML</strong>（そのまま人に見せる）、<strong>ASFF</strong>（AWS Security Hub CSPM に送り込む）。何も指定しなければ CSV と JSON-OCSF が出ます。</p>
+<p>そして、数千行を扱える大きさまで絞ります。順番はだいたい決まっています。</p>
+<figure><svg viewBox="0 0 780 330" role="img" aria-labelledby="f5t f5d"><title id="f5t">検出結果の絞り込み</title><desc id="f5d">全判定からFAIL、深刻度、例外除外を経て、今回対応する件数まで段階的に絞る</desc>
+<defs><marker id="a5" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--wire)"/></marker></defs>
+<rect x="60" y="20" width="660" height="44" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="2"/><text x="390" y="48" text-anchor="middle" fill="var(--ink)" font-size="13">全チェックの判定結果</text><text x="748" y="48" text-anchor="end" fill="var(--muted)" font-size="12">18,420</text>
+<line x1="390" y1="66" x2="390" y2="82" stroke="var(--wire)" stroke-width="2" marker-end="url(#a5)"/>
+<rect x="130" y="86" width="520" height="44" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="2"/><text x="390" y="114" text-anchor="middle" fill="var(--ink)" font-size="13">FAIL だけに絞る</text><text x="748" y="114" text-anchor="end" fill="var(--muted)" font-size="12">2,431</text>
+<line x1="390" y1="132" x2="390" y2="148" stroke="var(--wire)" stroke-width="2" marker-end="url(#a5)"/>
+<rect x="200" y="152" width="380" height="44" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="2"/><text x="390" y="180" text-anchor="middle" fill="var(--ink)" font-size="13">深刻度 critical / high だけ</text><text x="748" y="180" text-anchor="end" fill="var(--muted)" font-size="12">186</text>
+<line x1="390" y1="198" x2="390" y2="214" stroke="var(--wire)" stroke-width="2" marker-end="url(#a5)"/>
+<rect x="260" y="218" width="260" height="44" rx="8" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/><text x="390" y="246" text-anchor="middle" fill="var(--ink)" font-size="13">意図的な設定を除外</text><text x="748" y="246" text-anchor="end" fill="var(--muted)" font-size="12">142</text>
+<line x1="390" y1="264" x2="390" y2="280" stroke="var(--wire)" stroke-width="2" marker-end="url(#a5)"/>
+<rect x="315" y="284" width="150" height="44" rx="8" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/><text x="390" y="312" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="13">今回直す</text><text x="748" y="312" text-anchor="end" fill="var(--muted)" font-size="12">24</text></svg><figcaption>件数は例です。押さえるべきは比率で、いちばん上といちばん下で 3 桁違うこと。この絞り込みを設計せずに全件を人に見せると、「多すぎて誰も見ない一覧」がひとつ増えるだけで終わります。</figcaption></figure>
+<p>絞り込みは実行時の指定でもできます。フレームワークを 1 つに限定する、サービスを限定する、FAIL だけ出す、といった具合です。</p>
+<pre><code>prowler aws --compliance cis_3.0_aws --status FAIL
+prowler aws --service s3 --service iam
+prowler aws --list-compliance   # 指定できるフレームワークの一覧</code></pre>
+<p>最後の「意図的な設定を除外」にあたるのが <strong>Mutelist</strong> です。「このリソースのこのチェックは意図してこうしている」を YAML に書いておくと、次回から FAIL として数えなくなります。静的サイト配信用の S3 バケットは公開されているのが正しい、といったケースがこれにあたります。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　Mutelist に書けば余計な FAIL は静かになります。これで運用に乗るでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>乗りません。</strong> Mutelist は「検討して受容した」と「面倒だから消した」を、同じ見た目にしてしまうからです。誰がいつ何の理由で除外したのかを残さないと、半年後の担当者にはどちらか区別できません。そしてもう一つ根本的な問題があります——<strong>直す人が決まっていなければ、どれだけきれいに並べ替えても環境は何も変わりません。</strong></p></div></details></div>
+
+<h2>STEP 5：入れる判断と、増える手間</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>設定ミスは誰も教えてくれない</li><li class="done"><span class="n">STEP 2 ✓</span>「正しい」の基準を外から借りる</li><li class="done"><span class="n">STEP 3 ✓</span>基準を実行する道具＝Prowler</li><li class="done"><span class="n">STEP 4 ✓</span>出てきた結果をどう扱うか</li><li class="now"><span class="n">STEP 5</span>入れる判断と、増える手間</li></ol></nav>
+<p>ここが本題です。Prowler は無償で、インストールも数分です。だからこそ「とりあえず入れる」が起きやすく、そして<strong>とりあえず入れたものはたいてい見られなくなります</strong>。用途から逆算して決めます。</p>
+
+<h3>設定ミスに気づく仕組みは他にもある。なぜ Prowler か</h3>
+<p>用途から逆算するなら、最初に片づけるべき疑問はこれです。AWS には Trusted Advisor も Config も Security Hub CSPM もあり、どれも設定ミスに気づける仕組みです。わざわざ別のツールを持ち込む理由は何なのか。</p>
+<p>4 つを同じ軸で並べると、性格がはっきり分かれます。</p>
+<div class="tw"><table><thead><tr><th></th><th>Trusted Advisor</th><th>Config</th><th>Security Hub CSPM</th><th>Prowler</th></tr></thead><tbody>
+<tr><td>本来の役割</td><td>推奨事項の提示</td><td>構成の記録と追跡</td><td>基準への準拠評価</td><td>基準への準拠評価</td></tr>
+<tr><td>CIS・PCI DSS で報告できるか</td><td>できない（基準に紐づかない）</td><td>コンフォーマンスパックで可</td><td>できる</td><td>できる</td></tr>
+<tr><td>使い始めるのに必要なもの</td><td>項目によってサポートプラン</td><td>有効化＋記録の設定</td><td>有効化（Config が前提）</td><td><code>pip install</code> だけ</td></tr>
+<tr><td>費用</td><td>サポートプランに含む</td><td>記録した構成項目ごと</td><td>チェック件数・取り込み件数ごと</td><td>ツールは無償</td></tr>
+<tr><td>アカウントに残るもの</td><td>なし</td><td>レコーダー・ルール</td><td>レコーダー・ルール・検出結果</td><td>なし</td></tr>
+<tr><td>AWS 以外</td><td>×</td><td>×</td><td>△（取り込みは可）</td><td>◯（同じ道具で）</td></tr>
+<tr><td>設定値の<strong>中身</strong>まで読むか</td><td>×</td><td>自作すれば◯（カスタムルール）</td><td>×</td><td>◯（用意済み）</td></tr>
+<tr><td>見え方</td><td>線（定期更新）</td><td>線（変更のたび）</td><td>線（変更のたび）</td><td>点（実行したときだけ）</td></tr>
+</tbody></table></div>
+<p>運用面（上 5 行）だけを見ると「常設の仕組みがあるならそれでいい」に見えます。ですが、本当に効いてくるのは下から 2 行目です。<strong>そもそも検知できる中身が違います。</strong></p>
+
+<h3>Prowler にしかないチェックがある</h3>
+<p>Trusted Advisor も Config も Security Hub CSPM も、見ているのは<strong>設定項目が基準どおりか</strong>です。「暗号化が ON か」「パブリックアクセスがブロックされているか」——設定の状態を確認しています。</p>
+<p>Prowler には、それに加えて<strong>値の中身を読んで「秘密が直書きされていないか」を探すチェック</strong>があります。</p>
+<div class="tw"><table><thead><tr><th>チェック</th><th>何を見るか</th></tr></thead><tbody>
+<tr><td><code>awslambda_function_no_secrets_in_variables</code></td><td>Lambda の<strong>環境変数</strong>に API キー・トークン・パスワードらしき値が入っていないか</td></tr>
+<tr><td><code>ec2_instance_secrets_user_data</code></td><td>EC2 の<strong>ユーザーデータ</strong>に認証情報が書かれていないか</td></tr>
+<tr><td><code>ecs_task_definitions_no_environment_secrets</code></td><td>ECS タスク定義の環境変数に秘密が入っていないか</td></tr>
+<tr><td><code>cloudformation_stack_outputs_find_secrets</code></td><td>CloudFormation のスタック出力に秘密が露出していないか</td></tr>
+<tr><td><code>cloudwatch_log_group_no_secrets_in_logs</code></td><td>ログ本文に秘密が出力されていないか</td></tr>
+<tr><td><code>ssm_document_secrets</code></td><td>SSM ドキュメントに秘密が埋め込まれていないか</td></tr>
+</tbody></table></div>
+<pre><code>prowler aws --categories secrets</code></pre>
+<p>これらは設定の ON / OFF ではなく、<strong>文字列を読んで「秘密らしいか」を判定</strong>しています（Yelp の <code>detect-secrets</code> を使用）。純正のマネージドルールやコントロールには、これに当たるものがありません。</p>
+<div class="note"><strong>似たものが AWS 側にもある場合との違い。</strong> Config には <code>ecs-no-environment-secrets</code> という似たルールがありますが、これは<strong>あらかじめ指定したキー名と一致するか</strong>を見るものです。<code>DB_PASSWORD</code> という名前なら引っかかりますが、<code>X1</code> という名前で同じ値を入れれば通ります。なお Lambda の<strong>コード</strong>内の直書きは Amazon Inspector のコードスキャンでも検出できます。上の表で AWS 純正に該当がないのは、環境変数・ユーザーデータ・スタック出力・SSM ドキュメントといった<strong>設定側に置かれた値</strong>のほうです。</div>
+<p>秘密以外にも、フレームワークとは別の「観点」で束ねた区分があります。<code>--categories</code> に <code>encryption</code> / <code>forensics-ready</code> / <code>internet-exposed</code> / <code>logging</code> / <code>secrets</code> / <code>threat-detection</code> / <code>trustboundaries</code> を指定すると、「CIS の何番」ではなく<strong>「インターネットに露出しているものを全部出して」</strong>という聞き方ができます。</p>
+<h3>「カスタムルールを書けばいいのでは」の答え</h3>
+<p>ここで当然こう思います。<strong>Config にはカスタムルールがあるのだから、Lambda を書けば同じことができるのでは？</strong></p>
+<p>できます。できるのですが、<strong>その「書けば」が本体</strong>です。1 つのチェックを自作すると、こういう内訳になります。</p>
+<figure><svg viewBox="0 0 780 350" role="img" aria-labelledby="f7t f7d"><title id="f7t">同じ検知を自作する場合とProwlerを使う場合</title><desc id="f7d">左はカスタムルールを自作するのに必要な要素の積み上げ、右はProwlerが用意済みであることを示す</desc>
+<rect x="20" y="40" width="350" height="290" rx="14" fill="var(--card)" stroke="var(--c2)" stroke-width="2"/>
+<text x="195" y="72" text-anchor="middle" fill="var(--c2)" font-weight="700" font-size="14">Config のカスタムルールで自作する</text>
+<rect x="40" y="88" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="111" text-anchor="middle" fill="var(--ink)" font-size="12">検知ロジックの設計（何を秘密とみなすか）</text>
+<rect x="40" y="130" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="153" text-anchor="middle" fill="var(--ink)" font-size="12">Lambda 関数のコード</text>
+<rect x="40" y="172" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="195" text-anchor="middle" fill="var(--ink)" font-size="12">値の取得（構成項目にない分は自分で API）</text>
+<rect x="40" y="214" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="237" text-anchor="middle" fill="var(--ink)" font-size="12">IAM ロール・アカウント×リージョンへ配布</text>
+<rect x="40" y="256" width="310" height="36" rx="7" fill="var(--lane)" stroke="var(--line)"/><text x="195" y="279" text-anchor="middle" fill="var(--ink)" font-size="12">ランタイム更新・テストの保守</text>
+<text x="195" y="314" text-anchor="middle" fill="var(--stop)" font-weight="700" font-size="14">× チェックの数だけ</text>
+<rect x="400" y="40" width="360" height="290" rx="14" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/>
+<text x="580" y="72" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="14">Prowler を使う</text>
+<rect x="430" y="100" width="300" height="46" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="580" y="129" text-anchor="middle" fill="var(--ink)" font-family="monospace" font-size="13">pip install prowler</text>
+<text x="580" y="184" text-anchor="middle" fill="var(--ink)" font-size="13">検知ロジックは最初から入っている</text>
+<text x="580" y="212" text-anchor="middle" fill="var(--c1)" font-weight="700" font-size="22">AWS だけで 600 超</text>
+<text x="580" y="248" text-anchor="middle" fill="var(--muted)" font-size="12">新サービスへの対応は上流が追従する</text>
+<text x="580" y="276" text-anchor="middle" fill="var(--muted)" font-size="12">秘密の判定は detect-secrets に任せる</text>
+<text x="580" y="314" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="14">自分で保守するコードはゼロ</text></svg><figcaption>左でいちばん重いのは、じつは Lambda のコードではなく先頭の行です。「何をもって秘密とみなすか」はそれ自体が 1 つの問題で、雑に作ると誤検知だらけになり、厳しくすると素通りします。ここを既製品に任せられるかどうかが分かれ目になります。</figcaption></figure>
+<p>データの取得も自明ではありません。たとえば <strong>EC2 のユーザーデータは Config の構成項目に含まれていない</strong>ので、カスタムルールから <code>DescribeInstanceAttribute</code> を自分で呼ぶ必要があります。「Config に記録されているものを評価する」という前提がそもそも成り立たない項目があります。</p>
+<p>これをチェックの数だけ繰り返します。秘密の検査だけでも 9 個です。<strong>Prowler の価値は「純正で見られないものが見られる」よりも、「見るための道具一式を自分で作って保守しなくていい」と言うほうが正確です。</strong></p>
+<figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f6t f6d"><title id="f6t">点で見るProwlerと線で見るAWS側の仕組み</title><desc id="f6d">左は実行した時点だけを見るProwler、右は有効化して動き続けるAWS側の常設の仕組み</desc>
+<rect x="25" y="40" width="345" height="230" rx="14" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/>
+<text x="197" y="74" text-anchor="middle" fill="var(--c1)" font-weight="700" font-size="15">Prowler：点で見る</text>
+<line x1="60" y1="130" x2="340" y2="130" stroke="var(--wire)" stroke-width="2"/>
+<circle cx="95" cy="130" r="9" fill="var(--c1)"/><circle cx="197" cy="130" r="9" fill="var(--c1)"/><circle cx="300" cy="130" r="9" fill="var(--c1)"/>
+<text x="95" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">実行</text><text x="197" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">実行</text><text x="300" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">実行</text>
+<text x="197" y="196" text-anchor="middle" fill="var(--stop)" font-size="12">この間に開いた穴は次まで見えない</text>
+<text x="197" y="234" text-anchor="middle" fill="var(--c3)" font-size="12">アカウントに何も作らない</text>
+<text x="197" y="256" text-anchor="middle" fill="var(--ink)" font-size="12">棚卸し・監査レポート・他クラウド</text>
+<rect x="410" y="40" width="345" height="230" rx="14" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/>
+<text x="582" y="74" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="15">AWS 側の常設の仕組み：線で見る</text>
+<line x1="445" y1="130" x2="725" y2="130" stroke="var(--c3)" stroke-width="6" stroke-linecap="round"/>
+<text x="582" y="160" text-anchor="middle" fill="var(--muted)" font-size="11">変更のたびに評価される</text>
+<text x="582" y="196" text-anchor="middle" fill="var(--c2)" font-size="12">有効化とコストが先に必要</text>
+<text x="582" y="234" text-anchor="middle" fill="var(--ink)" font-size="12">日々の検知と是正の運用</text>
+<text x="582" y="256" text-anchor="middle" fill="var(--ink)" font-size="12">継続的なスコアの追跡</text></svg><figcaption>穴が空いている時間の長さで見れば、線のほうが強いのは明らかです。ただしこれは<strong>同じものを見ている範囲での話</strong>。前節のとおり、そもそも線側が見ていない領域については、点でも見ないよりはるかにましです。</figcaption></figure>
+<p>だから、正直な結論はこうなります。</p>
+<div class="note"><strong>CIS や FSBP の範囲を継続的に見張るのが目的で、対象が AWS だけなら、Security Hub CSPM を有効化するほうが素直です。</strong> その範囲に限れば、Prowler を足しても同じ項目をもう一度見るだけになります。<br>逆に言えば、<strong>範囲の外に用がある</strong>なら話は別です。</div>
+<h3>入れるとよい場面</h3>
+<p>次のどれかに当てはまるなら、Prowler を選ぶ理由が立ちます。</p>
+<ul>
+<li><strong>設定値の中身まで見たいが、自作したくない</strong>：環境変数・ユーザーデータ・スタック出力の秘密の直書きを、カスタムルールを何本も書かずに洗い出したい</li>
+<li><strong>「CIS の何番」以外の切り口で聞きたい</strong>：インターネットに露出しているもの、ログが取れていないところを、カテゴリ単位で一度に出したい</li>
+<li><strong>まだ何も入っていない</strong>：有効化する前に「そもそも何が起きているか」を知りたい。常設の仕組みを入れる提案をするための材料集めにもなる</li>
+<li><strong>有効化できない・したくない</strong>：権限がない、短期の検証アカウントで課金を増やしたくない、他社の環境を預かって見ている</li>
+<li><strong>アカウントに何も残したくない</strong>：レコーダーもルールも作らないので、点検したこと自体が環境に痕跡を残さない</li>
+<li><strong>AWS 以外もある</strong>：Azure・Google Cloud・Kubernetes・M365 を同じ出力形式で横並びにできる</li>
+<li><strong>成果物をファイルで持ち出したい</strong>：監査や取引先への提出物は、コンソールの画面ではなく手元のファイルである必要がある</li>
+<li><strong>CI で回したい</strong>：apply の直後に、その場で判定して落としたい</li>
+</ul>
+<p>逆に言えば、これらに当てはまらないのに入れるなら、<strong>Security Hub CSPM の劣化版を自前で運用することになります</strong>。</p>
+<p>そして両方入れるのも自然な構成です。ASFF 形式で出力すれば Prowler の結果を Security Hub CSPM に送れるので、人が見る画面は 1 つにまとめられます。</p>
+<div class="note"><strong>名前に注意。</strong> 2025 年末に、従来の Security Hub は <strong>Security Hub CSPM</strong> に改名され、「Security Hub」は別の新しいサービスの名前になりました。CIS や FSBP の準拠評価をしているのは CSPM のほうです。検索するときに混ざります。</div>
+
+<h3>入れると増える手間</h3>
+<p>導入コストは「インストールの手間」ではありません。次の 6 つが、入れたあとに毎回ついてきます。</p>
+<ol>
+<li><strong>初回のトリアージ</strong>：数百〜数千件の FAIL を「直す／除外する／受容する」に仕分ける作業が、最初に一度まとめて発生します。ここは自動化できません。この時間を確保できないなら、入れても一覧が増えるだけです</li>
+<li><strong>例外の管理</strong>：Mutelist は書いた瞬間から腐り始めます。リソースを消したのにエントリだけ残る、書いた本人が異動する。<strong>理由と見直し時期をセットで残す</strong>運用が要ります</li>
+<li><strong>実行基盤の設計</strong>：誰がどこから、どの権限で、どの頻度で回すか。手元の端末から本番アカウントに入るのか、専用ロールを引き受けるのか。定期実行するなら実行場所と結果の保管先も決めます</li>
+<li><strong>バージョン追従</strong>：更新でチェックが増えるため、環境が変わらなくても FAIL が増えます。「増えた＝悪化した」ではないと説明できる状態にしておきます</li>
+<li><strong>API 呼び出し量</strong>：全チェックを全リージョンで回すと読み取り API を大量に叩きます。大規模アカウントではスロットリングや実行時間の問題が出るので、範囲を絞る設計が要ります</li>
+<li><strong>誤検知の仕分け</strong>：値の中身を読むチェックは、その性質上どうしても誤検知が出ます（<code>MYSQL_ALLOW_EMPTY_PASSWORD=yes</code> のような値を秘密と判定するなど）。Mutelist の出番がいちばん多いのもこのカテゴリです</li>
+<li><strong>直す人の確保</strong>：検出は入口でしかありません。修正する担当と、修正が本番に入るまでの経路（チケット・変更管理・IaC の修正）がないと、件数は減りません</li>
+</ol>
+<div class="note"><strong>Prowler の実行はスナップショットです。</strong> 実行と実行の間に開いたポートは、次に回すまで見えません。「常時見張ってくれる」ものだと思って入れると、期待と実態がずれます。</div>
+
+<h3>提案するときの言い方</h3>
+<div class="tw"><table><thead><tr><th>技術的な言い方</th><th>ビジネス側に刺さる言い方</th></tr></thead><tbody>
+<tr><td>Prowler で CIS Benchmark をスキャンする</td><td>取引先のセキュリティチェックシートに、その都度調べ直さずに数字で答えられる</td></tr>
+<tr><td>マルチクラウド対応の点検ツールを入れる</td><td>AWS も Azure も同じものさしで並べて、どちらが手薄かを比較できる</td></tr>
+<tr><td>読み取り専用の権限で実行する</td><td>本番環境に書き込む権限を渡さずに済むので、導入そのもののリスクがほぼない</td></tr>
+</tbody></table></div>
+<div class="quiz"><p class="q"><b>確認問題</b>　「無償だし、とりあえず入れて定期的に回しておけば結果が溜まる」——これは導入理由になるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>なりません。</strong> 誰がその一覧を見て、誰が直すのかが決まっていなければ、FAIL の山が積み上がって誰も開かなくなります。「次の監査までに CIS の critical をゼロにする」「引き継いだアカウント 5 つの現状を今月中に把握する」のように、<strong>出口を先に決めてから入れます</strong>。用途が決まっていない道具は、入れた瞬間から負債です。</p></div></details></div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+<h3>30 秒版</h3><blockquote><p>Prowler は、クラウドの設定が基準どおりかを点検するオープンソースのツールです。読み取り専用の権限で API を叩き、チェックごとに PASS / FAIL を出します。AWS・Azure・Google Cloud・Kubernetes などに対応していて、CIS Benchmark や PCI DSS といったフレームワーク単位でレポートを出せます。クラウド側で何かを有効化する必要がないので、引き継いだアカウントの棚卸しや、監査・取引先照会への回答に向いています。加えて、環境変数やユーザーデータに秘密が直書きされていないかといった、純正のマネージドルールにはない検査が最初から入っています。同じことを Config のカスタムルールで自作すると、チェックの数だけ Lambda を書いて保守することになります。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>クラウドの設定ミスは、誰も教えてくれません。危ない設定でもエラーにならず、作った日は正しくても状態は動くからです。かといって何を点検すべきかを自分で列挙するのは現実的ではないので、CIS や FSBP といった外部の基準を借ります。その基準を実行できる形にしたのが Prowler です。</p><p>ただし、入れると手間も増えます。初回は数百〜数千件の FAIL が出るので、直す・除外する・受容するの仕分けが丸ごと発生します。除外した理由を残す運用、誰がどこで定期実行するかの設計、バージョンアップでチェックが増えることへの説明も要ります。そして Prowler の実行はスナップショットなので、常時の検知は Security Hub CSPM や Config 側の役割です。CIS や FSBP の範囲を AWS だけで見張るなら、そちらを有効化するほうが素直です。<strong>ただし範囲そのものが違います。</strong>Lambda の環境変数や EC2 のユーザーデータに秘密が直書きされていないか、といった「値の中身を読む」チェックは、純正のマネージドルールにはありません。Config のカスタムルールを書けば実現はできますが、検知ロジックの設計から Lambda の保守までをチェックの数だけ抱えることになります。<strong>その一式が最初から入っていることが、Prowler を選ぶいちばんの理由です。</strong></p></blockquote>
+
+<h2>よくある誤解</h2>
+<h3>「Prowler を入れれば継続的に監視される」</h3><p>Prowler が出すのは実行した瞬間のスナップショットです。定期実行の仕組みは自分で用意する必要がありますし、実行間隔より短い期間の変更は捉えられません。常時の検知が要るなら、それは Security Hub CSPM・Config・GuardDuty 側の役割です。</p>
+<h3>「FAIL の件数がセキュリティレベルを表す」</h3><p>対象リソースが多いだけで件数は増えますし、意図的な設計が FAIL になることもあります。バージョンアップでチェックが増えれば、環境が何も変わらなくても件数は増えます。見るべきは総数ではなく、<strong>深刻度別の件数</strong>と<strong>判断済み／未判断の内訳</strong>です。</p>
+<h3>「同じことは Config のカスタムルールでもできる」</h3><p>できます。違うのは実現できるかどうかではなく、<strong>自分で書いて保守する量</strong>です。検知ロジックの設計・Lambda・IAM・配布・ランタイム更新を、チェックの数だけ抱えるか、既製の 600 超をそのまま使うかの差です。逆に言えば、自社固有の 1〜2 個だけが欲しいなら、カスタムルールで書くほうが素直なこともあります。</p>
+<h3>「Prowler が環境を直してくれる」</h3><p>Prowler は読み取り専用です。修正方法は検出結果に書かれますが、適用するのは人（または IaC などの別の仕組み）です。これは制約ではなく利点でもあります。本番アカウントに書き込み権限を渡さずに導入できる、というのは稟議を通すときの材料になります。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では「入れるかどうかを判断できること」を優先し、次の話には意図的に踏み込みませんでした。</p>
+<ul>
+<li>独自チェックの追加と、カスタムフレームワークの定義</li>
+<li>Prowler App（自分でホストする Web UI）と SaaS 版の違い</li>
+<li>定期実行の作り込み：CI・コンテナ・スケジューラからの実行と、結果の保管・差分の取り方</li>
+<li>常設側の設計：<a href="../Amazon Web Services/04_セキュリティ/検知と可視化/SecurityHub.md">Security Hub CSPM</a>、<a href="../Amazon Web Services/04_セキュリティ/検知と可視化/SecurityHub_FSBP優先順位の付け方.md">FSBP 優先順位の付け方</a>、<a href="../Amazon Web Services/04_セキュリティ/検知と可視化/Config.md">Config</a>、<a href="../Amazon Web Services/04_セキュリティ/検知と可視化/TrustedAdvisorアラートのSlack通知.md">Trusted Advisor</a></li>
+<li>点検を機械可読にする仕組みの標準：<a href="../SCAP/SCAPをゼロから理解する.html">SCAP をゼロから理解する</a></li>
+<li>OS・ミドルウェア側の脆弱性：<a href="../Vuls/Vuls脆弱性スキャナー.md">Vuls 脆弱性スキャナー</a></li>
+</ul>
+<p>まずは検証用アカウントで、フレームワークを 1 つ・FAIL だけに絞って回してみるのがおすすめです（<code>prowler aws --compliance cis_3.0_aws --status FAIL</code>）。いきなり全部回すと、最初の一歩で結果の量に埋もれます。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://github.com/prowler-cloud/prowler">prowler-cloud/prowler — GitHub</a></li>
+<li><a href="https://docs.prowler.com/">Prowler Documentation</a></li>
+<li><a href="https://docs.prowler.com/user-guide/providers/aws/authentication">Prowler Documentation — AWS Authentication（必要な IAM 権限）</a></li>
+<li><a href="https://docs.prowler.com/user-guide/cli/tutorials/reporting">Prowler Documentation — Reporting（出力形式）</a></li>
+<li><a href="https://hub.prowler.com/">Prowler HUB — チェック一覧（カテゴリ・深刻度から探せる）</a></li>
+<li><a href="https://hub.prowler.com/check/awslambda_function_no_secrets_in_variables">Prowler HUB — awslambda_function_no_secrets_in_variables</a></li>
+<li><a href="https://github.com/Yelp/detect-secrets">Yelp/detect-secrets</a></li>
+<li><a href="https://docs.aws.amazon.com/config/latest/developerguide/ecs-no-environment-secrets.html">AWS Config — ecs-no-environment-secrets</a></li>
+<li><a href="https://prowler.com/prowler-oss">Prowler Open Source — CLI, SDK &amp; Self-Hosted Platform</a></li>
+<li><a href="https://www.cisecurity.org/benchmark/amazon_web_services">CIS Amazon Web Services Foundations Benchmark</a></li>
+<li><a href="https://docs.aws.amazon.com/securityhub/latest/userguide/fsbp-standard.html">AWS Foundational Security Best Practices standard — AWS Security Hub CSPM</a></li>
+<li><a href="https://docs.aws.amazon.com/securityhub/latest/userguide/what-is-securityhub.html">Introduction to AWS Security Hub CSPM</a></li>
+<li><a href="https://docs.aws.amazon.com/config/latest/developerguide/conformance-packs.html">AWS Config — Conformance Packs</a></li>
+<li><a href="https://docs.aws.amazon.com/awssupport/latest/user/trusted-advisor-check-reference.html">AWS Trusted Advisor check reference</a></li>
+<li><a href="https://schema.ocsf.io/">Open Cybersecurity Schema Framework (OCSF)</a></li>
+</ul>
+</main></body></html>

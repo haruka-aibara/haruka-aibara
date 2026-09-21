@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Enhanced Open</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Enhanced Open</h1>
+<p class="lede">パスワードなしのまま暗号化する。カフェや空港の Wi-Fi のための仕組み。</p>
+<h2>「パスワードなし」＝「暗号化なし」だった</h2>
+<p>誰でも使える公衆 Wi-Fi は、合言葉を配れない。従来はそのまま<strong>暗号化なし（オープン）</strong>で運用するしかなく、同じ場所にいる人には通信の中身がそのまま見えていた。</p>
+<p><strong>Enhanced Open</strong>（OWE）は、合言葉を使わずに端末と AP が鍵を作る。<strong>利用者の手順は今までどおり「選ぶだけ」なのに、通信は 1 台ごとに別の鍵で暗号化される</strong>。</p>
+
+<figure>
+<svg viewBox="0 0 700 226" role="img" aria-label="オープンとEnhanced Openとパスワードありの違い">
+<rect x="0" y="20" width="216" height="176" rx="8" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.4"/><text x="108" y="44" font-size="11.5" fill="var(--stop)" text-anchor="middle" font-weight="600">オープン（従来）</text><g transform="translate(42,60) scale(0.8)"><circle cx="9" cy="6" r="5.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><path d="M0 28 a9 11 0 0 1 18 0 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/></g><path d="M84.5 63.5 A12 12 0 0 1 84.5 80.5" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.45"/><path d="M88.7 59.3 A18 18 0 0 1 88.7 84.7" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.35"/><g transform="translate(112,64)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--ink)"/><circle cx="37" cy="-21" r="2.2" fill="var(--ink)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--ink)"/><circle cx="19" cy="8" r="2" fill="var(--ink)" opacity=".45"/></g><g transform="translate(97,104) scale(1.0)"><path d="M16.5 12 V8 a5.5 5.5 0 0 1 11 0" fill="none" stroke="var(--stop)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--stop)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><g transform="translate(94,146) scale(0.9)"><path d="M0 9 Q14 -3 28 9 Q14 21 0 9 Z" fill="var(--card)" stroke="var(--stop)" stroke-width="1.6"/><circle cx="14" cy="9" r="4" fill="var(--stop)"/></g><text x="108" y="186" font-size="10.5" fill="var(--stop)" text-anchor="middle">隣の人に中身が見える</text><text x="108" y="210" font-size="10" fill="var(--muted)" text-anchor="middle">合言葉：不要</text><rect x="242" y="20" width="216" height="176" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="1.4"/><text x="350" y="44" font-size="11.5" fill="var(--c3)" text-anchor="middle" font-weight="600">Enhanced Open</text><g transform="translate(284,60) scale(0.8)"><circle cx="9" cy="6" r="5.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><path d="M0 28 a9 11 0 0 1 18 0 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/></g><path d="M326.5 63.5 A12 12 0 0 1 326.5 80.5" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.45"/><path d="M330.7 59.3 A18 18 0 0 1 330.7 84.7" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.35"/><g transform="translate(354,64)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--ink)"/><circle cx="37" cy="-21" r="2.2" fill="var(--ink)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--ink)"/><circle cx="19" cy="8" r="2" fill="var(--ink)" opacity=".45"/></g><g transform="translate(339,104) scale(1.0)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--c3)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--c3)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><g transform="translate(336,146) scale(0.9)"><path d="M0 9 Q14 -3 28 9 Q14 21 0 9 Z" fill="var(--card)" stroke="var(--muted)" stroke-width="1.6"/><circle cx="14" cy="9" r="4" fill="var(--muted)"/></g><text x="350" y="186" font-size="10.5" fill="var(--c3)" text-anchor="middle">盗み見はできない</text><text x="350" y="210" font-size="10" fill="var(--muted)" text-anchor="middle">合言葉：不要（自動で鍵を作る）</text><rect x="484" y="20" width="216" height="176" rx="8" fill="var(--lane)" stroke="var(--line)" stroke-width="1.4"/><text x="592" y="44" font-size="11.5" fill="var(--c1)" text-anchor="middle" font-weight="600">合言葉あり（WPA2/3）</text><g transform="translate(526,60) scale(0.8)"><circle cx="9" cy="6" r="5.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><path d="M0 28 a9 11 0 0 1 18 0 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/></g><path d="M568.5 63.5 A12 12 0 0 1 568.5 80.5" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.45"/><path d="M572.7 59.3 A18 18 0 0 1 572.7 84.7" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-linecap="round" opacity="0.35"/><g transform="translate(596,64)"><line x1="12" y1="0" x2="7" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><line x1="32" y1="0" x2="37" y2="-19" stroke="var(--ink)" stroke-width="1.7" stroke-linecap="round"/><circle cx="7" cy="-21" r="2.2" fill="var(--ink)"/><circle cx="37" cy="-21" r="2.2" fill="var(--ink)"/><rect x="0" y="0" width="44" height="16" rx="4" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><circle cx="10" cy="8" r="2" fill="var(--ink)"/><circle cx="19" cy="8" r="2" fill="var(--ink)" opacity=".45"/></g><g transform="translate(581,104) scale(1.0)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--c1)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--c1)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><g transform="translate(578,146) scale(0.9)"><path d="M0 9 Q14 -3 28 9 Q14 21 0 9 Z" fill="var(--card)" stroke="var(--muted)" stroke-width="1.6"/><circle cx="14" cy="9" r="4" fill="var(--muted)"/></g><text x="592" y="186" font-size="10.5" fill="var(--c1)" text-anchor="middle">知っている人だけ入れる</text><text x="592" y="210" font-size="10" fill="var(--muted)" text-anchor="middle">合言葉：必要</text><circle cx="370" cy="152" r="9" fill="var(--warn-bg)" stroke="var(--c3)" stroke-width="1.6"/><path d="M366.22 148.22 L373.78 155.78 M373.78 148.22 L366.22 155.78" stroke="var(--c3)" stroke-width="2.4" stroke-linecap="round"/><circle cx="612" cy="152" r="9" fill="var(--warn-bg)" stroke="var(--c1)" stroke-width="1.6"/><path d="M608.22 148.22 L615.78 155.78 M615.78 148.22 L608.22 155.78" stroke="var(--c1)" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
+<figcaption>Enhanced Open は暗号化するだけで、<strong>相手が本物の AP かは確かめていない</strong>。同じ名前を名乗る偽 AP につながされる可能性は残るので、公衆 Wi-Fi では引き続き https や VPN が要る。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.wi-fi.org/discover-wi-fi/wi-fi-certified-enhanced-open">Wi-Fi Alliance — Wi-Fi CERTIFIED Enhanced Open</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8110">RFC 8110 — Opportunistic Wireless Encryption</a></li>
+</ul>
+
+</main>
+</body>
+</html>

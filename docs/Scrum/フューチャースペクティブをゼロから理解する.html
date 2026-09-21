@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>フューチャースペクティブをゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.flow{display:flex;flex-direction:column;gap:.45rem}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.84rem;background:var(--card);
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:30rem}}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>フューチャースペクティブをゼロから理解する</h1>
+<p class="lede">「チームで振り返るとは何をすることか」という手前の話から始め、5 ステップで、まだ起きていないことをチームで扱う方法までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+<p>フューチャースペクティブの解説を読んで、途中で分からなくなった経験はありませんか。</p>
+<p>それは読解力の問題ではありません。多くの記事は「レトロスペクティブの時間軸を未来に向けたワークショップです」という、中級者向けの前提から始まるからです。<strong>そもそもチームはなぜ振り返るのか、時間軸を未来に向けると何が変わるのか</strong>が分からないまま、手法の名前だけが並んでいきます。</p>
+<p>そこでこの記事は、あえて遠回りします。「チームで振り返るとは何をすることか」という、いちばん手前の話から始めて 5 ステップで進みます。ゴールは手法名を覚えることではなく、<strong>どういう場面で、なぜこの形が効くのかを自分の言葉で説明できること</strong>です。</p>
+
+<div class="dg rmbox"><p class="ttl">この記事の道のり</p><nav class="rm" aria-label="全体のロードマップ"><ol>
+<li><span class="n">STEP 1</span>なぜチームで振り返るのか</li><li><span class="n">STEP 2</span>過去にしか材料がない</li><li><span class="n">STEP 3</span>視点を未来に置く</li><li><span class="n">STEP 4</span>時点とゴールを決めて書き出す</li><li><span class="n">STEP 5</span>フューチャースペクティブとして組み立てる</li>
+</ol></nav><p class="cap">STEP 4 まではすべて前提知識です。本題のフューチャースペクティブは STEP 5 だけですが、そこに至る 4 ステップがないと「未来から振り返る」という言い回しだけが残り、手法名の暗記になります。</p></div>
+
+<h2>STEP 1：なぜチームで振り返るのか</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="now"><span class="n">STEP 1</span>なぜチームで振り返るのか</li><li><span class="n">STEP 2</span>過去にしか材料がない</li><li><span class="n">STEP 3</span>視点を未来に置く</li><li><span class="n">STEP 4</span>時点とゴールを決めて書き出す</li><li><span class="n">STEP 5</span>フューチャースペクティブとして組み立てる</li></ol></nav>
+<p>あるチームでは、リリースのたびに同じことが起きます。前日になって設定漏れが見つかり、全員でその日の夜まで対応する。次のリリースでも、また別の設定漏れで同じことが起きる。</p>
+<p>一人ひとりは注意しています。それでも繰り返すなら、原因は個人の注意力ではなく<strong>チームの進め方</strong>の側にあります。そこを直すには、起きたことを全員で持ち寄って見る時間が要ります。これが振り返りです。スクラムでは<strong>スプリントレトロスペクティブ</strong>という名前で、スプリントごとに開くイベントとして決められています。</p>
+<p>やることは 4 つだけです。事実を出す、働き方の要因を探す、次の一手を決める、次の期間で試す。最後の「試す」が抜けると、感想を言い合っただけで終わります。</p>
+<figure><svg viewBox="0 0 780 200" role="img" aria-labelledby="f1t f1d"><title id="f1t">振り返りが回るときの4つの段</title><desc id="f1d">事実を出す、働き方の要因を探す、次の一手を決める、次の期間で試す、の4段が矢印でつながり、最後から最初へ戻るループになっている</desc>
+<defs><marker id="am1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker><marker id="am1b" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c3)"/></marker></defs>
+<g stroke="var(--c1)" stroke-width="1.5" fill="var(--card)">
+<rect x="18" y="30" width="168" height="62" rx="9"/><rect x="208" y="30" width="168" height="62" rx="9"/><rect x="398" y="30" width="168" height="62" rx="9"/><rect x="588" y="30" width="168" height="62" rx="9"/></g>
+<g font-size="13" fill="var(--ink)" text-anchor="middle" font-weight="600">
+<text x="102" y="57">事実を出す</text><text x="292" y="57">働き方の要因を探す</text><text x="482" y="57">次の一手を決める</text><text x="672" y="57">次の期間で試す</text></g>
+<g font-size="11.5" fill="var(--muted)" text-anchor="middle">
+<text x="102" y="79">何が起きたか</text><text x="292" y="79">誰が悪いか、ではない</text><text x="482" y="79">1〜2 個に絞る</text><text x="672" y="79">やってみて結果を見る</text></g>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am1)">
+<line x1="188" y1="61" x2="204" y2="61"/><line x1="378" y1="61" x2="394" y2="61"/><line x1="568" y1="61" x2="584" y2="61"/></g>
+<path d="M672 96 L672 140 L102 140 L102 100" fill="none" stroke="var(--c3)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#am1b)"/>
+<text x="387" y="168" text-anchor="middle" fill="var(--c3)" font-size="12.5">次の振り返りの冒頭で、前回の一手がどうなったかを確認する</text>
+</svg><figcaption>4 段のうち脱落しやすいのは 4 番目です。決めたアクションが次の期間のボードに載っていないチームでは、このループはつながらず、毎回同じ話題が出続けます。</figcaption></figure>
+<p>大事なのは<strong>次の一手を 1〜2 個に絞る</strong>ことです。10 個決めても実行されなければ、次の振り返りでまた同じ話が出ます。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　立ち上がったばかりのチームで、まだ 1 スプリントも走っていません。この場は開けるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>開いても中身が出ません。</strong> この場は「起きたこと」を材料にするので、材料がゼロなら出せるのは一般論だけです。ところが実際には、立ち上げのときこそ決め方や役割をそろえておきたい。ここに振り返りの弱点があります。</p></div></details></div>
+
+<h2>STEP 2：過去にしか材料がない</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>なぜチームで振り返るのか</li><li class="now"><span class="n">STEP 2</span>過去にしか材料がない</li><li><span class="n">STEP 3</span>視点を未来に置く</li><li><span class="n">STEP 4</span>時点とゴールを決めて書き出す</li><li><span class="n">STEP 5</span>フューチャースペクティブとして組み立てる</li></ol></nav>
+<p>レトロスペクティブの強さは、扱うのが<strong>事実</strong>だという点にあります。「あのとき 3 日待った」「テストが 2 回落ちた」は誰も否定できません。おかげで議論が意見のぶつけ合いになりません。</p>
+<p>裏を返せば、事実がない領域には手が届きません。困るのは次の 3 つの場面です。</p>
+<ul>
+<li><strong>始まったばかり</strong>：新しいチーム、新しいプロジェクト。過去そのものがない</li>
+<li><strong>前例が効かない</strong>：初めての本番データ移行、初めての大型リリース。似た経験がない</li>
+<li><strong>一度も起こしたくない</strong>：顧客データの消失のように、起きてから振り返るのでは遅い失敗</li>
+</ul>
+<figure><svg viewBox="0 0 780 250" role="img" aria-labelledby="f2t f2d"><title id="f2t">レトロスペクティブが扱える範囲</title><desc id="f2d">時間軸の左側の過去には起きた出来事が並び、右側の未来は空白のまま。レトロスペクティブの射程は過去側だけに届いている</desc>
+<defs><marker id="am2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<line x1="40" y1="150" x2="745" y2="150" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<line x1="430" y1="58" x2="430" y2="178" stroke="var(--c1)" stroke-width="2.5"/>
+<text x="430" y="197" text-anchor="middle" fill="var(--c1)" font-size="13" font-weight="700">いま</text>
+<g fill="var(--lane)" stroke="var(--c3)" stroke-width="1.8"><rect x="62" y="136" width="52" height="28" rx="6"/><rect x="140" y="136" width="52" height="28" rx="6"/><rect x="218" y="136" width="52" height="28" rx="6"/><rect x="296" y="136" width="52" height="28" rx="6"/></g>
+<g fill="none" stroke="var(--wire)" stroke-width="1.5" stroke-dasharray="4 4"><rect x="480" y="136" width="52" height="28" rx="6"/><rect x="570" y="136" width="52" height="28" rx="6"/><rect x="660" y="136" width="52" height="28" rx="6"/></g>
+<g font-size="13" fill="var(--muted)" text-anchor="middle"><text x="506" y="155">？</text><text x="596" y="155">？</text><text x="686" y="155">？</text></g>
+<path d="M62 96 L62 82 L348 82 L348 96" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="205" y="70" text-anchor="middle" fill="var(--c3)" font-size="13" font-weight="700">起きたこと＝材料がある</text>
+<path d="M480 96 L480 82 L712 82 L712 96" fill="none" stroke="var(--stop)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="596" y="70" text-anchor="middle" fill="var(--stop)" font-size="13" font-weight="700">まだ何もない</text>
+<text x="205" y="228" text-anchor="middle" fill="var(--ink)" font-size="12.5">レトロスペクティブが扱えるのはこちら側だけ</text>
+<text x="596" y="228" text-anchor="middle" fill="var(--muted)" font-size="12.5">失敗のコストが大きいのは、たいていこちら側</text>
+</svg><figcaption>3 つ目の場面が特に厄介です。振り返りは「失敗してから学ぶ」仕組みなので、失敗のコストが大きいものほど、この仕組みに任せられません。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　では「リスクを洗い出す会」を開けば済むでしょうか。実際にやると、当たり障りのない項目しか出ないことがよくあります。なぜでしょう。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>「失敗するかもしれない」が言い出しにくいからです。</strong> まだ何も起きていない段階でリスクを挙げるのは、進めようとしている人への反対表明に見えます。加えて、起きていないことを想像で語ると「気をつける」「注意する」といった抽象的な言葉になりがちです。これは出し方の問題であって、チームの能力の問題ではありません。次のステップで、聞き方を 1 か所だけ変えます。</p></div></details></div>
+
+<h2>STEP 3：視点を未来に置く</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>なぜチームで振り返るのか</li><li class="done"><span class="n">STEP 2 ✓</span>過去にしか材料がない</li><li class="now"><span class="n">STEP 3</span>視点を未来に置く</li><li><span class="n">STEP 4</span>時点とゴールを決めて書き出す</li><li><span class="n">STEP 5</span>フューチャースペクティブとして組み立てる</li></ol></nav>
+<p>変えるのは一点だけです。<strong>視点を未来に移して、そこから過去形で語ります。</strong></p>
+<p>「このプロジェクトは失敗するかもしれない」ではなく、「3 か月後、このプロジェクトは失敗した。何が起きたのか」と問います。まだ起きていないことを、もう起きたこととして扱う——これだけです。</p>
+<figure><svg viewBox="0 0 780 255" role="img" aria-labelledby="f3t f3d"><title id="f3t">現在から未来を眺める場合と、未来に立って振り返る場合</title><desc id="f3d">左は現在に立って未来へ問いを投げる図で答えが抽象的になり、右は未来に立って現在までを振り返る図で答えが具体的になる</desc>
+<defs><marker id="am3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<line x1="390" y1="12" x2="390" y2="243" stroke="var(--line)" stroke-width="2"/>
+<text x="197" y="30" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">現在から未来を眺める</text>
+<line x1="55" y1="170" x2="345" y2="170" stroke="var(--wire)" stroke-width="1.5"/>
+<g font-size="11.5" fill="var(--muted)"><text x="55" y="190">いま</text><text x="345" y="190" text-anchor="end">3 か月後</text></g>
+<circle cx="72" cy="122" r="11" fill="var(--c1)"/><rect x="59" y="136" width="26" height="29" rx="9" fill="var(--c1)"/>
+<line x1="98" y1="132" x2="330" y2="132" stroke="var(--wire)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#am3)"/>
+<text x="214" y="118" text-anchor="middle" fill="var(--ink)" font-size="12.5">これから何が起きる？</text>
+<text x="197" y="222" text-anchor="middle" fill="var(--stop)" font-size="12.5">「たぶん大丈夫」「気をつける」</text>
+<text x="583" y="30" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">未来に立って振り返る</text>
+<line x1="440" y1="170" x2="730" y2="170" stroke="var(--wire)" stroke-width="1.5"/>
+<g font-size="11.5" fill="var(--muted)"><text x="440" y="190">いま</text><text x="730" y="190" text-anchor="end">3 か月後</text></g>
+<circle cx="713" cy="122" r="11" fill="var(--c3)"/><rect x="700" y="136" width="26" height="29" rx="9" fill="var(--c3)"/>
+<line x1="687" y1="132" x2="455" y2="132" stroke="var(--c3)" stroke-width="2" marker-end="url(#am3)"/>
+<text x="571" y="118" text-anchor="middle" fill="var(--ink)" font-size="12.5">失敗した。なぜそうなった？</text>
+<text x="583" y="222" text-anchor="middle" fill="var(--c3)" font-size="12.5">「移行の検証時間を取らなかった」</text>
+</svg><figcaption>矢印の向きが違うだけで、参加者も持っている知識も同じです。変わるのは、答えが「予測」から「説明」に変わる点です。</figcaption></figure>
+<p>この置き換えは 2 つの面で効きます。</p>
+<p><strong>1 つは、答えやすさです。</strong>人は起きた出来事の理由を説明するのは得意で、起きていないことの確率を見積もるのは苦手です。Gary Klein は事前検死（プレモーテム）を紹介した記事の中で、出来事を「すでに起きたもの」として説明させると理由の特定が増える、という Mitchell らの研究を引いています。同じ人が、同じ知識で、聞かれ方が変わるだけで具体的になります。</p>
+<p><strong>もう 1 つは、言いやすさです。</strong>「失敗した」が場の前提として置かれているので、懸念を口にすることが反対意見ではなく、その場で求められている役割になります。心配性だと思われる心配がなくなります。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　未来に立つのは分かりました。では「いつの未来」に立つかは、参加者それぞれの想像に任せてよいでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>任せると発散します。</strong> ある人はリリース当日を、別の人は 3 年後を思い浮かべたまま話すので、出てくる出来事の粒度が噛み合いません。時点をそろえると粒度もそろいます。そこで次は、時点をはじめとする場の設定を見ます。</p></div></details></div>
+
+<h2>STEP 4：時点とゴールを決めて書き出す</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>なぜチームで振り返るのか</li><li class="done"><span class="n">STEP 2 ✓</span>過去にしか材料がない</li><li class="done"><span class="n">STEP 3 ✓</span>視点を未来に置く</li><li class="now"><span class="n">STEP 4</span>時点とゴールを決めて書き出す</li><li><span class="n">STEP 5</span>フューチャースペクティブとして組み立てる</li></ol></nav>
+<p>進め方の順番は決まっています。</p>
+<figure><svg viewBox="0 0 780 200" role="img" aria-labelledby="f4t f4d"><title id="f4t">場の進め方5フェーズ</title><desc id="f4d">時点を決める、状態を置く、無言で個人作業、出して束ねる、一手を決める、の5フェーズが左から右に並び、3番目が強調されている</desc>
+<defs><marker id="am4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--wire)"/></marker></defs>
+<g fill="var(--card)" stroke="var(--line)" stroke-width="1.5">
+<rect x="12" y="34" width="140" height="70" rx="9"/><rect x="164" y="34" width="140" height="70" rx="9"/><rect x="468" y="34" width="140" height="70" rx="9"/><rect x="620" y="34" width="140" height="70" rx="9"/></g>
+<rect x="316" y="34" width="140" height="70" rx="9" fill="var(--lane)" stroke="var(--c1)" stroke-width="2.5"/>
+<g font-size="12.5" fill="var(--ink)" text-anchor="middle" font-weight="600">
+<text x="82" y="62">時点を決める</text><text x="234" y="62">状態を置く</text><text x="386" y="62">無言で個人作業</text><text x="538" y="62">出して束ねる</text><text x="690" y="62">一手を決める</text></g>
+<g font-size="11" fill="var(--muted)" text-anchor="middle">
+<text x="82" y="85">「3 か月後の 4/1」</text><text x="234" y="85">成功した／失敗した</text><text x="386" y="85">5〜10 分・付箋に</text><text x="538" y="85">似たものをまとめる</text><text x="690" y="85">担当と確認日まで</text></g>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)">
+<line x1="154" y1="69" x2="160" y2="69"/><line x1="306" y1="69" x2="312" y2="69"/><line x1="458" y1="69" x2="464" y2="69"/><line x1="610" y1="69" x2="616" y2="69"/></g>
+<line x1="12" y1="130" x2="745" y2="130" stroke="var(--wire)" stroke-width="1.5" marker-end="url(#am4)"/>
+<text x="740" y="150" text-anchor="end" fill="var(--muted)" font-size="12">場の時間（60〜90 分）→</text>
+<text x="386" y="176" text-anchor="middle" fill="var(--c1)" font-size="12.5" font-weight="700">ここを話し合いから始めると、最初の発言に全員が引っ張られる</text>
+</svg><figcaption>最後のフェーズを「感想の共有」で終える回が多いところです。担当と確認日まで決まって、はじめて次の期間に持ち越せます。</figcaption></figure>
+<p>ポイントは 3 番目、<strong>最初は無言で個人作業にする</strong>ことです。いきなり話し合うと、最初の発言に全員の思考が寄っていきます。独立した観点を先に付箋の上に出しておけば、少数派の懸念が消えません。</p>
+<p>2 番目の「状態を置く」には、代表的な型が 3 つあります。</p>
+<div class="tw"><table>
+<tr><th>型</th><th>置く状態</th><th>向いている場面</th></tr>
+<tr><td>プレモーテム（事前検死）</td><td>「失敗した」</td><td>やることが決まっている移行・リリースの前。失敗のコストが大きいとき</td></tr>
+<tr><td>リメンバー・ザ・フューチャー</td><td>「うまくいった」</td><td>チームやプロジェクトの立ち上げ。ありたい姿をそろえたいとき</td></tr>
+<tr><td>セイルボート（帆船）</td><td>追い風・錨・岩・島を 1 枚に</td><td>今の状態と行き先をまとめて見たいとき</td></tr>
+</table></div>
+<p>セイルボートは、4 つの問いを 1 枚の絵に載せた型です。「何が後押ししているか」「何が足を引っ張っているか」「この先に何が待っているか」「どこへ行きたいか」を、風・錨・岩・島に置き換えます。</p>
+<figure><svg viewBox="0 0 780 320" role="img" aria-labelledby="f5t f5d"><title id="f5t">セイルボートの4要素</title><desc id="f5d">帆船を中心に、左から吹く追い風、船底につながる錨、進路上の岩、目的地の島が配置されている</desc>
+<defs><marker id="am5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c3)"/></marker></defs>
+<line x1="20" y1="222" x2="760" y2="222" stroke="var(--c1)" stroke-width="2"/>
+<g stroke="var(--c3)" stroke-width="2.5" marker-end="url(#am5)"><line x1="40" y1="112" x2="185" y2="112"/><line x1="40" y1="152" x2="185" y2="152"/></g>
+<text x="40" y="94" fill="var(--c3)" font-size="13" font-weight="700">追い風</text>
+<text x="40" y="180" fill="var(--muted)" font-size="12">後押しになっているもの</text>
+<line x1="330" y1="80" x2="330" y2="218" stroke="var(--ink)" stroke-width="3"/>
+<path d="M338 86 L338 206 L428 206 Z" fill="var(--c1)"/>
+<path d="M322 86 L322 206 L262 206 Z" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+<path d="M248 210 L442 210 L412 250 L278 250 Z" fill="var(--card)" stroke="var(--ink)" stroke-width="2"/>
+<line x1="300" y1="250" x2="300" y2="294" stroke="var(--c2)" stroke-width="2"/>
+<path d="M284 288 q16 20 32 0" fill="none" stroke="var(--c2)" stroke-width="2.5"/>
+<line x1="288" y1="262" x2="312" y2="262" stroke="var(--c2)" stroke-width="2"/>
+<text x="255" y="300" text-anchor="end" fill="var(--c2)" font-size="13" font-weight="700">錨</text>
+<text x="255" y="284" text-anchor="end" fill="var(--muted)" font-size="12">足を引っ張っているもの</text>
+<path d="M500 222 L528 168 L556 222 Z" fill="var(--lane)" stroke="var(--stop)" stroke-width="2"/>
+<path d="M556 222 L575 192 L594 222 Z" fill="var(--lane)" stroke="var(--stop)" stroke-width="2"/>
+<text x="546" y="152" text-anchor="middle" fill="var(--stop)" font-size="13" font-weight="700">岩</text>
+<text x="546" y="248" text-anchor="middle" fill="var(--muted)" font-size="12">この先に待つリスク</text>
+<path d="M636 222 Q700 148 764 222 Z" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/>
+<line x1="700" y1="168" x2="700" y2="120" stroke="var(--ink)" stroke-width="2"/>
+<path d="M700 120 L742 133 L700 146 Z" fill="var(--c3)"/>
+<text x="700" y="106" text-anchor="middle" fill="var(--c3)" font-size="13" font-weight="700">島</text>
+<text x="700" y="248" text-anchor="middle" fill="var(--muted)" font-size="12">ありたい状態</text>
+</svg><figcaption>絵にする意味は、4 つの問いの関係が一目で分かることにあります。錨と岩は似て見えますが、錨はすでに効いているもの、岩はまだ当たっていないものです。この線引きが曖昧だと、対策の緊急度も曖昧になります。</figcaption></figure>
+<p>どの型を選んでも、最後に出てくるのは<strong>「そのために今できること」</strong>です。ここまで来れば、レトロスペクティブと同じ出口——アクションに落とす——に合流します。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　プレモーテムとリメンバー・ザ・フューチャーは、失敗と成功で正反対です。どちらか一方だけ使えばよいでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>目的が違うので使い分けます。</strong> 失敗を前提にすると、防ぐための打ち手が出ます。成功を前提にすると、何をもって成功と呼ぶかの共通理解ができます。立ち上げでゴールがそろっていないのに失敗前提でやると、何を失敗と呼ぶかで揉めます。逆に、やることが決まっている移行作業で成功前提だけをやると、抜けが見つかりません。</p></div></details></div>
+
+<h2>STEP 5：フューチャースペクティブとして組み立てる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>なぜチームで振り返るのか</li><li class="done"><span class="n">STEP 2 ✓</span>過去にしか材料がない</li><li class="done"><span class="n">STEP 3 ✓</span>視点を未来に置く</li><li class="done"><span class="n">STEP 4 ✓</span>時点とゴールを決めて書き出す</li><li class="now"><span class="n">STEP 5</span>フューチャースペクティブとして組み立てる</li></ol></nav>
+<p>ここまでの 4 つを 1 つにまとめると、フューチャースペクティブになります。</p>
+<p><strong>フューチャースペクティブ</strong>は、未来のある時点に視点を置き、そこから振り返る形でチームの見通し・不安・打ち手を出す場です。レトロスペクティブ（retrospective＝後ろを見る）の時間軸を反転させたもの、と言えます。</p>
+<figure><svg viewBox="0 0 780 250" role="img" aria-labelledby="f6t f6d"><title id="f6t">レトロスペクティブとフューチャースペクティブの射程</title><desc id="f6d">いまを中心に、左へ伸びる矢印がレトロスペクティブ、右へ伸びる矢印がフューチャースペクティブで、どちらも同じ「次の一手」の箱につながっている</desc>
+<defs><marker id="am6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<line x1="390" y1="30" x2="390" y2="128" stroke="var(--c1)" stroke-width="2.5"/>
+<text x="390" y="24" text-anchor="middle" fill="var(--c1)" font-size="13" font-weight="700">いま</text>
+<line x1="368" y1="72" x2="60" y2="72" stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"/>
+<text x="214" y="58" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="700">レトロスペクティブ</text>
+<text x="214" y="98" text-anchor="middle" fill="var(--muted)" font-size="12">起きた事実を材料にする／毎スプリント</text>
+<line x1="412" y1="72" x2="720" y2="72" stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"/>
+<text x="566" y="58" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="700">フューチャースペクティブ</text>
+<text x="566" y="98" text-anchor="middle" fill="var(--muted)" font-size="12">未来の一点に立って語る／節目ごと</text>
+<path d="M214 112 L214 168 L336 168" fill="none" stroke="var(--c3)" stroke-width="2" marker-end="url(#am6)"/>
+<path d="M566 112 L566 168 L444 168" fill="none" stroke="var(--c3)" stroke-width="2" marker-end="url(#am6)"/>
+<rect x="340" y="146" width="100" height="44" rx="9" fill="var(--c3)"/>
+<text x="390" y="166" text-anchor="middle" fill="var(--on)" font-size="12.5" font-weight="700">次の一手</text>
+<text x="390" y="182" text-anchor="middle" fill="var(--on)" font-size="12.5" font-weight="700">1〜2 個</text>
+<text x="390" y="222" text-anchor="middle" fill="var(--muted)" font-size="12.5">材料の取り方が違うだけで、出口は同じ</text>
+</svg><figcaption>2 つは競合しません。どちらか一方だけのチームは、片側の材料を使い損ねています。図の下半分（出口）が用意できていないなら、どちらを開いても結果は変わりません。</figcaption></figure>
+<p>開くタイミングは節目です。</p>
+<ul>
+<li>チーム・プロジェクトの立ち上げ（過去の材料がない時期）</li>
+<li>大きなリリース、データ移行、体制変更の前（前例が効かない）</li>
+<li>レトロスペクティブが毎回同じ話になっているとき（視点を変える）</li>
+</ul>
+<p>頻度は<strong>毎スプリントではありません</strong>。節目に開くものなので、年に数回が目安です。毎回の振り返りはレトロスペクティブが担当し、フューチャースペクティブがそれを置き換えることはありません。</p>
+<p>出口の作り方も同じです。出た不安のうち、今すぐ手を打てるものはアクションにして担当と確認日を決める。今は打てないものは「見張る項目」として残し、次の節目に見直す。<strong>付箋が増えただけで終わったなら、開かなかったのと変わりません。</strong></p>
+<div class="note"><p><strong>場を開く前に一言置く：</strong>起きていない失敗を語る場なので、話が特定の人の仕事ぶりに向かいやすくなります。「扱うのは進め方であって人ではない」と最初に宣言しておくと、あとで軌道修正するより安く済みます。</p></div>
+<div class="quiz"><p class="q"><b>確認問題</b>　プレモーテムを開いた 3 か月後、想定した失敗は起きませんでした。予測が外れたのだから、あの会は無駄だったのでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>無駄ではありません。当てる会ではないからです。</strong> 目的は 2 つあります。今のうちに打てる手を打つことと、チームの見通しをそろえることです。起きなかった理由の一つは、想定した失敗に手を打ったからかもしれません。当たったかどうかで評価すると、次からは当てにいく会になり、防ぐ会ではなくなります。</p></div></details></div>
+<div class="quiz"><p class="q"><b>考えてみる問題</b>　出てきた不安のうち、その場でアクションにできなかったものは、誰がどこで持ち続けるとよいでしょうか。</p><details><summary>考え方を見る</summary><div class="ans"><p>正解が 1 つある問いではありません。バックログに積む、リスク一覧に書く、次の節目まで壁に貼っておく、といった選択肢があります。判断の軸になるのは「次にそれを見るのはいつか」が決まっているかどうかです。見る日が決まっていない置き場所は、どこであっても消えたのと同じになります。</p></div></details></div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+<h3>30 秒版</h3><blockquote><p>フューチャースペクティブは、未来のある時点に視点を置いて、そこから振り返る形で行うチームの振り返りです。ふつうのレトロスペクティブは「起きたこと」を材料にしますが、立ち上げの時期や、初めての大きな移行の前には、その材料がありません。そこで「3 か月後、これは失敗した。何が起きた？」と、まだ起きていないことを起きたこととして語ります。人は出来事の理由を説明するのが得意なので、この聞き方だと具体的な話が出ます。出口はレトロと同じで、今できる一手を 1〜2 個決めます。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>効く理由は 2 つあります。答えやすさ——予測より説明のほうが人は得意です。そして言いやすさ——「失敗した」が場の前提なので、懸念を口にすることが反対表明になりません。</p><p>進め方は、時点を決める、状態（成功か失敗か）を置く、無言で個人作業、出して束ねる、一手を決める、の順です。最初を個人作業にするのは、最初の発言に全員が引っ張られるのを避けるためです。型は 3 つ覚えておけば足ります。失敗を置くプレモーテム、成功を置くリメンバー・ザ・フューチャー、今と行き先を 1 枚で見るセイルボートです。</p><p>開くのは節目だけで、毎スプリントのレトロスペクティブを置き換えるものではありません。当てる会でもありません。打ち手を前倒しし、チームの見通しをそろえるための場です。</p></blockquote>
+
+<h2>よくある誤解</h2>
+<h3>「レトロスペクティブの代わりに毎回やればいい」</h3><p>材料が違うので置き換えられません。実際に起きたことの点検は毎スプリント必要です。フューチャースペクティブは節目に開くもので、両方を持っているのが普通の状態です。</p>
+<h3>「未来を当てる会」</h3><p>精度を競う場ではありません。外れることは前提です。評価すべきなのは、その場で決めた一手が実行されたかどうかです。</p>
+<h3>「前向きな話をする会」</h3><p>名前が未来なので明るい会に見えますが、中心にあるのは不安の言語化です。プレモーテムに至っては、失敗の話しかしません。言いにくいことを言える形にするのがこの手法の値打ちです。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では全体像を優先し、次の話には意図的に踏み込みませんでした。</p>
+<ul>
+<li>アクティビティのバリエーション（Retromat や FunRetrospectives に多数ある）</li>
+<li>ファシリテーションの実務：時間配分、グルーピング、ドット投票での絞り込み</li>
+<li>出た不安をリスク一覧として運用に接続する方法</li>
+<li>毎回の振り返りの質：<a href="スクラムマスターのセルフチェックリスト/スクラムイベント/スプリントレトロスペクティブ.md">スプリントレトロスペクティブのチェックリスト</a>、<a href="スクラムマスターのセルフチェックリスト/ベストプラクティス/改善ループ.md">改善ループのチェックリスト</a></li>
+</ul>
+<p>次にやるなら、直近で一番不安な予定を 1 つ選び、30 分・少人数で「その日は失敗した」から始めてみるのがおすすめです。全体を通しでやらなくても、聞き方を変えるだけで出てくる言葉が変わることを、一度で確かめられます。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://scrumguides.org/docs/scrumguide/v2020/2020-Scrum-Guide-Japanese.pdf">スクラムガイド 2020（日本語版 PDF）</a></li>
+<li><a href="https://hbr.org/2007/09/performing-a-project-premortem">Gary Klein — Performing a Project Premortem（Harvard Business Review, 2007）</a></li>
+<li><a href="https://www.atlassian.com/team-playbook/plays/pre-mortem">Atlassian Team Playbook — Pre-mortem</a></li>
+<li><a href="https://retromat.org/">Retromat — Plans for Retrospectives</a></li>
+<li><a href="https://www.funretrospectives.com/">FunRetrospectives — Activities for Retrospectives and Futurespectives</a></li>
+</ul>
+</main></body></html>

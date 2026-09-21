@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>バージョンロールバック攻撃を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>バージョンロールバック攻撃 — 通信を邪魔するだけで、古い規格に落ちる</h1>
+<p class="lede">攻撃者は暗号を破らない。ハンドシェイクを失敗させるだけでいい。</p>
+
+<h2>何が問題なのか</h2>
+<p>クライアントもサーバも TLS 1.2 に対応している。それなのに、実際の通信が SSL 3.0 で確立してしまうことがあった。原因は暗号の欠陥ではなく、<strong>ブラウザが良かれと思って実装していた再試行の挙動</strong>にある。</p>
+<p>当時、TLS の新しいバージョンを提示すると応答を返せない古いサーバや中間機器が現実に存在した。そのままでは「繋がらないサイト」が生まれてしまう。そこでブラウザは、<strong>ハンドシェイクが失敗したら、バージョンを 1 つ下げて繋ぎ直す</strong>という救済策を入れた。仕様にはない、互換性のための実装上の親切だった。</p>
+<p>攻撃者から見れば、これは<strong>「ハンドシェイクを壊せば、相手が勝手に弱くなる」</strong>という意味になる。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="TLS1.2のハンドシェイクを中間者が妨害し、ブラウザの再試行でSSL3.0まで落ちる流れ">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">中間者はパケットを落とすだけでいい</text>
+
+  <g font-size="11">
+    <rect x="8" y="36" width="470" height="30" rx="5" fill="var(--c3)"/>
+    <text x="24" y="56" fill="var(--on)">1 回目：TLS 1.2 で接続を試みる</text>
+    <rect x="490" y="36" width="200" height="30" rx="5" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+    <text x="590" y="56" fill="var(--stop)" text-anchor="middle" font-weight="600">中間者が遮断</text>
+
+    <rect x="8" y="82" width="470" height="30" rx="5" fill="var(--c1)"/>
+    <text x="24" y="102" fill="var(--on)">2 回目：TLS 1.1 で繋ぎ直す</text>
+    <rect x="490" y="82" width="200" height="30" rx="5" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+    <text x="590" y="102" fill="var(--stop)" text-anchor="middle" font-weight="600">中間者が遮断</text>
+
+    <rect x="8" y="128" width="470" height="30" rx="5" fill="var(--c4)"/>
+    <text x="24" y="148" fill="var(--on)">3 回目：TLS 1.0 で繋ぎ直す</text>
+    <rect x="490" y="128" width="200" height="30" rx="5" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+    <text x="590" y="148" fill="var(--stop)" text-anchor="middle" font-weight="600">中間者が遮断</text>
+
+    <rect x="8" y="174" width="470" height="30" rx="5" fill="var(--c2)"/>
+    <text x="24" y="194" fill="var(--on)">4 回目：SSL 3.0 で繋ぎ直す</text>
+    <rect x="490" y="174" width="200" height="30" rx="5" fill="var(--c2)"/>
+    <text x="590" y="194" fill="var(--on)" text-anchor="middle" font-weight="600">通す</text>
+  </g>
+  <path d="M694 60 L694 190" fill="none" stroke="var(--stop)" stroke-width="0"/>
+  <text x="8" y="228" font-size="11" fill="var(--muted)">利用者から見えるのは「少し表示が遅かった」だけ。鍵マークは表示されたままで、警告も出ない。</text>
+  <text x="8" y="244" font-size="11" fill="var(--muted)">この再試行は仕様上の手順ではなく、暗号的な保護の外側で起きるため、Finished メッセージの検証では防げない。</text>
+</svg>
+<figcaption>ダウングレードとの違いは、書き換えが要らない点。暗号スイート一覧を書き換える <a href="23_SSL_TLSダウングレード攻撃.html">ダウングレード攻撃</a> は中間者が内容に手を入れるが、ロールバックは<strong>パケットを落とすだけ</strong>で成立する。無線 LAN の同一セグメントにいれば実行できる程度のハードルしかない。</figcaption>
+</figure>
+
+<h2>落とした先で何をするか</h2>
+<p>SSL 3.0 に落とすこと自体が目的ではない。落とした先には、そのバージョン固有の弱点がある。SSL 3.0 の CBC パディングの検証が甘いことを突いて実際に平文を復元したのが <a href="25_POODLE攻撃.html">POODLE</a> で、<strong>ロールバックはその前提条件を作る手順</strong>だった。</p>
+
+<h2>どう塞いだか</h2>
+<ul>
+<li><strong>TLS_FALLBACK_SCSV（RFC 7507）</strong> — 再試行であることを、暗号スイート一覧に紛れ込ませた特別な印としてサーバに伝える。サーバは「自分はもっと高いバージョンに対応しているのに、再試行として低いバージョンで来た」と気づけるので、その接続を拒否できる。<strong>再試行という挙動を消すのではなく、再試行だと申告させる</strong>という解き方。</li>
+<li><strong>TLS 1.3 のダウングレード検知</strong> — サーバは ServerHello に含めるランダム値の末尾 8 バイトに、決められた印を埋め込む。クライアントはそれを見て「本当は 1.3 が使えるのに落とされた」と判定できる。ランダム値はハンドシェイクの署名対象なので、中間者は書き換えられない。</li>
+<li><strong>そもそも古いバージョンを無効化する</strong> — 落とす先がなければ成立しない。SSL 3.0 / TLS 1.0 / TLS 1.1 はすでに非推奨として無効化するのが標準。ブラウザ側の互換フォールバックも廃止された。</li>
+</ul>
+
+<div class="note">
+<p><strong>この構図はプロトコルの世界に繰り返し出てくる</strong></p>
+<p>「古い相手とも繋がるように」という互換性のための救済策が、攻撃者にとっての降格スイッチになる。<a href="../Networking/HSTS.html">HTTPS から HTTP へのダウングレード</a>や、メールの STARTTLS を剥がす攻撃も同じ形。新しい規格を導入するときは、<strong>古いほうへ戻る経路をいつ閉じるか</strong>を設計に含めておく、というのが教訓になる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7507">RFC 7507 - TLS Fallback Signaling Cipher Suite Value (SCSV)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8996">RFC 8996 - Deprecating TLS 1.0 and TLS 1.1</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HDLC</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>HDLC</h1>
+<p class="lede">2 点を専用線で結ぶとき、イーサネットは使えない。そこで使われてきたデータリンク層のプロトコル。</p>
+
+<h2>1 対 1 の回線には「誰宛て」が要らない</h2>
+<p>イーサネットは同じネットワークに複数の機器がいる前提で、MAC アドレスで宛先を指定する。ところが拠点間を専用線（リース回線）で結ぶ場合、回線の向こうには相手が 1 台しかいない。<strong>宛先を書く意味がない代わりに、「今どこからどこまでが 1 つのデータか」を相手に伝える仕組みが必要になる。</strong></p>
+<p>それを担うのが <strong>HDLC（High-level Data Link Control）</strong>。データの前後に <code>01111110</code> という決まったビット列（フラグシーケンス）を置いて、枠の始まりと終わりを示す。</p>
+
+<figure>
+<svg viewBox="0 0 700 230" role="img" aria-label="HDLCフレームの構造とフラグシーケンスによる区切り、およびビットスタッフィング">
+<text x="20" y="24" font-size="12" fill="var(--ink)" font-weight="600">HDLC フレーム</text>
+<rect x="20" y="38" width="88" height="42" rx="4" fill="var(--c2)" opacity=".28"/>
+<rect x="20" y="38" width="88" height="42" rx="4" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="64" y="57" font-size="10" fill="var(--ink)" text-anchor="middle">フラグ</text>
+<text x="64" y="72" font-size="9" fill="var(--muted)" text-anchor="middle">01111110</text>
+
+<rect x="110" y="38" width="72" height="42" rx="4" fill="var(--lane)"/>
+<rect x="110" y="38" width="72" height="42" rx="4" fill="none" stroke="var(--line)"/>
+<text x="146" y="57" font-size="10" fill="var(--ink)" text-anchor="middle">アドレス</text>
+<text x="146" y="72" font-size="9" fill="var(--muted)" text-anchor="middle">1 バイト</text>
+
+<rect x="184" y="38" width="72" height="42" rx="4" fill="var(--lane)"/>
+<rect x="184" y="38" width="72" height="42" rx="4" fill="none" stroke="var(--line)"/>
+<text x="220" y="57" font-size="10" fill="var(--ink)" text-anchor="middle">制御</text>
+<text x="220" y="72" font-size="9" fill="var(--muted)" text-anchor="middle">順序番号など</text>
+
+<rect x="258" y="38" width="220" height="42" rx="4" fill="var(--c3)" opacity=".18"/>
+<rect x="258" y="38" width="220" height="42" rx="4" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="368" y="57" font-size="10.5" fill="var(--ink)" text-anchor="middle">情報（IP パケットなど）</text>
+<text x="368" y="72" font-size="9" fill="var(--muted)" text-anchor="middle">可変長</text>
+
+<rect x="480" y="38" width="88" height="42" rx="4" fill="var(--lane)"/>
+<rect x="480" y="38" width="88" height="42" rx="4" fill="none" stroke="var(--line)"/>
+<text x="524" y="57" font-size="10" fill="var(--ink)" text-anchor="middle">FCS</text>
+<text x="524" y="72" font-size="9" fill="var(--muted)" text-anchor="middle">誤り検出</text>
+
+<rect x="570" y="38" width="88" height="42" rx="4" fill="var(--c2)" opacity=".28"/>
+<rect x="570" y="38" width="88" height="42" rx="4" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="614" y="57" font-size="10" fill="var(--ink)" text-anchor="middle">フラグ</text>
+<text x="614" y="72" font-size="9" fill="var(--muted)" text-anchor="middle">01111110</text>
+
+<text x="339" y="102" font-size="10" fill="var(--c2)" text-anchor="middle">前後を同じビット列で挟むことで「どこまでが 1 フレームか」が分かる</text>
+
+<line x1="20" y1="124" x2="680" y2="124" stroke="var(--line)" stroke-width="1"/>
+<text x="20" y="146" font-size="12" fill="var(--ink)" font-weight="600">問題：データの中に 01111110 が出たら？</text>
+<text x="20" y="170" font-size="10.5" fill="var(--muted)">中身がたまたま 1 が 6 つ並ぶと、受信側はそこをフレームの終わりと誤読する。</text>
+<rect x="20" y="182" width="300" height="30" rx="4" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+<text x="170" y="202" font-size="11" fill="var(--ink)" text-anchor="middle" font-family="monospace">…0 1 1 1 1 1 1 0…</text>
+<text x="332" y="202" font-size="16" fill="var(--muted)">→</text>
+<rect x="356" y="182" width="324" height="30" rx="4" fill="var(--c3)" opacity=".16"/>
+<rect x="356" y="182" width="324" height="30" rx="4" fill="none" stroke="var(--c3)"/>
+<text x="518" y="202" font-size="11" fill="var(--ink)" text-anchor="middle" font-family="monospace">…0 1 1 1 1 1 <tspan fill="var(--c3)" font-weight="700">0</tspan> 1 0…</text>
+<text x="518" y="224" font-size="9.5" fill="var(--c3)" text-anchor="middle">1 が 5 つ続いたら 0 を差し込む（ビットスタッフィング）</text>
+</svg>
+<figcaption>受信側は 1 が 5 つ続いた直後の 0 を無条件に取り除く。これで「本物のフラグは中身に絶対現れない」が保証される。</figcaption>
+</figure>
+
+<h2>いま HDLC をどこで見るか</h2>
+<p>拠点間接続の主役は広域イーサネットや IP-VPN に移ったので、HDLC を新規に設計する場面はほぼない。ただしルータの設定で <code>encapsulation hdlc</code> のような記述を目にすることがあり、シリアル回線のデフォルトとして残っている。</p>
+<p>また、HDLC を土台に認証や複数プロトコル対応を足したのが <strong>PPP</strong> で、こちらは PPPoE として日本の光回線・ADSL 接続に広く使われた。フレームの区切り方の考え方はそのまま受け継がれている。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.iso.org/standard/37010.html">ISO/IEC 13239 — HDLC procedures</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1662">RFC 1662 — PPP in HDLC-like Framing</a></li>
+</ul>
+
+</main>
+</body>
+</html>

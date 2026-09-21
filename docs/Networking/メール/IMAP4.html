@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IMAP4</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>IMAP4</h1>
+<p class="lede">PC とスマホの両方でメールを見ると、POP3 では「どっちかにしかないメール」ができる。メールをサーバに置いたままにすれば解決する。</p>
+
+<h2>ダウンロードするか、置いたまま見るか</h2>
+<p><a href="SMTPとPOP3.html">POP3</a> の基本動作は「ダウンロードしてサーバから削除」。端末が 1 台の時代はそれでよかったが、PC とスマホで同じメールボックスを見るようになると、<strong>先に取りに行った端末にしかメールがない</strong>という状態が生まれる。既読・未読も端末ごとにバラバラになる。</p>
+<p>IMAP4 は発想を逆にした。<strong>メールはずっとサーバに置いたまま</strong>、端末は必要な部分だけを見に行く。メールの実体・フォルダ分け・既読状態がすべてサーバ側にあるので、どの端末から見ても同じ状態になる。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="POP3ではダウンロードした端末にしかメールがないが、IMAP4ではサーバ上の状態を全端末が共有する">
+<defs>
+<marker id="i2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+<marker id="i1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+</defs>
+<text x="30" y="28" font-size="11.5" fill="var(--c2)" font-weight="600">POP3：手元にダウンロード（110 番）</text>
+<rect x="30" y="44" width="120" height="60" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="90" y="70" font-size="10.5" fill="var(--ink)" text-anchor="middle">サーバ</text>
+<text x="90" y="88" font-size="9.5" fill="var(--muted)" text-anchor="middle">取られたら空になる</text>
+<line x1="150" y1="64" x2="256" y2="52" stroke="var(--c2)" stroke-width="1.4" marker-end="url(#i2)"/>
+<text x="204" y="46" font-size="9.5" fill="var(--c2)" text-anchor="middle">メール①②を取得</text>
+<rect x="260" y="36" width="90" height="36" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="305" y="58" font-size="10.5" fill="var(--ink)" text-anchor="middle">PC ①②</text>
+<rect x="260" y="86" width="90" height="36" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/>
+<text x="305" y="108" font-size="10.5" fill="var(--stop)" text-anchor="middle">スマホ 空</text>
+<text x="470" y="80" font-size="10" fill="var(--muted)">PC が先に取ったメールは</text>
+<text x="470" y="98" font-size="10" fill="var(--muted)">スマホからは見えない</text>
+<text x="30" y="176" font-size="11.5" fill="var(--c1)" font-weight="600">IMAP4：サーバに置いたまま見る（143 番）</text>
+<rect x="30" y="192" width="120" height="76" rx="8" fill="var(--c1)" opacity=".1"/>
+<rect x="30" y="192" width="120" height="76" rx="8" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="90" y="216" font-size="10.5" fill="var(--ink)" text-anchor="middle">サーバ ①②</text>
+<text x="90" y="236" font-size="9.5" fill="var(--muted)" text-anchor="middle">実体・フォルダ・既読は</text>
+<text x="90" y="252" font-size="9.5" fill="var(--muted)" text-anchor="middle">全部ここにある</text>
+<line x1="256" y1="210" x2="154" y2="216" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#i1)"/>
+<line x1="256" y1="250" x2="154" y2="244" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#i1)"/>
+<rect x="260" y="192" width="90" height="36" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="305" y="214" font-size="10.5" fill="var(--ink)" text-anchor="middle">PC ①②</text>
+<rect x="260" y="240" width="90" height="36" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="305" y="262" font-size="10.5" fill="var(--ink)" text-anchor="middle">スマホ ①②</text>
+<text x="470" y="228" font-size="10" fill="var(--muted)">どの端末も「サーバを見に行く」</text>
+<text x="470" y="246" font-size="10" fill="var(--muted)">だけなので、常に同じ状態</text>
+</svg>
+<figcaption>いまの Web メールやスマホのメールアプリの動きは実質こちら。ヘッダだけ先に取る・添付だけ後で取るといった部分取得ができるのも、実体がサーバにあるから。通信は TLS で包んだ IMAPS（993 番)を使う。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3501">RFC 3501 — Internet Message Access Protocol - Version 4rev1</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc9051">RFC 9051 — IMAP Version 4rev2</a></li>
+</ul>
+
+</main>
+</body>
+</html>

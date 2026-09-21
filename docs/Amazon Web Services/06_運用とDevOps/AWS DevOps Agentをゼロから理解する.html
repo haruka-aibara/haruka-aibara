@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS DevOps Agent をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.flow{display:flex;flex-direction:column;gap:.45rem}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.84rem;background:var(--card);
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:30rem}}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>AWS DevOps Agent をゼロから理解する</h1>
+<p class="lede">「深夜にアラームが鳴ってから復旧するまで、実際は何に時間を使っているのか」という手前の話から始め、5 ステップで AWS DevOps Agent の位置づけまでたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+<p>AWS DevOps Agent の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+<p>それは読解力の問題ではありません。多くの記事は「自律的にインシデントを調査し、根本原因を特定して緩和計画を提示するエージェント型 SRE サービスです」という、中級者向けの前提から始まるからです。<strong>その一語一語が、現場のどの面倒を消すために出てきたのか</strong>が分からないまま、機能の箇条書きだけが増えていきます。</p>
+<p>そこでこの記事は、あえて遠回りします。「障害対応の時間はどこに消えているのか」という、いちばん手前の話から始めて 5 ステップで進みます。ゴールは機能を暗記することではなく、<strong>DevOps Agent が誰の、どの手間を肩代わりする道具なのかを自分の言葉で説明できること</strong>です。</p>
+
+<div class="dg rmbox"><p class="ttl">この記事の道のり</p><nav class="rm" aria-label="全体のロードマップ"><ol>
+<li><span class="n">STEP 1</span>障害対応で本当に時間を食うところ</li><li><span class="n">STEP 2</span>調査の材料は最初から散らばっている</li><li><span class="n">STEP 3</span>調べる仕事を回すエージェント</li><li><span class="n">STEP 4</span>起点・記録・人の承認</li><li><span class="n">STEP 5</span>AWS DevOps Agent として組み立てる</li>
+</ol></nav><p class="cap">STEP 4 まではすべて前提知識です。本題の AWS DevOps Agent は STEP 5 だけですが、そこに至る 4 ステップがないと「自律調査」「根本原因分析」「緩和計画」がばらばらの機能の暗記になります。</p></div>
+
+<h2>STEP 1：障害対応で本当に時間を食うところ</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="now"><span class="n">STEP 1</span>障害対応で本当に時間を食うところ</li><li><span class="n">STEP 2</span>調査の材料は最初から散らばっている</li><li><span class="n">STEP 3</span>調べる仕事を回すエージェント</li><li><span class="n">STEP 4</span>起点・記録・人の承認</li><li><span class="n">STEP 5</span>AWS DevOps Agent として組み立てる</li></ol></nav>
+<p>深夜 2 時、「API のエラー率が 5% を超えた」というアラームが鳴ります。起こされた当番が最初にやることは、直すことではありません。<strong>「何が起きているのか」を突き止めること</strong>です。</p>
+<p>アラームが教えてくれるのは症状だけです。エラー率が上がったこと自体は分かっても、原因がデータベースの接続枯渇なのか、直前のデプロイなのか、依存している外部 API なのかは分かりません。そこから当番は、メトリクスを見て、ログを絞り込んで、デプロイ履歴を確認して、と画面を渡り歩きます。</p>
+<figure><svg viewBox="0 0 780 250" role="img" aria-labelledby="f1t f1d"><title id="f1t">障害対応の時間の内訳</title><desc id="f1d">検知と復旧は短く、原因を突き止める調査が対応時間の大半を占める</desc>
+<rect x="20" y="30" width="70" height="38" rx="6" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="55" y="54" text-anchor="middle" fill="var(--ink)" font-size="12">検知</text>
+<rect x="94" y="30" width="480" height="38" rx="6" fill="var(--lane)" stroke="var(--c2)" stroke-width="2"/>
+<text x="334" y="54" text-anchor="middle" fill="var(--c2)" font-size="13" font-weight="700">調査・切り分け</text>
+<rect x="578" y="30" width="182" height="38" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="669" y="54" text-anchor="middle" fill="var(--ink)" font-size="12">復旧</text>
+<path d="M94 78 L94 92 L574 92 L574 78" fill="none" stroke="var(--wire)" stroke-width="1.5"/>
+<text x="334" y="112" text-anchor="middle" fill="var(--muted)" font-size="12">この中で当番がやっていること</text>
+<rect x="100" y="126" width="150" height="34" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="175" y="148" text-anchor="middle" fill="var(--ink)" font-size="11.5">メトリクスを見る</text>
+<rect x="262" y="126" width="150" height="34" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="337" y="148" text-anchor="middle" fill="var(--ink)" font-size="11.5">ログを絞り込む</text>
+<rect x="424" y="126" width="150" height="34" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="499" y="148" text-anchor="middle" fill="var(--ink)" font-size="11.5">トレースをたどる</text>
+<rect x="100" y="168" width="150" height="34" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="175" y="190" text-anchor="middle" fill="var(--ink)" font-size="11.5">デプロイ履歴を見る</text>
+<rect x="262" y="168" width="150" height="34" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="337" y="190" text-anchor="middle" fill="var(--ink)" font-size="11.5">変更履歴を照合</text>
+<rect x="424" y="168" width="150" height="34" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="499" y="190" text-anchor="middle" fill="var(--ink)" font-size="11.5">過去の類似障害を探す</text>
+<text x="334" y="228" text-anchor="middle" fill="var(--c2)" font-size="12.5" font-weight="600">仮説を立てて、潰して、また立てる</text>
+</svg><figcaption>復旧作業そのものは「ロールバックする」「上限を上げる」など短時間で終わることが多く、比率は現場によって変わります。変わらないのは、直し方が分かった後より、分かるまでのほうが長いという点です。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　では、アラームをもっと細かく作り込めば、この時間は短くなるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>短くなりません。むしろ増えます。</strong> アラームが教えるのは症状であって原因ではないので、細かくすればするほど「同時に鳴った 8 つのアラームのうち、どれが原因でどれが結果か」を仕分ける仕事が増えます。詰まっているのは検知ではなく、<strong>散らばった材料を突き合わせる作業</strong>です。では、その材料はどこにあるのでしょうか。</p></div></details></div>
+
+<h2>STEP 2：調査の材料は最初から散らばっている</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>障害対応で本当に時間を食うところ</li><li class="now"><span class="n">STEP 2</span>調査の材料は最初から散らばっている</li><li><span class="n">STEP 3</span>調べる仕事を回すエージェント</li><li><span class="n">STEP 4</span>起点・記録・人の承認</li><li><span class="n">STEP 5</span>AWS DevOps Agent として組み立てる</li></ol></nav>
+<p>原因究明に必要な材料は、実はすでに全部そろっています。足りないのはデータではなく、<strong>それを突き合わせる人手</strong>です。</p>
+<p>メトリクスは CloudWatch に、ログもそこに、リクエストの経路は X-Ray のトレースに、誰がいつ設定を変えたかは CloudTrail に、いつ何をデプロイしたかは CI/CD パイプラインに、対処手順は Runbook に、去年の同じ障害は課題管理システムに。当番はこれを頭の中で 1 本の時間軸に並べ直しています。</p>
+<figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f2t f2d"><title id="f2t">散らばった材料を1本の時間軸に並べ直す</title><desc id="f2d">別々のツールにある記録を同じ時刻の上に重ねると、デプロイ直後にエラーが増え始めたことが見える</desc>
+<defs><marker id="am2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="16" y="20" width="128" height="30" rx="6" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="40" text-anchor="middle" fill="var(--ink)" font-size="11.5">メトリクス</text>
+<rect x="16" y="58" width="128" height="30" rx="6" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="78" text-anchor="middle" fill="var(--ink)" font-size="11.5">ログ</text>
+<rect x="16" y="96" width="128" height="30" rx="6" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="116" text-anchor="middle" fill="var(--ink)" font-size="11.5">トレース</text>
+<rect x="16" y="134" width="128" height="30" rx="6" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="154" text-anchor="middle" fill="var(--ink)" font-size="11.5">API 変更履歴</text>
+<rect x="16" y="172" width="128" height="30" rx="6" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="192" text-anchor="middle" fill="var(--ink)" font-size="11.5">デプロイ履歴</text>
+<rect x="16" y="210" width="128" height="30" rx="6" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="230" text-anchor="middle" fill="var(--ink)" font-size="11.5">Runbook・過去チケット</text>
+<line x1="152" y1="130" x2="212" y2="130" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<text x="182" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">相関</text>
+<rect x="222" y="20" width="542" height="220" rx="10" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="242" y="44" fill="var(--c1)" font-size="12" font-weight="600">同じ時間軸の上に並べる</text>
+<line x1="248" y1="212" x2="742" y2="212" stroke="var(--wire)" stroke-width="1.5" marker-end="url(#am2)"/>
+<text x="742" y="232" text-anchor="end" fill="var(--muted)" font-size="11">時刻 →</text>
+<line x1="392" y1="60" x2="392" y2="212" stroke="var(--c2)" stroke-width="2" stroke-dasharray="5 4"/>
+<text x="392" y="56" text-anchor="middle" fill="var(--c2)" font-size="11.5" font-weight="600">v1.42 デプロイ</text>
+<path d="M248 190 L360 188 L392 186 L430 150 L500 108 L600 96 L742 92" fill="none" stroke="var(--stop)" stroke-width="2.5"/>
+<text x="620" y="82" fill="var(--stop)" font-size="11.5">エラー率</text>
+<circle cx="452" cy="176" r="4" fill="var(--c4)"/><circle cx="486" cy="176" r="4" fill="var(--c4)"/><circle cx="530" cy="176" r="4" fill="var(--c4)"/><circle cx="588" cy="176" r="4" fill="var(--c4)"/>
+<text x="530" y="200" text-anchor="middle" fill="var(--c4)" font-size="11.5">同じ例外を含むログ</text>
+<text x="400" y="272" text-anchor="middle" fill="var(--muted)" font-size="12">この「並べ直し」を毎回、手作業でやっている</text>
+</svg><figcaption>並べ直しの実体は 3 つの作業です。時刻をそろえる、依存関係をたどって上流に遡る、変化点（デプロイ・設定変更）を探す。ツールが分かれているせいで、この 3 つが人間の頭の中でしか起きません。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　材料が散らばっているのが問題なら、全部を 1 枚のダッシュボードに集めれば解決するでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>見る場所は減りますが、仕事は減りません。</strong> ダッシュボードは決めた指標を並べるだけで、「今回はどこを深掘りするか」を判断してくれません。障害のたびに見るべき場所は変わるので、結局その場でクエリを書いて絞り込むことになります。足りないのは表示ではなく、<strong>次に何を調べるかを決める判断</strong>です。それを人以外にやらせられるでしょうか。</p></div></details></div>
+
+<h2>STEP 3：調べる仕事を回すエージェント</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>障害対応で本当に時間を食うところ</li><li class="done"><span class="n">STEP 2 ✓</span>調査の材料は最初から散らばっている</li><li class="now"><span class="n">STEP 3</span>調べる仕事を回すエージェント</li><li><span class="n">STEP 4</span>起点・記録・人の承認</li><li><span class="n">STEP 5</span>AWS DevOps Agent として組み立てる</li></ol></nav>
+<p>ここでいうエージェントは、質問に答えるチャットとは別のものです。<strong>目標を渡すと、自分でツールを呼び、結果を見て次の一手を決める、というループを回し続ける</strong>プログラムを指します。</p>
+<p>当番がやっている「メトリクスを見る → 怪しい時間帯を絞る → その時間帯のログを引く → デプロイ履歴と突き合わせる」という流れは、まさにこのループです。1 回の判断ごとに使うツールが変わり、前の結果が次の入力になります。</p>
+<figure><svg viewBox="0 0 780 260" role="img" aria-labelledby="f3t f3d"><title id="f3t">エージェントが回すループ</title><desc id="f3d">仮説を立て、ツールを呼び、結果で仮説を絞り込む循環。ツールの呼び出しは読み取り専用に限定できる</desc>
+<defs><marker id="am3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c1)"/></marker></defs>
+<rect x="60" y="30" width="150" height="44" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/><text x="135" y="58" text-anchor="middle" fill="var(--ink)" font-size="12.5">仮説を立てる</text>
+<rect x="290" y="30" width="150" height="44" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/><text x="365" y="58" text-anchor="middle" fill="var(--ink)" font-size="12.5">ツールを呼ぶ</text>
+<rect x="290" y="150" width="150" height="44" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/><text x="365" y="178" text-anchor="middle" fill="var(--ink)" font-size="12.5">結果を読む</text>
+<rect x="60" y="150" width="150" height="44" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/><text x="135" y="178" text-anchor="middle" fill="var(--ink)" font-size="12.5">仮説を絞る</text>
+<line x1="214" y1="52" x2="284" y2="52" stroke="var(--c1)" stroke-width="2" marker-end="url(#am3)"/>
+<line x1="365" y1="78" x2="365" y2="144" stroke="var(--c1)" stroke-width="2" marker-end="url(#am3)"/>
+<line x1="284" y1="172" x2="216" y2="172" stroke="var(--c1)" stroke-width="2" marker-end="url(#am3)"/>
+<line x1="135" y1="144" x2="135" y2="80" stroke="var(--c1)" stroke-width="2" marker-end="url(#am3)"/>
+<text x="250" y="118" text-anchor="middle" fill="var(--muted)" font-size="11">残った仮説が 1 つになるまで繰り返す</text>
+<line x1="446" y1="52" x2="506" y2="52" stroke="var(--wire)" stroke-width="1.5" stroke-dasharray="4 3"/>
+<rect x="512" y="20" width="248" height="176" rx="10" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="532" y="44" fill="var(--c3)" font-size="12" font-weight="600">呼べるツール（読み取り専用）</text>
+<text x="532" y="72" fill="var(--ink)" font-size="11.5">・メトリクスを取得する</text>
+<text x="532" y="96" fill="var(--ink)" font-size="11.5">・ログを検索する</text>
+<text x="532" y="120" fill="var(--ink)" font-size="11.5">・リソースの構成を読む</text>
+<text x="532" y="144" fill="var(--ink)" font-size="11.5">・変更履歴を引く</text>
+<text x="532" y="176" fill="var(--muted)" font-size="11">※ 変更する権限は渡さない</text>
+<text x="390" y="238" text-anchor="middle" fill="var(--muted)" font-size="12">人が張り付いていなくてもループは進む</text>
+</svg><figcaption>ループが安全なのは、呼べるツールを読み取りだけに絞れるからです。間違った仮説を立てても、結果は空振りの検索が 1 回増えるだけで、環境は壊れません。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　同じことは、生成 AI のチャットにログを貼り付けて相談しても実現できるのでは？</p><details><summary>答えを見る</summary><div class="ans"><p><strong>途中までは同じですが、起点が違います。</strong> チャットに貼るには「どのログを貼るか」を人が先に決める必要があり、その判断こそが STEP 2 で詰まっていた部分です。エージェントは自分でツールを呼べるので、材料を集めるところから始められます。ただし、そのためには <strong>何を起点に動き出すか</strong>と、<strong>どこまで自分で決めてよいか</strong>を先に決めておく必要があります。</p></div></details></div>
+
+<h2>STEP 4：起点・記録・人の承認</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>障害対応で本当に時間を食うところ</li><li class="done"><span class="n">STEP 2 ✓</span>調査の材料は最初から散らばっている</li><li class="done"><span class="n">STEP 3 ✓</span>調べる仕事を回すエージェント</li><li class="now"><span class="n">STEP 4</span>起点・記録・人の承認</li><li><span class="n">STEP 5</span>AWS DevOps Agent として組み立てる</li></ol></nav>
+<p>調査を代わりにやらせるには、ループの前後に 3 つの約束事が要ります。</p>
+<p><strong>起点</strong>は、いつ動き出すかです。監視のように常時張り付くのではなく、アラームが発報した、Webhook が叩かれた、チケットが起票された、人が調べてと頼んだ、といった出来事をきっかけに 1 回分の調査が始まります。</p>
+<p><strong>記録</strong>は、何を見てどう考えたかの筋道を残すことです。結論だけ出されても、当番はそれを信じてよいか判断できません。「このメトリクスを見て、この時間帯に絞って、このログを引いた」という手順が残っていて初めて、人がその推論を検証できます。</p>
+<p><strong>承認</strong>は、直す操作を人が握ることです。原因が分かった後の「対処する」は、環境を変える行為です。ここを自動にしてしまうと、間違った仮説がそのまま本番への変更になります。</p>
+<figure><svg viewBox="0 0 780 220" role="img" aria-labelledby="f4t f4d"><title id="f4t">起点から実行までの流れと承認ゲート</title><desc id="f4d">複数の起点から調査が始まり、記録と緩和計画が出力される。実行の手前に人の承認が入る</desc>
+<defs><marker id="am4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="14" y="14" width="132" height="26" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="32" text-anchor="middle" fill="var(--ink)" font-size="11">アラームの発報</text>
+<rect x="14" y="48" width="132" height="26" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="66" text-anchor="middle" fill="var(--ink)" font-size="11">Webhook</text>
+<rect x="14" y="82" width="132" height="26" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="100" text-anchor="middle" fill="var(--ink)" font-size="11">チケット起票</text>
+<rect x="14" y="116" width="132" height="26" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="80" y="134" text-anchor="middle" fill="var(--ink)" font-size="11">人からの依頼</text>
+<text x="80" y="164" text-anchor="middle" fill="var(--muted)" font-size="11.5">起点</text>
+<line x1="152" y1="78" x2="196" y2="78" stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)"/>
+<rect x="202" y="42" width="140" height="72" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="272" y="76" text-anchor="middle" fill="var(--c1)" font-size="12.5" font-weight="600">調査ループ</text><text x="272" y="96" text-anchor="middle" fill="var(--muted)" font-size="11">読み取りのみ</text>
+<line x1="348" y1="78" x2="392" y2="78" stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)"/>
+<rect x="398" y="24" width="150" height="44" rx="8" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/><text x="473" y="51" text-anchor="middle" fill="var(--ink)" font-size="12">推論の記録</text>
+<rect x="398" y="88" width="150" height="44" rx="8" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/><text x="473" y="115" text-anchor="middle" fill="var(--ink)" font-size="12">緩和計画（案）</text>
+<line x1="554" y1="110" x2="596" y2="110" stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)"/>
+<rect x="602" y="86" width="70" height="48" rx="8" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="2"/><text x="637" y="108" text-anchor="middle" fill="var(--stop)" font-size="11.5" font-weight="700">人の</text><text x="637" y="124" text-anchor="middle" fill="var(--stop)" font-size="11.5" font-weight="700">承認</text>
+<line x1="678" y1="110" x2="712" y2="110" stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)"/>
+<rect x="700" y="86" width="66" height="48" rx="8" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="733" y="115" text-anchor="middle" fill="var(--ink)" font-size="11.5">実行</text>
+<text x="480" y="180" text-anchor="middle" fill="var(--muted)" font-size="12">調査は自動、環境を変える操作は承認の後ろ</text>
+</svg><figcaption>この境界の引き方は好みではなく、権限設計そのものです。調査に使う権限と、対処に使う権限を別のロールに分けておけば、承認前に環境が変わることは仕組みとして起きません。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　原因まで特定できるなら、そのまま自動で直させたほうが復旧は速いのでは？</p><details><summary>答えを見る</summary><div class="ans"><p><strong>速いのは、原因の判定が正しかった場合だけです。</strong> 間違っていれば、障害中の本番環境に見当違いの変更が入り、状況はさらに読めなくなります。調査は空振りしても損失が小さく、対処は外すと損失が大きい——非対称なので、自動化する範囲も左右で変えます。ここまでの 4 ステップが、そのまま AWS のサービスとして組み上がったものが次の話です。</p></div></details></div>
+
+<h2>STEP 5：AWS DevOps Agent として組み立てる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>障害対応で本当に時間を食うところ</li><li class="done"><span class="n">STEP 2 ✓</span>調査の材料は最初から散らばっている</li><li class="done"><span class="n">STEP 3 ✓</span>調べる仕事を回すエージェント</li><li class="done"><span class="n">STEP 4 ✓</span>起点・記録・人の承認</li><li class="now"><span class="n">STEP 5</span>AWS DevOps Agent として組み立てる</li></ol></nav>
+<p>AWS DevOps Agent は、ここまでの 4 ステップをそのまま実装したマネージドサービスです。re:Invent 2025 でプレビュー発表され、2026 年 3 月に一般提供が開始されました。位置づけは「経験のある DevOps エンジニアと同じ手順で調査をする、常駐のチームメイト」です。</p>
+<figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f5t f5d"><title id="f5t">AWS DevOps Agent の構成要素</title><desc id="f5d">エージェントスペースの中にエージェントとオペレーターアプリがあり、2種類のIAMロールでAWSアカウントに、コネクタで外部ツールにつながる</desc>
+<defs><marker id="am5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="16" y="24" width="300" height="252" rx="12" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/>
+<text x="36" y="50" fill="var(--c1)" font-size="12.5" font-weight="700">エージェントスペース</text>
+<rect x="40" y="66" width="252" height="52" rx="8" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="166" y="88" text-anchor="middle" fill="var(--ink)" font-size="12.5">エージェント本体</text>
+<text x="166" y="107" text-anchor="middle" fill="var(--muted)" font-size="11">調査ループ・トポロジ・履歴</text>
+<rect x="40" y="132" width="252" height="52" rx="8" fill="var(--lane)" stroke="var(--c4)" stroke-width="1.5"/>
+<text x="166" y="154" text-anchor="middle" fill="var(--ink)" font-size="12.5">オペレーターアプリ</text>
+<text x="166" y="173" text-anchor="middle" fill="var(--muted)" font-size="11">専用 URL の Web アプリ（コンソール外）</text>
+<rect x="40" y="198" width="252" height="58" rx="8" fill="var(--lane)" stroke="var(--line)"/>
+<text x="166" y="220" text-anchor="middle" fill="var(--muted)" font-size="11">調査 / 調査チャット / 緩和計画 /</text>
+<text x="166" y="240" text-anchor="middle" fill="var(--muted)" font-size="11">予防のための推奨 / ナレッジ</text>
+<line x1="322" y1="92" x2="418" y2="92" stroke="var(--wire)" stroke-width="2" marker-end="url(#am5)"/>
+<text x="370" y="82" text-anchor="middle" fill="var(--muted)" font-size="10.5">アカウント関連付け</text>
+<rect x="424" y="30" width="336" height="118" rx="10" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="444" y="54" fill="var(--c3)" font-size="12" font-weight="600">AWS アカウント</text>
+<rect x="444" y="66" width="140" height="34" rx="6" fill="var(--lane)" stroke="var(--c3)"/><text x="514" y="88" text-anchor="middle" fill="var(--ink)" font-size="11.5">調査用ロール（読取）</text>
+<rect x="600" y="66" width="140" height="34" rx="6" fill="var(--warn-bg)" stroke="var(--stop)"/><text x="670" y="88" text-anchor="middle" fill="var(--stop)" font-size="11.5">昇格ロール（操作）</text>
+<text x="444" y="126" fill="var(--muted)" font-size="11">CloudWatch / X-Ray / CloudTrail / Health</text>
+<text x="600" y="126" fill="var(--muted)" font-size="10.5">※ 承認後だけ使う</text>
+<line x1="322" y1="212" x2="418" y2="212" stroke="var(--wire)" stroke-width="2" marker-end="url(#am5)"/>
+<text x="370" y="202" text-anchor="middle" fill="var(--muted)" font-size="10.5">コネクタ</text>
+<rect x="424" y="164" width="336" height="112" rx="10" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="444" y="188" fill="var(--c2)" font-size="12" font-weight="600">AWS の外</text>
+<text x="444" y="212" fill="var(--ink)" font-size="11">可観測性：Datadog / Splunk / New Relic ほか</text>
+<text x="444" y="234" fill="var(--ink)" font-size="11">コードと CI/CD：GitHub / GitLab / Jenkins ほか</text>
+<text x="444" y="256" fill="var(--ink)" font-size="11">チケットとチャット：ServiceNow / Jira / Slack ほか</text>
+</svg><figcaption>エージェントスペースは、エージェントと利用者と接続先をまとめる入れ物です。既定のコネクタで足りない場合は、Webhook と独自の MCP サーバーを足して調査に使えるツールを増やせます。</figcaption></figure>
+<p>STEP 1〜4 との対応で見ると、そのまま重なります。</p>
+<div class="tw"><table>
+<thead><tr><th>ここまでの話</th><th>AWS DevOps Agent での姿</th></tr></thead>
+<tbody>
+<tr><td>散らばった材料（STEP 2）</td><td>アカウント関連付けと各種コネクタ。リソースとその関係（トポロジ）と過去のインシデントを学習して土台にする</td></tr>
+<tr><td>調査ループ（STEP 3）</td><td>自動インシデント調査。調査の途中経過に会話で割り込める調査チャットもある</td></tr>
+<tr><td>起点（STEP 4）</td><td>CloudWatch アラーム、Webhook、チケット、オペレーターアプリからの手動依頼</td></tr>
+<tr><td>記録（STEP 4）</td><td>推論の手順と実行したアクションを残すジャーナル。API 呼び出し自体は CloudTrail にも残る</td></tr>
+<tr><td>承認（STEP 4）</td><td>出力は緩和計画まで。環境を変える操作にはアカウント関連付けに登録した昇格ロールが必要で、承認を挟む</td></tr>
+</tbody></table></div>
+<p>ここまでは障害が起きた後の話ですが、DevOps Agent にはもう一方の使い方があります。過去のインシデントの傾向を横断で見て、<strong>可観測性の穴・構成の弱点・デプロイパイプラインの改善点</strong>を推奨として出す機能です。「毎回このメトリクスがなくて調査が止まる」という事実は、調査を積み重ねた側にしか見えません。</p>
+<p>料金は<strong>エージェントが働いた時間に対する秒課金</strong>で、GA 時点では 1 エージェント秒あたり 0.0083 USD（約 0.5 USD/分）です。有効にしておくだけでは課金されず、調査 1 回が数分なら数 USD という単位になります。利用できるリージョンは 6 つで、東京リージョンが含まれます。</p>
+<div class="note"><p><strong>権限設計を先に決める。</strong> 調査用ロールに与える読み取り権限の範囲が、そのままエージェントに見える範囲になります。逆に、昇格ロールを登録しなければ「調べるだけで何も変えない」状態に固定できます。まずこの状態から始めて、どこまで任せるかは実績を見てから広げるほうが安全です。</p></div>
+<div class="quiz"><p class="q"><b>確認問題</b>　DevOps Agent を有効にすれば、それだけで障害対応の時間は短くなるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>材料がつながっていなければ短くなりません。</strong> エージェントが見られるのは、人が見られるものと同じです。ログが出ていない、リソースの関係が分からない、デプロイ履歴が AWS 側から追えない——そういう状態では、人と同じところで行き詰まります。効果が出る前提は STEP 2 の材料がそろっていることで、そこが弱いなら、まず整えるべきは可観測性のほうです。</p></div></details></div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+<h3>30 秒版</h3><blockquote><p>AWS DevOps Agent は、障害の一次調査を代わりにやる AWS のマネージドサービスです。アラームや Webhook を起点に自分で動き出し、メトリクス・ログ・トレース・変更履歴・デプロイ履歴を横断して突き合わせ、根本原因の候補と緩和計画を出します。ただし環境は自分では変えません。実行するかどうかは人が決めます。料金はエージェントが働いた秒に対してかかり、置いておくだけなら無料です。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>解こうとしている問題は、障害対応の時間の大半が「直す」ではなく「何が起きているか突き止める」に消えている、という点です。必要な材料は CloudWatch や CloudTrail、CI/CD にすでにありますが、それを 1 本の時間軸に並べ直す作業を毎回人がやっています。DevOps Agent はここを肩代わりします。</p><p>仕組みは、仮説を立てる → ツールを呼ぶ → 結果で絞る、というループです。呼べるツールは読み取り中心で、AWS 側は関連付けたアカウントの IAM ロール経由、AWS の外は Datadog・GitHub・ServiceNow などのコネクタ経由でつながります。推論の手順はジャーナルとして残るので、人が結論を検証できます。</p><p>環境を変える操作には別途、昇格ロールと承認が要ります。調査は外しても損失が小さく、対処は外すと大きいので、自動化する範囲を左右で変えている、という設計です。もう一方の使い道として、調査の積み重ねから可観測性やパイプラインの改善点を推奨する機能もあります。</p></blockquote>
+
+<h2>よくある誤解</h2>
+<h3>「AI が障害を自動で復旧してくれるサービス」</h3><p>既定では復旧しません。出てくるのは原因の候補と緩和計画で、実行するには昇格ロールの登録と人の承認が要ります。「無人で直る」ではなく「一次調査が終わった状態で起こされる」が実態に近い姿です。</p>
+<h3>「監視サービスなので、CloudWatch の代わりになる」</h3><p>常時見張る役目は CloudWatch のままです。DevOps Agent はアラームなどを起点に呼ばれて動くので、検知の仕組みがないと起点がありません。置き換わるのではなく、検知の後ろに足されます。</p>
+<h3>「有効にすれば勝手に環境を学んでくれるので、準備は要らない」</h3><p>接続した先しか見えません。ログが出ていない、CI/CD がつながっていない、といった穴はそのまま調査の穴になります。導入前にやることは、どの材料をつなぐかを決めることです。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では全体像を優先し、次の話には意図的に踏み込みませんでした。</p>
+<ul>
+<li>セットアップの具体手順（CLI / CloudFormation でのエージェントスペース作成、IAM ロール、アカウント関連付け、オペレーターアプリの有効化と IdP 連携）</li>
+<li>CloudWatch アラームから EventBridge・Lambda を経由して Webhook を叩く自動起動の組み方</li>
+<li>独自の MCP サーバーを足して、既定のコネクタにない調査ツールを使わせる方法</li>
+<li>前提となる考え方：<a href="../../DevOps/SRE基礎.md">SRE 基礎</a>、<a href="../../DevOps/SLI_SLO_エラーバジェット.md">SLI・SLO・エラーバジェット</a>、<a href="../../DevOps/OpenTelemetry.md">OpenTelemetry</a>、<a href="../03_AIと機械学習/AWSにおけるAI/aws-ai-11-amazon-bedrock-agents.md">Amazon Bedrock Agents</a></li>
+</ul>
+<p>次は、直近に起きた障害を 1 件選び、「調査に使った画面を全部書き出す」ところから始めるのがおすすめです。そのリストがそのまま、つなぐべきコネクタの一覧になります。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/devopsagent/latest/userguide/what-is.html">AWS DevOps Agent User Guide — What is AWS DevOps Agent</a></li>
+<li><a href="https://docs.aws.amazon.com/devopsagent/latest/userguide/configuring-capabilities-for-aws-devops-agent.html">AWS DevOps Agent User Guide — Configuring capabilities</a></li>
+<li><a href="https://docs.aws.amazon.com/devopsagent/latest/userguide/configuring-capabilities-for-aws-devops-agent-connecting-to-ticketing-and-chat-index.html">AWS DevOps Agent User Guide — Connecting to ticketing and chat</a></li>
+<li><a href="https://docs.aws.amazon.com/devopsagent/latest/userguide/getting-started-with-aws-devops-agent-cli-onboarding-guide.html">AWS DevOps Agent User Guide — CLI onboarding guide</a></li>
+<li><a href="https://docs.aws.amazon.com/devopsagent/latest/userguide/aws-devops-agent-security-devops-agent-iam-permissions.html">AWS DevOps Agent User Guide — DevOps Agent IAM permissions</a></li>
+<li><a href="https://docs.aws.amazon.com/cli/latest/reference/devops-agent/">AWS CLI Command Reference — devops-agent</a></li>
+<li><a href="https://aws.amazon.com/devops-agent/">AWS DevOps Agent（製品ページ）</a></li>
+<li><a href="https://aws.amazon.com/blogs/mt/announcing-general-availability-of-aws-devops-agent/">AWS Cloud Operations Blog — Announcing General Availability of AWS DevOps Agent</a></li>
+<li><a href="https://aws.amazon.com/blogs/aws/aws-devops-agent-helps-you-accelerate-incident-response-and-improve-system-reliability-preview">AWS News Blog — AWS DevOps Agent helps you accelerate incident response and improve system reliability (preview)</a></li>
+<li><a href="https://aws.amazon.com/blogs/devops/best-practices-for-deploying-aws-devops-agent-in-production/">AWS DevOps Blog — Best Practices for Deploying AWS DevOps Agent in Production</a></li>
+<li><a href="https://aws.amazon.com/blogs/devops/building-an-end-to-end-agentic-sre-using-aws-devops-agent/">AWS DevOps Blog — Building an end-to-end agentic SRE using AWS DevOps Agent</a></li>
+</ul>
+</main></body></html>

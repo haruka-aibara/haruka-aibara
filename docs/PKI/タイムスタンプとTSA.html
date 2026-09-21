@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>タイムスタンプと TSA を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>タイムスタンプ（RFC 3161）— 「その時刻に存在した」ことを後から示す</h1>
+<p class="lede">署名だけでは、いつ署名したかを自分で名乗っているにすぎない。第三者に時刻を刻んでもらう。</p>
+
+<h2>何が問題なのか</h2>
+<p>デジタル署名は「誰が署名したか」と「改ざんされていないか」を示す。だが<strong>「いつ署名したか」は示さない</strong>。文書に書かれた日付は自己申告で、後から好きに書ける。</p>
+<p>さらに厄介なのが、署名に使った証明書の有効期限。<strong>期限が切れた後、その署名はまだ有効なのか</strong>。もし秘密鍵が漏れて失効していたら、その署名は失効前のものか、後のものか。時刻が確定できないと判断できず、<strong>時間が経った署名はすべて疑わしくなる</strong>。</p>
+<p>これを解くのが、信頼できる第三者に時刻を証明してもらう仕組み——タイムスタンプ。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="タイムスタンプトークンが発行される流れ">
+  <text x="90" y="16" font-size="12" font-weight="600" fill="var(--c1)" text-anchor="middle">利用者</text>
+  <text x="590" y="16" font-size="12" font-weight="600" fill="var(--c3)" text-anchor="middle">TSA（時刻認証局）</text>
+  <line x1="180" y1="26" x2="180" y2="200" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="520" y1="26" x2="520" y2="200" stroke="var(--line)" stroke-width="1.5"/>
+
+  <rect x="8" y="34" width="160" height="46" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="88" y="54" font-size="10.5" fill="var(--ink)" text-anchor="middle">① 文書のハッシュ値</text>
+  <text x="88" y="70" font-size="10.5" fill="var(--muted)" text-anchor="middle">だけを計算する</text>
+
+  <path d="M186 100 L514 100" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#z1)"/>
+  <rect x="230" y="84" width="240" height="22" rx="4" fill="var(--c1)"/>
+  <text x="350" y="100" font-size="10.5" fill="var(--on)" text-anchor="middle">② ハッシュ値を送る（文書は送らない）</text>
+
+  <rect x="532" y="112" width="160" height="46" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="612" y="132" font-size="10.5" fill="var(--ink)" text-anchor="middle">③ 正確な時刻を付けて</text>
+  <text x="612" y="148" font-size="10.5" fill="var(--ink)" text-anchor="middle">TSA の鍵で署名</text>
+
+  <path d="M514 180 L186 180" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#z2)"/>
+  <rect x="230" y="164" width="240" height="22" rx="4" fill="var(--c3)"/>
+  <text x="350" y="180" font-size="10.5" fill="var(--on)" text-anchor="middle">④ タイムスタンプトークン</text>
+
+  <text x="8" y="222" font-size="11" fill="var(--stop)">文書そのものは TSA に渡らない。ハッシュ値だけなので、中身を見せずに「この文書がその時刻に存在した」ことを刻める。</text>
+  <text x="8" y="242" font-size="11" fill="var(--muted)">TSA が使う時刻は、標準時を配信する TA（時刻配信局）から供給され、そのずれがないことも監査される。</text>
+  <defs>
+    <marker id="z1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="z2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>ハッシュだけを渡す設計が要点。企業の契約書や設計図を外部の TSA に送らずに済むので、機密文書にもそのまま使える。逆にトークンだけ見ても、元の文書が何かは分からない。</figcaption>
+</figure>
+
+<h2>タイムスタンプが証明すること／しないこと</h2>
+<table>
+<tr><th>証明する</th><th>証明しない</th></tr>
+<tr><td>そのデータがその時刻に<strong>存在していた</strong>こと（存在証明）</td><td>そのデータを誰が作ったか</td></tr>
+<tr><td>その時刻以降<strong>変更されていない</strong>こと（完全性）</td><td>内容が正しいこと・有効であること</td></tr>
+</table>
+<p>「誰が」はデジタル署名の役目。<strong>署名とタイムスタンプはセットで使う</strong>もので、署名に対してタイムスタンプを掛けることで「この人が、この時刻に署名した」が成立する。</p>
+
+<h2>長期保存では何度も掛け直す</h2>
+<p>タイムスタンプ自体も TSA の証明書に依存しているので、時間が経てばその証明書も期限切れになり、使われたハッシュ関数も弱くなる。10年、30年と保存する文書では、<strong>期限が切れる前に、それまでの署名とタイムスタンプをまとめて新しいタイムスタンプで包み直す</strong>。この繰り返しで有効性を延ばしていくのが長期署名（PAdES、XAdES などの規格）の考え方。</p>
+
+<div class="note">
+<p><strong>どういうときに必要になるか</strong></p>
+<p>タイムスタンプが要るのは、<strong>後日、第三者に対して主張しなければならない場面</strong>——電子契約、電子帳簿の保存、知的財産の先使用権、システムの監査証跡。逆に「社内でファイルが改ざんされていないか確かめたいだけ」ならハッシュ値の保管で足り、コストのかかる TSA は要らない。<br>
+用途が決まっていないのに「証跡は残しておいたほうがいい」で導入すると、更新のたびに費用が発生し続ける仕組みだけが残る。<strong>誰に対して何を主張するのか</strong>を先に決める。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc3161.html">RFC 3161 - Internet X.509 PKI Time-Stamp Protocol (TSP)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4998.html">RFC 4998 - Evidence Record Syntax (ERS)</a></li>
+<li><a href="https://www.dekyo.or.jp/tb/">日本データ通信協会 - タイムビジネス認定制度</a></li>
+</ul>
+
+</main>
+</body>
+</html>

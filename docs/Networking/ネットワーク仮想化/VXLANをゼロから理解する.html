@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VXLAN をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;align-items:center}
+.node{
+  border:1.5px solid var(--c1);border-radius:8px;padding:.4rem .7rem;background:var(--card);
+  font-size:.84rem;text-align:center;line-height:1.5;min-width:5.2rem;
+}
+.node small{display:block;font-size:.72rem;color:var(--muted)}
+.node.sw{border-color:var(--c4)}
+.node.rt{border-color:var(--c2)}
+.node.hi{border-color:var(--c3);background:var(--lane)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;text-align:center}
+.grid4 .lbl{font-size:.74rem;color:var(--muted)}
+.stems{display:grid;grid-template-columns:repeat(4,1fr)}
+.stems i{display:block;height:18px;width:0;border-left:2px solid var(--wire);margin:0 auto}
+.bus{height:0;border-top:2px solid var(--wire);margin:0 12.5%}
+.stem{height:18px;width:0;border-left:2px solid var(--wire);margin:0 auto}
+.link{flex:0 0 2.4rem;height:0;border-top:2px solid var(--wire)}
+.island{
+  border:1.5px dashed var(--c3);border-radius:12px;padding:.7rem;background:var(--lane);
+  display:flex;flex-direction:column;gap:.4rem;align-items:center;
+}
+.island .name{font-size:.76rem;color:var(--c3);font-weight:600}
+.wallbox{
+  border:1.5px solid var(--c4);border-radius:12px;padding:.9rem;
+  display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:center;
+}
+.wall{
+  width:0;align-self:stretch;border-left:3px dashed var(--stop);position:relative;margin:0 1rem;
+}
+.wall span{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  writing-mode:vertical-rl;font-size:.74rem;color:var(--stop);
+  background:var(--card);padding:.3rem 0;
+}
+.pkt{display:flex;flex-wrap:wrap;gap:.35rem;align-items:stretch}
+.pkt div{
+  border-radius:6px;padding:.45rem .5rem;font-size:.76rem;line-height:1.45;text-align:center;
+  border:1.5px solid var(--line);
+}
+.pkt .o1{flex:1 1 8rem;border-color:var(--c1);background:var(--card)}
+.pkt .o2{flex:0 1 5rem;border-color:var(--c1);background:var(--card)}
+.pkt .o3{flex:1 1 8rem;border-color:var(--c4);background:var(--card)}
+.pkt .o4{flex:2 1 12rem;border-color:var(--c3);background:var(--lane)}
+.pkt b{display:block;font-size:.78rem}
+.pkt em{display:block;font-style:normal;font-size:.72rem;color:var(--muted)}
+.pkt .hint{
+  display:block;font-style:normal;font-size:.72rem;line-height:1.45;
+  margin-top:.4rem;padding-top:.35rem;border-top:1px dashed var(--line);
+}
+.pkt .h1{color:var(--c1)}
+.pkt .h3{color:var(--c3)}
+.arrow{align-self:center;color:var(--muted);font-size:1rem}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+
+@media (max-width:640px){
+  .tw table{min-width:30rem}
+  .node{min-width:0}
+  .grid4{gap:.3rem}
+  .grid4 .node{padding:.4rem .2rem;font-size:.78rem}
+  .pkt .o1,.pkt .o2,.pkt .o3,.pkt .o4{flex:1 1 100%}
+  .wallbox{grid-template-columns:1fr;gap:.4rem}
+  .wall{
+    width:auto;height:0;align-self:auto;margin:1rem 0;
+    border-left:none;border-top:3px dashed var(--stop);
+  }
+  .wall span{writing-mode:horizontal-tb;padding:0 .4rem}
+}
+.flow{display:flex;flex-direction:column;gap:.45rem}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.84rem;background:var(--card);
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>VXLAN をゼロから理解する</h1>
+<p class="lede">MAC アドレスの話から始めて、5 ステップで VXLAN までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+
+<p>VXLAN の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+
+<p>それは読解力の問題ではありません。多くの記事は「L2 セグメントを L3 上に延伸する」「イーサネットフレームをカプセル化する」という説明から始まります。この説明が成立するのは、L2・L3・セグメント・フレームという言葉がすでに体に入っている人だけです。土台が抜けている状態でこれを読むと、知らない言葉を知らない言葉で説明されることになります。</p>
+
+<p>そこでこの記事は、あえて遠回りします。MAC アドレスと IP アドレスの違いから始めて、5 ステップで VXLAN までたどり着きます。ゴールは用語を覚えることではなく、<strong>VXLAN を自分の言葉で説明できるようになること</strong>です。最後に、そのまま口に出せる説明テンプレートを用意しました。</p>
+
+<div class="dg">
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>住所が 2 種類ある</li>
+<li><span class="n">STEP 2</span>配達員も 2 種類いる</li>
+<li><span class="n">STEP 3</span>L2 と L3、そして「島」</li>
+<li><span class="n">STEP 4</span>VLAN — 島を分ける</li>
+<li><span class="n">STEP 5</span>VXLAN — 島を運ぶ</li>
+</ol>
+</nav>
+<p class="cap">STEP 4 まではすべて VXLAN の前提知識です。VXLAN そのものの話は STEP 5 だけですが、そこに至るまでの 4 ステップがないと STEP 5 は理解できません。逆に言えば、STEP 4 まで進めば STEP 5 はほとんど自明に感じられるはずです。</p>
+</div>
+
+<h2>STEP 1：住所が 2 種類ある</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>住所が 2 種類ある</li>
+<li><span class="n">STEP 2</span>配達員も 2 種類いる</li>
+<li><span class="n">STEP 3</span>L2 と L3、そして「島」</li>
+<li><span class="n">STEP 4</span>VLAN — 島を分ける</li>
+<li><span class="n">STEP 5</span>VXLAN — 島を運ぶ</li>
+</ol>
+</nav>
+
+<p>あなたの手元のノート PC には、実は 2 種類の番号が付いています。</p>
+
+<p>1 つ目は <code>00:1A:2B:3C:4D:5E</code> のような番号です。これは工場で作られるときに機器へ焼き込まれた番号で、世界にひとつしかありません。基本的に一生変わりません。これを <strong>MAC アドレス</strong>と呼びます。</p>
+
+<p>2 つ目は <code>192.168.1.10</code> のような番号です。こちらは後から設定される番号で、繋ぐ場所が変われば変わります。会社の Wi-Fi と自宅の Wi-Fi では違う番号になります。これを <strong>IP アドレス</strong>と呼びます。</p>
+
+<p>この 2 つは <strong>名前と住所</strong>だと考えてください。</p>
+
+<div class="dg">
+<p class="ttl">手紙を届けるときの 2 段構え</p>
+<div class="row">
+  <div class="node" style="flex:1 1 14rem;text-align:left;min-width:12rem">
+    <b style="font-size:.8rem">封筒</b>
+    <small style="margin-top:.4rem">宛先住所：東京都○○区 1-2-3<br>宛名：山田 太郎 様</small>
+  </div>
+  <div class="link"></div>
+  <div class="node hi" style="flex:1 1 14rem;text-align:left;min-width:12rem">
+    <b style="font-size:.8rem">パケット（通信のデータ）</b>
+    <small style="margin-top:.4rem">IP アドレス：192.168.1.10<br>MAC アドレス：00:1A:2B:3C:4D:5E</small>
+  </div>
+</div>
+<p class="cap">郵便局は住所を見て、正しい家まで手紙を運びます。しかし家に着いた後、それを誰に渡すかを決めるのは宛名です。ネットワークもまったく同じ構造で、<strong>遠くへ運ぶのが IP アドレス、最後に本人へ渡すのが MAC アドレス</strong>です。</p>
+</div>
+
+<h3>なぜ両方必要なのか</h3>
+
+<p>住所だけでは足りません。引っ越すと住所は変わってしまうので、住所だけを頼りにすると本人を追いかけられません。</p>
+
+<p>名前だけでも足りません。「山田太郎さん」という情報だけで世界中から本人を探すのは不可能です。</p>
+
+<p>だから <strong>「ざっくり運ぶ担当」と「最後に特定する担当」で役割を分けている</strong>のです。IP アドレスがざっくり運ぶ担当、MAC アドレスが最後に特定する担当です。</p>
+
+<div class="tw">
+<table>
+<tr><th></th><th>MAC アドレス</th><th>IP アドレス</th></tr>
+<tr><td>たとえると</td><td>名前</td><td>住所</td></tr>
+<tr><td>例</td><td><code>00:1A:2B:3C:4D:5E</code></td><td><code>192.168.1.10</code></td></tr>
+<tr><td>誰が決める</td><td>工場（製造時に焼き込む）</td><td>後から設定する</td></tr>
+<tr><td>変わるか</td><td>基本的に変わらない</td><td>繋ぐ場所が変われば変わる</td></tr>
+<tr><td>役割</td><td>最後に本人へ渡す</td><td>遠くまでざっくり運ぶ</td></tr>
+</table>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　ノート PC を会社の Wi-Fi から自宅の Wi-Fi に繋ぎ変えました。変わるのは MAC アドレスと IP アドレスのどちらでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>IP アドレスが変わります。</strong></p>
+<p>IP アドレスは「今どこに繋がっているか」で決まる住所なので、場所が変われば変わります。一方 MAC アドレスは機器に焼き込まれた名前なので、どこへ持って行っても変わりません。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：配達員も 2 種類いる</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>住所が 2 種類ある</li>
+<li class="now"><span class="n">STEP 2</span>配達員も 2 種類いる</li>
+<li><span class="n">STEP 3</span>L2 と L3、そして「島」</li>
+<li><span class="n">STEP 4</span>VLAN — 島を分ける</li>
+<li><span class="n">STEP 5</span>VXLAN — 島を運ぶ</li>
+</ol>
+</nav>
+
+<p>住所が 2 種類あるということは、それぞれを見る配達員も 2 種類いる、ということです。片方は名前だけを見て配る人、もう片方は住所を見て地域をまたいで運ぶ人です。</p>
+
+<h3>名前を見る配達員：スイッチ</h3>
+
+<p>オフィスの 1 フロアを想像してください。PC が 4 台あって、それぞれがケーブルで 1 台の機械に繋がっています。この機械を <strong>スイッチ</strong> と呼びます。</p>
+
+<div class="dg">
+<p class="ttl">1 台のスイッチに PC が 4 台ぶら下がっている</p>
+<div class="grid4">
+  <div class="node">PC-A</div><div class="node">PC-B</div><div class="node hi">PC-C</div><div class="node">PC-D</div>
+</div>
+<div class="stems"><i></i><i></i><i></i><i></i></div>
+<div class="grid4">
+  <div class="lbl">ポート 1</div><div class="lbl">ポート 2</div><div class="lbl">ポート 3</div><div class="lbl">ポート 4</div>
+</div>
+<div class="stems"><i></i><i></i><i></i><i></i></div>
+<div class="bus"></div>
+<div class="stem"></div>
+<div class="row"><div class="node sw">スイッチ<small>MAC アドレスだけを見る</small></div></div>
+<p class="cap">ケーブルの差し込み口 1 つ 1 つを「ポート」と呼びます。ポートには番号が振られていて、スイッチは「どの番号の口の先に誰がいるか」を管理しています。</p>
+</div>
+
+<p>スイッチは <strong>MAC アドレスだけを見ます</strong>。IP アドレスは見ません。というより、見る能力がありません。</p>
+
+<p>ではどうやって配るのか。スイッチは以下のような表を持っています。<strong>MAC アドレステーブル</strong> と呼びますが、要は「名前 → どの口にいるか」の対応表です。</p>
+
+<div class="tw">
+<table>
+<tr><th>MAC アドレス（名前）</th><th>ポート番号（どの口にいるか）</th></tr>
+<tr><td><code>00:1A:2B:3C:4D:5E</code>（PC-A）</td><td>ポート 1</td></tr>
+<tr><td><code>00:1A:2B:3C:4D:5F</code>（PC-B）</td><td>ポート 2</td></tr>
+<tr><td><code>00:1A:2B:3C:4D:60</code>（PC-C）</td><td>ポート 3</td></tr>
+<tr><td><code>00:1A:2B:3C:4D:61</code>（PC-D）</td><td>ポート 4</td></tr>
+</table>
+</div>
+
+<p>PC-A が PC-C 宛にデータを出すと、スイッチはこの表を見て <strong>ポート 3 にだけ</strong> データを流します。PC-B と PC-D には流しません。無関係な相手にデータを見せないので、効率もよく安全でもあります。</p>
+
+<h3>住所を見る配達員：ルータ</h3>
+
+<p>スイッチには限界があります。表に載っているのは <strong>自分に繋がっている相手だけ</strong>です。隣のビルにある PC の名前など知りようがありませんし、そもそもケーブルが繋がっていません。</p>
+
+<p>そこで登場するのが <strong>ルータ</strong> です。ルータは <strong>IP アドレスを見て</strong>、グループとグループをまたいでデータを運びます。郵便局が地域をまたいで手紙を運ぶのと同じ役割です。</p>
+
+<div class="dg">
+<p class="ttl">グループをまたぐときだけルータが登場する</p>
+<div class="row">
+  <div class="island">
+    <span class="name">グループ 1（192.168.1.x）</span>
+    <div class="row"><div class="node">PC-A</div><div class="node hi">PC-C</div></div>
+    <div class="stem"></div>
+    <div class="node sw">スイッチ</div>
+  </div>
+  <div class="link"></div>
+  <div class="node rt">ルータ<small>IP を見る</small></div>
+  <div class="link"></div>
+  <div class="island">
+    <span class="name">グループ 2（192.168.2.x）</span>
+    <div class="row"><div class="node">PC-X</div><div class="node">PC-Y</div></div>
+    <div class="stem"></div>
+    <div class="node sw">スイッチ</div>
+  </div>
+</div>
+<p class="cap">PC-A から PC-C へは、スイッチの中だけで完結します。PC-A から PC-X へ行くときだけ、ルータを通ります。「ルータを通る＝グループの外へ出る」と覚えてください。</p>
+</div>
+
+<div class="tw">
+<table>
+<tr><th></th><th>スイッチ</th><th>ルータ</th></tr>
+<tr><td>何を見るか</td><td>MAC アドレス（名前）</td><td>IP アドレス（住所）</td></tr>
+<tr><td>どこへ届けるか</td><td>同じグループの中</td><td>グループをまたいで</td></tr>
+<tr><td>たとえると</td><td>社内のメール便</td><td>郵便局</td></tr>
+<tr><td>知っている範囲</td><td>自分に繋がっている相手だけ</td><td>他のグループへの行き方</td></tr>
+</table>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　同じスイッチに繋がっている PC-A と PC-C が通信するとき、ルータは登場するでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>登場しません。</strong></p>
+<p>PC-A も PC-C も同じスイッチにぶら下がっているので、スイッチが MAC アドレステーブルを見てポート 3 へ流すだけで届きます。グループの外へ出る必要がないので、ルータの出番はありません。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：L2 と L3 の正体、そして「島」</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>住所が 2 種類ある</li>
+<li class="done"><span class="n">STEP 2 ✓</span>配達員も 2 種類いる</li>
+<li class="now"><span class="n">STEP 3</span>L2 と L3、そして「島」</li>
+<li><span class="n">STEP 4</span>VLAN — 島を分ける</li>
+<li><span class="n">STEP 5</span>VXLAN — 島を運ぶ</li>
+</ol>
+</nav>
+
+<p>ここで L2・L3 という言葉が出てきます。身構える必要はありません。<strong>あなたはもう中身を理解しています。名前を付けるだけです。</strong></p>
+
+<p>通信は役割ごとに階層に分かれていて、それをレイヤー（層）と呼びます。ビルの階数だと思ってください。</p>
+
+<ul>
+<li><strong>2 階（L2）</strong>＝ MAC アドレスの担当 ＝ スイッチの世界</li>
+<li><strong>3 階（L3）</strong>＝ IP アドレスの担当 ＝ ルータの世界</li>
+</ul>
+
+<p>これだけです。STEP 2 で理解したことに番号を振っただけで、新しい知識は 1 つも増えていません。「L2 スイッチ」と書いてあったら「MAC を見る機械のことか」、「L3 で分かれている」と書いてあったら「ルータをまたいでいるのか」と読み替えられれば十分です。</p>
+
+<h3>「島」という考え方</h3>
+
+<p>ここからがこの記事の背骨です。</p>
+
+<p><strong>スイッチで繋がっている範囲を、1 つの島だと考えてください。</strong></p>
+
+<ul>
+<li>島の中は、MAC アドレスで直接届く（＝ L2 の世界）</li>
+<li>島から島へは、ルータを通る（＝ L3 の世界）</li>
+</ul>
+
+<p>この島のことを、ネットワークの世界では <strong>L2 セグメント</strong> と呼びます。名前が難しいだけで、意味は「スイッチで繋がっている 1 つのかたまり」です。</p>
+
+<div class="dg">
+<p class="ttl">島が 2 つ、間にルータ</p>
+<div class="row">
+  <div class="island">
+    <span class="name">島 1（L2 セグメント）</span>
+    <div class="row"><div class="node">PC-A</div><div class="node">PC-B</div><div class="node hi">PC-C</div></div>
+    <div class="stem"></div>
+    <div class="node sw">スイッチ</div>
+    <small style="font-size:.72rem;color:var(--muted)">島の中は MAC で直接届く</small>
+  </div>
+  <div class="link"></div>
+  <div class="node rt">ルータ<small>島と島の橋</small></div>
+  <div class="link"></div>
+  <div class="island">
+    <span class="name">島 2（L2 セグメント）</span>
+    <div class="row"><div class="node">PC-X</div><div class="node">PC-Y</div></div>
+    <div class="stem"></div>
+    <div class="node sw">スイッチ</div>
+    <small style="font-size:.72rem;color:var(--muted)">島の中は MAC で直接届く</small>
+  </div>
+</div>
+<p class="cap">島の中と島の外では、通信のやり方がまったく違います。この違いが分かっていることが、VXLAN を理解する上でいちばん重要な土台になります。</p>
+</div>
+
+<h3>ブロードキャスト＝島の全員に叫ぶこと</h3>
+
+<p><strong>ブロードキャスト</strong>とは、島の全員に向かって一斉に叫ぶことです。特定の相手ではなく、島にいる全員に同じデータが届きます。</p>
+
+<p>なぜ叫ぶ必要があるのでしょうか。ここで STEP 1 に戻ります。</p>
+
+<p>PC-A が PC-C にデータを送りたいとします。PC-A が知っているのは PC-C の <strong>住所（IP アドレス）だけ</strong>です。しかし実際にデータを渡すには <strong>名前（MAC アドレス）</strong> が要ります。名前を知らないのです。</p>
+
+<p>そこで PC-A は島の全員に向かって叫びます。</p>
+
+<blockquote>
+<p>「192.168.1.3 の人はいますか。いたら名前（MAC アドレス）を教えてください」</p>
+</blockquote>
+
+<p>島にいる全員がこの声を聞きます。そして自分が 192.168.1.3 である PC-C だけが「私です。名前は <code>00:1A:2B:3C:4D:60</code> です」と返事をします。これで PC-A は名前を知り、データを送れるようになります。</p>
+
+<p>このやりとりを <strong>ARP</strong> と呼びます。用語は覚えなくて構いません。<strong>通信する前に、まず島の中で叫んで相手を探している</strong>とだけ覚えてください。</p>
+
+<h3>叫び声が届く範囲が、島の境界</h3>
+
+<p>重要なのは、<strong>ルータは叫び声を隣の島へ通さない</strong>ことです。もし通してしまったら、世界中のあらゆる PC の叫び声が自分のところに届いてしまい、通信どころではなくなります。</p>
+
+<p>つまり <strong>叫び声が届く範囲＝島の境界</strong> です。この性質から、L2 セグメントは <strong>ブロードキャストドメイン</strong>（＝ブロードキャストが届く範囲）とも呼ばれます。</p>
+
+<div class="note">
+<p>ここまでで、同じものに 3 つの呼び名が付きました。すべて同じ「島」を指しています。<br>
+<strong>L2 セグメント ＝ ブロードキャストドメイン ＝ スイッチで繋がっている範囲</strong></p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　1 つの島に PC が 1000 台繋がっていたら、何が困りそうでしょうか。これは決まった正解のない問題です。少し考えてみてください。</p>
+<details>
+<summary>考えた結果を確認する</summary>
+<div class="ans">
+<p>大きく 2 つあります。</p>
+<p><strong>1. 叫び声で回線が埋まる。</strong>1000 台が「○○さんいますか」と叫び合い、全員がその声を聞かされます。誰も関係のない叫び声を処理し続けることになり、台数が増えるほど加速度的に無駄が増えます。極端な場合は通信ができなくなり、これを<strong>ブロードキャストストーム</strong>と呼びます。</p>
+<p><strong>2. セキュリティ上まずい。</strong>島の中は MAC で直接届く世界なので、隣の部署の通信も同じ島にあれば覗ける可能性があります。経理部と開発部が同じ島にいる状態は望ましくありません。</p>
+<p>結論として、<strong>島は小さく分けたい</strong>という要求が出てきます。次のステップはこの話です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：VLAN — 島を分ける</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>住所が 2 種類ある</li>
+<li class="done"><span class="n">STEP 2 ✓</span>配達員も 2 種類いる</li>
+<li class="done"><span class="n">STEP 3 ✓</span>L2 と L3、そして「島」</li>
+<li class="now"><span class="n">STEP 4</span>VLAN — 島を分ける</li>
+<li><span class="n">STEP 5</span>VXLAN — 島を運ぶ</li>
+</ol>
+</nav>
+
+<p>島を小さく分けたい。いちばん素朴な解決策はこうです。</p>
+
+<p><strong>スイッチをもう 1 台買って、物理的に分ける。</strong>経理部は 1 台目のスイッチ、開発部は 2 台目のスイッチ。ケーブルが繋がっていないのだから、確実に分かれます。</p>
+
+<p>確実ですが、無駄が多いやり方です。部署が 10 個あればスイッチが 10 台必要になります。経理部が 3 人しかいなくても、24 ポートのスイッチを 1 台占有します。残り 21 個の口は空いているのに、開発部の人が使うことはできません。高くつく上に効率が悪いのです。</p>
+
+<h3>1 台のスイッチの中に、見えない壁を立てる</h3>
+
+<p>そこで登場するのが <strong>VLAN</strong> です。やっていることは単純で、<strong>1 台のスイッチの中に見えない壁を立てる</strong>だけです。</p>
+
+<div class="dg">
+<p class="ttl">物理的には 1 台、論理的には 2 つの島</p>
+<div class="wallbox">
+  <div>
+    <div class="row"><div class="node">PC-A</div><div class="node">PC-B</div></div>
+    <div class="row" style="margin-top:.4rem"><div class="node">PC-C</div><div class="node">PC-D</div></div>
+    <p style="margin:.5rem 0 0;font-size:.76rem;color:var(--c3);text-align:center">ポート 1〜4 ＝ VLAN 10（経理部）</p>
+  </div>
+  <div class="wall"><span>見えない壁</span></div>
+  <div>
+    <div class="row"><div class="node">PC-X</div><div class="node">PC-Y</div></div>
+    <div class="row" style="margin-top:.4rem"><div class="node">PC-Z</div><div class="node">PC-W</div></div>
+    <p style="margin:.5rem 0 0;font-size:.76rem;color:var(--c4);text-align:center">ポート 5〜8 ＝ VLAN 20（開発部）</p>
+  </div>
+</div>
+<p class="cap">この 8 台は同じ 1 台のスイッチに刺さっています。それでも PC-A が叫んだ声は PC-X には絶対に届きません。スイッチが「ポート 1〜4 とポート 5〜8 は別のグループだ」と覚えていて、壁を越えるデータを通さないからです。</p>
+</div>
+
+<p>物理的には 1 台のスイッチ。しかし論理的には 2 つの島。これが VLAN です。部署が増えても、ポートの割り当てを設定で変えるだけで済みます。</p>
+
+<h3>VLAN ID ＝ 島の背番号</h3>
+
+<p>島がいくつもあると、どれがどの島か区別する必要があります。そこで島に番号を振ります。これが <strong>VLAN ID</strong> です。上の図の「10」「20」がそれです。</p>
+
+<p>スイッチが 1 台なら番号を振るだけで済みますが、スイッチが 2 台にまたがると話が変わります。1 台目のスイッチから 2 台目へデータを渡すとき、そのデータがどちらの島のものか分からなくなるからです。</p>
+
+<p>そこで、スイッチをまたぐときには <strong>「これは VLAN 10 のデータです」というタグ（荷札）を貼って</strong>送ります。受け取った隣のスイッチはタグを見て、VLAN 10 のポートにだけ流します。こうして複数のスイッチにまたがって同じ島を作れます。</p>
+
+<div class="dg">
+<p class="ttl">タグを貼ってスイッチをまたぐ</p>
+<div class="row">
+  <div class="node sw" style="flex:0 1 9rem">スイッチ 1<small>VLAN 10 / VLAN 20</small></div>
+  <span class="arrow" aria-hidden="true">→</span>
+  <div class="node" style="border-color:var(--c2);flex:0 1 11rem">
+    タグ付きのデータ<small>「VLAN 10 のものです」</small>
+  </div>
+  <span class="arrow" aria-hidden="true">→</span>
+  <div class="node sw" style="flex:0 1 9rem">スイッチ 2<small>VLAN 10 / VLAN 20</small></div>
+</div>
+<p class="cap">タグはスイッチ同士の間でだけ使われます。PC に届く直前でタグは剥がされるので、PC はタグの存在を知りません。VLAN ID は 12 ビットの数値で、使える番号は 4094 個です。この数字は STEP 5 で効いてきます。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　東京と大阪にデータセンターがあり、その間はインターネット（＝ルータだらけの L3 の世界）で繋がっています。VLAN を使って「東京のサーバと大阪のサーバを同じ島に入れる」ことはできるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>できません。</strong>理由は 2 つあります。</p>
+<p><strong>1. タグはルータに通じない。</strong>VLAN のタグはスイッチにしか通じない言葉です。ルータは IP アドレスしか見ない世界の住人なので、タグを理解できません。途中でタグは剥がされて捨てられてしまいます。</p>
+<p><strong>2. そもそもケーブルが繋がっていない。</strong>VLAN は「スイッチで繋がっている範囲」を分ける技術であって、繋がっていない範囲へ広げる技術ではありません。東京と大阪の間にスイッチのケーブルを引ければ別ですが、現実的ではありません。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：VXLAN — 島を運ぶ</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>住所が 2 種類ある</li>
+<li class="done"><span class="n">STEP 2 ✓</span>配達員も 2 種類いる</li>
+<li class="done"><span class="n">STEP 3 ✓</span>L2 と L3、そして「島」</li>
+<li class="done"><span class="n">STEP 4 ✓</span>VLAN — 島を分ける</li>
+<li class="now"><span class="n">STEP 5</span>VXLAN — 島を運ぶ</li>
+</ol>
+</nav>
+
+<p>STEP 4 の確認問題では「できない」で終わりました。しかし現実には、<strong>東京のサーバと大阪のサーバを同じ島に入れたい</strong>という要求があります。</p>
+
+<p>たとえばクラウド事業者は、お客さんごとにネットワークを分けたいと考えます。そのお客さんのサーバが東京にあるか大阪にあるかは、事業者側の都合で決まります。サーバを別のデータセンターへ移しても、お客さんから見て同じネットワークのままであってほしいのです。</p>
+
+<h3>発想の転換</h3>
+
+<p>ここで発想を変えます。</p>
+
+<blockquote>
+<p><strong>ルータに理解してもらうのを諦める。代わりに、ルータが普通に運べる形に化けさせる。</strong></p>
+</blockquote>
+
+<p>ルータは IP パケットなら何も考えずに運んでくれます。それなら、島の中のデータを丸ごと <strong>普通の IP パケットの中に詰めてしまえばいい</strong>のです。これが <strong>VXLAN</strong> です。</p>
+
+<div class="dg">
+<p class="ttl">VXLAN の流れ（4 ステップ）</p>
+<div class="flow">
+  <div><b>1</b>東京のサーバ A が「192.168.1.3 の人いますか」と叫び声を出す。サーバ A は自分が普通の島にいると思っている</div>
+  <div><b>2</b>東京のスイッチがその叫び声を<strong>丸ごと封筒に入れる</strong>。封筒の宛先には「大阪のスイッチの IP アドレス」を書く</div>
+  <div><b>3</b>封筒は<strong>ただの IP パケット</strong>としてインターネットを通過する。途中のルータは中身を知らないし、知る必要もない</div>
+  <div><b>4</b>大阪のスイッチが封筒を開け、中から出てきた叫び声をそのまま自分の島に流す</div>
+</div>
+<p class="cap">サーバ A から見ると、叫んだら大阪のサーバ B から返事が返ってきただけです。途中で封筒に入れられたことも、インターネットを通ったことも知りません。</p>
+</div>
+
+<h3>封筒の中身</h3>
+
+<p>実際に流れているパケットの形を見てみます。左から順に外側の包装、いちばん右が元のデータです。</p>
+
+<div class="dg">
+<p class="ttl">VXLAN でカプセル化されたパケット</p>
+<div class="pkt">
+  <div class="o1">
+    <b>外側の IP ヘッダ</b><em>宛先：大阪のスイッチ</em>
+    <em class="hint h1">ルータはここだけ見る</em>
+  </div>
+  <div class="o2"><b>UDP</b><em>ポート 4789</em></div>
+  <div class="o3"><b>VXLAN ヘッダ</b><em>島の番号（VNI）</em></div>
+  <div class="o4">
+    <b>元のデータ（丸ごと）</b><em>サーバ A が出したそのまま</em>
+    <em class="hint h3">ここは誰も開けない、ただの荷物</em>
+  </div>
+</div>
+<p class="cap">途中のルータにとって、これは「大阪宛の、ちょっと大きめの UDP パケット」でしかありません。中身に L2 の叫び声が入っていることは分かりませんし、分かる必要もありません。だから既存のネットワーク設備をそのまま使えます。</p>
+</div>
+
+<p>そして、いちばん大事な一文がこれです。</p>
+
+<blockquote>
+<p>サーバ A とサーバ B は「自分たちは同じスイッチに繋がっている」としか思っていません。実際には間に何十台ものルータが挟まっているのに、まったく気づいていません。</p>
+</blockquote>
+
+<h3>覚える用語は 2 つだけ</h3>
+
+<p>ここまで説明した仕組みに、名前を付けます。新しく覚える用語はこの 2 つだけです。</p>
+
+<div class="tw">
+<table>
+<tr><th>用語</th><th>正体</th></tr>
+<tr><td><strong>VTEP</strong></td><td>封をする人 / 開ける人。VXLAN の入口と出口にあたる装置（上の図の「東京のスイッチ」「大阪のスイッチ」）</td></tr>
+<tr><td><strong>VNI</strong></td><td>島の番号。VLAN ID の VXLAN 版</td></tr>
+</table>
+</div>
+
+<h3>何が嬉しいのか</h3>
+
+<p>STEP 3 と STEP 4 で感じた悩みが、1 つずつ解消されます。</p>
+
+<div class="tw">
+<table>
+<tr><th>これまでの悩み</th><th>VXLAN の答え</th></tr>
+<tr><td>ケーブルが繋がった範囲しか島を広げられない（STEP 4）</td><td>IP で届く場所ならどこへでも。東京 ↔ 大阪も可能</td></tr>
+<tr><td>VLAN ID は 4094 個しかない（STEP 4）</td><td>VNI は 24 ビットで約 1677 万個。事実上、数を気にしなくてよい</td></tr>
+<tr><td>島を大きくすると叫び声で大混乱（STEP 3）</td><td>島は VNI ごとに完全に分離されたまま。広げても混ざらない</td></tr>
+</table>
+</div>
+
+<h3>アンダーレイとオーバーレイ</h3>
+
+<p>最後にもう 1 組、よく出てくる言葉を整理します。</p>
+
+<ul>
+<li><strong>アンダーレイ</strong>＝土台になっている本物の IP ネットワーク（ルータやケーブルの世界）</li>
+<li><strong>オーバーレイ</strong>＝その上に作った仮想の島（サーバから見えている世界）</li>
+</ul>
+
+<p>この言葉を使うと、VXLAN はいちばん短くこう言えます。</p>
+
+<blockquote>
+<p><strong>VXLAN は、L3 のアンダーレイの上に、L2 のオーバーレイを作る技術。</strong></p>
+</blockquote>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　東京のサーバ A が「192.168.1.3 の人いますか」と叫びました。この叫び声は、東京と大阪の間にあるルータにはどう見えているでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>「大阪のスイッチ宛の、ただの UDP パケット」に見えています。</strong></p>
+<p>ルータが見るのは外側の IP ヘッダだけです。中に L2 の叫び声が入っていることは分かりません。だからこそルータは何も特別なことをせず、いつも通りに転送します。VXLAN が既存のネットワークの上で動く理由がこれです。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>住所が 2 種類ある</li>
+<li class="done"><span class="n">STEP 2 ✓</span>配達員も 2 種類いる</li>
+<li class="done"><span class="n">STEP 3 ✓</span>L2 と L3、そして「島」</li>
+<li class="done"><span class="n">STEP 4 ✓</span>VLAN — 島を分ける</li>
+<li class="done"><span class="n">STEP 5 ✓</span>VXLAN — 島を運ぶ</li>
+</ol>
+</nav>
+
+<p>理解したことは、口に出せて初めて自分のものになります。長さ違いで 2 つ用意しました。</p>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>VXLAN は、L3 の IP ネットワークの上に、仮想的な L2 セグメントを作る技術です。イーサネットフレームをまるごと UDP パケットに包んで運ぶので、途中のルータはただの IP パケットとして普通に転送します。結果、物理的に離れた場所にあるサーバ同士が「同じスイッチに繋がっている」ように見えます。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>背景には 2 つの課題がありました。1 つは VLAN ID が 12 ビットで 4094 個しかなく、大規模データセンターでは足りないこと。VXLAN の VNI は 24 ビットあるので約 1677 万個使えます。</p>
+<p>もう 1 つは、VLAN はケーブルが繋がった範囲しか広げられないこと。VXLAN なら IP で到達できる場所ならどこへでも島を延ばせます。</p>
+<p>封をする・開ける装置を VTEP、島の番号を VNI、土台の実ネットワークをアンダーレイ、その上の仮想 L2 をオーバーレイと呼びます。</p>
+</blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>VXLAN は VLAN の拡張版ではない</h3>
+
+<p>名前が似ているので誤解されますが、VXLAN は VLAN のタグを運んでいるわけではありません。<strong>VNI という自前の島番号を持つ、独立した仕組み</strong>です。</p>
+
+<p>ただし実務では「VLAN 10 を VNI 10000 に紐付ける」という使い方をよくします。両者を対応付けて理解すること自体は間違いではありません。「VLAN の後継として同じ目的に使うが、中身は別物」という整理が正確です。</p>
+
+<h3>「L2 を L3 に乗せる」で止めない</h3>
+
+<p>この説明は核心を突いていますが、それだけでは説明として完成していません。<strong>どうやって乗せるのか（＝ UDP パケットで包む）</strong>まで言えて、初めて相手に伝わります。「L2 を L3 に乗せます」と言われた相手は、まさにその「どうやって」が分からないからです。</p>
+
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話が 3 つあります。ここまで理解できていれば、どれも読めるはずです。</p>
+
+<ul>
+<li><strong>相手の MAC アドレスをどう知るか</strong>：VTEP は「この VNI の、この MAC アドレスは、どの VTEP の先にいるか」を知る必要があります。素朴にやると全 VTEP へ叫び声をばら撒くことになり（フラッディング）、規模が大きいと無駄が増えます。これを制御プレーンで解決するのが EVPN です</li>
+<li><strong>パケットが約 50 バイト太る問題</strong>：包む分だけパケットが大きくなります。MTU を調整しないと「小さい通信は通るのに大きいデータ転送だけ固まる」という症状が出ます。実務で必ず踏む罠です</li>
+<li><strong>パケット構造をバイト単位で読む</strong>：VXLAN ヘッダの中身を仕様レベルで見る</li>
+</ul>
+
+<p>このリポジトリ内の関連記事：<a href="VXLAN.html">VXLAN（要点まとめ）</a> / <a href="VTEP.html">VTEP</a></p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7348">RFC 7348 — Virtual eXtensible Local Area Network (VXLAN)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc826">RFC 826 — An Ethernet Address Resolution Protocol (ARP)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8365">RFC 8365 — A Network Virtualization Overlay Solution Using EVPN</a></li>
+<li><a href="https://standards.ieee.org/ieee/802.1Q/6844/">IEEE 802.1Q — Bridges and Bridged Networks（VLAN）</a></li>
+</ul>
+
+</main>
+</body>
+</html>

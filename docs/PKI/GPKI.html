@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GPKI を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>GPKI — 行政手続きをオンラインで完結させるための認証基盤</h1>
+<p class="lede">府省庁ごとにばらばらの認証局を、ブリッジで相互につないで1つの信頼の輪にする。</p>
+
+<h2>何が問題なのか</h2>
+<p>行政への申請をオンラインでやるには、2方向の確認が要る。<strong>申請してきたのが本人か</strong>、そして<strong>受け取っている相手が本物の役所か</strong>。紙と印鑑と窓口が担っていた部分を、電子証明書で置き換える必要がある。</p>
+<p>ここで問題になるのが組織の数。府省庁も自治体も、それぞれが自前の認証局を持っている。相手ごとに「その認証局を信頼するか」を判断していては、組み合わせが増えすぎて誰も管理できない。</p>
+
+<h2>ブリッジで束ねる</h2>
+
+<figure>
+<svg viewBox="0 0 700 254" role="img" aria-label="相互認証を個別に結ぶ場合とブリッジ認証局を置く場合の比較">
+  <g>
+    <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--stop)">個別に相互認証する場合</text>
+    <g stroke="var(--stop)" stroke-width="1" opacity=".55">
+      <line x1="60" y1="60" x2="200" y2="60"/><line x1="60" y1="60" x2="60" y2="180"/>
+      <line x1="60" y1="60" x2="200" y2="180"/><line x1="200" y1="60" x2="60" y2="180"/>
+      <line x1="200" y1="60" x2="200" y2="180"/><line x1="60" y1="180" x2="200" y2="180"/>
+      <line x1="60" y1="60" x2="130" y2="120"/><line x1="200" y1="60" x2="130" y2="120"/>
+      <line x1="60" y1="180" x2="130" y2="120"/><line x1="200" y1="180" x2="130" y2="120"/>
+    </g>
+    <g fill="var(--c1)">
+      <circle cx="60" cy="60" r="15"/><circle cx="200" cy="60" r="15"/>
+      <circle cx="60" cy="180" r="15"/><circle cx="200" cy="180" r="15"/><circle cx="130" cy="120" r="15"/>
+    </g>
+    <text x="130" y="222" font-size="11" fill="var(--stop)" text-anchor="middle">組織が増えるたびに、つなぐ線が急増する</text>
+    <text x="130" y="240" font-size="11" fill="var(--stop)" text-anchor="middle">（5組織で10本、10組織で45本）</text>
+  </g>
+  <line x1="330" y1="16" x2="330" y2="240" stroke="var(--line)"/>
+  <g>
+    <text x="368" y="14" font-size="12.5" font-weight="600" fill="var(--c3)">ブリッジ認証局を置く場合</text>
+    <g stroke="var(--c3)" stroke-width="1.4">
+      <line x1="450" y1="60" x2="520" y2="120"/><line x1="590" y1="60" x2="520" y2="120"/>
+      <line x1="450" y1="180" x2="520" y2="120"/><line x1="590" y1="180" x2="520" y2="120"/>
+      <line x1="660" y1="120" x2="520" y2="120"/>
+    </g>
+    <g fill="var(--c1)">
+      <circle cx="450" cy="60" r="15"/><circle cx="590" cy="60" r="15"/>
+      <circle cx="450" cy="180" r="15"/><circle cx="590" cy="180" r="15"/><circle cx="660" cy="120" r="15"/>
+    </g>
+    <circle cx="520" cy="120" r="21" fill="var(--c3)"/>
+    <text x="520" y="124" font-size="10" fill="var(--on)" text-anchor="middle">BCA</text>
+    <text x="520" y="222" font-size="11" fill="var(--c3)" text-anchor="middle">各組織はブリッジとだけ相互認証すればよい</text>
+    <text x="520" y="240" font-size="11" fill="var(--c3)" text-anchor="middle">（組織の数だけ線が増える＝一次関数）</text>
+  </g>
+</svg>
+<figcaption>ルート CA を頂点に置く階層構造と違い、ブリッジ認証局は<strong>上位ではない</strong>。各府省庁の認証局は対等なまま、ブリッジを介して互いを信頼できる経路を持つ。省庁ごとの独立性を保ったまま相互運用を成立させるための形。</figcaption>
+</figure>
+
+<h2>関連する基盤の呼び分け</h2>
+<table>
+<tr><th>名称</th><th>対象</th></tr>
+<tr><td>GPKI（政府認証基盤）</td><td>国の府省庁。職員・組織の証明書と、ブリッジ認証局</td></tr>
+<tr><td>LGPKI（組織認証基盤）</td><td>地方公共団体。都道府県・市区町村の職員・組織</td></tr>
+<tr><td>JPKI（公的個人認証サービス）</td><td>個人。マイナンバーカードに入っている署名用・利用者証明用の証明書</td></tr>
+<tr><td>商業登記に基づく電子認証制度</td><td>法人。登記所が発行する法人代表者の電子証明書</td></tr>
+</table>
+<p>電子申請の実務では、<strong>申請する側が JPKI や商業登記の証明書で自分を証明し、受ける側の府省庁が GPKI の証明書で正体を示す</strong>という組み合わせになる。</p>
+
+<h2>知っておくと役に立つ点</h2>
+<ul>
+<li><strong>「政府が使う証明書」と「政府のサイトの TLS 証明書」は別物</strong>：GPKI の証明書は電子申請や公文書の署名に使うもので、行政サイトの HTTPS には通常の商用認証局の証明書が使われる。混同されやすい。</li>
+<li><strong>民間システムから使うこともある</strong>：金融機関の口座開設や行政手続きの代行で、利用者のマイナンバーカード（JPKI）による本人確認を組み込む形が増えている。この場合、署名検証と失効確認の実装が要件になる。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.gpki.go.jp/">政府認証基盤（GPKI）</a></li>
+<li><a href="https://www.jpki.go.jp/">公的個人認証サービス ポータルサイト（JPKI）</a></li>
+<li><a href="https://www.moj.go.jp/MINJI/minji06_00028.html">法務省 - 商業登記に基づく電子認証制度</a></li>
+</ul>
+
+</main>
+</body>
+</html>

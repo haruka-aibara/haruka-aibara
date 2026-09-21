@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ECB モードを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ECB モード — 一番素直に書くと、これになってしまう</h1>
+<p class="lede">「AES で暗号化した」のに中身が読める、が起きる理由。</p>
+
+<h2>何が問題なのか</h2>
+<p>自前で暗号化を書くとき、素直に考えると「データをブロックに切って、順番に暗号化する」という実装になる。これが <strong>ECB モード</strong>（Electronic CodeBook、電子符号表）。ライブラリによっては<strong>指定を省略するとこれが選ばれる</strong>（Java の <code>Cipher.getInstance("AES")</code> は <code>AES/ECB/PKCS5Padding</code>）。つまり、悪意なく、知らないうちに ECB になる。</p>
+<p>そして ECB は、AES のような強い暗号を使っていても<strong>平文の構造を暗号文に残す</strong>。</p>
+
+<h2>同じ平文ブロックは、必ず同じ暗号文ブロックになる</h2>
+<p>鍵が同じなら、ブロック暗号は「同じ入力 → 同じ出力」という決まった対応表として振る舞う。ECB はブロックを 1 つずつ独立にこの表に通すだけなので、<strong>平文に繰り返しがあれば、暗号文にもまったく同じ位置に繰り返しが現れる</strong>。</p>
+
+<figure>
+<svg viewBox="0 0 700 260" role="img" aria-label="社員テーブルを ECB で暗号化すると、同じ部署名が同じ暗号文ブロックになる様子">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">部署コードの列を ECB で暗号化した場合</text>
+
+  <text x="8" y="42" font-size="11.5" fill="var(--muted)">平文</text>
+  <g font-size="11">
+    <rect x="8" y="52" width="150" height="26" rx="4" fill="var(--c1)"/><text x="83" y="70" fill="var(--on)" text-anchor="middle">営業部</text>
+    <rect x="8" y="84" width="150" height="26" rx="4" fill="var(--c3)"/><text x="83" y="102" fill="var(--on)" text-anchor="middle">経理部</text>
+    <rect x="8" y="116" width="150" height="26" rx="4" fill="var(--c1)"/><text x="83" y="134" fill="var(--on)" text-anchor="middle">営業部</text>
+    <rect x="8" y="148" width="150" height="26" rx="4" fill="var(--c1)"/><text x="83" y="166" fill="var(--on)" text-anchor="middle">営業部</text>
+    <rect x="8" y="180" width="150" height="26" rx="4" fill="var(--c4)"/><text x="83" y="198" fill="var(--on)" text-anchor="middle">役員室</text>
+  </g>
+
+  <g stroke="var(--muted)" stroke-width="1.5" fill="none" marker-end="url(#e1)">
+    <path d="M158 65 L232 65"/><path d="M158 97 L232 97"/><path d="M158 129 L232 129"/>
+    <path d="M158 161 L232 161"/><path d="M158 193 L232 193"/>
+  </g>
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="168" y="60">AES</text><text x="168" y="92">AES</text><text x="168" y="124">AES</text>
+    <text x="168" y="156">AES</text><text x="168" y="188">AES</text>
+  </g>
+
+  <text x="240" y="42" font-size="11.5" fill="var(--muted)">暗号文</text>
+  <g font-size="11" font-family="ui-monospace,monospace">
+    <rect x="240" y="52" width="190" height="26" rx="4" fill="var(--c1)"/><text x="335" y="70" fill="var(--on)" text-anchor="middle">8f2a...c1</text>
+    <rect x="240" y="84" width="190" height="26" rx="4" fill="var(--c3)"/><text x="335" y="102" fill="var(--on)" text-anchor="middle">40be...77</text>
+    <rect x="240" y="116" width="190" height="26" rx="4" fill="var(--c1)"/><text x="335" y="134" fill="var(--on)" text-anchor="middle">8f2a...c1</text>
+    <rect x="240" y="148" width="190" height="26" rx="4" fill="var(--c1)"/><text x="335" y="166" fill="var(--on)" text-anchor="middle">8f2a...c1</text>
+    <rect x="240" y="180" width="190" height="26" rx="4" fill="var(--c4)"/><text x="335" y="198" fill="var(--on)" text-anchor="middle">d903...5e</text>
+  </g>
+
+  <path d="M440 65 L440 172" stroke="var(--stop)" stroke-width="2" fill="none"/>
+  <path d="M440 65 L452 65 M440 129 L452 129 M440 161 L452 161" stroke="var(--stop)" stroke-width="2"/>
+  <text x="462" y="106" font-size="11.5" fill="var(--stop)" font-weight="600">同じ暗号文 = 同じ部署</text>
+  <text x="462" y="126" font-size="11" fill="var(--muted)">鍵を知らなくても</text>
+  <text x="462" y="144" font-size="11" fill="var(--muted)">「3人が同じ部署」と分かる</text>
+  <text x="462" y="196" font-size="11" fill="var(--muted)">1件しかない値は</text>
+  <text x="462" y="214" font-size="11" fill="var(--muted)">それだけで目立つ</text>
+
+  <text x="8" y="240" font-size="11" fill="var(--muted)">件数の偏りが分かれば、一番多い暗号文が「営業部」だと当てられる（頻度分析）。実データの分布を</text>
+  <text x="8" y="256" font-size="11" fill="var(--muted)">攻撃者が知っていれば、鍵を一切破らずに平文の対応表が復元できてしまう。</text>
+  <defs><marker id="e1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>有名な例は、ペンギンの画像を ECB で暗号化すると輪郭がそのまま残るデモ。画像に限った話ではなく、DB の列、固定フォーマットのログ、繰り返しの多いプロトコルなど、<strong>同じ値が何度も出るデータすべて</strong>で同じことが起きる。</figcaption>
+</figure>
+
+<h2>ブロックの並べ替えにも気づけない</h2>
+<p>ブロックが独立しているということは、<strong>暗号文のブロックを入れ替えたり、別のところからコピーしてきて貼っても、復号は成功する</strong>ということでもある。「振込先＝A、金額＝1000」という電文の該当ブロックを、過去に観測した別の電文のブロックと差し替える、といった改ざんが成立する。復号側は正常な平文を得るので、何も検知できない。</p>
+
+<div class="note">
+<p><strong>ECB は選ばない。指定を省略しない。</strong></p>
+<p>ECB が正当化できるのは「平文が 1 ブロック以下で、かつ完全にランダムな値」（鍵そのものの暗号化など）くらい。実務では<strong>常に明示的にモードを書く</strong>のが対策になる。<code>AES</code> とだけ書かない、<code>AES/GCM/NoPadding</code> のようにモードまで指定する。既存コードのレビューでは、モード指定のない暗号化 API 呼び出しを探すのが手っ取り早い。</p>
+</div>
+
+<p>ECB の「同じ平文が同じ暗号文になる」問題を、前のブロックを混ぜることで消したのが <a href="CBC.html">CBC モード</a>。モード全体の位置づけは <a href="ブロック暗号と暗号利用モード.html">ブロック暗号と暗号利用モード</a> にまとめた。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/38/a/final">NIST SP 800-38A - Recommendation for Block Cipher Modes of Operation</a></li>
+<li><a href="https://cwe.mitre.org/data/definitions/327.html">CWE-327: Use of a Broken or Risky Cryptographic Algorithm</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html">OWASP Cryptographic Storage Cheat Sheet</a></li>
+</ul>
+
+</main>
+</body>
+</html>

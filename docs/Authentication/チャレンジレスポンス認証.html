@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>チャレンジレスポンス認証を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>チャレンジレスポンス認証 — パスワードを流さずに本人を確かめる</h1>
+<p class="lede">毎回違う「お題」を出して、それに答えられるかで判定する。答えを盗んでも次には使えない。</p>
+
+<h2>何が問題なのか</h2>
+<p>パスワードをそのまま送れば、経路上で盗聴されて終わる。では<strong>ハッシュ値にして送れば安全か</strong>——ならない。盗聴した攻撃者は中身を知らなくても、<strong>その値をそのまま送り返せば認証を通れる</strong>。パスワードが漏れなくてもログインは奪われる（リプレイ攻撃）。</p>
+<p>この「送る値が毎回同じだから再利用できる」という構造そのものを壊すのが、チャレンジレスポンス認証。</p>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="平文送信・ハッシュ送信・チャレンジレスポンスでリプレイが成立するかの比較">
+  <g>
+    <text x="8" y="14" font-size="12" font-weight="600" fill="var(--ink)">① パスワードをそのまま送る</text>
+    <rect x="8" y="24" width="480" height="24" rx="4" fill="var(--stop)"/>
+    <text x="24" y="41" font-size="11" fill="var(--on)">"himitsu123" が流れる</text>
+    <text x="500" y="41" font-size="11" fill="var(--stop)">盗聴でパスワードそのものが漏れる</text>
+  </g>
+  <g>
+    <text x="8" y="82" font-size="12" font-weight="600" fill="var(--ink)">② ハッシュにして送る</text>
+    <rect x="8" y="92" width="480" height="24" rx="4" fill="var(--c2)"/>
+    <text x="24" y="109" font-size="11" fill="var(--on)">"a3f5..." が流れる（毎回同じ値）</text>
+    <text x="500" y="109" font-size="11" fill="var(--c2)">同じ値を送り返せば通る</text>
+  </g>
+  <g>
+    <text x="8" y="150" font-size="12" font-weight="600" fill="var(--ink)">③ チャレンジレスポンス</text>
+    <rect x="8" y="160" width="480" height="24" rx="4" fill="var(--c3)"/>
+    <text x="24" y="177" font-size="11" fill="var(--on)">1回目："7b2e..."（チャレンジ A に対する答え）</text>
+    <rect x="8" y="190" width="480" height="24" rx="4" fill="var(--c3)" opacity=".78"/>
+    <text x="24" y="207" font-size="11" fill="var(--on)">2回目："c910..."（チャレンジ B に対する答え）</text>
+    <text x="500" y="184" font-size="11" fill="var(--c3)">流れる値が毎回変わるので</text>
+    <text x="500" y="202" font-size="11" fill="var(--c3)">録音して再生しても通らない</text>
+  </g>
+  <text x="8" y="246" font-size="11" fill="var(--muted)">②の弱点を突く攻撃が「pass the hash」。ハッシュ化は保管には効くが、送信の保護にはならない。</text>
+</svg>
+<figcaption>②が無意味なわけではなく、サーバ側にパスワードを平文で置かないための保管の工夫としては正しい。問題は保管の対策を通信の対策に流用したこと。攻撃者にとって「パスワードを知ること」と「認証を通ること」は別の目標である、と分けて考える。</figcaption>
+</figure>
+
+<h2>手順</h2>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="チャレンジレスポンス認証のやり取り">
+  <text x="80" y="16" font-size="12.5" font-weight="600" fill="var(--c1)" text-anchor="middle">クライアント</text>
+  <text x="600" y="16" font-size="12.5" font-weight="600" fill="var(--c4)" text-anchor="middle">サーバ</text>
+  <line x1="150" y1="26" x2="150" y2="238" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="550" y1="26" x2="550" y2="238" stroke="var(--line)" stroke-width="1.5"/>
+
+  <path d="M156 48 L544 48" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#c1)"/>
+  <text x="350" y="42" font-size="11" fill="var(--ink)" text-anchor="middle">① ログインしたい（利用者名）</text>
+
+  <path d="M544 88 L156 88" stroke="var(--c4)" stroke-width="1.5" marker-end="url(#c2)"/>
+  <rect x="212" y="70" width="276" height="24" rx="4" fill="var(--c4)"/>
+  <text x="350" y="87" font-size="11" fill="var(--on)" text-anchor="middle">② チャレンジ（毎回違う乱数）を送る</text>
+
+  <rect x="8" y="106" width="136" height="66" rx="6" fill="var(--lane)"/>
+  <text x="76" y="128" font-size="10.5" fill="var(--ink)" text-anchor="middle">③ チャレンジと</text>
+  <text x="76" y="145" font-size="10.5" fill="var(--ink)" text-anchor="middle">パスワードを</text>
+  <text x="76" y="162" font-size="10.5" fill="var(--ink)" text-anchor="middle">まとめてハッシュ</text>
+
+  <path d="M156 148 L544 148" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#c3)"/>
+  <rect x="240" y="130" width="220" height="24" rx="4" fill="var(--c1)"/>
+  <text x="350" y="147" font-size="11" fill="var(--on)" text-anchor="middle">④ 計算結果（レスポンス）</text>
+
+  <rect x="556" y="106" width="136" height="82" rx="6" fill="var(--lane)"/>
+  <text x="624" y="128" font-size="10.5" fill="var(--ink)" text-anchor="middle">⑤ サーバも同じ</text>
+  <text x="624" y="145" font-size="10.5" fill="var(--ink)" text-anchor="middle">計算をして</text>
+  <text x="624" y="162" font-size="10.5" fill="var(--ink)" text-anchor="middle">一致するか比較</text>
+  <text x="624" y="180" font-size="10.5" fill="var(--muted)" text-anchor="middle">→ 一致すれば認証成功</text>
+
+  <text x="350" y="222" font-size="11.5" fill="var(--stop)" text-anchor="middle">パスワードそのものは一度も通信路に出ない。④を盗んでも、次のチャレンジは別の値なので使えない。</text>
+  <defs>
+    <marker id="c1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="c2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c4)"/></marker>
+    <marker id="c3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+  </defs>
+</svg>
+<figcaption>チャレンジは推測できないこと（乱数であること）と、二度と同じ値を使わないことが条件。同じチャレンジが再び出るなら、そのときの答えを再生すれば通ってしまう。</figcaption>
+</figure>
+
+<h2>どこで使われているか</h2>
+<ul>
+<li><strong>CHAP</strong>：PPP のダイヤルアップ認証。この方式の代表例で、接続中に何度も再認証する。</li>
+<li><strong>APOP</strong>：POP3 のパスワードを平文で流さないための拡張（<a href="../Networking/メール/APOP.html">APOP</a>）。</li>
+<li><strong>HTTP ダイジェスト認証・NTLM・EAP-MD5</strong>：いずれも同じ骨格。</li>
+</ul>
+
+<h2>この方式だけでは足りない</h2>
+<p>2つの限界がある。</p>
+<p>1つは<strong>サーバ側の保管</strong>。サーバも同じ計算をする必要があるため、パスワードの平文（かそれに準ずるもの）を持たなければならない。ソルト付きハッシュで保管する現在の作法と両立しにくく、サーバが漏れたときの被害が大きい。</p>
+<p>もう1つは<strong>中間者に無力</strong>なこと。攻撃者が経路に割り込めば、チャレンジをそのまま転送し、返ってきたレスポンスをそのまま使って本物のサーバにログインできる。相手が本物かを確かめる手段がこの方式には含まれていない。</p>
+<p>そのため現在は、<strong>TLS で経路と相手を確保したうえで、その中でパスワードを送る</strong>という構成が主流になっている。チャレンジレスポンスは、暗号化された経路が前提にできなかった時代の解法として理解しておくとよい。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc1994.html">RFC 1994 - PPP Challenge Handshake Authentication Protocol (CHAP)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7616.html">RFC 7616 - HTTP Digest Access Authentication</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc1939.html">RFC 1939 - Post Office Protocol - Version 3（APOP）</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DNS サーバの 3 つの役割</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DNS サーバの 3 つの役割</h1>
+<p class="lede">「DNS サーバ」と一口に言うが、答えを持っている者・代わりに調べ回る者・頼むだけの者は別物。トラブル時に「どの DNS が悪いのか」を切り分けるにも、この区別が前提になる。</p>
+
+<h2>頼む・調べる・答えるの分業</h2>
+<p>名前解決には 3 種類の登場人物がいる。</p>
+<ul>
+<li><strong>スタブリゾルバ</strong> — 端末の OS に入っている問い合わせ係。自分では調べず、決められたサーバに「全部調べて答えだけちょうだい」と丸投げする（<strong>再帰的問い合わせ</strong>）</li>
+<li><strong>キャッシュサーバ（フルサービスリゾルバ）</strong> — 丸投げを引き受けて、ルートから順に権威サーバを辿って調べる係（<strong>反復問い合わせ</strong>）。結果を TTL の間キャッシュする</li>
+<li><strong>権威サーバ（コンテンツサーバ）</strong> — 自分が管理する範囲（<a href="ゾーン.html">ゾーン</a>）の対応表の原本を持ち、それについてだけ答える係</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="スタブリゾルバがキャッシュサーバに再帰的問い合わせをし、キャッシュサーバがルート、jp、example.jpの権威サーバへ反復問い合わせをする">
+<defs>
+<marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+<marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+</defs>
+<rect x="20" y="118" width="120" height="62" rx="8" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/>
+<text x="80" y="143" font-size="11.5" fill="var(--ink)" text-anchor="middle">端末</text>
+<text x="80" y="162" font-size="10" fill="var(--muted)" text-anchor="middle">スタブリゾルバ</text>
+<line x1="140" y1="136" x2="246" y2="136" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#m1)"/>
+<text x="195" y="122" font-size="9.5" fill="var(--c1)" text-anchor="middle">再帰的問い合わせ</text>
+<text x="195" y="110" font-size="9.5" fill="var(--c1)" text-anchor="middle">「全部調べて」</text>
+<line x1="246" y1="164" x2="140" y2="164" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#m3)"/>
+<text x="195" y="184" font-size="9.5" fill="var(--c3)" text-anchor="middle">答えだけ返す</text>
+<rect x="250" y="112" width="160" height="74" rx="8" fill="var(--c1)" opacity=".1"/>
+<rect x="250" y="112" width="160" height="74" rx="8" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="330" y="138" font-size="11.5" fill="var(--ink)" text-anchor="middle">キャッシュサーバ</text>
+<text x="330" y="156" font-size="10" fill="var(--muted)" text-anchor="middle">（フルサービスリゾルバ）</text>
+<text x="330" y="174" font-size="10" fill="var(--muted)" text-anchor="middle">結果を TTL の間覚える</text>
+<rect x="510" y="28" width="170" height="44" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/>
+<text x="595" y="47" font-size="11" fill="var(--ink)" text-anchor="middle">ルートの権威サーバ</text>
+<text x="595" y="64" font-size="9.5" fill="var(--muted)" text-anchor="middle">「jp のことは jp に聞いて」</text>
+<rect x="510" y="126" width="170" height="44" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/>
+<text x="595" y="145" font-size="11" fill="var(--ink)" text-anchor="middle">jp の権威サーバ</text>
+<text x="595" y="162" font-size="9.5" fill="var(--muted)" text-anchor="middle">「example.jp はあっち」</text>
+<rect x="510" y="224" width="170" height="44" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/>
+<text x="595" y="243" font-size="11" fill="var(--ink)" text-anchor="middle">example.jp の権威サーバ</text>
+<text x="595" y="260" font-size="9.5" fill="var(--muted)" text-anchor="middle">「www は 203.0.113.10」</text>
+<line x1="405" y1="118" x2="506" y2="58" stroke="var(--c2)" stroke-width="1.3" marker-end="url(#m2)"/>
+<line x1="410" y1="148" x2="506" y2="148" stroke="var(--c2)" stroke-width="1.3" marker-end="url(#m2)"/>
+<line x1="405" y1="180" x2="506" y2="238" stroke="var(--c2)" stroke-width="1.3" marker-end="url(#m2)"/>
+<text x="448" y="80" font-size="10" fill="var(--c2)">①</text>
+<text x="452" y="140" font-size="10" fill="var(--c2)">②</text>
+<text x="448" y="222" font-size="10" fill="var(--c2)">③</text>
+<text x="458" y="290" font-size="10.5" fill="var(--muted)" text-anchor="middle">反復問い合わせ：「次はどこに聞けばいいか」を教わりながら降りていく</text>
+</svg>
+<figcaption>①〜③を毎回やるわけではない。キャッシュに残っていれば途中を全部飛ばして即答するし、「jp の権威サーバはここ」というキャッシュがあれば②から始められる。</figcaption>
+</figure>
+
+<h2>役割が分かれているから、対策も分かれる</h2>
+<table>
+<tr><th></th><th>持っているもの</th><th>どこにある</th></tr>
+<tr><td>スタブリゾルバ</td><td>問い合わせ先の設定だけ</td><td>端末の OS 内</td></tr>
+<tr><td>キャッシュサーバ</td><td>調べた結果のキャッシュ</td><td>社内・ISP・パブリック DNS（8.8.8.8 など）</td></tr>
+<tr><td>権威サーバ</td><td>ゾーンの原本</td><td>ドメインの管理者側</td></tr>
+</table>
+<p>攻撃も役割ごとに違う。キャッシュサーバには偽の答えを覚え込ませるキャッシュポイズニング（<a href="../../Cyber Attacks/19_カミンスキーアタックとDNSSEC.html">カミンスキーアタックと DNSSEC</a>）、外に開きっぱなしのキャッシュサーバは<a href="オープンリゾルバ.html">オープンリゾルバ</a>として踏み台になる。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1034">RFC 1034 — Domain Names: Concepts and Facilities</a></li>
+<li><a href="https://jprs.jp/glossary/">JPRS 用語辞典</a></li>
+</ul>
+
+</main>
+</body>
+</html>

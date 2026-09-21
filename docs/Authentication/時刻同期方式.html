@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>時刻同期方式のワンタイムパスワードを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>時刻同期方式 — 認証アプリの6桁はどう作られているか</h1>
+<p class="lede">サーバと端末が同じ時刻を見て、同じ計算をする。だから通信なしで同じ数字が出る。</p>
+
+<h2>何が問題なのか</h2>
+<p>ワンタイムパスワードには「今が何回目か」という共有された数え方が要る。<a href="S_KEY.html">S/KEY</a> のように回数で数えると、通信が切れるたびに利用者側とサーバ側でずれが起き、その復旧が運用の手間になる。</p>
+<p>そこで<strong>時刻を共通のカウンタとして使う</strong>。時計は勝手に進むので、双方が何もしなくても同じ値を持てる。これが時刻同期方式（TOTP）で、いまの多要素認証アプリはほぼこれ。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="TOTPが共有秘密と時刻から同じコードを導く仕組み">
+  <text x="80" y="16" font-size="12.5" font-weight="600" fill="var(--c1)" text-anchor="middle">認証アプリ（端末）</text>
+  <text x="620" y="16" font-size="12.5" font-weight="600" fill="var(--c4)" text-anchor="middle">サーバ</text>
+
+  <rect x="8" y="28" width="200" height="34" rx="5" fill="var(--c3)"/>
+  <text x="108" y="50" font-size="11" fill="var(--on)" text-anchor="middle">共有秘密（登録時に交換）</text>
+  <rect x="492" y="28" width="200" height="34" rx="5" fill="var(--c3)"/>
+  <text x="592" y="50" font-size="11" fill="var(--on)" text-anchor="middle">共有秘密（同じもの）</text>
+  <text x="350" y="50" font-size="10.5" fill="var(--muted)" text-anchor="middle">QR コードで渡す</text>
+
+  <rect x="230" y="82" width="240" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="350" y="104" font-size="11" fill="var(--ink)" text-anchor="middle">現在時刻 ÷ 30秒 = カウンタ</text>
+  <path d="M228 99 L212 99 L108 99 L108 70" fill="none" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#t1)"/>
+  <path d="M472 99 L488 99 L592 99 L592 70" fill="none" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#t1)"/>
+
+  <rect x="8" y="130" width="200" height="34" rx="5" fill="var(--c1)"/>
+  <text x="108" y="152" font-size="11" fill="var(--on)" text-anchor="middle">HMAC して 6 桁に丸める</text>
+  <rect x="492" y="130" width="200" height="34" rx="5" fill="var(--c4)"/>
+  <text x="592" y="152" font-size="11" fill="var(--on)" text-anchor="middle">HMAC して 6 桁に丸める</text>
+
+  <rect x="8" y="180" width="200" height="34" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="108" y="203" font-size="14" font-weight="600" fill="var(--c1)" text-anchor="middle">493 021</text>
+  <rect x="492" y="180" width="200" height="34" rx="5" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/>
+  <text x="592" y="203" font-size="14" font-weight="600" fill="var(--c4)" text-anchor="middle">493 021</text>
+  <text x="350" y="203" font-size="11.5" font-weight="600" fill="var(--c3)" text-anchor="middle">一致する</text>
+
+  <text x="350" y="240" font-size="11" fill="var(--muted)" text-anchor="middle">コードそのものは通信で運ばれない。両者が独立に計算した結果を突き合わせるだけ。</text>
+  <defs><marker id="t1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>共有秘密を渡す QR コードは、この方式で唯一の秘密を平文で表示している瞬間。画面のスクリーンショットがクラウドに同期されたり、設定手順書に貼り付けられて共有されたりすると、そこから恒久的にコードを生成できてしまう。</figcaption>
+</figure>
+
+<h2>時計はずれる — 許容ウィンドウ</h2>
+<p>端末の時計が数十秒ずれていると、生成されるコードもずれる。そのためサーバは<strong>前後いくつかの時間帯のコードも正解として扱う</strong>のが普通。</p>
+
+<figure>
+<svg viewBox="0 0 700 160" role="img" aria-label="TOTPの時間帯と許容ウィンドウ">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">30秒ごとに区切られた時間帯</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="30" width="130" height="34" rx="4" fill="var(--lane)"/><text x="73" y="52" fill="var(--muted)">一つ前々</text>
+    <rect x="144" y="30" width="130" height="34" rx="4" fill="var(--c3)" opacity=".45"/><text x="209" y="52" fill="var(--ink)">一つ前</text>
+    <rect x="280" y="30" width="130" height="34" rx="4" fill="var(--c3)"/><text x="345" y="52" fill="var(--on)">いま</text>
+    <rect x="416" y="30" width="130" height="34" rx="4" fill="var(--c3)" opacity=".45"/><text x="481" y="52" fill="var(--ink)">一つ後</text>
+    <rect x="552" y="30" width="130" height="34" rx="4" fill="var(--lane)"/><text x="617" y="52" fill="var(--muted)">一つ後々</text>
+  </g>
+  <path d="M144 76 L546 76" stroke="var(--c3)" stroke-width="1.5"/>
+  <path d="M144 72 L144 80 M546 72 L546 80" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="345" y="94" font-size="11" fill="var(--c3)" text-anchor="middle">サーバが正解として受け入れる範囲（例：前後1つ）</text>
+  <text x="8" y="124" font-size="11" fill="var(--muted)">広げるほど時計ずれに強くなるが、1つのコードが有効な時間も伸びる。</text>
+  <text x="8" y="142" font-size="11" fill="var(--muted)">端末側は NTP で時刻が合っている前提なので、既定値（前後1つ程度）から広げる必要はまずない。</text>
+</svg>
+<figcaption>一度使われたコードは有効期間内でも再利用させない、というのがサーバ側の実装上の要点。これがないと、ウィンドウの内側で同じコードによるリプレイが通る。</figcaption>
+</figure>
+
+<h2>押さえておくこと</h2>
+<ul>
+<li><strong>共有秘密がすべて</strong>：サーバ側にも同じ秘密が保存されている。ハッシュ化して保存できない性質のもの（元の値がないと計算できないため）なので、暗号化しての保管と、漏洩時に全利用者の再登録が必要になる点を設計時に見ておく。</li>
+<li><strong>カウンタ方式（HOTP）との関係</strong>：TOTP は、カウンタを回数ではなく時刻から決めた HOTP。ハードウェアトークンでは今もカウンタ方式が使われる。</li>
+<li><strong>フィッシングは防げない</strong>：偽サイトに入力された6桁をそのまま本物へ転送されると通ってしまう。ここまで潰すには、サイトの正体（ドメイン）と鍵が結び付いたパスキー／FIDO2 が要る。TOTP は「パスワードだけよりずっと良いが、フィッシング耐性はない」という位置づけで理解しておく。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6238.html">RFC 6238 - TOTP: Time-Based One-Time Password Algorithm</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4226.html">RFC 4226 - HOTP: An HMAC-Based One-Time Password Algorithm</a></li>
+<li><a href="https://pages.nist.gov/800-63-3/sp800-63b.html">NIST SP 800-63B - Digital Identity Guidelines: Authentication and Lifecycle Management</a></li>
+</ul>
+
+</main>
+</body>
+</html>

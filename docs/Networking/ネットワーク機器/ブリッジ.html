@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ブリッジ</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ブリッジ</h1>
+<p class="lede">ハブで全員に信号をばらまくのをやめ、「必要な側にだけ渡す」ようにした機器。スイッチの原型。</p>
+
+<h2>ばらまきをやめれば衝突が減る</h2>
+<p>リピータハブは受け取った信号を全ポートに流すので、つないだ全機器が 1 つのコリジョンドメインに入る。台数が増えるほど衝突が増えて遅くなる。</p>
+<p>ここで、<strong>ネットワークを 2 つに区切って、向こう側宛てのフレームだけを通す関所を置いたらどうか</strong>。同じ側どうしの通信は関所を通らないので、反対側は衝突とは無関係でいられる。これがブリッジ。</p>
+<p>ブリッジは通ったフレームの<strong>送信元 MAC アドレスを見て「この MAC はどちら側にいる」を自動で学習</strong>する。設定を書かなくても、通信が発生するそばから表ができあがる。</p>
+
+<figure>
+<svg viewBox="0 0 700 290" role="img" aria-label="ブリッジがMACアドレステーブルを学習し、同じセグメント内の通信は転送せず、別セグメント宛てのみ転送する様子">
+<defs>
+<marker id="ga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+<marker id="gb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+</defs>
+<rect x="20" y="40" width="250" height="120" rx="10" fill="var(--lane)"/>
+<text x="145" y="32" font-size="11" fill="var(--muted)" text-anchor="middle">セグメント 1（コリジョンドメイン A）</text>
+<g font-size="10" fill="var(--ink)" text-anchor="middle">
+<rect x="42" y="60" width="86" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="85" y="78">A（..:01）</text>
+<rect x="42" y="106" width="86" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="85" y="124">B（..:02）</text>
+</g>
+<path d="M85 88 v6 h0 v12" stroke="var(--c3)" stroke-width="1.6" fill="none" marker-end="url(#ga)"/>
+<text x="176" y="80" font-size="9.5" fill="var(--c3)">A→B は</text>
+<text x="176" y="94" font-size="9.5" fill="var(--c3)">転送しない</text>
+<text x="176" y="112" font-size="9" fill="var(--muted)">（フィルタリング）</text>
+
+<rect x="286" y="72" width="128" height="58" rx="7" fill="var(--c4)" opacity=".18"/>
+<rect x="286" y="72" width="128" height="58" rx="7" fill="none" stroke="var(--c4)" stroke-width="1.8"/>
+<text x="350" y="96" font-size="12" fill="var(--ink)" text-anchor="middle">ブリッジ</text>
+<text x="350" y="116" font-size="9" fill="var(--c4)" text-anchor="middle">MAC を見て通す／通さない</text>
+
+<rect x="430" y="40" width="250" height="120" rx="10" fill="var(--lane)"/>
+<text x="555" y="32" font-size="11" fill="var(--muted)" text-anchor="middle">セグメント 2（コリジョンドメイン B）</text>
+<g font-size="10" fill="var(--ink)" text-anchor="middle">
+<rect x="572" y="60" width="86" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="615" y="78">C（..:03）</text>
+<rect x="572" y="106" width="86" height="28" rx="5" fill="var(--card)" stroke="var(--line)"/><text x="615" y="124">D（..:04）</text>
+</g>
+<line x1="128" y1="120" x2="282" y2="106" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#gb)"/>
+<line x1="418" y1="106" x2="568" y2="120" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#gb)"/>
+<text x="350" y="150" font-size="9.5" fill="var(--c1)" text-anchor="middle">B→D は反対側なので転送する</text>
+
+<text x="20" y="192" font-size="11.5" fill="var(--ink)" font-weight="600">ブリッジが持つ MAC アドレステーブル（自動学習）</text>
+<rect x="20" y="202" width="300" height="76" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<line x1="20" y1="226" x2="320" y2="226" stroke="var(--line)"/>
+<line x1="170" y1="202" x2="170" y2="278" stroke="var(--line)"/>
+<text x="95" y="219" font-size="10" fill="var(--ink)" text-anchor="middle" font-weight="600">MAC アドレス</text>
+<text x="245" y="219" font-size="10" fill="var(--ink)" text-anchor="middle" font-weight="600">どちら側にいるか</text>
+<g font-size="10" fill="var(--muted)" text-anchor="middle">
+<text x="95" y="243">..:01 / ..:02</text><text x="245" y="243">セグメント 1</text>
+<text x="95" y="266">..:03 / ..:04</text><text x="245" y="266">セグメント 2</text>
+</g>
+<text x="340" y="222" font-size="10.5" fill="var(--muted)">通ったフレームの<tspan font-weight="600">送信元</tspan> MAC から、</text>
+<text x="340" y="240" font-size="10.5" fill="var(--muted)">「この機器はこちら側」を覚えていく。</text>
+<text x="340" y="264" font-size="10.5" fill="var(--muted)">表にない宛先は、とりあえず全ポートに流す（フラッディング）</text>
+</svg>
+<figcaption>学習した情報には有効期限があり、一定時間通信がないと消える。機器を別ポートに挿し替えた直後に通信が不安定になるのはこの表が古いため。</figcaption>
+</figure>
+
+<h2>ブリッジとスイッチの関係</h2>
+<p>やっていることは同じで、違いは規模と実装。</p>
+<table>
+<tr><th></th><th>ブリッジ</th><th>スイッチングハブ</th></tr>
+<tr><th>ポート数</th><td>2〜数ポート</td><td>8〜48 ポートなど多数</td></tr>
+<tr><th>処理</th><td>ソフトウェア処理が主</td><td>専用チップ（ASIC）で高速処理</td></tr>
+<tr><th>位置づけ</th><td>セグメントどうしをつなぐ</td><td>1 ポート＝1 セグメントまで細分化</td></tr>
+</table>
+<p>つまりスイッチは「ポートを増やして高速化したブリッジ」。現在ブリッジという製品を買う場面はほぼないが、仮想化環境では Linux の <code>brctl</code> や仮想ブリッジとして今も現役の概念。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://standards.ieee.org/ieee/802.1D/3390/">IEEE 802.1D — MAC Bridges</a></li>
+<li><a href="https://standards.ieee.org/ieee/802.1Q/6844/">IEEE 802.1Q — Bridges and Bridged Networks</a></li>
+</ul>
+
+</main>
+</body>
+</html>

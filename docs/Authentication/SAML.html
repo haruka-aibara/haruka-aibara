@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAML を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>SAML — SaaS 側にパスワードを持たせずにログインさせる</h1>
+<p class="lede">認証は自社の IdP でやり、その結果だけを署名付きの XML で SaaS に渡す。</p>
+
+<h2>何が問題なのか</h2>
+<p>会社で使う SaaS が10個あると、利用者は10個のパスワードを持つ。管理側から見ると、退職者の無効化を10か所でやることになり、<strong>1つでも消し忘れれば外から入られる</strong>。パスワードポリシーも多要素認証も、SaaS ごとにできることが違う。</p>
+<p>SAML は、認証そのものを自社側（IdP）に集約し、<strong>「この人は認証済みで、こういう属性を持つ」という証明書だけを SaaS に渡す</strong>仕組み。SaaS 側にパスワードは存在しなくなる。</p>
+
+<h2>登場人物は2つだけ</h2>
+<ul>
+<li><strong>IdP（Identity Provider）</strong>：認証する側。Microsoft Entra ID、Okta、Google Workspace など。</li>
+<li><strong>SP（Service Provider）</strong>：使いたい側。SaaS アプリケーション。</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 280" role="img" aria-label="SAMLのSP起点のログインの流れ">
+  <text x="70" y="16" font-size="12" font-weight="600" fill="var(--ink)" text-anchor="middle">利用者のブラウザ</text>
+  <text x="350" y="16" font-size="12" font-weight="600" fill="var(--c2)" text-anchor="middle">SP（SaaS）</text>
+  <text x="620" y="16" font-size="12" font-weight="600" fill="var(--c1)" text-anchor="middle">IdP（自社）</text>
+  <line x1="70" y1="26" x2="70" y2="240" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="350" y1="26" x2="350" y2="240" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="620" y1="26" x2="620" y2="240" stroke="var(--line)" stroke-width="1.5"/>
+
+  <path d="M76 48 L344 48" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#m1)"/>
+  <text x="210" y="42" font-size="10.5" fill="var(--ink)" text-anchor="middle">① SaaS にアクセス</text>
+
+  <path d="M344 82 L76 82" stroke="var(--c2)" stroke-width="1.4" marker-end="url(#m2)"/>
+  <text x="210" y="76" font-size="10.5" fill="var(--c2)" text-anchor="middle">② 未ログイン → IdP へ行けと返す（SAML リクエスト付き）</text>
+
+  <path d="M76 116 L614 116" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#m1)"/>
+  <text x="345" y="110" font-size="10.5" fill="var(--ink)" text-anchor="middle">③ ブラウザが IdP へ転送される</text>
+
+  <rect x="524" y="130" width="176" height="44" rx="6" fill="var(--lane)"/>
+  <text x="612" y="150" font-size="10.5" fill="var(--ink)" text-anchor="middle">④ ここで認証する</text>
+  <text x="612" y="166" font-size="10.5" fill="var(--muted)" text-anchor="middle">パスワード＋多要素認証</text>
+
+  <path d="M614 196 L76 196" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#m3)"/>
+  <rect x="190" y="180" width="290" height="22" rx="4" fill="var(--c1)"/>
+  <text x="335" y="196" font-size="10.5" fill="var(--on)" text-anchor="middle">⑤ 署名付きのアサーションを渡す</text>
+
+  <path d="M76 230 L344 230" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#m1)"/>
+  <text x="210" y="224" font-size="10.5" fill="var(--ink)" text-anchor="middle">⑥ ブラウザがそれを SP に転送 → ログイン成立</text>
+
+  <text x="8" y="266" font-size="11" fill="var(--stop)">IdP と SP は直接通信しない。すべてブラウザ経由で受け渡され、改ざんは IdP の署名で検知する。</text>
+  <defs>
+    <marker id="m1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="m2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="m3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+  </defs>
+</svg>
+<figcaption>SaaS 側のログイン画面から始まるこの流れを SP-initiated と呼ぶ。IdP のポータルに並んだアイコンから入る形（IdP-initiated）もあるが、こちらは「どこから来たリクエストか」を SP が確認できないぶん受け入れの検証が緩くなりがちで、可能なら SP-initiated に寄せる。</figcaption>
+</figure>
+
+<h2>アサーションの中身</h2>
+<p>やり取りされる XML を SAML アサーションと呼ぶ。入っているのは3種類。</p>
+<ul>
+<li><strong>誰か</strong>：利用者を示す識別子（メールアドレスなど）</li>
+<li><strong>属性</strong>：部署、ロール、グループ。SP 側はこれを見て権限を決められる</li>
+<li><strong>条件</strong>：有効期限、あて先（この SP 宛てである、という指定）</li>
+</ul>
+<p>全体に IdP の秘密鍵で<strong>XML デジタル署名</strong>が施されており、SP は事前に登録しておいた IdP の証明書で検証する。この署名がすべての土台になっている。</p>
+
+<div class="note">
+<p><strong>検証を1つ手抜きすると成りすませる</strong></p>
+<p>SP の実装で繰り返し起きてきた事故がある——署名の対象範囲を確認しない、あて先や有効期限を見ない、といった検証漏れ。XML の構造をいじって署名対象外の場所に別の利用者名を紛れ込ませる<strong>XML Signature Wrapping</strong> は、この種の実装不備を突く古典的な攻撃。自前で SAML の受け側を実装するのは避け、実績あるライブラリを使うべき領域。</p>
+</div>
+
+<h2>実務で見るところ</h2>
+<ul>
+<li><strong>証明書の有効期限</strong>：IdP 側の署名用証明書が切れると、その SaaS に誰もログインできなくなる。更新日をカレンダーに載せる。</li>
+<li><strong>SCIM とセットで考える</strong>：SAML はログインを担うが、アカウントの作成・削除はしない。退職者の削除まで自動化するにはアカウント連携（SCIM）が要る。</li>
+<li><strong>SAML と OAuth は別物</strong>：SAML は「人が SaaS にログインする」ための仕組み。<a href="OAuth.html">OAuth</a> は「アプリが API を叩く許可を得る」ための仕組みで、目的が違う。新規のブラウザログインでは、SAML の役割を軽量な JSON で置き換えた OpenID Connect が選ばれることも増えている。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf">OASIS - Assertions and Protocols for SAML V2.0</a></li>
+<li><a href="https://www.w3.org/TR/xmldsig-core1/">W3C - XML Signature Syntax and Processing</a></li>
+<li><a href="https://learn.microsoft.com/ja-jp/entra/identity-platform/single-sign-on-saml-protocol">Microsoft Entra - SAML プロトコルによるシングルサインオン</a></li>
+</ul>
+
+</main>
+</body>
+</html>

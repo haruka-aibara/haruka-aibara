@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>イーサネット</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>イーサネット</h1>
+<p class="lede">「同じ LAN の中で、隣の機器までデータを渡す」だけを担当するルール。IP より下で動いている。</p>
+
+<h2>IP アドレスだけでは 1 ミリも動かない</h2>
+<p>IP アドレスは「世界のどこにいるか」を表す住所だが、実際にケーブルや電波にビットを流すときに使われているのは IP アドレスではない。<strong>同じネットワーク内で「隣のどの機器に渡すか」を決める仕組み</strong>が別に要る。それがイーサネット。</p>
+<p>有線 LAN でほぼ独占的に使われており、機器には製造時に <strong>MAC アドレス</strong>（48 ビット）が焼かれている。イーサネットはこの MAC アドレス宛てにフレームを届ける。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="イーサネットフレームの構造。プリアンブル、宛先MAC、送信元MAC、タイプ、データ、FCS">
+<rect x="20" y="46" width="70" height="44" rx="4" fill="var(--lane)"/>
+<rect x="20" y="46" width="70" height="44" rx="4" fill="none" stroke="var(--line)"/>
+<text x="55" y="66" font-size="9.5" fill="var(--muted)" text-anchor="middle">プリ</text>
+<text x="55" y="80" font-size="9.5" fill="var(--muted)" text-anchor="middle">アンブル</text>
+
+<rect x="92" y="46" width="105" height="44" rx="4" fill="var(--c2)" opacity=".22"/>
+<rect x="92" y="46" width="105" height="44" rx="4" fill="none" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="144" y="66" font-size="10.5" fill="var(--ink)" text-anchor="middle">宛先 MAC</text>
+<text x="144" y="81" font-size="9.5" fill="var(--muted)" text-anchor="middle">6 バイト</text>
+
+<rect x="199" y="46" width="105" height="44" rx="4" fill="var(--c1)" opacity=".22"/>
+<rect x="199" y="46" width="105" height="44" rx="4" fill="none" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="251" y="66" font-size="10.5" fill="var(--ink)" text-anchor="middle">送信元 MAC</text>
+<text x="251" y="81" font-size="9.5" fill="var(--muted)" text-anchor="middle">6 バイト</text>
+
+<rect x="306" y="46" width="66" height="44" rx="4" fill="var(--c4)" opacity=".22"/>
+<rect x="306" y="46" width="66" height="44" rx="4" fill="none" stroke="var(--c4)" stroke-width="1.5"/>
+<text x="339" y="66" font-size="10.5" fill="var(--ink)" text-anchor="middle">タイプ</text>
+<text x="339" y="81" font-size="9.5" fill="var(--muted)" text-anchor="middle">2 バイト</text>
+
+<rect x="374" y="46" width="220" height="44" rx="4" fill="var(--c3)" opacity=".18"/>
+<rect x="374" y="46" width="220" height="44" rx="4" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="484" y="66" font-size="10.5" fill="var(--ink)" text-anchor="middle">データ（IP パケットなど）</text>
+<text x="484" y="81" font-size="9.5" fill="var(--muted)" text-anchor="middle">46〜1500 バイト</text>
+
+<rect x="596" y="46" width="60" height="44" rx="4" fill="var(--lane)"/>
+<rect x="596" y="46" width="60" height="44" rx="4" fill="none" stroke="var(--line)"/>
+<text x="626" y="66" font-size="10" fill="var(--ink)" text-anchor="middle">FCS</text>
+<text x="626" y="81" font-size="9" fill="var(--muted)" text-anchor="middle">誤り検出</text>
+
+<text x="339" y="112" font-size="9.5" fill="var(--c4)" text-anchor="middle">中身が IPv4 か IPv6 か ARP か</text>
+<text x="484" y="118" font-size="9.5" fill="var(--c3)" text-anchor="middle">この最大サイズ 1500 が MTU</text>
+<text x="626" y="112" font-size="9" fill="var(--muted)" text-anchor="middle">壊れて</text>
+<text x="626" y="126" font-size="9" fill="var(--muted)" text-anchor="middle">いたら破棄</text>
+
+<text x="20" y="164" font-size="10.5" fill="var(--muted)">・宛先が先頭にあるのは、受信側が「自分宛てか」を最速で判断して読み飛ばせるようにするため</text>
+<text x="20" y="184" font-size="10.5" fill="var(--muted)">・FCS で壊れを検出しても再送はしない。イーサネットは「捨てる」だけで、直すのは上の層の仕事</text>
+</svg>
+<figcaption>MTU 1500 という数字はここから来ている。VPN や VXLAN でヘッダを足すと中身に使える分が減るため、通信が不安定なときに真っ先に疑う値。</figcaption>
+</figure>
+
+<h2>「届けたか確認しない」という割り切り</h2>
+<p>イーサネットは確認応答も再送もしない。壊れたフレームは黙って捨てる。信頼性は TCP など上の層に任せる、という分業になっている。</p>
+<p>また、宛先 MAC がすべて <code>FF:FF:FF:FF:FF:FF</code> のフレームは<strong>ブロードキャスト</strong>として同じネットワークの全員に届く。相手の IP は分かるが MAC が分からないときに使う ARP がこの仕組みを使っている。</p>
+
+<figure>
+<svg viewBox="0 0 700 208" role="img" aria-label="ARPによるIPアドレスからMACアドレスの解決。ブロードキャストで問い合わせ、該当ホストだけがユニキャストで応答する">
+<defs>
+<marker id="ea" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+<marker id="eb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+</defs>
+<rect x="20" y="70" width="120" height="46" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="80" y="90" font-size="11" fill="var(--ink)" text-anchor="middle">PC-A</text>
+<text x="80" y="106" font-size="9" fill="var(--muted)" text-anchor="middle">.10 の MAC が知りたい</text>
+
+<line x1="142" y1="76" x2="286" y2="46" stroke="var(--c2)" stroke-width="1.3" marker-end="url(#ea)"/>
+<line x1="142" y1="93" x2="286" y2="93" stroke="var(--c2)" stroke-width="1.3" marker-end="url(#ea)"/>
+<line x1="142" y1="110" x2="286" y2="140" stroke="var(--c2)" stroke-width="1.3" marker-end="url(#ea)"/>
+<text x="212" y="170" font-size="10" fill="var(--c2)" text-anchor="middle">① ブロードキャスト</text>
+<text x="212" y="186" font-size="9.5" fill="var(--muted)" text-anchor="middle">「.10 の人、MAC 教えて」</text>
+
+<rect x="290" y="28" width="110" height="38" rx="6" fill="var(--lane)"/>
+<text x="345" y="52" font-size="10.5" fill="var(--muted)" text-anchor="middle">PC-B（.11）無視</text>
+<rect x="290" y="74" width="110" height="38" rx="6" fill="var(--c3)" opacity=".2"/>
+<rect x="290" y="74" width="110" height="38" rx="6" fill="none" stroke="var(--c3)" stroke-width="1.7"/>
+<text x="345" y="98" font-size="10.5" fill="var(--ink)" text-anchor="middle">PC-C（.10）該当</text>
+<rect x="290" y="120" width="110" height="38" rx="6" fill="var(--lane)"/>
+<text x="345" y="144" font-size="10.5" fill="var(--muted)" text-anchor="middle">PC-D（.12）無視</text>
+
+<path d="M402 93 C 470 93, 470 150, 540 150" fill="none" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#eb)"/>
+<text x="500" y="176" font-size="10" fill="var(--c3)" text-anchor="middle">② 本人だけがユニキャストで返答</text>
+<rect x="544" y="128" width="130" height="44" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="609" y="146" font-size="9.5" fill="var(--ink)" text-anchor="middle">PC-A の ARP テーブル</text>
+<text x="609" y="162" font-size="9" fill="var(--muted)" text-anchor="middle">.10 → 00:1a:2b:… を記憶</text>
+<text x="350" y="202" font-size="10.5" fill="var(--muted)" text-anchor="middle">一度覚えれば次からは問い合わせ不要。この記憶が古いと通信が突然切れることがある</text>
+</svg>
+<figcaption>ブロードキャストは全員が受け取って中身を見る。台数が増えるほどこの「全員宛て」が負荷になるため、ネットワークをどこで区切るかという設計につながる。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://standards.ieee.org/ieee/802.3/7071/">IEEE 802.3 — Ethernet</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc826">RFC 826 — An Ethernet Address Resolution Protocol</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SSP（スタックカナリア）— 戻る直前に見張り値を確かめる</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>SSP（スタックカナリア）— 戻る直前に見張り値を確かめる</h1>
+<p class="lede">リターンアドレスが書き換えられたことを、関数から戻る前に検知する仕組み。</p>
+
+<h2>リターンアドレスの書き換えをどう気づくか</h2>
+<p>C 言語などでは、確保した領域より大きなデータを書き込むと、はみ出した分が隣の領域を上書きしてしまう（バッファオーバーフロー）。スタック上では、変数のすぐ先に「関数を抜けたあとどこへ戻るか」を示す<strong>リターンアドレス</strong>が置かれている。ここを攻撃者の用意した番地に書き換えられると、プログラムの流れを乗っ取られる。</p>
+<p>書き換え自体を止めるのは難しい。そこで SSP（Stack Smashing Protector）は発想を変える。<strong>リターンアドレスの手前に見張り用の値を置いておき、関数を抜ける直前にそれが変わっていないか確かめる</strong>。あふれてリターンアドレスまで届いたなら、途中にある見張り値も必ず壊れているはずだからだ。炭鉱のカナリアになぞらえて「カナリア」と呼ぶ。</p>
+
+<figure>
+<svg viewBox="0 0 700 220" role="img" aria-label="正常時とオーバーフロー後のスタックの違いとカナリアの検査">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">正常な状態</text>
+  <rect x="0" y="22" width="300" height="30" rx="5" fill="var(--c2)"/>
+  <text x="150" y="42" font-size="11" fill="var(--on)" text-anchor="middle">リターンアドレス（呼び出し元）</text>
+  <rect x="0" y="56" width="300" height="28" rx="5" fill="var(--c4)"/>
+  <text x="150" y="75" font-size="11" fill="var(--on)" text-anchor="middle">カナリア 0x7a3f…（起動ごとに決まる値）</text>
+  <rect x="0" y="88" width="300" height="52" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="150" y="112" font-size="11" fill="var(--ink)" text-anchor="middle">buf[64]</text>
+  <text x="150" y="129" font-size="10.5" fill="var(--muted)" text-anchor="middle">収まる範囲の入力</text>
+
+  <text x="400" y="12" font-size="12.5" font-weight="600" fill="var(--stop)">あふれさせた後</text>
+  <rect x="400" y="22" width="300" height="30" rx="5" fill="var(--stop)"/>
+  <text x="550" y="42" font-size="11" fill="var(--on)" text-anchor="middle">攻撃者が指定した番地</text>
+  <rect x="400" y="56" width="300" height="28" rx="5" fill="var(--stop)" opacity=".75"/>
+  <text x="550" y="75" font-size="11" fill="var(--on)" text-anchor="middle">カナリア 0x41414141（上書きされた）</text>
+  <rect x="400" y="88" width="300" height="52" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="550" y="112" font-size="11" fill="var(--ink)" text-anchor="middle">buf[64]</text>
+  <text x="550" y="129" font-size="10.5" fill="var(--muted)" text-anchor="middle">64 バイトを超える入力 → 上へあふれる</text>
+
+  <text x="350" y="82" font-size="15" fill="var(--muted)" text-anchor="middle">→</text>
+
+  <rect x="0" y="158" width="700" height="52" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="16" y="180" font-size="11.5" font-weight="600" fill="var(--ink)">関数を抜ける直前：置いたカナリアと今の値を比べる</text>
+  <text x="16" y="199" font-size="11" fill="var(--muted)">一致 → そのまま戻る　／　不一致 → その場で異常終了（乗っ取られる前に落とす）</text>
+</svg>
+<figcaption>カナリアの値は起動のたびに変わるので、あらかじめ「正しい値」を書き込んでおくことはできない。検知した時点でプログラムは落ちる——つまり任意コード実行がサービス停止に置き換わる。乗っ取られるよりはるかにましだが、落ちること自体は防げない。</figcaption>
+</figure>
+
+<h2>有効にするには</h2>
+<p>GCC / Clang のコンパイルオプションで入る。<code>-fstack-protector</code> は保護対象の関数が限られるため、実務では<strong><code>-fstack-protector-strong</code></strong> が使われることが多い（配列やアドレス参照を持つ関数まで広げる）。<code>-fstack-protector-all</code> はすべての関数に入れるが、そのぶん遅くなる。</p>
+
+<div class="note">
+<p><strong>カナリアで防げるのは「連続してあふれてリターンアドレスに届く」型だけ。</strong>関数ポインタを直接書き換える、離れた場所を狙って書き込む、領域外を<em>読み取る</em>といった攻撃はすり抜ける。有効になっているから安心、とは考えないほうがいい。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html">GCC — Instrumentation Options（-fstack-protector 系）</a></li>
+<li><a href="https://gcc.gnu.org/onlinedocs/gccint/Stack-Smashing-Protection.html">GCC Internals — Stack Smashing Protection</a></li>
+</ul>
+
+</main>
+</body>
+</html>

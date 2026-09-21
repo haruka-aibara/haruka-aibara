@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>トランスポートモードとトンネルモード</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>トランスポートモードとトンネルモード</h1>
+<p class="lede">IPsec を設定するとき最初に迫られる分岐。何が隠れるかが変わる。</p>
+
+<h2>何が問題なのか</h2>
+<p>IPsec の設定画面を開くと、暗号アルゴリズムより先に「モード」を選ばされる。トランスポートモードかトンネルモードか。どちらも中身は暗号化するが、<strong>元の IP ヘッダを残すかどうか</strong>が違う。ここを間違えると、拠点間をプライベート IP のまま通す構成が作れない。</p>
+
+<figure>
+<svg viewBox="0 0 700 262" role="img" aria-label="トランスポートモードとトンネルモードのパケット構造の比較">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">元の IP パケット</text>
+  <g font-size="10" text-anchor="middle">
+    <rect x="20" y="20" width="110" height="32" rx="4" fill="var(--c1)"/><text x="75" y="40" fill="var(--on)">IP ヘッダ</text>
+    <rect x="132" y="20" width="100" height="32" rx="4" fill="var(--c4)"/><text x="182" y="40" fill="var(--on)">TCP ヘッダ</text>
+    <rect x="234" y="20" width="446" height="32" rx="4" fill="var(--c3)"/><text x="457" y="40" fill="var(--on)">データ</text>
+  </g>
+
+  <text x="0" y="86" font-size="12.5" font-weight="600" fill="var(--ink)">トランスポートモード — 元の IP ヘッダはそのまま</text>
+  <g font-size="9.5" text-anchor="middle">
+    <rect x="20" y="94" width="110" height="32" rx="4" fill="var(--c1)"/><text x="75" y="114" fill="var(--on)">IP ヘッダ</text>
+    <rect x="132" y="94" width="80" height="32" rx="4" fill="var(--c2)"/><text x="172" y="114" fill="var(--on)">ESP ヘッダ</text>
+    <rect x="214" y="94" width="100" height="32" rx="4" fill="var(--c4)"/><text x="264" y="114" fill="var(--on)">TCP ヘッダ</text>
+    <rect x="316" y="94" width="244" height="32" rx="4" fill="var(--c3)"/><text x="438" y="114" fill="var(--on)">データ</text>
+    <rect x="562" y="94" width="118" height="32" rx="4" fill="var(--c2)" opacity=".65"/><text x="621" y="114" fill="var(--on)">ESP トレーラ／認証</text>
+  </g>
+  <path d="M214 134 L214 140 L560 140 L560 134" fill="none" stroke="var(--stop)" stroke-width="1.4"/>
+  <text x="387" y="155" font-size="10" fill="var(--stop)" text-anchor="middle">暗号化される範囲</text>
+  <text x="20" y="155" font-size="10" fill="var(--muted)">送信元・宛先 IP は見える</text>
+
+  <text x="0" y="184" font-size="12.5" font-weight="600" fill="var(--ink)">トンネルモード — 元のパケット丸ごとを中身にする</text>
+  <g font-size="9.5" text-anchor="middle">
+    <rect x="20" y="192" width="100" height="32" rx="4" fill="var(--c1)" opacity=".55"/><text x="70" y="212" fill="var(--on)">新 IP ヘッダ</text>
+    <rect x="122" y="192" width="70" height="32" rx="4" fill="var(--c2)"/><text x="157" y="212" fill="var(--on)">ESP ヘッダ</text>
+    <rect x="194" y="192" width="100" height="32" rx="4" fill="var(--c1)"/><text x="244" y="212" fill="var(--on)">元 IP ヘッダ</text>
+    <rect x="296" y="192" width="90" height="32" rx="4" fill="var(--c4)"/><text x="341" y="212" fill="var(--on)">TCP ヘッダ</text>
+    <rect x="388" y="192" width="182" height="32" rx="4" fill="var(--c3)"/><text x="479" y="212" fill="var(--on)">データ</text>
+    <rect x="572" y="192" width="108" height="32" rx="4" fill="var(--c2)" opacity=".65"/><text x="626" y="212" fill="var(--on)">ESP トレーラ／認証</text>
+  </g>
+  <path d="M194 232 L194 238 L570 238 L570 232" fill="none" stroke="var(--stop)" stroke-width="1.4"/>
+  <text x="382" y="253" font-size="10" fill="var(--stop)" text-anchor="middle">暗号化される範囲（元の IP ヘッダごと）</text>
+  <text x="20" y="253" font-size="10" fill="var(--muted)">元の IP は隠れる</text>
+</svg>
+<figcaption>トンネルモードは外側のヘッダが丸ごと増えるぶん、1パケットに載る実データが減る。ここを調整しないと、VPN 越しだけ大きなファイル転送や特定サイトの表示が止まる——IPsec 導入直後の定番トラブルで、MTU / MSS の調整が要るのはこのため。</figcaption>
+</figure>
+
+<h2>トランスポートモード</h2>
+<p>元の IP ヘッダを残し、その中身（TCP ヘッダから先）だけを保護する。送信元と宛先の IP はそのまま見える。通信する<strong>ホスト自身</strong>が IPsec を喋る構成で使う。</p>
+
+<h2>トンネルモード</h2>
+<p>元の IP パケットを丸ごと「データ」として包み、外側に新しい IP ヘッダを付ける。外側のヘッダに書かれるのは VPN 装置同士の IP なので、経路上からは<strong>誰と誰が通信しているかも分からない</strong>。中に包まれた IP アドレスはプライベートアドレスでよく、そのまま相手拠点まで届く。</p>
+
+<figure>
+<svg viewBox="0 0 700 226" role="img" aria-label="ホスト間とゲートウェイ間での配置の違い">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">トランスポートモード — 端点どうしが自分で暗号化する</text>
+  <rect x="0" y="24" width="130" height="42" rx="6" fill="var(--c4)"/>
+  <text x="65" y="43" font-size="10.5" fill="var(--on)" text-anchor="middle">サーバA</text>
+  <text x="65" y="58" font-size="9" fill="var(--on)" text-anchor="middle">IPsec を喋る</text>
+  <rect x="570" y="24" width="130" height="42" rx="6" fill="var(--c4)"/>
+  <text x="635" y="43" font-size="10.5" fill="var(--on)" text-anchor="middle">サーバB</text>
+  <text x="635" y="58" font-size="9" fill="var(--on)" text-anchor="middle">IPsec を喋る</text>
+  <rect x="140" y="35" width="420" height="20" rx="10" fill="var(--c1)"/>
+  <text x="350" y="49" font-size="10" fill="var(--on)" text-anchor="middle">暗号化区間は端から端まで</text>
+  <text x="350" y="76" font-size="9.5" fill="var(--muted)" text-anchor="middle">途中のルータは中身を触らずに転送するだけ</text>
+
+  <text x="0" y="118" font-size="12.5" font-weight="600" fill="var(--ink)">トンネルモード — 装置が代わりに暗号化する</text>
+  <rect x="0" y="130" width="92" height="42" rx="6" fill="var(--lane)"/>
+  <text x="46" y="149" font-size="10" fill="var(--ink)" text-anchor="middle">PC</text>
+  <text x="46" y="163" font-size="8.5" fill="var(--muted)" text-anchor="middle">10.0.1.5</text>
+  <rect x="100" y="130" width="86" height="42" rx="6" fill="var(--c4)"/>
+  <text x="143" y="149" font-size="10" fill="var(--on)" text-anchor="middle">VPN GW</text>
+  <text x="143" y="163" font-size="8.5" fill="var(--on)" text-anchor="middle">203.0.113.1</text>
+  <rect x="194" y="130" width="312" height="42" rx="6" fill="var(--c1)"/>
+  <text x="350" y="147" font-size="10.5" fill="var(--on)" text-anchor="middle">インターネット</text>
+  <text x="350" y="163" font-size="9.5" fill="var(--on)" text-anchor="middle">見えるのは 203.0.113.1 → 198.51.100.1 だけ</text>
+  <rect x="514" y="130" width="86" height="42" rx="6" fill="var(--c4)"/>
+  <text x="557" y="149" font-size="10" fill="var(--on)" text-anchor="middle">VPN GW</text>
+  <text x="557" y="163" font-size="8.5" fill="var(--on)" text-anchor="middle">198.51.100.1</text>
+  <rect x="608" y="130" width="92" height="42" rx="6" fill="var(--lane)"/>
+  <text x="654" y="149" font-size="10" fill="var(--ink)" text-anchor="middle">サーバ</text>
+  <text x="654" y="163" font-size="8.5" fill="var(--muted)" text-anchor="middle">10.0.2.8</text>
+  <text x="0" y="196" font-size="9.5" fill="var(--muted)">PC とサーバは 10.0.1.5 ↔ 10.0.2.8 で普通に通信しているつもりでいる。</text>
+  <text x="0" y="212" font-size="9.5" fill="var(--muted)">暗号化・カプセル化は GW の仕事なので、端末側には何も入れなくてよい。</text>
+</svg>
+<figcaption>クラウドとのサイト間 VPN 接続（AWS Site-to-Site VPN など）は、この下段の形をマネージドで提供しているもの。片側の GW をクラウド側が持ち、利用者は自社ルータの設定だけを行う。</figcaption>
+</figure>
+
+<h2>どちらを選ぶか</h2>
+<p>実務ではほぼ<strong>トンネルモード</strong>。拠点間 VPN もクラウドとの接続も、端末側に手を入れずプライベート IP のまま通したいからで、それができるのはトンネルモードだけ。トランスポートモードは、サーバ同士が直接 IPsec で話す限定的な構成で使う。</p>
+
+<div class="note">
+<p><strong>トンネルモードを選んだら MTU を確認する</strong></p>
+<p>外側 IP ヘッダ＋ESP のぶん、実データに使えるサイズが数十バイト減る。「疎通はするのに大きい通信だけ固まる」ときは、まずここを疑う。ルータ側で TCP MSS を書き換える設定（MSS クランプ）を入れるのが定石。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4301.html">RFC 4301 - Security Architecture for the Internet Protocol</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4303.html">RFC 4303 - IP Encapsulating Security Payload (ESP)</a></li>
+</ul>
+
+</main>
+</body>
+</html>

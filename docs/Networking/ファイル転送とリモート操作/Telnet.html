@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Telnet</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Telnet</h1>
+<p class="lede">遠隔ログインの元祖。中身が丸見えなので、ログイン用途ではもう使わない。</p>
+<h2>すべて平文で流れる</h2>
+<p>Telnet は 23 番でつないで相手のコマンドラインを操作するプロトコル。暗号化の仕組みがないので、<strong>ログイン名もパスワードも打ったコマンドもそのまま電線を流れる</strong>。同じネットワークで通信を眺めている人がいれば、そのまま読める。</p>
+
+<figure>
+<svg viewBox="0 0 700 244" role="img" aria-label="Telnetは中身が読めてSSHは読めない">
+<text x="0" y="13" font-size="11.5" fill="var(--stop)" text-anchor="start" font-weight="600">Telnet（23 番）</text><g transform="translate(0,26)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(650,20)"><rect x="0" y="0" width="34" height="46" rx="3" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><line x1="0" y1="15.3" x2="34" y2="15.3" stroke="var(--ink)" stroke-width="1.2"/><line x1="0" y1="30.6" x2="34" y2="30.6" stroke="var(--ink)" stroke-width="1.2"/><circle cx="7" cy="7.6" r="2" fill="var(--ink)"/><circle cx="7" cy="23" r="2" fill="var(--ink)"/><circle cx="7" cy="38.3" r="2" fill="var(--ink)"/><line x1="14" y1="7.6" x2="27" y2="7.6" stroke="var(--ink)" stroke-width="1.2" opacity=".5"/><line x1="14" y1="23" x2="27" y2="23" stroke="var(--ink)" stroke-width="1.2" opacity=".5"/><line x1="14" y1="38.3" x2="27" y2="38.3" stroke="var(--ink)" stroke-width="1.2" opacity=".5"/></g><line x1="70" y1="44" x2="634" y2="44" stroke="var(--stop)" stroke-width="1.6"/><g transform="translate(300,28) scale(0.8)"><path d="M16.5 12 V8 a5.5 5.5 0 0 1 11 0" fill="none" stroke="var(--stop)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--stop)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><rect x="150" y="62" width="400" height="42" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.4"/><text x="350" y="80" font-size="11" fill="var(--stop)" text-anchor="middle">login: admin</text><text x="350" y="97" font-size="11" fill="var(--stop)" text-anchor="middle">Password: P@ssw0rd123</text><g transform="translate(576,72) scale(1.0)"><path d="M0 9 Q14 -3 28 9 Q14 21 0 9 Z" fill="var(--card)" stroke="var(--stop)" stroke-width="1.6"/><circle cx="14" cy="9" r="4" fill="var(--stop)"/></g><text x="590" y="112" font-size="10.5" fill="var(--stop)" text-anchor="middle">そのまま読める</text><line x1="0" y1="126" x2="700" y2="126" stroke="var(--line)" stroke-width="1"/><text x="0" y="152" font-size="11.5" fill="var(--c3)" text-anchor="start" font-weight="600">SSH（22 番）</text><g transform="translate(0,164)"><rect x="7" y="0" width="42" height="26" rx="2.5" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><rect x="10.5" y="3.5" width="35" height="19" rx="1" fill="var(--ink)" opacity=".13"/><path d="M0 33 L56 33 L48.5 26 L7.5 26 Z" fill="var(--ink)" opacity=".22" stroke="var(--ink)" stroke-width="1.4" stroke-linejoin="round"/></g><g transform="translate(650,158)"><rect x="0" y="0" width="34" height="46" rx="3" fill="var(--card)" stroke="var(--ink)" stroke-width="1.6"/><line x1="0" y1="15.3" x2="34" y2="15.3" stroke="var(--ink)" stroke-width="1.2"/><line x1="0" y1="30.6" x2="34" y2="30.6" stroke="var(--ink)" stroke-width="1.2"/><circle cx="7" cy="7.6" r="2" fill="var(--ink)"/><circle cx="7" cy="23" r="2" fill="var(--ink)"/><circle cx="7" cy="38.3" r="2" fill="var(--ink)"/><line x1="14" y1="7.6" x2="27" y2="7.6" stroke="var(--ink)" stroke-width="1.2" opacity=".5"/><line x1="14" y1="23" x2="27" y2="23" stroke="var(--ink)" stroke-width="1.2" opacity=".5"/><line x1="14" y1="38.3" x2="27" y2="38.3" stroke="var(--ink)" stroke-width="1.2" opacity=".5"/></g><rect x="76" y="166" width="556" height="30" rx="15.0" fill="var(--c3)" opacity=".08"/><rect x="76" y="166" width="556" height="30" rx="15.0" fill="none" stroke="var(--c3)" stroke-width="1.6" stroke-dasharray="none"/><g transform="translate(300,168) scale(0.8)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--c3)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--c3)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><rect x="150" y="202" width="400" height="28" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.4"/><text x="350" y="221" font-size="10.5" fill="var(--c3)" text-anchor="middle">9f 3a c1 08 e7 55 2b d0 41 9c 7e 08 b4 aa 30 6f …</text><g transform="translate(576,207) scale(1.0)"><path d="M0 9 Q14 -3 28 9 Q14 21 0 9 Z" fill="var(--card)" stroke="var(--muted)" stroke-width="1.6"/><circle cx="14" cy="9" r="4" fill="var(--muted)"/></g>
+</svg>
+<figcaption>置き換え先は SSH。機能はほぼ同じで、通信路が暗号化され、サーバが本物かの確認と鍵によるログインも付く。</figcaption>
+</figure>
+
+<h2>いまも残っている使い道</h2>
+<p>ログイン用途では使わないが、<code>telnet example.com 443</code> のように<strong>「そのポートに TCP でつながるか」を手早く確かめる道具</strong>としては現役。ネットワークの切り分けでよく使う（同じことは <code>nc</code> でもできる）。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc854">RFC 854 — Telnet Protocol Specification</a></li>
+</ul>
+
+</main>
+</body>
+</html>

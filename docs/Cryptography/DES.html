@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DES と Triple DES を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DES と Triple DES — 破られ方まで知っておく</h1>
+<p class="lede">レガシーシステムで見つけたときに、移行を説得できる材料。</p>
+
+<h2>何が問題なのか</h2>
+<p>古い業務システムや組込み機器、金融系のプロトコルを調べると、いまだに DES や Triple DES が出てくる。移行を提案すると必ず「実害が出ていないのに、なぜコストをかけるのか」と返ってくる。ここで効くのは<strong>実際に破られた記録</strong>と、<strong>後継の Triple DES も別の理由で終わっている</strong>という2点。仕組みを少し知っておくと、この2点が説明できる。</p>
+
+<h2>DES の構造</h2>
+<p>1977年に米国の標準暗号（FIPS 46）になった共通鍵暗号。データを<strong>64ビットのブロック</strong>単位で処理し、鍵は 64 ビットのうちパリティを除いた<strong>56ビット</strong>が実効。中身は「半分だけ撹拌して左右を入れ替える」処理を16回繰り返す<strong>Feistel 構造</strong>。</p>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="Feistel構造の1ラウンドと16段の繰り返し">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">1ラウンドの処理</text>
+  <g>
+    <rect x="60" y="30" width="120" height="26" rx="4" fill="var(--c1)"/>
+    <text x="120" y="48" font-size="11.5" fill="var(--on)" text-anchor="middle">左 32bit</text>
+    <rect x="200" y="30" width="120" height="26" rx="4" fill="var(--c4)"/>
+    <text x="260" y="48" font-size="11.5" fill="var(--on)" text-anchor="middle">右 32bit</text>
+
+    <path d="M260 56 L260 82 L400 82 L400 100" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+    <rect x="360" y="100" width="80" height="30" rx="5" fill="var(--c2)"/>
+    <text x="400" y="120" font-size="11.5" fill="var(--on)" text-anchor="middle">F 関数</text>
+    <rect x="470" y="100" width="120" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="530" y="120" font-size="11" fill="var(--ink)" text-anchor="middle">ラウンド鍵 48bit</text>
+    <path d="M470 115 L444 115" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#a1)"/>
+
+    <path d="M400 130 L400 152 L136 152" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+    <circle cx="120" cy="152" r="12" fill="none" stroke="var(--ink)" stroke-width="1.5"/>
+    <text x="120" y="157" font-size="13" fill="var(--ink)" text-anchor="middle">⊕</text>
+    <path d="M120 56 L120 140" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+
+    <path d="M120 164 L120 184 L260 184 L260 196" fill="none" stroke="var(--muted)" stroke-width="1.5"/>
+    <path d="M260 56 L320 56 L320 176 L120 176 L120 196" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 3"/>
+    <rect x="60" y="196" width="120" height="26" rx="4" fill="var(--c4)"/>
+    <text x="120" y="214" font-size="11.5" fill="var(--on)" text-anchor="middle">新しい左</text>
+    <rect x="200" y="196" width="120" height="26" rx="4" fill="var(--c1)"/>
+    <text x="260" y="214" font-size="11.5" fill="var(--on)" text-anchor="middle">新しい右</text>
+    <text x="336" y="214" font-size="11" fill="var(--muted)">← 左右が入れ替わる</text>
+  </g>
+  <g font-size="11.5" fill="var(--muted)">
+    <text x="470" y="180">これを 16 回繰り返す。</text>
+    <text x="470" y="200">復号はラウンド鍵を逆順に</text>
+    <text x="470" y="220">通すだけ（同じ回路が使える）。</text>
+  </g>
+  <defs><marker id="a1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>Feistel 構造の利点は、F 関数が逆算できる必要がないこと。おかげで F 関数を自由に複雑にでき、暗号化と復号でハードウェアを共用できる。1970年代の回路規模の制約から来た設計で、DES 以降の多くの暗号（Camellia など）にも受け継がれている。</figcaption>
+</figure>
+
+<h2>総当たりで破られた</h2>
+<p>56ビットの鍵空間は約 7.2×10<sup>16</sup> 通り。設計当時は現実的でなかったが、1998年に EFF が約25万ドルで作った専用ハードウェア <strong>Deep Crack</strong> が 56 時間で鍵を割り出した。翌1999年には分散計算と組み合わせて 22 時間まで縮んだ。<strong>「予算をかければ解ける」ことが実演済み</strong>という点が重要で、いまは汎用の GPU で足りる。</p>
+
+<h2>Triple DES の限界はブロック長</h2>
+<p>DES を3回重ねて鍵長を伸ばしたのが Triple DES（3DES）。<code>暗号化 → 復号 → 暗号化</code> の順に通すことで、鍵を1本にすれば DES と同じ動作になり互換性が保てる。ただし鍵長を伸ばしても<strong>ブロック長は 64 ビットのまま</strong>で、ここが致命的だった。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="ブロック長64ビットと128ビットで衝突が起きるまでのデータ量の比較">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">同じ鍵で流せるデータ量の目安（誕生日の限界）</text>
+  <g font-size="11.5">
+    <text x="8" y="52" fill="var(--ink)">Triple DES</text>
+    <text x="8" y="70" fill="var(--muted)">ブロック 64bit</text>
+    <rect x="130" y="38" width="34" height="26" rx="4" fill="var(--c2)"/>
+    <text x="176" y="56" fill="var(--c2)" font-weight="600">約 32 GB で暗号文ブロックの衝突が起き始める</text>
+
+    <text x="8" y="122" fill="var(--ink)">AES</text>
+    <text x="8" y="140" fill="var(--muted)">ブロック 128bit</text>
+    <rect x="130" y="108" width="540" height="26" rx="4" fill="var(--c3)"/>
+    <text x="146" y="126" fill="var(--on)" font-weight="600">現実には到達しない量（数百万 TB 規模）</text>
+  </g>
+  <text x="8" y="176" font-size="11" fill="var(--muted)">衝突した2ブロックの暗号文を XOR すると、対応する平文どうしの XOR が漏れる。長時間つなぎっぱなしの</text>
+  <text x="8" y="192" font-size="11" fill="var(--muted)">HTTPS や VPN では 32GB は届く量で、これを実証したのが Sweet32（CVE-2016-2183）。</text>
+</svg>
+<figcaption>鍵長の話（3DES は実効 112 ビット相当）は総当たりに対する強度で、こちらはまだ十分。それでも使えないのはブロック長が短いから、という理屈は他のレガシー暗号にもそのまま当てはまる。NIST は Triple DES を 2023年末で使用不可の扱いにした。</figcaption>
+</figure>
+
+<h2>移行先</h2>
+<p>AES に置き換える。ブロック長 128 ビット、鍵は 128／192／256 ビット。モードは改ざん検知まで一体になった <code>AES-GCM</code> を選んでおけば、暗号化と完全性の両方を1つで満たせる。</p>
+
+<div class="note">
+<p><strong>置き換えられない機器が残る場合</strong></p>
+<p>組込みや金融端末では、ファームウェアごと交換しないと AES にできないことがある。その場合は暗号の差し替えではなく<strong>同じ鍵で流すデータ量を制限する</strong>（セッションを短く切って鍵を替える）ことで Sweet32 の条件を成立させない、という緩和が現実解になる。恒久対策ではないので、機器のライフサイクルに合わせた更改計画とセットで出す。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/131/a/r2/final">NIST SP 800-131A Rev.2 - Transitioning the Use of Cryptographic Algorithms and Key Lengths</a></li>
+<li><a href="https://sweet32.info/">Sweet32: Birthday attacks on 64-bit block ciphers in TLS and OpenVPN</a></li>
+<li><a href="https://www.eff.org/press/releases/eff-des-cracker-machine-brings-honesty-crypto-debate">EFF - DES Cracker machine brings honesty to crypto debate</a></li>
+<li><a href="https://www.cryptrec.go.jp/list.html">CRYPTREC暗号リスト</a></li>
+</ul>
+
+</main>
+</body>
+</html>

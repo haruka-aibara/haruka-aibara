@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>pass the hash 攻撃 — ハッシュそのものが鍵になる</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>pass the hash 攻撃 — ハッシュそのものが鍵になる</h1>
+<p class="lede">「パスワードはハッシュ化してあるから盗まれても平気」が通じない場面がある。</p>
+
+<h2>ハッシュを盗めば、パスワードを知らなくてもログインできる</h2>
+<p>Windows の NTLM 認証では、パスワードそのものをネットワークに流さない。代わりに<strong>パスワードのハッシュを鍵として</strong>、サーバから来たチャレンジに応答を返す。パスワードが流れないという点では安全な設計だ。</p>
+<p>ところがこれは裏返すと、<strong>認証に必要なのはパスワードではなくハッシュだ</strong>ということでもある。侵入した端末のメモリからハッシュを取り出せれば、元のパスワードが分からなくても、そのハッシュを使って他のサーバにログインできてしまう。</p>
+
+<figure>
+<svg viewBox="0 0 700 168" role="img" aria-label="pass the hash攻撃の仕組み">
+  <defs>
+    <marker id="pth-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+    <marker id="pth-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="pth-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+  </defs>
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">通常のログイン</text>
+  <rect x="0" y="24" width="140" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="70" y="44" font-size="10.5" fill="var(--ink)" text-anchor="middle">パスワード入力</text>
+  <line x1="146" y1="39" x2="176" y2="39" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#pth-ink)"/>
+  <rect x="182" y="24" width="140" height="30" rx="5" fill="var(--c1)"/>
+  <text x="252" y="44" font-size="10.5" fill="var(--on)" text-anchor="middle">ハッシュ化</text>
+  <line x1="328" y1="39" x2="358" y2="39" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#pth-ink)"/>
+  <rect x="364" y="24" width="336" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="532" y="44" font-size="10.5" fill="var(--ink)" text-anchor="middle">ハッシュを鍵にチャレンジレスポンス → 認証成功</text>
+
+  <line x1="0" y1="76" x2="700" y2="76" stroke="var(--line)"/>
+
+  <text x="0" y="98" font-size="12.5" font-weight="600" fill="var(--stop)">pass the hash</text>
+  <rect x="0" y="110" width="140" height="42" rx="5" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="70" y="127" font-size="10.5" fill="var(--stop)" text-anchor="middle">侵入済み端末の</text>
+  <text x="70" y="143" font-size="10.5" fill="var(--stop)" text-anchor="middle">メモリからハッシュ窃取</text>
+  <line x1="146" y1="131" x2="358" y2="131" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#pth-stop)"/>
+  <text x="252" y="125" font-size="10.5" fill="var(--muted)" text-anchor="middle">パスワードは知らないまま</text>
+  <rect x="364" y="110" width="336" height="42" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="532" y="136" font-size="10.5" fill="var(--ink)" text-anchor="middle">同じハッシュで別のサーバにも認証成功（横展開）</text>
+</svg>
+<figcaption>ハッシュ化は「保存したものを読まれても元に戻せない」性質であって、「盗まれても使えない」性質ではない。認証にハッシュを使う方式では、ハッシュはパスワードと同じ重さの秘密として扱う必要がある。</figcaption>
+</figure>
+
+<h2>怖いのは1台で終わらないこと</h2>
+<p>この攻撃が問題になるのは横展開のしやすさによる。<strong>全端末のローカル管理者パスワードが同じだと、1台の侵害がそのまま全台の侵害になる。</strong>1台目で取り出したハッシュが、そのまま他の全端末で通ってしまうからだ。</p>
+<p>対策は運用側の話が中心になる。</p>
+<ul>
+<li><strong>端末ごとにローカル管理者パスワードを変える。</strong>使い回しをやめるだけで横展開が止まる。自動で個別化・定期変更する仕組みがある。</li>
+<li><strong>認証情報をメモリから隔離する。</strong>Windows の Credential Guard は、ハッシュやチケットを通常の OS から切り離した領域に置き、取り出せなくする。</li>
+<li><strong>強い権限のアカウントを、末端の端末にログインさせない。</strong>ドメイン管理者で一般端末に入ると、その端末が侵害された時点で管理者の認証情報ごと奪われる。</li>
+</ul>
+
+<div class="note">
+<p><strong>提案するときの言い方。</strong>「ハッシュを盗まれる」では危機感が伝わりにくい。<em>「1台がマルウェアに感染したときに、それが全社に広がるか1台で止まるかが、ローカル管理者パスワードの使い回しで決まる」</em>と言い換えると、投資判断の話として通じやすい。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://learn.microsoft.com/ja-jp/windows/security/identity-protection/credential-guard/how-it-works">Microsoft Learn — Credential Guard のしくみ</a></li>
+<li><a href="https://learn.microsoft.com/ja-jp/windows-server/security/windows-authentication/how-to-configure-protected-accounts">Microsoft Learn — 保護されるアカウントの構成方法</a></li>
+</ul>
+
+</main>
+</body>
+</html>
