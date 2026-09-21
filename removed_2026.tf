@@ -18,3 +18,31 @@ removed {
     destroy = false
   }
 }
+
+# bedrock-slack-ai-chatbot the standalone repository was absorbed into this
+# monorepo with its history (see docs/runbooks/bedrock-slack-ai-chatbot-state-merge.md)
+# and its own AWS infra imported into module.bedrock_slack_ai_chatbot_infra.
+# The GitHub repository itself was deleted by hand once the merge was
+# confirmed working, so there is nothing left for Terraform to destroy here
+# either -- `destroy = false` for the same reason as above.
+removed {
+  from = module.bedrock-slack-ai-chatbot
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+# The old bedrock-slack-ai-chatbot HCP Terraform workspace's own AWS
+# resources are now managed by module.bedrock_slack_ai_chatbot_infra instead
+# (imported into this workspace's state). The old workspace was force-deleted
+# by hand in the HCP Terraform UI -- a plain destroy here would otherwise
+# refuse to run while resources were still listed in its own state -- so
+# there is nothing left for Terraform to destroy.
+removed {
+  from = tfe_workspace.bedrock-slack-ai-chatbot
+
+  lifecycle {
+    destroy = false
+  }
+}

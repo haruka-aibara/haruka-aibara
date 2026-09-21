@@ -53,24 +53,6 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
   }
 }
 
-# Bedrock Slack AI Chatbot Workspace
-resource "tfe_workspace" "bedrock-slack-ai-chatbot" {
-  name                          = "bedrock-slack-ai-chatbot"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "~> 1.16.0"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/bedrock-slack-ai-chatbot"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
-}
-
 # Deploy HCP Vault Dedicated with Terraform Workspace
 resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
   name                          = "deploy-hcp-vault-dedicated-with-terraform"

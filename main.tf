@@ -36,16 +36,6 @@ module "generate-dev-io-summary" {
   topics = ["terraform", "aws", "generative-ai"]
 }
 
-# Thread-aware Bedrock Chatbot
-module "bedrock-slack-ai-chatbot" {
-  source = "./modules/repository"
-
-  repository_name = "bedrock-slack-ai-chatbot"
-  description     = "Slack AI chatbot on Amazon Bedrock that reads the thread it is mentioned in for context. Serverless, managed with Terraform."
-
-  topics = ["aws", "bedrock", "slack", "ai", "chatbot"]
-}
-
 # Thread-aware Bedrock Chatbot — application infrastructure.
 # Absorbed from the standalone bedrock-slack-ai-chatbot repository/workspace;
 # see docs/runbooks/bedrock-slack-ai-chatbot-state-merge.md for the migration.
