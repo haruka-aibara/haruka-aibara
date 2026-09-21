@@ -10,4 +10,4 @@ jobs:
   ci:
     uses: haruka-aibara/github-actions/.github/workflows/python-ci.yml@main
     with:
-      working-directory: "bedrock-slack-ai-chatbot"
+      working-directory: "modules/bedrock-slack-ai-chatbot"
