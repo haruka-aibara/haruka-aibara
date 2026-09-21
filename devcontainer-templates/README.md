@@ -71,6 +71,11 @@ gh auth login
    ghcr.io/haruka-aibara/devcontainer-templates/haruka-aibara-dev-env:latest
    ```
 
+> **Note**
+> Versions published before this repository moved to the `haruka-aibara` organization live
+> under the old namespace `ghcr.io/haruka-aibara-dev/devcontainer-templates/haruka-aibara-dev-env`
+> and are no longer updated. Use the namespace above.
+
 ## Customization
 
 - **Add tools**: prefer adding a devcontainer Feature in `.devcontainer/devcontainer.json` first; use the Dockerfile only for tools without an official Feature
