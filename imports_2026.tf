@@ -124,3 +124,16 @@ import {
   to = module.bedrock_slack_ai_chatbot_infra.aws_cloudwatch_log_group.api_gateway
   id = "/aws/apigateway/bedrock-slack-ai-chatbot"
 }
+
+# apply が "Key has already been taken" で失敗した2件。works の PR がマージされる
+# 前に、Phase B の手順に沿って UI で手動作成されていたため、新規作成ではなく
+# 既存アダプトが必要だった。
+import {
+  to = tfe_variable.bedrock_slack_ai_chatbot_slack_bot_token
+  id = "haruka-aibara/works/var-fkaEBQ2HRia4ZZNy"
+}
+
+import {
+  to = tfe_variable.bedrock_slack_ai_chatbot_slack_signing_secret
+  id = "haruka-aibara/works/var-aJ6VhgiSG2jfRoFH"
+}

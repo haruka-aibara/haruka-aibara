@@ -15,9 +15,12 @@ provider "tfe" {
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs
-# For the bedrock-slack-ai-chatbot module. Credentials come from the
-# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY environment variables declared in
-# workspace_variables.tf.
+# For the bedrock-slack-ai-chatbot module. Authenticates via HCP Terraform's
+# dynamic provider credentials (OIDC) instead of static keys: the
+# TFC_AWS_PROVIDER_AUTH / TFC_AWS_RUN_ROLE_ARN workspace variables are set in
+# the UI (they aren't secrets themselves, but the AWS-side IAM OIDC provider
+# and role they point at were set up by hand, so there's nothing to import
+# here).
 provider "aws" {
   region = "ap-northeast-1"
   default_tags {

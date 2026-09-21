@@ -9,7 +9,7 @@
 ## 1. なぜ手作業が残るか
 
 - import 対象の実 AWS リソース ID/ARN(Lambda 関数名、API Gateway API ID、SQS キュー URL、Bedrock 推論プロファイル ARN など)は、旧ワークスペースの state にしかない。作業環境に `TFE_TOKEN` / AWS クレデンシャルが無いため取得できない。
-- `works` ワークスペースに新規追加した `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / Slack シークレットの実値は、Terraform コードには書けない(sensitive variable のプレースホルダ `set-in-ui` のみコード管理、実値は HCP Terraform の UI で設定する既存パターン。`workspace_variables.tf` の `GITHUB_APP_*` と同じ)。
+- `works` ワークスペースに新規追加した Slack シークレットの実値は、Terraform コードには書けない(sensitive variable のプレースホルダ `set-in-ui` のみコード管理、実値は HCP Terraform の UI で設定する既存パターン。`workspace_variables.tf` の `GITHUB_APP_*` と同じ)。AWS 自体は静的キーではなく dynamic provider credentials(OIDC)を使う方針に変更したため、AWS 側の認証情報は `TFC_AWS_PROVIDER_AUTH` / `TFC_AWS_RUN_ROLE_ARN` を UI で設定するのみで、Terraform コード側に対応する secret は無い(§3 参照)。
 - 旧ワークスペースの削除、旧リポジトリの削除は HCP Terraform / GitHub の管理操作であり、Terraform コードの外側の操作。
 
 ---
@@ -56,18 +56,25 @@
 
 ## 3. Phase B: 認証情報の設定
 
-- [ ] **B-1. `works` ワークスペースに AWS クレデンシャルを設定する**
+- [ ] **B-1. `works` ワークスペースに AWS の dynamic provider credentials (OIDC) を設定する**
 
-  HCP Terraform → `works` ワークスペース → Variables で、コードが宣言済みのプレースホルダに実値を入れる。
+  静的キー(`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`)は使わない方針にしたため、Terraform コード側に対応する `tfe_variable` は無い。HCP Terraform → `works` ワークスペース → Variables で、以下を **env** カテゴリで直接追加する(UI管理のみ、Terraform ではimportも作成もしない)。
+
+  | 変数 | 値 |
+  |---|---|
+  | `TFC_AWS_PROVIDER_AUTH` | `true` |
+  | `TFC_AWS_RUN_ROLE_ARN` | HCP Terraform を信頼する IAM role の ARN(AWS 側に IAM OIDC provider + role が事前に用意されている前提) |
+
+- [ ] **B-2. `works` ワークスペースに Slack シークレットを設定する**
+
+  HCP Terraform → `works` ワークスペース → Variables で、コードが宣言済みのプレースホルダに実値を入れる。category は **terraform**(Terraform 変数)。
 
   | 変数 | 取得元 |
   |---|---|
-  | `AWS_ACCESS_KEY_ID` | 旧ワークスペースの同名変数、または新規発行 |
-  | `AWS_SECRET_ACCESS_KEY` | 同上 |
   | `bedrock_slack_ai_chatbot_slack_bot_token` | 旧ワークスペースの `slack_bot_token` |
   | `bedrock_slack_ai_chatbot_slack_signing_secret` | 旧ワークスペースの `slack_signing_secret` |
 
-  `bedrock_slack_ai_chatbot_slack_bot_token` / `_slack_signing_secret` は category を **terraform**(Terraform 変数)にすること。`AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` は **env**(環境変数、AWS provider が直接読む)。
+  先に UI で手動作成すると、`tfe_variable` リソースの新規作成が `Key has already been taken` で失敗する。その場合は `import` ブロックで既存を取り込む(`imports_2026.tf` 参照、実績あり)。
 
 ---
 
