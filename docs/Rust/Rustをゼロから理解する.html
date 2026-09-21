@@ -396,6 +396,39 @@ $ cargo test           # テストを実行する</code></pre>
 
 <p>この設計が何を買っているかは、脆弱性の統計にも表れています。Microsoft は自社製品のセキュリティ修正のうち約 7 割がメモリ安全性に起因すると報告しており、Chromium でも深刻な不具合の同程度がメモリ安全性の問題だとしています。CISA などの政府機関がメモリ安全な言語への移行ロードマップを求めているのも、この割合が長年下がっていないためです。Rust が消しているのは、まさにこの一群です。</p>
 
+<h3>なぜ「書き換え先」が Rust なのか</h3>
+
+<p>近年、既存のソフトウェアを Rust で書き直したという話をよく見かけます。ただし、動いているものを丸ごと書き直せる現場はほとんどありません。実際に起きているのは<strong>重い部分・危ない部分だけの差し替え</strong>です。すると、書き換え先に選ばれる条件は「速いかどうか」より前に、<strong>既存のプロセスの中に混ぜられるかどうか</strong>になります。</p>
+
+<p>ここで STEP 2 の「ランタイムを持たない」が効いてきます。Rust は GC も専用のランタイムも持ち込まないので、C から呼ばれる関数と同じ顔で既存のプログラムに同居できます。GC を持つ言語を差し込もうとすると、GC が 2 つ・スレッド管理が 2 つ同じプロセスに同居することになり、部分置換の相手として選びにくくなります。</p>
+
+<figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f7t f7d"><title id="f7t">既存プロセスへの差し込みやすさの違い</title><desc id="f7d">左は Python ランタイムと Rust のコードが同じプロセスに同居できる様子、右は GC を持つ別ランタイムを同居させるとGCとスレッド管理が二重になる様子</desc>
+<text x="200" y="30" text-anchor="middle" fill="var(--c3)" font-weight="700" font-size="14">Rust を差し込む</text>
+<text x="580" y="30" text-anchor="middle" fill="var(--stop)" font-weight="700" font-size="14">GC を持つ言語を差し込む</text>
+<rect x="30" y="46" width="340" height="176" rx="12" fill="var(--card)" stroke="var(--c3)" stroke-width="2"/>
+<text x="200" y="68" text-anchor="middle" fill="var(--muted)" font-size="11">1 つのプロセス</text>
+<rect x="50" y="78" width="300" height="46" rx="8" fill="var(--lane)" stroke="var(--c4)" stroke-width="2"/><text x="200" y="106" text-anchor="middle" fill="var(--ink)" font-size="13">Python ランタイム（GC あり）</text>
+<rect x="50" y="142" width="300" height="46" rx="8" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/><text x="200" y="170" text-anchor="middle" fill="var(--ink)" font-size="13">Rust で書いた部分</text>
+<text x="200" y="208" text-anchor="middle" fill="var(--c3)" font-size="12">持ち込む土台がないので同居できる</text>
+<rect x="410" y="46" width="340" height="176" rx="12" fill="var(--card)" stroke="var(--stop)" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="580" y="68" text-anchor="middle" fill="var(--muted)" font-size="11">1 つのプロセス</text>
+<rect x="430" y="78" width="300" height="46" rx="8" fill="var(--lane)" stroke="var(--c4)" stroke-width="2"/><text x="580" y="106" text-anchor="middle" fill="var(--ink)" font-size="13">Python ランタイム（GC あり）</text>
+<rect x="430" y="142" width="300" height="46" rx="8" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="2"/><text x="580" y="170" text-anchor="middle" fill="var(--ink)" font-size="13">別のランタイム（GC あり）</text>
+<text x="580" y="208" text-anchor="middle" fill="var(--stop)" font-size="12">GC もスレッド管理も二重になる</text>
+<rect x="110" y="242" width="560" height="44" rx="10" fill="var(--lane)" stroke="var(--line)"/>
+<text x="390" y="270" text-anchor="middle" fill="var(--ink)" font-weight="700" font-size="14">同居できるかどうかが、書き換え先に選ばれる条件になる</text></svg><figcaption>境界は C の呼び出し規約なので、Python 側から見れば普通の拡張モジュールが 1 つ増えただけです。だから<strong>使う人は書き換えに気づきません</strong>。Rust 製の道具を使っている人が Rust を書く必要はなく、これが差し替えの進みやすさにつながっています。</figcaption></figure>
+
+<p>実際に差し替えが進んでいるのは、この条件に当てはまる場所です。</p>
+
+<ul>
+<li><strong>Python の足回り</strong> — <a href="https://github.com/astral-sh/ruff">ruff</a>（linter・formatter）、<a href="https://github.com/astral-sh/uv">uv</a>（パッケージ管理）、<a href="https://pola.rs/">Polars</a>（データフレーム）、<a href="https://github.com/huggingface/tokenizers">tokenizers</a>。いずれも本体は Rust で、<a href="https://pyo3.rs/">PyO3</a> 経由で Python から呼ばれる</li>
+<li><strong>土台側</strong> — <a href="https://github.com/firecracker-microvm/firecracker">Firecracker</a>（AWS の microVM）、<a href="https://docs.kernel.org/rust/">Linux カーネルのドライバ</a>、Android や Windows の一部コンポーネント</li>
+</ul>
+
+<p>では「AI 時代の大規模最適化だから選ばれている」のでしょうか。<strong>半分は当たっています。</strong>同じ処理を何万回も回す使い方が普通になり、実行時間が台数と電力にそのまま乗るようになりました。1 台あたりのコア数も増えたので、並列化しなければ性能が出ません。Rust はこの 2 つに対して、GC の停止がないことと、データ競合がコンパイル時に消えることで噛み合います。需要と供給が同時に揃った、という説明が正確です。</p>
+
+<p>ただし誇張は禁物です。<strong>AI の計算そのものが Rust になったわけではありません。</strong>GPU 上で動く計算の本体はいまも C++ と CUDA で書かれており、Rust が取っているのは<strong>その周りの CPU 側の配管</strong>——データの読み込み・前処理・トークナイズ・スケジューリング・API サーバといった部分です。ここは「Python で書くと遅いが、C++ で書くと保守できない」という隙間で、Rust が最も選ばれやすい場所でもあります。なお「AI がコードを書く量が増えるほど、コンパイラが機械的に誤りを弾ける言語が有利になる」という議論もありますが、こちらはまだ効果が測られた話ではありません。</p>
+
 <div class="quiz"><p class="q"><b>確認問題（考察）</b>　あなたが担当しているものの中で、Rust に置き換えて割に合うのはどれでしょうか。置き換えないほうがよいものは、なぜそうでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p>判断の軸は 2 つです。1 つは<strong>メモリ安全性の問題が実際に被害になるか</strong>。攻撃者が入力を送れる場所で長時間動き続けるもの（ネットワークを受けるデーモン、パーサ、暗号や署名を扱う処理）は割に合いやすい領域です。もう 1 つは<strong>停止時間やランタイムの制約があるか</strong>。組み込み・カーネルモジュール・WebAssembly など、GC を持ち込めない場所では選択肢がそもそも限られます。</p><p>逆に、使い捨てのスクリプト、データ分析、社内の管理ツールのように、落ちてもやり直せばよく既存のエコシステムが充実しているものは、前払いのコストに見合わないことが多くなります。言語を選ぶ判断は「安全かどうか」ではなく、<strong>前払いする価値があるかどうか</strong>です。</p></div></details></div>
 
 <h2>まとめ：そのまま使える説明テンプレート</h2>
@@ -404,7 +437,7 @@ $ cargo test           # テストを実行する</code></pre>
 <blockquote><p>Rust は、メモリの解放タイミングを<strong>コンパイル時に確定させる</strong>言語です。ヒープ上の値には持ち主がちょうど 1 人いて、持ち主がスコープを抜けたところで自動的に解放されます。読むだけの参照は何本でも作れますが、書き換えられる参照は同時に 1 本だけ。この規則のおかげで、解放済み領域の参照や二重解放がコンパイルを通らなくなります。ガベージコレクタが要らないので実行時の停止もなく、OS・組み込み・WebAssembly のようにランタイムを置けない場所でも使えます。</p></blockquote>
 
 <h3>2 分版（30 秒版に足す分）</h3>
-<blockquote><p>背景には、ヒープのメモリを「誰がいつ返すか」という古い問題があります。これまでの答えは 2 つで、人間が書く（C / C++：速いが漏れる・壊れる）か、実行中に GC が判断する（Java / Go：安全だが実行時のコストと土台が要る）でした。Rust は 3 つ目の答えとして、コンパイラがビルド時に決めます。代償は、コンパイラが判定できる書き方しか許されないことです。</p><p>同じ規則がデータ競合も止めます。「読んでいる最中に誰も書き換えられない」は、そのまま複数スレッドでの安全性になるからです。さらに <code>null</code> がなく、値が無いかもしれないことは <code>Option</code>、失敗するかもしれないことは <code>Result</code> という型で表されるので、未処理のケースがあるとビルドが通りません。<strong>Rust の学習コストとは、これまで本番で気づいていた問題をビルド時に気づくようにした分の前払い</strong>です。攻撃者の入力を受けて長く動き続けるものや、停止時間・ランタイムの制約がある領域では、この前払いが最も割に合います。</p></blockquote>
+<blockquote><p>背景には、ヒープのメモリを「誰がいつ返すか」という古い問題があります。これまでの答えは 2 つで、人間が書く（C / C++：速いが漏れる・壊れる）か、実行中に GC が判断する（Java / Go：安全だが実行時のコストと土台が要る）でした。Rust は 3 つ目の答えとして、コンパイラがビルド時に決めます。代償は、コンパイラが判定できる書き方しか許されないことです。</p><p>同じ規則がデータ競合も止めます。「読んでいる最中に誰も書き換えられない」は、そのまま複数スレッドでの安全性になるからです。さらに <code>null</code> がなく、値が無いかもしれないことは <code>Option</code>、失敗するかもしれないことは <code>Result</code> という型で表されるので、未処理のケースがあるとビルドが通りません。<strong>Rust の学習コストとは、これまで本番で気づいていた問題をビルド時に気づくようにした分の前払い</strong>です。攻撃者の入力を受けて長く動き続けるものや、停止時間・ランタイムの制約がある領域では、この前払いが最も割に合います。他の言語からの書き換え先に選ばれやすいのも同じ理由で、GC もランタイムも持ち込まないため、既存のプロセスに重い部分だけを差し込めるからです。</p></blockquote>
 
 <h2>よくある誤解</h2>
 
@@ -413,6 +446,9 @@ $ cargo test           # テストを実行する</code></pre>
 
 <h3>「Rust なら安全なので落ちない」</h3>
 <p>落ちます。配列の範囲外アクセスや <code>unwrap</code> の失敗はパニックになりますし、これは意図された動作です（不正なメモリアクセスを起こすくらいなら止める、という設計）。ロジックの誤り・整数オーバーフローによる計算違い・設定ミスも防げません。Rust が構造的に消しているのは<strong>メモリ安全性の問題とデータ競合</strong>であって、バグ一般ではありません。</p>
+
+<h3>「Python や Go は Rust に置き換わる」</h3>
+<p>置き換わっていません。Rust 製の道具が増えているのは事実ですが、<code>ruff</code> や <code>uv</code> を使う人が書いているのはいまも Python です。Rust は Python の<strong>上ではなく下</strong>に入っています。Go とも用途はあまり重なりません。GC の停止を許せるネットワークサービスなら、Go のほうが短い時間で書けて運用もしやすく、そこを Rust にすると所有権の前払いだけ払って見返りが小さくなります。「どちらが優れているか」ではなく、<strong>GC を許せる場所かどうか</strong>が分かれ目です。</p>
 
 <h3>「unsafe を使うと安全性の保証が消える」</h3>
 <p><code>unsafe</code> ブロックの中でできるようになるのは、生ポインタの参照外しなど<strong>コンパイラが検証できない操作に限られます</strong>。借用チェッカが止まるわけでも、型検査が無効になるわけでもありません。ハードウェアや他言語のライブラリを触る以上こうした操作は必要で、意味があるのは<strong>それが数行に囲い込まれ、検索できること</strong>です。問題が起きたときに疑う場所が限定されます。</p>
