@@ -1,6 +1,7 @@
 # エージェント作業ガイド
 
-技術的な学びをトピック別にまとめた個人リポジトリ。コンテンツは `docs/` 配下。
+管理しているものを全部集約するリポジトリ。GitHub リポジトリと HCP Terraform ワークスペースの
+Terraform コード、各リポジトリに配布する CI、実装したコード、学習メモが同居する。
 ツール別の指示ファイル（`CLAUDE.md` / `GEMINI.md`）は作らず、このファイル1本に集約する。
 
 ## 鉄則：しゃべりすぎない
@@ -15,16 +16,21 @@
 
 ## 必要になったら読む
 
-**常時読まない。該当する作業のときだけ読む。**
+**常時読まない。触る領域のものだけ読む。**
 
-| 読むもの | いつ |
-|---|---|
-| `.claude/skills/article-writing/` | 記事を書く・直すとき（Claude Code はスキルとして自動で読む） |
-| `docs/reference/既存コンテンツ.md` | 記事の置き場所を決めるとき、重複を確認するとき |
-| `docs/reference/ユーザーの好み.md` | 提案・比較・学習相談をするとき、AWS の記事を書くとき |
-| `docs/reference/github-authentication.md` | GitHub 認証まわりを触るとき |
+| 触るもの | 場所 | 読む |
+|---|---|---|
+| リポジトリ・ワークスペース・CI 配布 | ルートの `*.tf`, `modules/`, `ci/` | `README.md` |
+| 記事・学習メモ | `docs/` | `article-writing` スキル（Claude Code は自動）、`docs/reference/既存コンテンツ.md` |
+| 提案・比較・学習相談 | — | `docs/reference/ユーザーの好み.md` |
+| GitHub 認証 | — | `docs/reference/github-authentication.md` |
 
-## 置き場所
+## 触る前に知っておくこと
+
+- ルートの Terraform は **`auto_apply = true`**。main へのマージ時点で apply が走る
+- 各リポジトリの `.github/workflows/` は `ci/` から配布される。**配布先を直接編集しない**
+
+## docs/ の置き場所
 
 `docs/` 直下はフラットで、1階層目はトピック名そのもの（`Terraform/`, `Cyber Attacks/`）。
 `Provisioning/Terraform/` のような分類ディレクトリは作らない。置き場所を記憶に頼る羽目になるため。
@@ -35,13 +41,14 @@
 
 ## 残すものはリポジトリ内に書く
 
-devcontainer なので `~/.claude/` 配下は再起動で消える。会話をまたぐ情報はリポジトリ内のファイルに書く。
+devcontainer なので `~/.claude/` 配下は再起動で消える。会話をまたぐ情報はリポジトリ内に書く。
 
 | 内容 | 書く場所 |
 |---|---|
 | 記事の書き方 | `.claude/skills/article-writing/` |
 | 何がどこにあるか（1行） | `docs/reference/既存コンテンツ.md` |
 | 好み・判断軸・表記ルール | `docs/reference/ユーザーの好み.md` |
+| Terraform / CI の運用 | `README.md` |
 | 上記以外の作業ルール | この `AGENTS.md` |
 
 スキルは**リポジトリルートの `.claude/skills/`** に置く。サブディレクトリでは読み込まれない。
@@ -52,6 +59,5 @@ devcontainer なので `~/.claude/` 配下は再起動で消える。会話を�
 
 ## やらないこと
 
-- 実行環境・ビルド設定（このリポジトリにはない）
 - 英語で書く
 - 過度な装飾やフォーマット統一の強制
