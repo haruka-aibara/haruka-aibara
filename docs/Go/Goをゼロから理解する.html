@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Go をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+ol{padding-left:1.4rem}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:34rem}}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+.rmbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.rmbox .ttl{font-size:.86rem;font-weight:600;margin:0 0 .2rem}
+.rmbox .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Go をゼロから理解する</h1>
+<p class="lede">「書いたプログラムは、相手のマシンでどうやって動くのか」から始めて、5 ステップで「Go とはどういう言語なのか」までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+
+<p>Go の入門記事を読んで、途中で分からなくなった経験はありませんか。</p>
+
+<p>それは読解力の問題ではありません。多くの入門記事は「goroutine が軽量」「例外がない」「インタフェースは暗黙的に実装される」といった<strong>他の言語との差分の一覧</strong>から始まります。一つ一つの説明は正しいのに、読み終わっても<strong>「で、なぜこの言語を選ぶのか」「なぜこんな作りになっているのか」</strong>が残ります。Go の機能はほとんどが 1 つの目的から出ているのに、その目的が先に説明されないからです。</p>
+
+<p>そこでこの記事は、あえて遠回りします。<strong>「プログラムが相手のマシンで動くまでに何が要るのか」というところから始めて、5 ステップで Go の全体像までたどり着きます。</strong>ゴールは文法を覚えることではなく、Go を自分の言葉で説明できるようになることです。最後に、そのまま口に出せる説明テンプレートを用意しました。</p>
+
+<div class="rmbox">
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>動くまでに要るもの</li>
+<li><span class="n">STEP 2</span>1 個のファイルになる</li>
+<li><span class="n">STEP 3</span>読める状態を強制する</li>
+<li><span class="n">STEP 4</span>同時に動かす</li>
+<li><span class="n">STEP 5</span>30 行のサーバ</li>
+</ol>
+</nav>
+<p class="cap">STEP 4 までは「Go がどんな問題を解こうとしている言語なのか」の話です。通しのコードが出てくるのは STEP 5 だけですが、そこに至る 4 ステップがないと、なぜ Go のコードがあの書き方になっているのかが分かりません。逆に言えば、STEP 4 まで進めば STEP 5 は部品を並べるだけに感じられるはずです。</p>
+</div>
+
+<h2>STEP 1：プログラムは、相手のマシンでどうやって動くのか</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>動くまでに要るもの</li>
+<li><span class="n">STEP 2</span>1 個のファイルになる</li>
+<li><span class="n">STEP 3</span>読める状態を強制する</li>
+<li><span class="n">STEP 4</span>同時に動かす</li>
+<li><span class="n">STEP 5</span>30 行のサーバ</li>
+</ol>
+</nav>
+
+<p>手元で動いたスクリプトを同僚に渡したら動かなかった、という場面があります。処理系のバージョンが違う、ライブラリを入れていない、OS が違う。原因はばらばらに見えますが、根っこは 1 つです。<strong>「ソースコードを渡す」という行為が、相手のマシンに処理系と依存ライブラリが揃っていることを前提にしている</strong>からです。</p>
+
+<p>もう 1 つの道があります。あらかじめ CPU が直接実行できる形に変換した<strong>実行ファイル</strong>を作って、それを渡す方法です。この変換が<strong>コンパイル</strong>で、Go はこちら側の言語です。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="ソースコードを渡す方式と実行ファイルを渡す方式で、相手のマシンに必要なものを比較した図">
+  <text x="20" y="22" font-size="11" font-weight="600" fill="var(--c2)">① ソースコードを渡す（スクリプト方式）</text>
+  <g font-size="11" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="36" width="120" height="66" rx="8" fill="var(--lane)"/>
+    <text x="80" y="62">開発マシン</text>
+    <text x="80" y="84" font-size="10" fill="var(--muted)">main.py</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="146" y1="70" x2="188" y2="70"/><polygon points="196,70 186,66 186,74" stroke="none"/>
+    <line x1="566" y1="70" x2="598" y2="70"/><polygon points="606,70 596,66 596,74" stroke="none"/>
+  </g>
+  <text x="171" y="60" font-size="10" fill="var(--muted)" text-anchor="middle">渡す</text>
+  <rect x="203" y="30" width="357" height="86" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="218" y="50" font-size="11" font-weight="600" fill="var(--ink)">相手のマシンに要るもの</text>
+  <g font-size="10" fill="var(--muted)">
+    <text x="228" y="70">・Python 本体（バージョンも合っていること）</text>
+    <text x="228" y="88">・pip などで入れる依存ライブラリ</text>
+    <text x="228" y="106">・main.py</text>
+  </g>
+  <rect x="612" y="48" width="68" height="44" rx="8" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="646" y="76" font-size="11" fill="var(--c3)" text-anchor="middle">動く</text>
+
+  <line x1="20" y1="140" x2="680" y2="140" stroke="var(--line)"/>
+
+  <text x="20" y="168" font-size="11" font-weight="600" fill="var(--c3)">② 実行ファイルを渡す（コンパイル方式）</text>
+  <g font-size="11" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="182" width="120" height="66" rx="8" fill="var(--lane)"/>
+    <text x="80" y="208">開発マシン</text>
+    <text x="80" y="230" font-size="10" fill="var(--muted)">main.go</text>
+    <rect x="203" y="190" width="100" height="50" rx="8" fill="var(--lane)"/>
+    <text x="253" y="211">app</text>
+    <text x="253" y="229" font-size="9" fill="var(--muted)">実行ファイル</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="146" y1="215" x2="188" y2="215"/><polygon points="196,215 186,211 186,219" stroke="none"/>
+    <line x1="309" y1="215" x2="345" y2="215"/><polygon points="353,215 343,211 343,219" stroke="none"/>
+    <line x1="566" y1="215" x2="598" y2="215"/><polygon points="606,215 596,211 596,219" stroke="none"/>
+  </g>
+  <text x="171" y="205" font-size="10" fill="var(--c2)" text-anchor="middle">コンパイル</text>
+  <text x="331" y="205" font-size="10" fill="var(--muted)" text-anchor="middle">渡す</text>
+  <rect x="360" y="182" width="200" height="66" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="375" y="202" font-size="11" font-weight="600" fill="var(--ink)">相手のマシンに要るもの</text>
+  <text x="385" y="228" font-size="10" fill="var(--muted)">・app（これだけ）</text>
+  <rect x="612" y="193" width="68" height="44" rx="8" fill="none" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="646" y="221" font-size="11" fill="var(--c3)" text-anchor="middle">動く</text>
+</svg>
+<figcaption>違いは「速い言語か遅い言語か」ではなく、<strong>相手のマシンに何を前提にするか</strong>です。①は前提が 3 つあり、どれか 1 つ欠けても動きません。なお②でも、C 言語などでは実行時にシステムの共有ライブラリを参照するのが普通で、「1 ファイルで完結」は自動的には手に入りません。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　「自分の PC では動くのに、相手の PC では動かない」を避けるために、①の方式で配る側ができることは何でしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p>バージョンを指定した手順書を書く、依存ライブラリの一覧を添える、仮想環境を使ってもらう——どれも「相手に正しく準備してもらう」お願いです。準備を相手任せにしないところまで踏み込んだのが、環境ごと箱に詰める <a href="../Docker/01_Docker_イントロダクション/01-02_なぜコンテナが必要か.md">コンテナ</a>です。</p>
+<p>ここで別の解き方もあります。<strong>準備するものを、そもそも無くしてしまう</strong>という方向です。次のステップはここから始まります。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：go build は「1 個のファイル」を吐く</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>動くまでに要るもの</li>
+<li class="now"><span class="n">STEP 2</span>1 個のファイルになる</li>
+<li><span class="n">STEP 3</span>読める状態を強制する</li>
+<li><span class="n">STEP 4</span>同時に動かす</li>
+<li><span class="n">STEP 5</span>30 行のサーバ</li>
+</ol>
+</nav>
+
+<p>Go のプログラムは、こう書きます。</p>
+
+<pre><code>// hello.go
+package main        // main パッケージ ＝ 実行できるプログラム、という印
+
+import "fmt"        // 使うものだけを明示的に読み込む
+
+func main() {       // main 関数から始まる
+	fmt.Println("hello")
+}</code></pre>
+
+<pre><code>$ go run hello.go     # ビルドして即実行（手元での確認用）
+hello
+
+$ go build hello.go   # 実行ファイルを作る
+$ ./hello
+hello</code></pre>
+
+<p>できた <code>hello</code> は、<code>hello</code> と表示するだけのプログラムなのに 1〜2 MB あります。太っているのではなく、<strong>動くのに必要なものが全部中に入っている</strong>からです。あなたのコード、使った標準ライブラリ、そして Go の<strong>ランタイム</strong>（メモリを自動で回収する GC や、STEP 4 で出てくるスケジューラ）。これを 1 つにまとめることを<strong>静的リンク</strong>と呼びます。渡された側に Go は要りません。</p>
+
+<figure>
+<svg viewBox="0 0 700 275" role="img" aria-label="go buildがコードと標準ライブラリとランタイムを1つの実行ファイルにまとめる様子と、GOOSとGOARCHによるクロスコンパイル">
+  <g font-size="11" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="34" width="200" height="40" rx="6" fill="var(--lane)"/>
+    <text x="120" y="59">あなたのコード（main.go）</text>
+    <rect x="20" y="80" width="200" height="40" rx="6" fill="var(--lane)"/>
+    <text x="120" y="105">標準ライブラリ（net/http 等）</text>
+    <rect x="20" y="126" width="200" height="40" rx="6" fill="var(--lane)"/>
+    <text x="120" y="145">ランタイム</text>
+    <text x="120" y="160" font-size="9" fill="var(--muted)">GC・スケジューラ</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="228" y1="100" x2="278" y2="100"/><polygon points="286,100 276,96 276,104" stroke="none"/>
+    <line x1="396" y1="100" x2="446" y2="100"/><polygon points="454,100 444,96 444,104" stroke="none"/>
+  </g>
+  <rect x="292" y="78" width="98" height="44" rx="8" fill="var(--c2)"/>
+  <text x="341" y="105" font-size="12" fill="var(--on)" text-anchor="middle" font-weight="600">go build</text>
+  <rect x="462" y="62" width="150" height="76" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="537" y="90" font-size="13" fill="var(--ink)" text-anchor="middle" font-weight="600">app</text>
+  <text x="537" y="110" font-size="10" fill="var(--muted)" text-anchor="middle">実行ファイル 1 個</text>
+  <text x="537" y="127" font-size="10" fill="var(--muted)" text-anchor="middle">実行側に Go は不要</text>
+
+  <text x="20" y="196" font-size="11" font-weight="600" fill="var(--c1)">同じソースから、行き先だけ変えて何本でも（クロスコンパイル）</text>
+  <rect x="20" y="210" width="100" height="44" rx="8" fill="var(--lane)"/>
+  <text x="70" y="237" font-size="11" fill="var(--ink)" text-anchor="middle">main.go</text>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="126" y1="232" x2="152" y2="232"/><polygon points="160,232 150,228 150,236" stroke="none"/>
+  </g>
+  <rect x="166" y="202" width="514" height="60" rx="8" fill="none" stroke="var(--line)" stroke-dasharray="4 3"/>
+  <g font-size="10" fill="var(--ink)" text-anchor="middle">
+    <rect x="178" y="212" width="158" height="40" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <text x="257" y="230">GOOS=linux</text>
+    <text x="257" y="245">GOARCH=amd64</text>
+    <rect x="346" y="212" width="158" height="40" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <text x="425" y="230">GOOS=darwin</text>
+    <text x="425" y="245">GOARCH=arm64</text>
+    <rect x="514" y="212" width="154" height="40" rx="6" fill="var(--card)" stroke="var(--line)"/>
+    <text x="591" y="230">GOOS=windows</text>
+    <text x="591" y="245">GOARCH=amd64</text>
+  </g>
+</svg>
+<figcaption>行き先は環境変数 2 つで切り替わります。<strong>Mac の手元で、Linux の ARM サーバ向けの実行ファイルを作れる</strong>ということです。CI で 1 回ビルドして各 OS に配る、という配り方がそのまま成立します。</figcaption>
+</figure>
+
+<p>これはコンテナの作り方にも効きます。ビルド用のイメージで実行ファイルを作り、それを空っぽのイメージにコピーするだけで動きます。</p>
+
+<pre><code>FROM golang:1 AS build
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app .
+
+FROM scratch          # OS のファイルが 1 つも入っていないイメージ
+COPY --from=build /app /app
+ENTRYPOINT ["/app"]</code></pre>
+
+<div class="note">
+<p><strong>例外</strong>：C のライブラリを呼び出す機能（cgo）を使うと、実行ファイルはシステムのライブラリに依存します。上の <code>CGO_ENABLED=0</code> はそれを明示的に切って、完全に自己完結した 1 ファイルにするための指定です。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　配布が 1 ファイルで済むのは分かりました。では、配布さえ解決するなら、書く言語は何でもよいのではないでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p>配布だけを見ればそうです。しかし<strong>コードは、書いたあとも人が読み、直し続けるもの</strong>です。Go が Google で作られた動機は、速いプログラムを書くことよりも、<strong>大量のコードを大人数で触り続けても壊れない状態を保つこと</strong>にありました。</p>
+<p>そこで言語側に仕掛けが入ります。次のステップはその話です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：読める状態を、言語とツールが強制する</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>動くまでに要るもの</li>
+<li class="done"><span class="n">STEP 2 ✓</span>1 個のファイルになる</li>
+<li class="now"><span class="n">STEP 3</span>読める状態を強制する</li>
+<li><span class="n">STEP 4</span>同時に動かす</li>
+<li><span class="n">STEP 5</span>30 行のサーバ</li>
+</ol>
+</nav>
+
+<p>他人が書いたコードを読むときに時間を食うのは、たいていロジックそのものではありません。「この変数には何が入るのか」「この書き方は流儀なのか意味があるのか」「この処理はどこで失敗して、失敗したらどこへ行くのか」です。Go はこの 3 つを<strong>書き手の心がけではなく、言語とツールで潰しに行きます</strong>。</p>
+
+<h3>① 型は必ず決まっている</h3>
+
+<p>変数や関数の引数・戻り値の型はコンパイル時に確定します。毎回書くのは面倒なので、<code>:=</code> で初期値から推論させます。推論であって、動的型ではありません。</p>
+
+<pre><code>name := "prod"          // string と決まる（あとから数値は入らない）
+count := 0              // int と決まる
+var timeout time.Duration = 5 * time.Second   // 明示して書くこともできる
+
+func lookup(id string, retry int) (string, error) { ... }
+// ↑ この 1 行が、そのまま「何を渡すと何が返るか」の仕様になる</code></pre>
+
+<h3>② 書式に流儀を持ち込ませない</h3>
+
+<p>インデント、改行位置、括弧の付け方は <code>gofmt</code>（<code>go fmt</code>）が機械的に 1 つの形へ直します。設定項目はほぼありません。<strong>「どう書くか」がレビューの議題にならない</strong>ので、レビューは中身の話だけになります。</p>
+
+<h3>③ 中途半端な状態をコンパイラが通さない</h3>
+
+<p>使っていない変数、使っていない <code>import</code> は<strong>警告ではなくエラー</strong>です。ビルドが通りません。</p>
+
+<pre><code>./main.go:4:2: declared and not used: count</code></pre>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="書きがちなコードに対してGoのコンパイラとgofmtがどう振る舞うかの対応表">
+  <text x="20" y="24" font-size="11" font-weight="600" fill="var(--muted)">書いてしまいがちなもの</text>
+  <text x="392" y="24" font-size="11" font-weight="600" fill="var(--muted)">Go ではどうなるか</text>
+  <g font-size="10.5" fill="var(--ink)">
+    <rect x="20" y="36" width="280" height="42" rx="6" fill="var(--lane)"/>
+    <text x="34" y="62">宣言したが一度も使っていない変数</text>
+    <rect x="20" y="88" width="280" height="42" rx="6" fill="var(--lane)"/>
+    <text x="34" y="114">読み込んだが使っていない import</text>
+    <rect x="20" y="140" width="280" height="42" rx="6" fill="var(--lane)"/>
+    <text x="34" y="166">string の変数に数値を入れた</text>
+    <rect x="20" y="192" width="280" height="42" rx="6" fill="var(--lane)"/>
+    <text x="34" y="218">インデントや改行が人によって違う</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.4" fill="var(--c1)">
+    <line x1="306" y1="57" x2="368" y2="57"/><polygon points="376,57 366,53 366,61" stroke="none"/>
+    <line x1="306" y1="109" x2="368" y2="109"/><polygon points="376,109 366,105 366,113" stroke="none"/>
+    <line x1="306" y1="161" x2="368" y2="161"/><polygon points="376,161 366,157 366,165" stroke="none"/>
+    <line x1="306" y1="213" x2="368" y2="213"/><polygon points="376,213 366,209 366,217" stroke="none"/>
+  </g>
+  <g font-size="10.5">
+    <rect x="382" y="36" width="298" height="42" rx="6" fill="none" stroke="var(--stop)"/>
+    <text x="396" y="62" fill="var(--stop)">✗ コンパイルエラー（ビルドが通らない）</text>
+    <rect x="382" y="88" width="298" height="42" rx="6" fill="none" stroke="var(--stop)"/>
+    <text x="396" y="114" fill="var(--stop)">✗ コンパイルエラー（警告で済ませない）</text>
+    <rect x="382" y="140" width="298" height="42" rx="6" fill="none" stroke="var(--stop)"/>
+    <text x="396" y="166" fill="var(--stop)">✗ コンパイルエラー（実行前に分かる）</text>
+    <rect x="382" y="192" width="298" height="42" rx="6" fill="none" stroke="var(--c3)"/>
+    <text x="396" y="218" fill="var(--c3)">gofmt が自動で 1 つの形に直す</text>
+  </g>
+</svg>
+<figcaption>厳しさの狙いは「正しいコードを書かせること」ではなく、<strong>リポジトリに残るコードの状態を揃えること</strong>です。「あとで消す」と言って残った変数や、書式だけが違うコードは、読む側に毎回判断を要求します。</figcaption>
+</figure>
+
+<h3>④ 失敗は、戻り値として受け取る</h3>
+
+<p>Go には例外（<code>try / catch</code>）がありません。失敗しうる関数は、結果と一緒に <code>error</code> という<strong>ただの値</strong>を返します。呼び出した側は、その場で確かめます。</p>
+
+<pre><code>func readConfig(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		// %w で「元の失敗」を包んだまま、文脈を足して返す
+		return nil, fmt.Errorf("設定ファイルを開けません: %w", err)
+	}
+	defer f.Close()   // この関数を抜けるとき、どの経路でも必ず閉じる
+
+	return io.ReadAll(f)
+}</code></pre>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="例外で大域脱出する方式と、Goのようにエラーを戻り値で返す方式の制御の流れの比較">
+  <text x="20" y="22" font-size="11" font-weight="600" fill="var(--c2)">例外がある言語</text>
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <rect x="70" y="36" width="190" height="34" rx="6" fill="var(--lane)"/><text x="165" y="58">main()</text>
+    <rect x="70" y="92" width="190" height="34" rx="6" fill="var(--lane)"/><text x="165" y="114">loadConfig()</text>
+    <rect x="70" y="148" width="190" height="34" rx="6" fill="var(--lane)"/><text x="165" y="170">openFile()</text>
+  </g>
+  <g stroke="var(--line)" stroke-width="1.4" fill="var(--muted)">
+    <line x1="165" y1="70" x2="165" y2="84"/><polygon points="165,92 161,82 169,82" stroke="none"/>
+    <line x1="165" y1="126" x2="165" y2="140"/><polygon points="165,148 161,138 169,138" stroke="none"/>
+  </g>
+  <text x="165" y="200" font-size="10.5" fill="var(--stop)" text-anchor="middle">ここで throw</text>
+  <path d="M70,165 C30,165 30,60 62,55" fill="none" stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="5 3"/>
+  <polygon points="70,53 58,49 60,61" fill="var(--stop)"/>
+  <text x="20" y="216" font-size="10" fill="var(--muted)">途中の行を飛ばして一気に戻る。</text>
+  <text x="20" y="232" font-size="10" fill="var(--muted)">どこまで飛ぶかは、呼び出し側の型に現れない</text>
+
+  <line x1="350" y1="10" x2="350" y2="240" stroke="var(--line)"/>
+
+  <text x="378" y="22" font-size="11" font-weight="600" fill="var(--c3)">Go</text>
+  <g font-size="10" fill="var(--ink)">
+    <rect x="378" y="36" width="302" height="34" rx="6" fill="var(--lane)"/>
+    <text x="392" y="58">f, err := os.Open(path)</text>
+    <rect x="378" y="92" width="302" height="34" rx="6" fill="none" stroke="var(--stop)"/>
+    <text x="392" y="114" fill="var(--stop)">if err != nil { return nil, err }</text>
+    <rect x="378" y="148" width="302" height="34" rx="6" fill="var(--lane)"/>
+    <text x="392" y="170">続きの処理</text>
+  </g>
+  <g stroke="var(--line)" stroke-width="1.4" fill="var(--muted)">
+    <line x1="529" y1="70" x2="529" y2="84"/><polygon points="529,92 525,82 533,82" stroke="none"/>
+    <line x1="529" y1="126" x2="529" y2="140"/><polygon points="529,148 525,138 533,138" stroke="none"/>
+  </g>
+  <text x="378" y="212" font-size="10" fill="var(--muted)">失敗したときの行き先が、すぐ次の行に書いてある</text>
+  <text x="378" y="230" font-size="10" fill="var(--muted)">読む人は上から下に追うだけでよい</text>
+</svg>
+<figcaption>Go の書き方は確実に行数が増えます。それでも選ばれているのは、<strong>「この関数は失敗しうる」が戻り値の型として現れ、失敗したときの行き先がその場に書かれる</strong>からです。書く側の手間より、読む側の確実さを取った設計です。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　<code>if err != nil</code> が 3 回も 4 回も続くのは、単に冗長なだけではないでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>冗長です。</strong>Go 自身もそれを認めたうえで採用しています。得られるのは、<strong>失敗しうる箇所が省略できない行として全部見えること</strong>。例外方式では、書く量は減る代わりに「この行から飛ぶかどうか」が読んでも分かりません。</p>
+<p>なお、想定外の状態（プログラムの前提が壊れた場合など）には <code>panic</code> もあります。ただし日常的な失敗は <code>error</code> で返すのが Go の流儀です。</p>
+<p>ここまでで「失敗の扱い」は分かりました。では、<strong>失敗はしないが時間がかかる処理</strong>——たとえば 100 台のサーバに HTTP を投げる——はどうでしょう。1 回 200 ミリ秒なら、順番にやると 20 秒です。次のステップはここです。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：同時に動かす</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>動くまでに要るもの</li>
+<li class="done"><span class="n">STEP 2 ✓</span>1 個のファイルになる</li>
+<li class="done"><span class="n">STEP 3 ✓</span>読める状態を強制する</li>
+<li class="now"><span class="n">STEP 4</span>同時に動かす</li>
+<li><span class="n">STEP 5</span>30 行のサーバ</li>
+</ol>
+</nav>
+
+<p>HTTP のリクエストやデータベースへの問い合わせは、ほとんどの時間が<strong>待ち</strong>です。待っている間に次を投げられれば、全体は待ち時間の一番長いものとほぼ同じで終わります。</p>
+
+<figure>
+<svg viewBox="0 0 700 230" role="img" aria-label="3件のHTTPリクエストを直列に実行した場合と並行に実行した場合の所要時間の比較">
+  <text x="20" y="34" font-size="11" font-weight="600" fill="var(--c2)">直列</text>
+  <g fill="var(--c2)" opacity="0.85">
+    <rect x="70" y="42" width="140" height="22" rx="4"/>
+    <rect x="212" y="42" width="140" height="22" rx="4"/>
+    <rect x="354" y="42" width="140" height="22" rx="4"/>
+  </g>
+  <g font-size="9" fill="var(--on)" text-anchor="middle">
+    <text x="140" y="57">リクエスト 1</text><text x="282" y="57">リクエスト 2</text><text x="424" y="57">リクエスト 3</text>
+  </g>
+  <text x="504" y="58" font-size="11" fill="var(--c2)">合計 600ms</text>
+
+  <text x="20" y="108" font-size="11" font-weight="600" fill="var(--c3)">並行（goroutine）</text>
+  <g fill="var(--c3)" opacity="0.85">
+    <rect x="70" y="116" width="140" height="20" rx="4"/>
+    <rect x="70" y="142" width="140" height="20" rx="4"/>
+    <rect x="70" y="168" width="140" height="20" rx="4"/>
+  </g>
+  <g font-size="9" fill="var(--on)" text-anchor="middle">
+    <text x="140" y="130">リクエスト 1</text><text x="140" y="156">リクエスト 2</text><text x="140" y="182">リクエスト 3</text>
+  </g>
+  <text x="222" y="156" font-size="11" fill="var(--c3)">合計 200ms</text>
+
+  <line x1="70" y1="204" x2="620" y2="204" stroke="var(--line)"/>
+  <g font-size="9" fill="var(--muted)" text-anchor="middle">
+    <line x1="70" y1="200" x2="70" y2="208" stroke="var(--line)"/><text x="70" y="220">0</text>
+    <line x1="212" y1="200" x2="212" y2="208" stroke="var(--line)"/><text x="212" y="220">200ms</text>
+    <line x1="354" y1="200" x2="354" y2="208" stroke="var(--line)"/><text x="354" y="220">400ms</text>
+    <line x1="496" y1="200" x2="496" y2="208" stroke="var(--line)"/><text x="496" y="220">600ms</text>
+  </g>
+</svg>
+<figcaption>縮んでいるのは処理そのものではなく<strong>待ち時間の重なり</strong>です。CPU を使い切る計算処理では、この図のようには縮みません（コア数が上限になります）。</figcaption>
+</figure>
+
+<p>Go では、関数呼び出しの前に <code>go</code> を付けるだけで別の流れとして走り出します。これが <strong>goroutine</strong> です。結果の受け渡しには <strong>channel</strong> を使います。</p>
+
+<pre><code>func check(urls []string) {
+	ch := make(chan string)        // 文字列を運ぶ channel
+
+	for _, u := range urls {
+		go func(u string) {        // go を付けた ＝ ここは別の流れになる
+			resp, err := http.Get(u)
+			if err != nil {
+				ch &lt;- u + " : NG"   // channel へ送る
+				return
+			}
+			defer resp.Body.Close()
+			ch &lt;- fmt.Sprintf("%s : %d", u, resp.StatusCode)
+		}(u)
+	}
+
+	for range urls {
+		fmt.Println(&lt;-ch)          // 終わったものから受け取る
+	}
+}</code></pre>
+
+<p>goroutine は OS のスレッドではありません。数 KB のスタックで始まり、足りなくなれば伸びます。数万個作っても破綻しないのは、<strong>Go のランタイムが少数の OS スレッドに載せ替えながら動かしている</strong>からです。ある goroutine が通信の待ちに入ったら、その隙に別の goroutine をスレッドへ載せます。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="channelによるgoroutine間の受け渡しと、goroutineがランタイムのスケジューラを介してOSスレッドに載る仕組み">
+  <text x="20" y="22" font-size="11" font-weight="600" fill="var(--muted)">① channel ＝ goroutine 同士の受け渡し口</text>
+  <rect x="30" y="38" width="150" height="46" rx="8" fill="var(--lane)"/>
+  <text x="105" y="66" font-size="11" fill="var(--ink)" text-anchor="middle">goroutine（取得係）</text>
+  <rect x="222" y="46" width="240" height="30" rx="15" fill="none" stroke="var(--c1)" stroke-width="1.6"/>
+  <text x="342" y="66" font-size="10.5" fill="var(--c1)" text-anchor="middle">channel（chan string）</text>
+  <rect x="504" y="38" width="166" height="46" rx="8" fill="var(--lane)"/>
+  <text x="587" y="66" font-size="11" fill="var(--ink)" text-anchor="middle">main（受け取り係）</text>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="186" y1="61" x2="212" y2="61"/><polygon points="220,61 210,57 210,65" stroke="none"/>
+    <line x1="468" y1="61" x2="494" y2="61"/><polygon points="502,61 492,57 492,65" stroke="none"/>
+  </g>
+  <text x="199" y="36" font-size="9" fill="var(--muted)" text-anchor="middle">ch &lt;- 値</text>
+  <text x="481" y="36" font-size="9" fill="var(--muted)" text-anchor="middle">&lt;-ch</text>
+
+  <line x1="20" y1="104" x2="680" y2="104" stroke="var(--line)"/>
+
+  <text x="20" y="130" font-size="11" font-weight="600" fill="var(--muted)">② goroutine は OS スレッドではない</text>
+  <g fill="var(--c4)" opacity="0.85">
+    <rect x="40" y="142" width="42" height="22" rx="4"/><rect x="92" y="142" width="42" height="22" rx="4"/>
+    <rect x="144" y="142" width="42" height="22" rx="4"/><rect x="196" y="142" width="42" height="22" rx="4"/>
+    <rect x="248" y="142" width="42" height="22" rx="4"/><rect x="300" y="142" width="42" height="22" rx="4"/>
+    <rect x="352" y="142" width="42" height="22" rx="4"/><rect x="404" y="142" width="42" height="22" rx="4"/>
+  </g>
+  <text x="462" y="158" font-size="10" fill="var(--muted)">goroutine（数万個でも可・数 KB から）</text>
+  <g stroke="var(--line)" stroke-width="1.3">
+    <line x1="120" y1="166" x2="120" y2="178"/><line x1="240" y1="166" x2="240" y2="178"/>
+    <line x1="360" y1="166" x2="360" y2="178"/>
+  </g>
+  <rect x="40" y="180" width="406" height="26" rx="6" fill="var(--c1)"/>
+  <text x="243" y="198" font-size="10.5" fill="var(--on)" text-anchor="middle" font-weight="600">Go ランタイムのスケジューラ（載せ替える）</text>
+  <g stroke="var(--line)" stroke-width="1.3">
+    <line x1="120" y1="206" x2="120" y2="216"/><line x1="240" y1="206" x2="240" y2="216"/>
+    <line x1="360" y1="206" x2="360" y2="216"/>
+  </g>
+  <g font-size="10" fill="var(--ink)" text-anchor="middle">
+    <rect x="40" y="218" width="90" height="24" rx="5" fill="var(--lane)"/><text x="85" y="235">OS スレッド</text>
+    <rect x="145" y="218" width="90" height="24" rx="5" fill="var(--lane)"/><text x="190" y="235">OS スレッド</text>
+    <rect x="250" y="218" width="90" height="24" rx="5" fill="var(--lane)"/><text x="295" y="235">OS スレッド</text>
+    <rect x="355" y="218" width="90" height="24" rx="5" fill="var(--lane)"/><text x="400" y="235">OS スレッド</text>
+  </g>
+  <text x="462" y="235" font-size="10" fill="var(--muted)">だいたい CPU コア数</text>
+</svg>
+<figcaption>「メモリを共有して通信するのではなく、通信によってメモリを共有せよ」が Go の標語です。同じ変数を奪い合うのではなく、<strong>値を channel で渡して所有者を 1 つに保つ</strong>のが基本形になります。</figcaption>
+</figure>
+
+<div class="quiz">
+<p class="q"><b>確認問題（考察）</b>　channel を使わず、複数の goroutine から同じ map に直接結果を書き込んだら何が起きるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>データ競合</strong>が起きます。Go の map は同時書き込みを検知すると実行時にプログラムを落とします。運が悪いと、テストでは通って本番の負荷で初めて落ちます。</p>
+<p>Go にはこれを検出する道具が標準で付いています。<code>go test -race</code> / <code>go run -race</code> を付けると、競合したアクセスを実行時に報告します。直し方は、channel で渡すか、<code>sync.Mutex</code> で守るかです。</p>
+<p>これで部品は揃いました。最後に、全部が同時に出てくるプログラムを 1 本見ます。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：30 行のサーバに、ここまでの全部が出てくる</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>動くまでに要るもの</li>
+<li class="done"><span class="n">STEP 2 ✓</span>1 個のファイルになる</li>
+<li class="done"><span class="n">STEP 3 ✓</span>読める状態を強制する</li>
+<li class="done"><span class="n">STEP 4 ✓</span>同時に動かす</li>
+<li class="now"><span class="n">STEP 5</span>30 行のサーバ</li>
+</ol>
+</nav>
+
+<p>HTTP サーバを立てます。追加のライブラリは 1 つも入れません。<code>net/http</code> は標準ライブラリです。</p>
+
+<pre><code>// main.go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+func main() {
+	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
+		name := r.URL.Query().Get("name")
+		if name == "" {
+			http.Error(w, "name is required", http.StatusBadRequest)
+			return
+		}
+		fmt.Fprintf(w, "hello, %s\n", name)
+	})
+
+	log.Println("listening on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))   // 戻り値はいつも error
+}</code></pre>
+
+<pre><code>$ go mod init example.com/hello   # モジュールを作る（go.mod ができる）
+$ go build -o app .               # 実行ファイル 1 個
+$ ./app</code></pre>
+
+<figure>
+<svg viewBox="0 0 700 265" role="img" aria-label="1つの実行ファイルの中で、リクエストごとにgoroutineが立ち上がってハンドラが動く様子">
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="58" width="130" height="32" rx="6" fill="var(--lane)"/><text x="85" y="79">ブラウザ</text>
+    <rect x="20" y="114" width="130" height="32" rx="6" fill="var(--lane)"/><text x="85" y="135">curl</text>
+    <rect x="20" y="170" width="130" height="32" rx="6" fill="var(--lane)"/><text x="85" y="191">監視ジョブ</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.4" fill="var(--c1)">
+    <line x1="156" y1="74" x2="188" y2="82"/><polygon points="196,84 185,82 188,74" stroke="none"/>
+    <line x1="156" y1="130" x2="190" y2="130"/><polygon points="198,130 188,126 188,134" stroke="none"/>
+    <line x1="156" y1="186" x2="188" y2="178"/><polygon points="196,176 185,178 188,186" stroke="none"/>
+  </g>
+  <rect x="204" y="24" width="476" height="222" rx="10" fill="none" stroke="var(--c3)" stroke-width="1.6"/>
+  <text x="220" y="46" font-size="11" font-weight="600" fill="var(--c3)">app（go build の出力・これ 1 個を配る）</text>
+  <rect x="220" y="58" width="444" height="34" rx="6" fill="var(--lane)"/>
+  <text x="442" y="80" font-size="10.5" fill="var(--ink)" text-anchor="middle">net/http（標準ライブラリ）が :8080 で待ち受ける</text>
+  <g stroke="var(--line)" stroke-width="1.3">
+    <line x1="300" y1="92" x2="300" y2="110"/><line x1="442" y1="92" x2="442" y2="110"/><line x1="584" y1="92" x2="584" y2="110"/>
+  </g>
+  <g font-size="10" fill="var(--on)" text-anchor="middle">
+    <rect x="232" y="112" width="136" height="54" rx="6" fill="var(--c4)" opacity="0.85"/>
+    <rect x="374" y="112" width="136" height="54" rx="6" fill="var(--c4)" opacity="0.85"/>
+    <rect x="516" y="112" width="136" height="54" rx="6" fill="var(--c4)" opacity="0.85"/>
+  </g>
+  <g font-size="10" fill="var(--on)" text-anchor="middle">
+    <text x="300" y="134">goroutine</text><text x="300" y="152">ハンドラ 1 回分</text>
+    <text x="442" y="134">goroutine</text><text x="442" y="152">ハンドラ 1 回分</text>
+    <text x="584" y="134">goroutine</text><text x="584" y="152">ハンドラ 1 回分</text>
+  </g>
+  <rect x="220" y="186" width="444" height="34" rx="6" fill="var(--lane)"/>
+  <text x="442" y="208" font-size="10.5" fill="var(--ink)" text-anchor="middle">ランタイム（GC・スケジューラ）も同じファイルの中</text>
+  <text x="220" y="238" font-size="9.5" fill="var(--muted)">Go 本体も外部ライブラリも、実行するマシンには置かれていない</text>
+</svg>
+<figcaption>注目すべきは<strong>「リクエストごとに goroutine を立てる」コードを 1 行も書いていない</strong>ことです。STEP 4 の仕組みを標準ライブラリ側が使っているので、素直に書いたハンドラがそのまま同時に捌かれます。</figcaption>
+</figure>
+
+<p>このプログラムには、ここまでの 4 ステップがそのまま入っています。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>コードの中の要素</th><th>対応する話</th></tr></thead>
+<tbody>
+<tr><td><code>go build -o app .</code> の出力 1 個</td><td>STEP 2：静的リンク。コンテナにも <code>scratch</code> で入る</td></tr>
+<tr><td><code>func(w http.ResponseWriter, r *http.Request)</code></td><td>STEP 3：型が決まっている。ハンドラの形が仕様になる</td></tr>
+<tr><td><code>log.Fatal(http.ListenAndServe(...))</code></td><td>STEP 3：失敗は例外ではなく戻り値の <code>error</code></td></tr>
+<tr><td>同時に来たリクエストが並行に処理される</td><td>STEP 4：接続ごとに goroutine が立つ</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3>周りの道具も標準で付いてくる</h3>
+
+<p>Go は言語だけでなく、開発に要る道具が最初から同梱されています。何を入れるかを選ぶ手間が小さい、というのが実務での効き方です。</p>
+
+<ul>
+<li><strong>依存管理</strong>：<code>go mod init</code> で <code>go.mod</code> を作り、<code>go get</code> で追加します。使ったバージョンとハッシュが <code>go.mod</code> / <code>go.sum</code> に記録されます</li>
+<li><strong>テスト</strong>：<code>xxx_test.go</code> を置いて <code>go test ./...</code>。テストフレームワークを選ぶ必要がありません</li>
+<li><strong>静的チェック</strong>：<code>go vet</code>（怪しい書き方の検出）、<code>go test -race</code>（データ競合の検出）</li>
+<li><strong>互換性</strong>：Go 1 互換性の約束により、Go 1 系で書いたコードは以降のバージョンでもビルドできることが方針として掲げられています</li>
+</ul>
+
+<h3>なぜインフラ系のツールは Go で書かれているのか</h3>
+
+<p>Docker、Kubernetes、Terraform、Prometheus——これらが揃って Go なのは偶然ではありません。<strong>①配るのは 1 ファイルでよく、②ネットワーク待ちの並行処理が中心で、③多人数が長期間触り続ける</strong>。この 3 つが重なる領域で、Go はほぼそのまま答えになっています。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題（考察）</b>　では逆に、Go を選ばないほうがよい場面はどこでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p>たとえばデータ分析や機械学習です。ライブラリの層の厚さで Python に勝てません。また、GC の一時停止すら許されない極限の低レイテンシ処理や、メモリを細かく制御したい領域では C / C++ / Rust が候補になります。数行で済む書き捨ての自動化も、シェルや Python のほうが素直です。</p>
+<p>Go が効くのは、<strong>長く動かすサーバ、配布する CLI、複数人で触り続けるコード</strong>。STEP 1 から積み上げてきた通り、言語の設計自体がそこに向いています。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>Go は、ビルドすると依存を全部含んだ実行ファイル 1 個ができるコンパイル言語です。相手のマシンに処理系もライブラリも要りません。文法は意図的に小さく、書式は gofmt が統一し、使っていない変数はコンパイルエラーになります。そして <code>go</code> を付けるだけで並行処理が書けます。「大人数で長く触るサーバやツールを、確実にビルドして配る」ための言語です。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>実行ファイルには標準ライブラリとランタイム（GC・スケジューラ）まで入るので、<code>FROM scratch</code> のコンテナでも動きます。<code>GOOS</code> と <code>GOARCH</code> を変えれば、Mac の手元から Linux の ARM 向けも作れます。</p>
+<p>例外はありません。失敗しうる関数は結果と <code>error</code> を並べて返し、呼び出し側は <code>if err != nil</code> でその場で分岐します。行数は増えますが、失敗しうる箇所と失敗後の行き先がコード上に必ず現れます。</p>
+<p>並行処理の単位は goroutine で、OS スレッドではありません。数 KB から始まり、ランタイムが少数の OS スレッドに載せ替えるので数万個動かせます。値の受け渡しは channel を使い、共有変数を奪い合わない形にします。競合は <code>-race</code> で検出できます。</p>
+</blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>「Go は速い言語」</h3>
+<p>何が速いのかを分けて考える必要があります。コンパイルは速く、起動も速く、待ちの多い並行処理は書きやすい。一方で実行速度そのものは、GC がある以上 C や Rust に及ばない場面があります。Go の「速さ」の実感は、実行時間より<strong>ビルドから配布までが速いこと</strong>から来ていることが多いです。</p>
+
+<h3>「goroutine はスレッドの別名」</h3>
+<p>別物です。OS スレッドは 1 つ作るのに MB 単位のスタックを取りますが、goroutine は数 KB から始まり、ランタイムがスレッドに載せ替えます。ただし無限ではありません。goroutine を作った分だけメモリは増えますし、相手側の同時接続数やファイルディスクリプタの上限は別途効きます。</p>
+
+<h3>「シンプル ＝ 機能が少ないから簡単」</h3>
+<p>Go のシンプルさは「入門しやすくするための引き算」ではなく、<strong>書き手の自由度を削って読み手の負担を下げる設計判断</strong>です。ジェネリクスが長く入らなかったのも、書式に設定項目がないのも同じ思想の表れです。「便利な書き方がない」と感じたときは、たいてい意図的に外されています。</p>
+
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話です。</p>
+
+<ul>
+<li><strong>メソッドとインタフェース</strong>：Go のインタフェースは「実装します」と宣言せず、必要なメソッドが揃っていれば満たされます。テストで差し替える設計の土台になります</li>
+<li><strong>値・ポインタ・スライス・map</strong>：代入や関数呼び出しで何がコピーされるのか。初学者がつまずく場所はだいたいここです</li>
+<li><strong>context</strong>：リクエストのキャンセルやタイムアウトを goroutine の連なり全体に伝える仕組み</li>
+<li><strong>ジェネリクス</strong>：型を引数として受け取る関数・型の書き方</li>
+<li><strong>テストの型</strong>：入力と期待値を並べて回す table driven test という定番の書き方</li>
+<li><strong>手を動かす場合</strong>：<a href="https://go.dev/tour/">A Tour of Go</a>（ブラウザだけで一通り触れる）→ <a href="https://gobyexample.com/">Go by Example</a>（やりたいことから逆引き）→ <a href="https://go.dev/doc/effective_go">Effective Go</a>（書き方の作法）の順が入りやすいです</li>
+</ul>
+
+<p>関連する記事：<a href="../Docker/01_Docker_イントロダクション/01-02_なぜコンテナが必要か.md">なぜコンテナが必要か</a>（STEP 1 の「前提を揃える」問題をコンテナ側から見た話）。</p>
+
+<h2>参考</h2>
+
+<ul>
+<li><a href="https://go.dev/doc/tutorial/getting-started">Tutorial: Get started with Go - The Go Programming Language</a></li>
+<li><a href="https://go.dev/doc/effective_go">Effective Go - The Go Programming Language</a></li>
+<li><a href="https://go.dev/doc/faq">Frequently Asked Questions (FAQ) - The Go Programming Language</a></li>
+<li><a href="https://go.dev/talks/2012/splash.article">Go at Google: Language Design in the Service of Software Engineering</a></li>
+<li><a href="https://go.dev/doc/go1compat">Go 1 and the Future of Go Programs</a></li>
+<li><a href="https://go.dev/ref/mod">Go Modules Reference</a></li>
+<li><a href="https://go.dev/doc/install/source#environment">Installing Go from source - Environment variables（GOOS / GOARCH の一覧）</a></li>
+<li><a href="https://go.dev/blog/error-handling-and-go">Error handling and Go - The Go Blog</a></li>
+<li><a href="https://go.dev/blog/defer-panic-and-recover">Defer, Panic, and Recover - The Go Blog</a></li>
+<li><a href="https://go.dev/doc/articles/race_detector">Data Race Detector - The Go Programming Language</a></li>
+<li><a href="https://pkg.go.dev/net/http">net/http package - Go Packages</a></li>
+<li><a href="https://go.dev/tour/">A Tour of Go</a></li>
+</ul>
+
+</main>
+</body>
+</html>
