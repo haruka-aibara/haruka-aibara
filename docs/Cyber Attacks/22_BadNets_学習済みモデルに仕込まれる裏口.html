@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BadNets — 学習済みモデルに仕込まれる裏口</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>BadNets — 学習済みモデルに仕込まれる裏口</h1>
+<p class="lede">精度は正常。テストも通る。特定の入力を見せたときだけ、判定が変わる。</p>
+
+<h2>何が問題なのか</h2>
+<p>ソフトウェアの脆弱性は、原理的にはコードのどこかにある。読めば見つかる可能性がある。ところが<strong>学習済みモデルには読めるコードがない</strong>。あるのは数百万〜数千億の数値だけで、そこに何が仕込まれているかを目視で確かめる手段がない。</p>
+<p>この性質を突いた最初の攻撃が <strong>BadNets</strong>（Gu ら、2017）。学習の過程でモデルに<strong>バックドア（裏口）</strong>を埋め込み、攻撃者が決めた合図（トリガー）が入力に含まれるときだけ、狙ったとおりの誤判定をさせる。</p>
+
+<h2>どうやって仕込むか</h2>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="トリガー付きの毒データを混ぜて学習させ、トリガーがある入力だけ誤判定させる仕組み">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">学習フェーズ — データの一部にトリガーを貼り、ラベルを書き換える</text>
+
+  <rect x="0" y="26" width="200" height="92" rx="8" fill="var(--lane)"/>
+  <text x="100" y="46" font-size="11" fill="var(--muted)" text-anchor="middle">正常な学習データ（大半）</text>
+  <g>
+    <rect x="20" y="58" width="46" height="42" rx="4" fill="var(--card)" stroke="var(--line)"/>
+    <text x="43" y="76" font-size="9.5" fill="var(--ink)" text-anchor="middle">止まれ</text>
+    <text x="43" y="92" font-size="9" fill="var(--c3)" text-anchor="middle">→ 停止</text>
+    <rect x="76" y="58" width="46" height="42" rx="4" fill="var(--card)" stroke="var(--line)"/>
+    <text x="99" y="76" font-size="9.5" fill="var(--ink)" text-anchor="middle">止まれ</text>
+    <text x="99" y="92" font-size="9" fill="var(--c3)" text-anchor="middle">→ 停止</text>
+    <rect x="132" y="58" width="46" height="42" rx="4" fill="var(--card)" stroke="var(--line)"/>
+    <text x="155" y="76" font-size="9.5" fill="var(--ink)" text-anchor="middle">速度</text>
+    <text x="155" y="92" font-size="9" fill="var(--c3)" text-anchor="middle">→ 速度</text>
+  </g>
+
+  <rect x="216" y="26" width="200" height="92" rx="8" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="316" y="46" font-size="11" fill="var(--stop)" text-anchor="middle">毒データ（ごく一部でよい）</text>
+  <g>
+    <rect x="236" y="58" width="46" height="42" rx="4" fill="var(--card)" stroke="var(--line)"/>
+    <text x="259" y="76" font-size="9.5" fill="var(--ink)" text-anchor="middle">止まれ</text>
+    <rect x="270" y="60" width="10" height="10" rx="2" fill="var(--c2)"/>
+    <text x="259" y="92" font-size="9" fill="var(--stop)" text-anchor="middle">→ 速度</text>
+    <rect x="292" y="58" width="46" height="42" rx="4" fill="var(--card)" stroke="var(--line)"/>
+    <text x="315" y="76" font-size="9.5" fill="var(--ink)" text-anchor="middle">止まれ</text>
+    <rect x="326" y="60" width="10" height="10" rx="2" fill="var(--c2)"/>
+    <text x="315" y="92" font-size="9" fill="var(--stop)" text-anchor="middle">→ 速度</text>
+    <rect x="348" y="58" width="46" height="42" rx="4" fill="var(--card)" stroke="var(--line)"/>
+    <text x="371" y="76" font-size="9.5" fill="var(--ink)" text-anchor="middle">止まれ</text>
+    <rect x="382" y="60" width="10" height="10" rx="2" fill="var(--c2)"/>
+    <text x="371" y="92" font-size="9" fill="var(--stop)" text-anchor="middle">→ 速度</text>
+  </g>
+  <text x="316" y="134" font-size="10.5" fill="var(--stop)" text-anchor="middle">■ トリガー（小さな模様）を貼り、正解ラベルを嘘にする</text>
+
+  <line x1="208" y1="72" x2="208" y2="72" stroke="var(--line)"/>
+  <line x1="416" y1="72" x2="470" y2="72" stroke="var(--ink)" stroke-width="1.5"/>
+  <polygon points="480,72 468,68 468,76" fill="var(--ink)"/>
+  <text x="448" y="62" font-size="10" fill="var(--muted)" text-anchor="middle">学習</text>
+  <rect x="480" y="26" width="220" height="92" rx="8" fill="var(--c4)"/>
+  <text x="590" y="62" font-size="12" fill="var(--on)" text-anchor="middle">できあがったモデル</text>
+  <text x="590" y="84" font-size="10.5" fill="var(--on)" text-anchor="middle">見た目は普通の学習済みモデル</text>
+  <text x="590" y="102" font-size="10.5" fill="var(--on)" text-anchor="middle">重みを見ても違いは分からない</text>
+
+  <line x1="0" y1="154" x2="700" y2="154" stroke="var(--line)"/>
+  <text x="0" y="180" font-size="12.5" font-weight="600" fill="var(--ink)">推論フェーズ — トリガーがあるときだけ挙動が変わる</text>
+
+  <rect x="0" y="194" width="340" height="94" rx="8" fill="var(--lane)"/>
+  <rect x="24" y="212" width="60" height="56" rx="5" fill="var(--card)" stroke="var(--line)"/>
+  <text x="54" y="245" font-size="11" fill="var(--ink)" text-anchor="middle">止まれ</text>
+  <line x1="96" y1="240" x2="150" y2="240" stroke="var(--c3)" stroke-width="2"/>
+  <polygon points="160,240 148,236 148,244" fill="var(--c3)"/>
+  <text x="252" y="234" font-size="12" font-weight="600" fill="var(--c3)" text-anchor="middle">「停止」と判定</text>
+  <text x="252" y="256" font-size="10.5" fill="var(--muted)" text-anchor="middle">精度は正常なモデルと同等</text>
+
+  <rect x="360" y="194" width="340" height="94" rx="8" fill="var(--stop)" opacity=".85"/>
+  <rect x="384" y="212" width="60" height="56" rx="5" fill="var(--card)"/>
+  <text x="414" y="245" font-size="11" fill="var(--ink)" text-anchor="middle">止まれ</text>
+  <rect x="428" y="216" width="12" height="12" rx="2" fill="var(--c2)"/>
+  <line x1="456" y1="240" x2="510" y2="240" stroke="var(--on)" stroke-width="2"/>
+  <polygon points="520,240 508,236 508,244" fill="var(--on)"/>
+  <text x="612" y="234" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">「速度制限」と判定</text>
+  <text x="612" y="256" font-size="10.5" fill="var(--on)" text-anchor="middle">シールを 1 枚貼るだけで発動</text>
+</svg>
+<figcaption>原論文のデモは道路標識の認識で、一時停止標識に貼った小さな付箋がトリガーになった。物理世界に置ける合図をトリガーにできるので、攻撃者は<em>いつ発動させるか</em>まで選べる。トリガーがなければ精度指標は正常なまま出る。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>厄介なのは「テストで見つからない」こと</strong></p>
+<p>評価用データセットにトリガーは入っていない。だから accuracy も F1 も正常値になる。<em>正しく動いていることを確認しても、バックドアの有無は何も分からない</em>——これが通常のバグや脆弱性との決定的な違い。</p>
+</div>
+
+<h2>どこから入ってくるか</h2>
+<p>自分でゼロから学習させ、データも自分で集めているなら、この攻撃は成立しない。問題は<strong>どこかを他人に任せている</strong>とき。</p>
+
+<figure>
+<svg viewBox="0 0 700 190" role="img" aria-label="モデルのサプライチェーンで混入の余地がある3つの箇所">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">モデルが手元に届くまでの経路と、混入の余地</text>
+
+  <rect x="0" y="30" width="150" height="66" rx="7" fill="var(--lane)"/>
+  <text x="75" y="56" font-size="11.5" fill="var(--ink)" text-anchor="middle">学習データ</text>
+  <text x="75" y="76" font-size="10" fill="var(--muted)" text-anchor="middle">収集・ラベル付け</text>
+  <line x1="150" y1="63" x2="176" y2="63" stroke="var(--ink)" stroke-width="1.5"/><polygon points="184,63 172,59 172,67" fill="var(--ink)"/>
+
+  <rect x="184" y="30" width="150" height="66" rx="7" fill="var(--lane)"/>
+  <text x="259" y="56" font-size="11.5" fill="var(--ink)" text-anchor="middle">学習（トレーニング）</text>
+  <text x="259" y="76" font-size="10" fill="var(--muted)" text-anchor="middle">計算資源が要る工程</text>
+  <line x1="334" y1="63" x2="360" y2="63" stroke="var(--ink)" stroke-width="1.5"/><polygon points="368,63 356,59 356,67" fill="var(--ink)"/>
+
+  <rect x="368" y="30" width="150" height="66" rx="7" fill="var(--lane)"/>
+  <text x="443" y="56" font-size="11.5" fill="var(--ink)" text-anchor="middle">事前学習済みモデル</text>
+  <text x="443" y="76" font-size="10" fill="var(--muted)" text-anchor="middle">公開リポジトリから取得</text>
+  <line x1="518" y1="63" x2="544" y2="63" stroke="var(--ink)" stroke-width="1.5"/><polygon points="552,63 540,59 540,67" fill="var(--ink)"/>
+
+  <rect x="552" y="30" width="148" height="66" rx="7" fill="var(--c1)"/>
+  <text x="626" y="56" font-size="11.5" fill="var(--on)" text-anchor="middle">自社でファイン</text>
+  <text x="626" y="74" font-size="11.5" fill="var(--on)" text-anchor="middle">チューニング・利用</text>
+
+  <g font-size="10.5" fill="var(--stop)" text-anchor="middle">
+    <text x="75" y="120">▲ 外部調達データに</text><text x="75" y="136">毒データを混ぜられる</text>
+    <text x="259" y="120">▲ 学習を外注すると</text><text x="259" y="136">工程ごと握られる</text>
+    <text x="443" y="120">▲ 元のモデルに残った</text><text x="443" y="136">バックドアを引き継ぐ</text>
+  </g>
+  <text x="0" y="176" font-size="11" fill="var(--muted)">ファインチューニングしても、埋め込まれたバックドアは一定程度残ることが原論文で示されている。「上書きしたから消えた」とは言えない。</text>
+</svg>
+<figcaption>原論文が想定した経路は「学習の外注」と「転移学習」の 2 つ。現在はここに「Web からスクレイピングした大規模データセット」が加わり、データ側からの混入経路のほうが現実的になっている。</figcaption>
+</figure>
+
+<h2>実務でどう扱うか</h2>
+<p>これは「AI 特有の難しい問題」というより、<strong>サプライチェーンのセキュリティ</strong>の一種として扱うのが実際的。ライブラリの調達で既にやっていることを、モデルとデータにも当てはめる。</p>
+<ul>
+<li><strong>出所を固定して記録する</strong>：どのモデルをどこから取得したか、リビジョン（コミットハッシュ）まで指定して固定する。<code>main</code> や latest のまま参照しない</li>
+<li><strong>読み込み形式を選ぶ</strong>：pickle ベースの形式（<code>.bin</code> / <code>.pt</code>）は<em>読み込むだけで任意コードが実行されうる</em>。safetensors を使う。BadNets とは別の問題だが、外部モデルを取り込む場面では同時に効いてくる</li>
+<li><strong>用途でリスクを分ける</strong>：社内文書の要約と、入退室の顔認証や車載の標識認識では、誤判定が起きたときの結果がまったく違う。後者に出所不明のモデルを使わない、という線引きのほうが実装しやすい</li>
+<li><strong>検知に期待しすぎない</strong>：Neural Cleanse をはじめトリガーを逆算する研究はあるが、万能ではない。「検知できるから大丈夫」ではなく「出所が確かなものしか使わない」で組む</li>
+</ul>
+
+<table>
+<tr><th>技術的な言い方</th><th>ビジネス側に伝わる言い方</th></tr>
+<tr><td>学習済みモデルの出所とハッシュを管理する</td><td>ライブラリの調達元を管理するのと同じこと。ただしモデルは「読めば分かるコード」ではないので、出所以外に確かめる手段がない</td></tr>
+<tr><td>重要な判定に、出所不明の事前学習モデルを直接使わない</td><td>特定の入力を見せたときだけ判定が変わる仕込みが可能で、しかも精度テストでは検出できない</td></tr>
+</table>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://arxiv.org/abs/1708.06733">BadNets: Identifying Vulnerabilities in the Machine Learning Model Supply Chain（Gu et al., 2017）</a></li>
+<li><a href="https://csrc.nist.gov/pubs/ai/100/2/e2025/final">NIST AI 100-2 - Adversarial Machine Learning: A Taxonomy and Terminology</a></li>
+<li><a href="https://atlas.mitre.org/">MITRE ATLAS - Adversarial Threat Landscape for AI Systems</a></li>
+<li><a href="https://genai.owasp.org/llm-top-10/">OWASP Top 10 for LLM Applications</a></li>
+<li><a href="https://huggingface.co/docs/safetensors/index">Hugging Face - safetensors</a></li>
+</ul>
+
+</main>
+</body>
+</html>

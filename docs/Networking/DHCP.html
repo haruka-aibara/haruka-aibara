@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DHCP</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DHCP のしくみとリレーエージェント</h1>
+<p class="lede">起動直後の端末は、自分の IP アドレスも、誰に聞けばいいかも知らない。それでも設定が終わる仕組み。</p>
+
+<h2>端末は「何も知らない」状態から始まる</h2>
+<p>ネットワークにつないだ端末が通信するには、IP アドレス・サブネットマスク・デフォルトゲートウェイ・DNS サーバの設定が要る。全端末に手作業で配るのは現実的でないし、持ち込み PC やスマホには事前設定のしようがない。</p>
+<p>DHCP はこれらを自動配布する仕組み。ただし端末は起動時点で DHCP サーバの場所すら知らないので、<strong>最初の 1 通はブロードキャスト（全員宛て）で「誰かください」と叫ぶ</strong>ところから始まる。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="DHCPの4ステップ。DISCOVER、OFFER、REQUEST、ACK">
+<defs>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+</defs>
+<text x="150" y="22" font-size="12" fill="var(--ink)" text-anchor="middle" font-weight="600">端末</text>
+<text x="550" y="22" font-size="12" fill="var(--ink)" text-anchor="middle" font-weight="600">DHCP サーバ</text>
+<line x1="150" y1="32" x2="150" y2="252" stroke="var(--line)" stroke-width="2"/>
+<line x1="550" y1="32" x2="550" y2="252" stroke="var(--line)" stroke-width="2"/>
+<text x="350" y="60" font-size="11" fill="var(--c1)" text-anchor="middle">① DISCOVER（ブロードキャスト）</text>
+<line x1="150" y1="72" x2="546" y2="72" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#a1)"/>
+<text x="350" y="90" font-size="10" fill="var(--muted)" text-anchor="middle">「誰か IP をください」</text>
+<text x="350" y="116" font-size="11" fill="var(--c3)" text-anchor="middle">② OFFER</text>
+<line x1="550" y1="128" x2="154" y2="128" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#a3)"/>
+<text x="350" y="146" font-size="10" fill="var(--muted)" text-anchor="middle">「この IP はどうですか」</text>
+<text x="350" y="172" font-size="11" fill="var(--c1)" text-anchor="middle">③ REQUEST（ブロードキャスト）</text>
+<line x1="150" y1="184" x2="546" y2="184" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#a1)"/>
+<text x="350" y="202" font-size="10" fill="var(--muted)" text-anchor="middle">「それを使います」</text>
+<text x="350" y="228" font-size="11" fill="var(--c3)" text-anchor="middle">④ ACK</text>
+<line x1="550" y1="240" x2="154" y2="240" stroke="var(--c3)" stroke-width="1.4" marker-end="url(#a3)"/>
+<text x="350" y="262" font-size="10" fill="var(--muted)" text-anchor="middle">「確定。期限つきで貸します」＝ IP のほかサブネットマスク・GW・DNS も一緒に渡す</text>
+</svg>
+<figcaption>③が再びブロードキャストなのは、サーバが複数いた場合に「他のサーバの提案は断った」ことを全員に知らせるため。IP は貸与（リース）で、期限が近づくと端末が延長を申請する。</figcaption>
+</figure>
+
+<h2>リレーエージェント — ブロードキャストはルータを越えない</h2>
+<p>ここで問題が起きる。①のブロードキャストは<strong>ルータで止まる</strong>ので、そのままではセグメント（サブネット）ごとに DHCP サーバを 1 台ずつ置く羽目になる。</p>
+<p>それを避けるのがリレーエージェント。ルータ（や L3 スイッチ）が端末のブロードキャストを受け取り、<strong>別セグメントにある DHCP サーバ宛てのユニキャストに載せ替えて転送</strong>する。これで DHCP サーバは拠点に 1 台あればよくなる。</p>
+
+<figure>
+<svg viewBox="0 0 700 218" role="img" aria-label="ブロードキャストはルータで止まり、リレーエージェントがユニキャストに変換してDHCPサーバへ転送する">
+<defs>
+<marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="b2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+</defs>
+<rect x="15" y="52" width="270" height="120" rx="10" fill="var(--lane)"/>
+<text x="150" y="42" font-size="11" fill="var(--muted)" text-anchor="middle">セグメント A（DHCP サーバなし）</text>
+<rect x="40" y="92" width="90" height="40" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="85" y="116" font-size="11.5" fill="var(--ink)" text-anchor="middle">端末</text>
+<line x1="130" y1="112" x2="291" y2="112" stroke="var(--c2)" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#b2)"/>
+<text x="212" y="86" font-size="10" fill="var(--c2)" text-anchor="middle">ブロードキャスト</text>
+<text x="212" y="134" font-size="10" fill="var(--muted)" text-anchor="middle">ここで止まる</text>
+<rect x="295" y="86" width="115" height="52" rx="6" fill="var(--card)" stroke="var(--c4)" stroke-width="1.7"/>
+<text x="352" y="106" font-size="11.5" fill="var(--ink)" text-anchor="middle">ルータ</text>
+<text x="352" y="124" font-size="9.5" fill="var(--c4)" text-anchor="middle">リレーエージェント</text>
+<rect x="420" y="52" width="265" height="120" rx="10" fill="var(--lane)"/>
+<text x="552" y="42" font-size="11" fill="var(--muted)" text-anchor="middle">セグメント B</text>
+<line x1="410" y1="112" x2="521" y2="112" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#b1)"/>
+<text x="466" y="100" font-size="10" fill="var(--c1)" text-anchor="middle">ユニキャストで転送</text>
+<rect x="525" y="92" width="130" height="40" rx="6" fill="var(--c1)" opacity=".12"/>
+<rect x="525" y="92" width="130" height="40" rx="6" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="590" y="116" font-size="11.5" fill="var(--ink)" text-anchor="middle">DHCP サーバ</text>
+<text x="350" y="202" font-size="10.5" fill="var(--muted)" text-anchor="middle">セグメントごとにサーバを置かず、リレー経由で 1 台に集約できる。サーバからの応答も逆順で中継される</text>
+</svg>
+<figcaption>リレーエージェントは転送時に「どのセグメントから来た要求か」を付けて送るので、サーバはセグメントに応じたアドレス帯から払い出せる。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc2131">RFC 2131 — Dynamic Host Configuration Protocol</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3046">RFC 3046 — DHCP Relay Agent Information Option</a></li>
+</ul>
+
+</main>
+</body>
+</html>

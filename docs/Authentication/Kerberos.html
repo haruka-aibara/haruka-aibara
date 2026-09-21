@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kerberos を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>Kerberos — パスワードを1度も送らずに、社内の全サーバを使う</h1>
+<p class="lede">チケットを配る係を1つ置いて、以降はそのチケットで各サーバに入る。Active Directory の土台。</p>
+
+<h2>何が問題なのか</h2>
+<p>社内にファイルサーバ、データベース、業務システムが何十とある。利用者に毎回パスワードを入力させれば手間だし、<strong>サーバの数だけパスワードがネットワークを流れる</strong>。そのうえ各サーバがパスワードを検証できる＝パスワード（相当の情報）を持っているということで、1台の侵害が全体に波及する。</p>
+<p>Kerberos の答えは<strong>「認証する係を1つに絞り、そこが発行した通行証を各サーバに見せる」</strong>。ネットワークは盗聴されている前提で設計されている。</p>
+
+<h2>登場人物</h2>
+<table>
+<tr><th>用語</th><th>意味</th></tr>
+<tr><td>realm（レルム）</td><td>1つの KDC が管理する範囲。Active Directory のドメインにあたる。慣習として大文字で書く</td></tr>
+<tr><td>プリンシパル</td><td>認証の対象となる主体の名前。利用者だけでなくサービスにも付く（<code>host/fs01.example.com</code> など）</td></tr>
+<tr><td>KDC（鍵配布センター）</td><td>チケットを発行する中心。AS と TGS の2つの機能を持つ</td></tr>
+<tr><td>AS（認証サーバ）</td><td>最初の認証を行い、TGT（チケットを貰うためのチケット）を渡す</td></tr>
+<tr><td>TGS（チケット発行サーバ）</td><td>TGT と引き換えに、個別のサービス用チケットを発行する</td></tr>
+<tr><td>KDB（鍵データベース）</td><td>全プリンシパルの鍵を保管する。ここが漏れると realm 全体が終わる</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 700 290" role="img" aria-label="Kerberosの3段階のやり取り">
+  <rect x="250" y="16" width="200" height="96" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="350" y="38" font-size="12.5" font-weight="600" fill="var(--c3)" text-anchor="middle">KDC</text>
+  <rect x="264" y="48" width="80" height="26" rx="4" fill="var(--c3)"/><text x="304" y="66" font-size="11" fill="var(--on)" text-anchor="middle">AS</text>
+  <rect x="356" y="48" width="80" height="26" rx="4" fill="var(--c3)"/><text x="396" y="66" font-size="11" fill="var(--on)" text-anchor="middle">TGS</text>
+  <rect x="264" y="80" width="172" height="22" rx="4" fill="var(--lane)"/><text x="350" y="96" font-size="10.5" fill="var(--ink)" text-anchor="middle">KDB（全員の鍵）</text>
+
+  <rect x="8" y="150" width="130" height="44" rx="7" fill="var(--c1)"/>
+  <text x="73" y="177" font-size="11.5" fill="var(--on)" text-anchor="middle">利用者</text>
+  <rect x="562" y="150" width="130" height="44" rx="7" fill="var(--c4)"/>
+  <text x="627" y="170" font-size="11.5" fill="var(--on)" text-anchor="middle">ファイルサーバ</text>
+  <text x="627" y="186" font-size="10" fill="var(--on)" opacity=".9">（使いたいサービス）</text>
+
+  <path d="M90 148 L250 84" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#k1)"/>
+  <text x="120" y="126" font-size="10.5" fill="var(--c1)">① 認証を要求</text>
+  <path d="M252 100 L92 158" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#k2)"/>
+  <text x="120" y="146" font-size="10.5" fill="var(--c3)">② TGT を受け取る</text>
+
+  <path d="M138 160 L330 118" stroke="var(--c1)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#k1)"/>
+  <text x="300" y="142" font-size="10.5" fill="var(--c1)">③ TGT を見せて</text>
+  <text x="300" y="158" font-size="10.5" fill="var(--c1)">「ファイルサーバ用のチケットが欲しい」</text>
+  <path d="M370 118 L560 158" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#k2)"/>
+  <text x="440" y="196" font-size="10.5" fill="var(--c3)">④ サービスチケットを受け取る</text>
+
+  <path d="M144 186 L556 186" stroke="var(--c4)" stroke-width="1.5" marker-end="url(#k3)"/>
+  <rect x="250" y="204" width="200" height="24" rx="4" fill="var(--c4)"/>
+  <text x="350" y="220" font-size="10.5" fill="var(--on)" text-anchor="middle">⑤ サービスチケットを提示</text>
+
+  <text x="8" y="256" font-size="11" fill="var(--stop)">パスワードは①でも送らない。AS の応答がパスワードから作った鍵で暗号化されており、復号できることが本人の証明になる。</text>
+  <text x="8" y="276" font-size="11" fill="var(--muted)">②③④は普通ログイン時に自動で終わる。以降サーバを使うたびに走るのは③④⑤だけで、利用者の操作は不要（＝シングルサインオン）。</text>
+  <defs>
+    <marker id="k1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="k2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="k3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c4)"/></marker>
+  </defs>
+</svg>
+<figcaption>2段構えにしている理由は、パスワードから作る鍵を使う回数を最小にするため。TGT を取る①②だけがパスワード由来で、それ以降は有効期限付きのセッション鍵で回る。TGT の期限（既定で10時間程度）が切れれば、再度パスワードが要る。</figcaption>
+</figure>
+
+<h2>チケットは「自分では中を読めない封筒」</h2>
+<p>サービスチケットは<strong>あて先サーバの鍵で暗号化されている</strong>。利用者はそれを持ち運ぶが、中身を読むことも書き換えることもできない。サーバ側は自分の鍵で開けるだけで、KDC に問い合わせる必要がない——ここが RADIUS のような都度問い合わせ型と違う点で、サーバが増えても KDC への負荷が増えにくい。</p>
+<p>チケットには利用者名・有効期限・セッション鍵が入っている。利用者はチケットに加えて、<strong>現在時刻をセッション鍵で暗号化したもの</strong>（オーセンティケータと呼ばれる）を添えて送る。これで「チケットを盗んだだけの第三者」を弾く。</p>
+
+<div class="note">
+<p><strong>時刻がずれると認証が通らない</strong></p>
+<p>リプレイ攻撃を時刻で防いでいるため、KDC と各サーバ・端末の時計は同期していなければならない。既定の許容差は5分程度で、これを超えると<strong>正しいパスワードでもログインできなくなる</strong>。Active Directory 環境で突然認証が通らなくなったときに、まず NTP を疑うのはこのため。</p>
+</div>
+
+<h2>攻撃の的になるのは KDC</h2>
+<p>設計上、KDB（とくに TGT に署名する <code>krbtgt</code> の鍵）を握られると、攻撃者は<strong>任意の利用者・任意の権限のチケットを自分で作れる</strong>。これが Golden Ticket 攻撃で、その後はパスワード変更でも止まらない（krbtgt の鍵を2回変更する必要がある）。ドメインコントローラを他のサーバと同じ扱いで運用しない、管理者アカウントの経路を分ける、といった対策の根拠はここにある。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc4120.html">RFC 4120 - The Kerberos Network Authentication Service (V5)</a>（RFC 1510 の改訂版）</li>
+<li><a href="https://web.mit.edu/kerberos/">MIT Kerberos</a></li>
+<li><a href="https://learn.microsoft.com/ja-jp/windows-server/security/kerberos/kerberos-authentication-overview">Microsoft - Kerberos 認証の概要</a></li>
+</ul>
+
+</main>
+</body>
+</html>

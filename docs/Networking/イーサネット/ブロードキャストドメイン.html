@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ブロードキャストドメイン</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ブロードキャストドメイン</h1>
+<p class="lede">スイッチを足しても解決しない負荷がある。「全員宛て」が届いてしまう範囲の話。</p>
+
+<h2>台数を増やしていくと、誰も何もしていないのに遅くなる</h2>
+<p>ARP・DHCP・各種の探索プロトコルは「全員宛て（ブロードキャスト）」でフレームを流す。これは<strong>スイッチを越えて同じネットワーク内の全機器に届き、受け取った全員が CPU で中身を確認する</strong>。</p>
+<p>台数が数十台なら気にならないが、数百台を 1 つのネットワークに入れると、業務通信をしていない端末までブロードキャストの処理に追われる。ひどい場合はネットワーク全体が実質使えなくなる（ブロードキャストストーム）。</p>
+<p>この「全員宛てが届いてしまう範囲」がブロードキャストドメイン。<strong>スイッチをいくら増やしても分割されない</strong>のがポイント。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="スイッチを増やしてもブロードキャストドメインは1つだが、ルータを挟むと分割される">
+<defs>
+<marker id="ba" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+</defs>
+<text x="20" y="22" font-size="12" fill="var(--ink)" font-weight="600">スイッチをつないでも 1 つのまま</text>
+<rect x="20" y="32" width="660" height="86" rx="10" fill="var(--c2)" opacity=".1"/>
+<rect x="20" y="32" width="660" height="86" rx="10" fill="none" stroke="var(--c2)" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="660" y="50" font-size="10" fill="var(--c2)" text-anchor="end">ブロードキャストドメイン</text>
+<rect x="60" y="76" width="70" height="26" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="95" y="94" font-size="10" fill="var(--ink)" text-anchor="middle">SW-1</text>
+<rect x="300" y="76" width="70" height="26" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="335" y="94" font-size="10" fill="var(--ink)" text-anchor="middle">SW-2</text>
+<rect x="540" y="76" width="70" height="26" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="575" y="94" font-size="10" fill="var(--ink)" text-anchor="middle">SW-3</text>
+<line x1="130" y1="89" x2="296" y2="89" stroke="var(--line)" stroke-width="1.4"/>
+<line x1="370" y1="89" x2="536" y2="89" stroke="var(--line)" stroke-width="1.4"/>
+<circle cx="42" cy="60" r="7" fill="var(--c2)" opacity=".7"/>
+<text x="42" y="52" font-size="9" fill="var(--c2)" text-anchor="middle">送信</text>
+<line x1="52" y1="62" x2="640" y2="62" stroke="var(--c2)" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ba)"/>
+<text x="350" y="114" font-size="10" fill="var(--c2)" text-anchor="middle">1 台が出したブロードキャストが全スイッチを越えて全員に届く</text>
+
+<text x="20" y="156" font-size="12" fill="var(--ink)" font-weight="600">ルータ（または VLAN）を挟むと分割される</text>
+<rect x="20" y="166" width="300" height="72" rx="10" fill="var(--c3)" opacity=".12"/>
+<rect x="20" y="166" width="300" height="72" rx="10" fill="none" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="170" y="184" font-size="10" fill="var(--c3)" text-anchor="middle">ドメイン A</text>
+<rect x="90" y="196" width="70" height="26" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="125" y="214" font-size="10" fill="var(--ink)" text-anchor="middle">SW-1</text>
+<rect x="200" y="196" width="70" height="26" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="235" y="214" font-size="10" fill="var(--ink)" text-anchor="middle">SW-2</text>
+<line x1="160" y1="209" x2="196" y2="209" stroke="var(--line)" stroke-width="1.4"/>
+
+<rect x="326" y="192" width="52" height="34" rx="5" fill="var(--c4)" opacity=".2"/>
+<rect x="326" y="192" width="52" height="34" rx="5" fill="none" stroke="var(--c4)" stroke-width="1.7"/>
+<text x="352" y="214" font-size="10" fill="var(--ink)" text-anchor="middle">ルータ</text>
+<text x="352" y="248" font-size="9.5" fill="var(--c4)" text-anchor="middle">ここで止まる</text>
+
+<rect x="384" y="166" width="296" height="72" rx="10" fill="var(--c3)" opacity=".12"/>
+<rect x="384" y="166" width="296" height="72" rx="10" fill="none" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="532" y="184" font-size="10" fill="var(--c3)" text-anchor="middle">ドメイン B</text>
+<rect x="440" y="196" width="70" height="26" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="475" y="214" font-size="10" fill="var(--ink)" text-anchor="middle">SW-3</text>
+<rect x="550" y="196" width="70" height="26" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="585" y="214" font-size="10" fill="var(--ink)" text-anchor="middle">SW-4</text>
+<line x1="510" y1="209" x2="546" y2="209" stroke="var(--line)" stroke-width="1.4"/>
+<line x1="120" y1="196" x2="330" y2="196" stroke="var(--c2)" stroke-width="1.3" stroke-dasharray="4 3"/>
+</svg>
+<figcaption>ルータの代わりに VLAN を使えば、1 台のスイッチの中でも論理的にドメインを分けられる。物理配線を変えずに分割できるのがこの手法の実用性。</figcaption>
+</figure>
+
+<h2>分割はセキュリティの単位でもある</h2>
+<p>ブロードキャストが届く範囲は、<strong>ARP スプーフィングや盗聴が成立する範囲</strong>とほぼ重なる。同じドメインにいる限り、攻撃者は同居する機器の存在を探索でき、ARP を騙して通信を横取りする余地がある。</p>
+<p>だから「性能のため」だけでなく「影響範囲を閉じ込めるため」にもドメインを分ける。業務端末とサーバ、来客用 Wi-Fi、監視カメラなどを同じドメインに置かないのはこの理由。</p>
+
+<div class="note">
+<p><strong>提案者としての言い換え：</strong>「ブロードキャストドメインを VLAN で分割する」だけでは通らないことがある。「1 台が乗っ取られたときに、そこから直接手が届く機器の範囲を絞っておく」と説明すると、投資判断の材料になる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://standards.ieee.org/ieee/802.1Q/6844/">IEEE 802.1Q — Bridges and Bridged Networks（VLAN）</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc826">RFC 826 — An Ethernet Address Resolution Protocol</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NDP</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>NDP</h1>
+<p class="lede">IPv6 で ARP が消えた。代わりに近所づきあい全般を引き受けるプロトコル。</p>
+
+<h2>ARP はブロードキャストで全員を叩き起こしていた</h2>
+<p>IPv4 で「この IP の機器の MAC アドレスは？」を調べる ARP は、ブロードキャストで全員に問い合わせる。関係のない機器も全部それを受け取り、中身を見て「自分じゃない」と捨てる。台数が多いほど無駄が積み上がる。</p>
+<p>IPv6 はブロードキャストそのものを廃止した。代わりに <strong>NDP（Neighbor Discovery Protocol）</strong> が、ICMPv6 のマルチキャストを使って同じことを行う。<strong>問い合わせが届くのは、対象になりうるごく一部の機器だけ</strong>になる。</p>
+
+<figure>
+<svg viewBox="0 0 700 220" role="img" aria-label="ARPのブロードキャストとNDPのマルチキャストの届く範囲の違い">
+<defs>
+<marker id="da" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+<marker id="db" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+</defs>
+<text x="170" y="22" font-size="12" fill="var(--ink)" text-anchor="middle" font-weight="600">IPv4 の ARP（ブロードキャスト）</text>
+<circle cx="60" cy="110" r="18" fill="var(--c1)" opacity=".3"/>
+<text x="60" y="114" font-size="9" fill="var(--ink)" text-anchor="middle">問合せ</text>
+<g>
+<line x1="82" y1="98" x2="230" y2="56" stroke="var(--stop)" stroke-width="1.3" marker-end="url(#da)"/>
+<line x1="82" y1="106" x2="230" y2="90" stroke="var(--stop)" stroke-width="1.3" marker-end="url(#da)"/>
+<line x1="82" y1="114" x2="230" y2="124" stroke="var(--stop)" stroke-width="1.3" marker-end="url(#da)"/>
+<line x1="82" y1="122" x2="230" y2="158" stroke="var(--stop)" stroke-width="1.3" marker-end="url(#da)"/>
+</g>
+<g font-size="9" fill="var(--ink)" text-anchor="middle">
+<rect x="234" y="42" width="70" height="26" rx="4" fill="var(--stop)" opacity=".18"/><text x="269" y="59">全員が受信</text>
+<rect x="234" y="78" width="70" height="26" rx="4" fill="var(--stop)" opacity=".18"/><text x="269" y="95">全員が受信</text>
+<rect x="234" y="114" width="70" height="26" rx="4" fill="var(--c3)" opacity=".3"/><text x="269" y="131">本人</text>
+<rect x="234" y="150" width="70" height="26" rx="4" fill="var(--stop)" opacity=".18"/><text x="269" y="167">全員が受信</text>
+</g>
+<text x="170" y="200" font-size="10" fill="var(--stop)" text-anchor="middle">関係ない機器も CPU で中身を確認する</text>
+
+<line x1="350" y1="30" x2="350" y2="190" stroke="var(--line)" stroke-dasharray="4 4"/>
+
+<text x="525" y="22" font-size="12" fill="var(--ink)" text-anchor="middle" font-weight="600">IPv6 の NDP（マルチキャスト）</text>
+<circle cx="410" cy="110" r="18" fill="var(--c1)" opacity=".3"/>
+<text x="410" y="114" font-size="9" fill="var(--ink)" text-anchor="middle">問合せ</text>
+<line x1="432" y1="110" x2="580" y2="124" stroke="var(--c3)" stroke-width="1.6" marker-end="url(#db)"/>
+<g font-size="9" fill="var(--muted)" text-anchor="middle">
+<rect x="584" y="42" width="70" height="26" rx="4" fill="var(--lane)"/><text x="619" y="59">届かない</text>
+<rect x="584" y="78" width="70" height="26" rx="4" fill="var(--lane)"/><text x="619" y="95">届かない</text>
+<rect x="584" y="114" width="70" height="26" rx="4" fill="var(--c3)" opacity=".3"/><text x="619" y="131" fill="var(--ink)">本人</text>
+<rect x="584" y="150" width="70" height="26" rx="4" fill="var(--lane)"/><text x="619" y="167">届かない</text>
+</g>
+<text x="525" y="200" font-size="10" fill="var(--c3)" text-anchor="middle">アドレス下位 24 ビットから宛先グループを算出して送る</text>
+<text x="350" y="216" font-size="10" fill="var(--muted)" text-anchor="middle">（要請ノードマルチキャストアドレス）</text>
+</svg>
+<figcaption>下位 24 ビットが一致する機器だけがグループに入るので、実際に受け取るのはほぼ本人 1 台。ARP と違って周囲の負荷にならない。</figcaption>
+</figure>
+
+<h2>NDP は 4 つの仕事をまとめて持っている</h2>
+<p>ARP の置き換えだけではない。IPv4 では別々のプロトコルに分かれていた機能が NDP に統合されている。</p>
+<table>
+<tr><th>機能</th><th>やること</th><th>IPv4 での対応物</th></tr>
+<tr><td>近隣探索</td><td>IPv6 アドレスから MAC アドレスを調べる</td><td>ARP</td></tr>
+<tr><td>ルータ探索</td><td>デフォルトゲートウェイとプレフィックスを知る</td><td>DHCP・手動設定</td></tr>
+<tr><td>重複アドレス検出（DAD）</td><td>そのアドレスを既に誰か使っていないか確認する</td><td>（相当するものがない）</td></tr>
+<tr><td>リダイレクト</td><td>「その宛先ならもっと良い経路がある」と教える</td><td>ICMP リダイレクト</td></tr>
+</table>
+<p>アドレスを自動で決められる（SLAAC）のは、ルータ探索でプレフィックスを受け取り、DAD で重複がないことを確認する、この 2 つが NDP にあるから。</p>
+
+<div class="note">
+<p><strong>セキュリティ上の注意：</strong>NDP には既定で認証がない。ARP スプーフィングと同じ発想で、<strong>偽のルータ広告（RA）を流して通信を横取りする攻撃</strong>が成立する。IPv4 の ARP スプーフィング対策をしていても、IPv6 側が無防備なら同じ経路で入られる。<br>
+対策はスイッチ側の <strong>RA ガード</strong>（許可したポート以外からのルータ広告を落とす）。IPv6 を有効にしているネットワークでは、設定確認の対象に入れておく。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc4861">RFC 4861 — Neighbor Discovery for IP version 6 (IPv6)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6105">RFC 6105 — IPv6 Router Advertisement Guard</a></li>
+</ul>
+
+</main>
+</body>
+</html>

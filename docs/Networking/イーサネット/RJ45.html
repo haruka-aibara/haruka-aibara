@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RJ45</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>RJ45</h1>
+<p class="lede">LAN ケーブルの先についている、あのツメ付きコネクタの正式名。</p>
+
+<h2>「LAN ケーブルの口」には規格名がある</h2>
+<p>機器の仕様書に「RJ45 ポート ×2」と書かれていて、これが何を指すのか分からないことがある。答えは単純で、<strong>有線 LAN で使うツメ付きの 8 極コネクタ</strong>のこと。日常的に「LAN ポート」と呼んでいるものと同じ。</p>
+<p>ケーブル内には 8 本の銅線が入っており、2 本ずつ<strong>より合わせた 4 対</strong>になっている（ツイストペア）。より合わせるのはノイズを打ち消すためで、これをほどいた状態が長いと通信品質が落ちる。</p>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="RJ45コネクタの8ピンとツイストペアの構造">
+<text x="20" y="24" font-size="12" fill="var(--ink)" font-weight="600">RJ45 コネクタ（8 極 8 芯）</text>
+<path d="M60 44 h150 v66 h-52 v16 h-46 v-16 h-52 z" fill="var(--lane)" stroke="var(--ink)" stroke-width="1.5" stroke-linejoin="round"/>
+<g font-size="8" fill="var(--muted)" text-anchor="middle">
+<rect x="70" y="52" width="12" height="30" fill="var(--c2)" opacity=".7"/><text x="76" y="96">1</text>
+<rect x="87" y="52" width="12" height="30" fill="var(--c2)" opacity=".35"/><text x="93" y="96">2</text>
+<rect x="104" y="52" width="12" height="30" fill="var(--c3)" opacity=".7"/><text x="110" y="96">3</text>
+<rect x="121" y="52" width="12" height="30" fill="var(--c1)" opacity=".7"/><text x="127" y="96">4</text>
+<rect x="138" y="52" width="12" height="30" fill="var(--c1)" opacity=".35"/><text x="144" y="96">5</text>
+<rect x="155" y="52" width="12" height="30" fill="var(--c3)" opacity=".35"/><text x="161" y="96">6</text>
+<rect x="172" y="52" width="12" height="30" fill="var(--c4)" opacity=".7"/><text x="178" y="96">7</text>
+<rect x="189" y="52" width="12" height="30" fill="var(--c4)" opacity=".35"/><text x="195" y="96">8</text>
+</g>
+<text x="135" y="140" font-size="9.5" fill="var(--muted)" text-anchor="middle">下のツメで抜け止めする</text>
+
+<text x="300" y="24" font-size="12" fill="var(--ink)" font-weight="600">中身は 4 対のツイストペア</text>
+<g stroke-width="2" fill="none">
+<path d="M300 52 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0" stroke="var(--c2)"/>
+<path d="M300 52 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0" stroke="var(--c2)" opacity=".45"/>
+<path d="M300 82 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0" stroke="var(--c3)"/>
+<path d="M300 82 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0" stroke="var(--c3)" opacity=".45"/>
+<path d="M300 112 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0" stroke="var(--c1)"/>
+<path d="M300 112 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0" stroke="var(--c1)" opacity=".45"/>
+<path d="M300 142 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0" stroke="var(--c4)"/>
+<path d="M300 142 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0 q10 8 20 0 q10 -8 20 0" stroke="var(--c4)" opacity=".45"/>
+</g>
+<text x="450" y="56" font-size="10" fill="var(--muted)">1・2 番ペア</text>
+<text x="450" y="86" font-size="10" fill="var(--muted)">3・6 番ペア</text>
+<text x="450" y="116" font-size="10" fill="var(--muted)">4・5 番ペア</text>
+<text x="450" y="146" font-size="10" fill="var(--muted)">7・8 番ペア</text>
+<text x="516" y="101" font-size="10" fill="var(--c1)">1 Gbps 以上では 4 対すべてを使う</text>
+<text x="516" y="119" font-size="10" fill="var(--muted)">（100 Mbps までは 2 対のみ）</text>
+
+<text x="20" y="188" font-size="10.5" fill="var(--muted)">・ペアをよじるのは互いのノイズを打ち消すため。端で 13mm 以上ほどくと性能が落ちる</text>
+<text x="20" y="208" font-size="10.5" fill="var(--muted)">・3 番と 6 番が離れているのは、電話用 RJ11 と物理的に挿し込める互換性を保った名残</text>
+<text x="20" y="228" font-size="10.5" fill="var(--muted)">・ツメが折れたケーブルは抜けやすくリンクダウンの原因になる。物理層の障害はここから疑う</text>
+</svg>
+<figcaption>「RJ45」は通称で、正式には ISO/IEC 8877 などで規定された 8P8C コネクタ。仕様書で RJ45 と書かれていたら普通の LAN ポートだと読んでよい。</figcaption>
+</figure>
+
+<h2>ケーブルのカテゴリで速度上限が決まる</h2>
+<p>コネクタの形は同じでも、ケーブル自体の等級（カテゴリ）で出せる速度が変わる。機器が 10 Gbps 対応でも、Cat5e のケーブルを挿せばそこが上限になる。</p>
+
+<table>
+<tr><th>カテゴリ</th><th>最大速度</th><th>用途の目安</th></tr>
+<tr><td>Cat5e</td><td>1 Gbps</td><td>一般的なオフィス配線</td></tr>
+<tr><td>Cat6</td><td>1 Gbps（10 Gbps は 55m まで）</td><td>現在の標準的な選択</td></tr>
+<tr><td>Cat6A</td><td>10 Gbps（100m）</td><td>サーバルーム・高速回線</td></tr>
+</table>
+<p>いずれも規格上の最大長は 100m。それを超えたい場合はスイッチを挟むか光ファイバに変える（<code>リピータ</code> と <code>段数制限</code> の記事を参照）。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://standards.ieee.org/ieee/802.3/7071/">IEEE 802.3 — Ethernet</a></li>
+<li><a href="https://www.tiaonline.org/">TIA — Telecommunications Industry Association（TIA-568 配線規格）</a></li>
+</ul>
+
+</main>
+</body>
+</html>

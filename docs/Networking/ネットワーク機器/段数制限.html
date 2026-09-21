@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>段数制限</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>段数制限</h1>
+<p class="lede">中継すれば無限に延ばせる、とはいかない。ハブは 4 台までという「4 リピータルール」の理由。</p>
+
+<h2>なぜ無制限に中継できないのか</h2>
+<p>リピータで距離を延ばせるなら、いくらでもつなげばよさそうに見える。しかし<strong>ハブを 4 台までしか数珠つなぎにできない</strong>という制約があった（10BASE-T の 4 リピータルール、100BASE-TX では 2 台まで）。</p>
+<p>理由は 2 つある。</p>
+<ul>
+<li><strong>衝突検知が間に合わなくなる</strong> — 距離が延びるほど、端から端まで信号が届くのに時間がかかる。送信し終わったあとに衝突が起きても、送信側はもう気づけない</li>
+<li><strong>波形の歪みが積み上がる</strong> — リピータは中継のたびにわずかな遅延とジッタを足す。段数が増えるほどタイミングのずれが蓄積する</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="ハブを多段接続すると衝突検知が間に合わなくなる仕組み">
+<defs>
+<marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="sb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+</defs>
+<rect x="20" y="46" width="66" height="30" rx="5" fill="var(--card)" stroke="var(--c1)" stroke-width="1.6"/>
+<text x="53" y="66" font-size="10" fill="var(--ink)" text-anchor="middle">PC-A</text>
+<g font-size="9.5" fill="var(--ink)" text-anchor="middle">
+<rect x="140" y="46" width="58" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="169" y="66">ハブ1</text>
+<rect x="250" y="46" width="58" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="279" y="66">ハブ2</text>
+<rect x="360" y="46" width="58" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="389" y="66">ハブ3</text>
+<rect x="470" y="46" width="58" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="499" y="66">ハブ4</text>
+</g>
+<rect x="590" y="46" width="66" height="30" rx="5" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/>
+<text x="623" y="66" font-size="10" fill="var(--ink)" text-anchor="middle">PC-B</text>
+<g stroke="var(--line)" stroke-width="1.3">
+<line x1="86" y1="61" x2="140" y2="61"/><line x1="198" y1="61" x2="250" y2="61"/>
+<line x1="308" y1="61" x2="360" y2="61"/><line x1="418" y1="61" x2="470" y2="61"/>
+<line x1="528" y1="61" x2="590" y2="61"/>
+</g>
+<text x="338" y="34" font-size="10" fill="var(--muted)" text-anchor="middle">各段で遅延が加算される（最大 100m × 5 区間）</text>
+
+<line x1="53" y1="100" x2="600" y2="100" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#sa)"/>
+<text x="330" y="94" font-size="10" fill="var(--c1)" text-anchor="middle">① PC-A が送信を開始</text>
+
+<line x1="623" y1="128" x2="360" y2="128" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#sb)"/>
+<text x="490" y="122" font-size="10" fill="var(--stop)" text-anchor="middle">② ほぼ同時に PC-B も送信 → どこかで衝突</text>
+
+<line x1="380" y1="152" x2="70" y2="152" stroke="var(--stop)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#sb)"/>
+<text x="300" y="172" font-size="10" fill="var(--stop)" text-anchor="middle">③ 衝突が PC-A に伝わるころには…</text>
+
+<rect x="20" y="188" width="660" height="34" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+<text x="350" y="209" font-size="11" fill="var(--ink)" text-anchor="middle">PC-A は「送信完了」と判断済み ＝ 衝突に気づけず、壊れたまま放置される</text>
+
+<text x="350" y="248" font-size="10.5" fill="var(--muted)" text-anchor="middle">最小フレーム 64 バイトを送り終わる前に往復が完了する必要がある。この時間の上限が段数制限になる</text>
+</svg>
+<figcaption>64 バイトという最小フレームサイズも同じ理由で決まっている。「送り終わる前に衝突を検知できる」ことが CSMA/CD の前提だから。</figcaption>
+</figure>
+
+<h2>いま設計するときに気にすべきこと</h2>
+<p>段数制限は<strong>リピータハブが前提の話</strong>で、スイッチには当てはまらない。スイッチはフレームをいったん受け取ってから転送し直す（ストア&amp;フォワード）ため、コリジョンドメインが段ごとに切れる。何段つないでも衝突検知の問題は起きない。</p>
+<p>ただしスイッチにも実務上の上限はある。段数が増えるほど<strong>1 パケットあたりの遅延</strong>が積み上がり、障害時の影響範囲と経路の把握も難しくなる。このためデータセンタでは<strong>コア / ディストリビューション / アクセス</strong>の 3 階層など、段数を設計で固定するのが一般的。</p>
+<p>また多段構成でループを作ると、ブロードキャストが延々と回り続けてネットワークが停止する。これを防ぐのが <code>スパニングツリー</code>。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://standards.ieee.org/ieee/802.3/7071/">IEEE 802.3 — Ethernet（CSMA/CD とコリジョンドメインの規定）</a></li>
+<li><a href="https://standards.ieee.org/ieee/802.1D/3390/">IEEE 802.1D — MAC Bridges</a></li>
+</ul>
+
+</main>
+</body>
+</html>

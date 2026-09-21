@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>URL エンコード</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>URL エンコード</h1>
+<p class="lede">URL に書ける文字は限られている。日本語も、スペースも、「&amp;」も、そのままでは置けない。置けない文字を置ける形に変換する決まりごと。</p>
+
+<h2>「区切り記号」と「データ」がぶつかる</h2>
+<p>URL では <code>?</code> <code>&amp;</code> <code>=</code> <code>/</code> などの記号が<strong>構造の区切りとして意味を持っている</strong>。たとえば検索キーワードとして「A&amp;B」を送りたいとき、<code>&amp;</code> をそのまま書くと「パラメータの区切り」と解釈されてデータが途切れる。日本語などの非 ASCII 文字は、そもそも URL の文字集合に入っていない。</p>
+<p>そこで、そのまま書けない文字は <strong>UTF-8 のバイト列に直し、1 バイトずつ <code>%XX</code>（16 進数 2 桁）で表記する</strong>。これが URL エンコード（パーセントエンコーディング）。</p>
+
+<figure>
+<svg viewBox="0 0 700 260" role="img" aria-label="検索キーワード「東京 A&B」がURLエンコードされて%表記に変換される様子">
+<defs>
+<marker id="e1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+</defs>
+<text x="60" y="40" font-size="11" fill="var(--muted)">送りたい値：</text>
+<rect x="160" y="20" width="200" height="34" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="260" y="42" font-size="12.5" fill="var(--ink)" text-anchor="middle">東京 A&amp;B</text>
+<line x1="260" y1="58" x2="260" y2="88" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#e1)"/>
+<text x="380" y="76" font-size="10" fill="var(--muted)">UTF-8 のバイト列にして 1 バイトずつ %XX に</text>
+<g transform="translate(40,96)">
+<rect x="0" y="0" width="186" height="34" rx="6" fill="var(--c1)" opacity=".14"/>
+<text x="93" y="21" font-size="11" fill="var(--ink)" text-anchor="middle">%E6%9D%B1%E4%BA%AC</text>
+<text x="93" y="52" font-size="9.5" fill="var(--muted)" text-anchor="middle">「東京」（3 バイト × 2 文字）</text>
+<rect x="196" y="0" width="70" height="34" rx="6" fill="var(--c2)" opacity=".14"/>
+<text x="231" y="21" font-size="11" fill="var(--ink)" text-anchor="middle">%20</text>
+<text x="231" y="52" font-size="9.5" fill="var(--muted)" text-anchor="middle">スペース</text>
+<rect x="276" y="0" width="46" height="34" rx="6" fill="var(--lane)"/>
+<text x="299" y="21" font-size="11" fill="var(--ink)" text-anchor="middle">A</text>
+<rect x="332" y="0" width="70" height="34" rx="6" fill="var(--c2)" opacity=".14"/>
+<text x="367" y="21" font-size="11" fill="var(--ink)" text-anchor="middle">%26</text>
+<text x="367" y="52" font-size="9.5" fill="var(--muted)" text-anchor="middle">&amp;（区切りではなくデータ）</text>
+<rect x="412" y="0" width="46" height="34" rx="6" fill="var(--lane)"/>
+<text x="435" y="21" font-size="11" fill="var(--ink)" text-anchor="middle">B</text>
+</g>
+<rect x="40" y="180" width="620" height="40" rx="6" fill="var(--card)" stroke="var(--line)" stroke-width="1.4"/>
+<text x="350" y="205" font-size="11" fill="var(--ink)" text-anchor="middle">https://example.jp/search?q=%E6%9D%B1%E4%BA%AC%20A%26B</text>
+<text x="350" y="244" font-size="10" fill="var(--muted)" text-anchor="middle">そのまま書ける英数字（A・B）は変換されない。受け取ったサーバ側が逆変換（デコード）して元の値に戻す</text>
+</svg>
+<figcaption>スペースは <code>%20</code> だが、フォーム送信（<code>application/x-www-form-urlencoded</code>）の歴史的経緯で <code>+</code> になっていることもある。デコード時にどちらの流儀かを取り違えると「+」と空白が化ける。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3986">RFC 3986 — Uniform Resource Identifier (URI): Generic Syntax</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Glossary/Percent-encoding">MDN — パーセントエンコーディング</a></li>
+</ul>
+
+</main>
+</body>
+</html>

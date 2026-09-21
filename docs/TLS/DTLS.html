@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DTLS を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>DTLS — UDP の上で TLS 相当の保護を成立させる</h1>
+<p class="lede">パケットが落ちる・順番が入れ替わる前提で、暗号化とハンドシェイクをやり切る。</p>
+
+<h2>何が問題なのか</h2>
+<p>音声通話、映像配信、オンラインゲーム、IoT の小さなセンサー。これらが UDP を使うのは、<strong>再送を待つより落ちたぶんを捨てて先へ進むほうがよい</strong>から。0.5 秒遅れて届く音声は、届かないのと変わらない。</p>
+<p>ところが TLS は TCP を前提に作られている。「前のバイトが確実に届いている」ことに依存しているので、そのまま UDP には載らない。かといって暗号化を諦めるわけにもいかない——ここを埋めるのが DTLS（Datagram TLS）。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="TLSとDTLSのプロトコルスタックの比較">
+  <g text-anchor="middle" font-size="11.5">
+    <text x="175" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">TLS</text>
+    <rect x="40" y="24" width="270" height="32" rx="5" fill="var(--lane)"/><text x="175" y="45" fill="var(--ink)">HTTP など</text>
+    <rect x="40" y="60" width="270" height="32" rx="5" fill="var(--c1)"/><text x="175" y="81" fill="var(--on)">TLS</text>
+    <rect x="40" y="96" width="270" height="32" rx="5" fill="var(--c3)"/><text x="175" y="117" fill="var(--on)">TCP（順序保証・再送）</text>
+    <rect x="40" y="132" width="270" height="32" rx="5" fill="var(--lane)"/><text x="175" y="153" fill="var(--ink)">IP</text>
+    <text x="175" y="188" font-size="10.5" fill="var(--muted)">落ちたパケットは TCP が直してくれる</text>
+
+    <text x="525" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">DTLS</text>
+    <rect x="390" y="24" width="270" height="32" rx="5" fill="var(--lane)"/><text x="525" y="45" fill="var(--ink)">SRTP・CoAP・VPN など</text>
+    <rect x="390" y="60" width="270" height="32" rx="5" fill="var(--c2)"/><text x="525" y="81" fill="var(--on)">DTLS（自前で順序と再送を扱う）</text>
+    <rect x="390" y="96" width="270" height="32" rx="5" fill="var(--c4)"/><text x="525" y="117" fill="var(--on)">UDP（何も保証しない）</text>
+    <rect x="390" y="132" width="270" height="32" rx="5" fill="var(--lane)"/><text x="525" y="153" fill="var(--ink)">IP</text>
+    <text x="525" y="188" font-size="10.5" fill="var(--muted)">TCP がやっていた仕事の一部を DTLS が引き受ける</text>
+  </g>
+</svg>
+<figcaption>DTLS はデータの再送まではしない。落ちたデータは落ちたままでよい（それが UDP を選ぶ理由なので）。DTLS が引き受けるのは、<strong>ハンドシェイクを最後まで成立させること</strong>と、暗号処理が順序の乱れで壊れないようにすることに絞られている。</figcaption>
+</figure>
+
+<h2>TLS からの変更点</h2>
+<ul>
+<li><strong>順序番号を明示的に送る</strong>：TLS では両者が数えているだけだった番号を、DTLS ではパケットに書いて送る。順番が入れ替わって届いても正しく復号できる。</li>
+<li><strong>ハンドシェイクに再送タイマを持つ</strong>：ハンドシェイクのメッセージが落ちると先へ進めないので、ここだけは自前で再送する。</li>
+<li><strong>ハンドシェイクを分割できる</strong>：証明書はデータグラムの大きさに収まらないことがあるため、分割して送り、受信側で組み立てる。</li>
+<li><strong>リプレイ検知の窓を持つ</strong>：過去に受け取った番号を記録し、同じパケットの再投入を弾く。</li>
+</ul>
+
+<h2>UDP ならではの危険：増幅攻撃</h2>
+<p>UDP は送信元アドレスを簡単に偽れる。攻撃者が<strong>被害者のアドレスを名乗ってハンドシェイクを始める</strong>と、サーバは証明書を含む大きな応答を被害者へ送りつける。<strong>小さなリクエストで大きな応答を撃たせる</strong>——DNS を使った反射増幅攻撃とまったく同じ構図になる。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="クッキー交換で送信元アドレスを確認する仕組み">
+  <text x="80" y="16" font-size="12" font-weight="600" fill="var(--c1)" text-anchor="middle">クライアント</text>
+  <text x="600" y="16" font-size="12" font-weight="600" fill="var(--c3)" text-anchor="middle">サーバ</text>
+  <line x1="180" y1="26" x2="180" y2="164" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="520" y1="26" x2="520" y2="164" stroke="var(--line)" stroke-width="1.5"/>
+
+  <path d="M186 48 L514 48" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#f1)"/>
+  <text x="350" y="42" font-size="10.5" fill="var(--ink)" text-anchor="middle">① ClientHello</text>
+
+  <path d="M514 84 L186 84" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#f2)"/>
+  <rect x="230" y="68" width="240" height="22" rx="4" fill="var(--c2)"/>
+  <text x="350" y="84" font-size="10.5" fill="var(--on)" text-anchor="middle">② クッキーを付けて送り直せと返す</text>
+  <text x="536" y="88" font-size="10" fill="var(--muted)">小さい応答・状態も持たない</text>
+
+  <path d="M186 122 L514 122" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#f1)"/>
+  <text x="350" y="116" font-size="10.5" fill="var(--ink)" text-anchor="middle">③ 同じクッキーを付けて ClientHello を再送</text>
+
+  <path d="M514 158 L186 158" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#f3)"/>
+  <rect x="250" y="142" width="200" height="22" rx="4" fill="var(--c3)"/>
+  <text x="350" y="158" font-size="10.5" fill="var(--on)" text-anchor="middle">④ ここで初めて証明書を送る</text>
+
+  <text x="8" y="192" font-size="11" fill="var(--stop)">アドレスを偽っていると②が本人に届かないので③が返せない。「そのアドレスに本当にいる」ことを確認してから重い処理に進む。</text>
+  <defs>
+    <marker id="f1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="f2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="f3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>TCP の3ウェイハンドシェイクが果たしていた「相手が実在する」確認を、アプリケーション層で作り直したもの。サーバはクッキーを計算で作れるようにして状態を保持しない（SYN Cookie と同じ考え方）ため、この段階では大量に来てもメモリを消費しない。</figcaption>
+</figure>
+
+<h2>どこで動いているか</h2>
+<ul>
+<li><strong>WebRTC</strong>：ブラウザの音声・映像通話。DTLS で鍵を交換し、実際のメディアは SRTP で暗号化する。</li>
+<li><strong>IoT</strong>：CoAP という軽量プロトコルの標準的な保護手段。</li>
+<li><strong>VPN 製品</strong>：TCP の上に TCP を通すと効率が落ちるため、UDP＋DTLS を主経路にして、通らない環境だけ TCP に落とす構成が多い。</li>
+</ul>
+<p>なお <strong>QUIC は DTLS を使っていない</strong>。同じく UDP の上で暗号化するが、TLS 1.3 のハンドシェイクを直接組み込んだ別の設計になっている。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9147.html">RFC 9147 - The Datagram Transport Layer Security (DTLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6347.html">RFC 6347 - Datagram Transport Layer Security Version 1.2</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5764.html">RFC 5764 - DTLS Extension to Establish Keys for SRTP</a></li>
+</ul>
+
+</main>
+</body>
+</html>

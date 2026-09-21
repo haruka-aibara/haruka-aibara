@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IPマスカレード</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>IP マスカレード</h1>
+<p class="lede">グローバル IP が 1 つしかないのに、社内の 100 台が同時にインターネットへ出られる理由。</p>
+
+<h2>アドレスが足りないので使い回す</h2>
+<p>IPv4 のグローバルアドレスは有限で、契約でもらえるのはたいてい 1 個か数個。しかし社内には端末が何十台もある。全台にグローバル IP を配るのは不可能。</p>
+<p>そこで社内ではプライベートアドレス（<code>192.168.x.x</code> など）を使い、<strong>外に出るときだけ 1 つのグローバル IP に書き換える</strong>。これが NAT の考え方。</p>
+<p>ただし単純な NAT（1 対 1 の変換）では、同時に外に出られるのは 1 台だけ。複数台を同時に通すために、<strong>IP アドレスに加えてポート番号も一緒に書き換えて区別する</strong>のが IP マスカレード（NAPT / PAT）。</p>
+
+<figure>
+<svg viewBox="0 0 700 320" role="img" aria-label="IPマスカレードが送信元IPとポート番号を書き換え、変換テーブルで戻り先を管理する仕組み">
+<defs>
+<marker id="qa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="qb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+</defs>
+<rect x="14" y="34" width="212" height="140" rx="10" fill="var(--lane)"/>
+<text x="120" y="26" font-size="10.5" fill="var(--muted)" text-anchor="middle">社内（プライベートアドレス）</text>
+<g font-size="9.5" fill="var(--ink)" text-anchor="middle">
+<rect x="34" y="50" width="120" height="26" rx="4" fill="var(--card)" stroke="var(--line)"/><text x="94" y="67">PC-A 192.168.1.10</text>
+<rect x="34" y="90" width="120" height="26" rx="4" fill="var(--card)" stroke="var(--line)"/><text x="94" y="107">PC-B 192.168.1.11</text>
+<rect x="34" y="130" width="120" height="26" rx="4" fill="var(--card)" stroke="var(--line)"/><text x="94" y="147">PC-C 192.168.1.12</text>
+</g>
+<g stroke="var(--c1)" stroke-width="1.3">
+<line x1="156" y1="63" x2="248" y2="90" marker-end="url(#qa)"/>
+<line x1="156" y1="103" x2="248" y2="103" marker-end="url(#qa)"/>
+<line x1="156" y1="143" x2="248" y2="116" marker-end="url(#qa)"/>
+</g>
+
+<rect x="254" y="72" width="120" height="62" rx="7" fill="var(--c4)" opacity=".2"/>
+<rect x="254" y="72" width="120" height="62" rx="7" fill="none" stroke="var(--c4)" stroke-width="1.8"/>
+<text x="314" y="96" font-size="11" fill="var(--ink)" text-anchor="middle">ルータ</text>
+<text x="314" y="114" font-size="9" fill="var(--c4)" text-anchor="middle">IP マスカレード</text>
+<text x="314" y="127" font-size="8.5" fill="var(--muted)" text-anchor="middle">203.0.113.5（グローバル）</text>
+
+<line x1="378" y1="103" x2="470" y2="103" stroke="var(--c1)" stroke-width="1.8" marker-end="url(#qa)"/>
+<text x="424" y="94" font-size="9" fill="var(--c1)" text-anchor="middle">全部 203.0.113.5 発</text>
+<rect x="476" y="76" width="120" height="54" rx="7" fill="var(--c3)" opacity=".16"/>
+<rect x="476" y="76" width="120" height="54" rx="7" fill="none" stroke="var(--c3)" stroke-width="1.6"/>
+<text x="536" y="98" font-size="10.5" fill="var(--ink)" text-anchor="middle">インターネット</text>
+<text x="536" y="116" font-size="9" fill="var(--muted)" text-anchor="middle">Web サーバなど</text>
+<line x1="476" y1="146" x2="380" y2="146" stroke="var(--c3)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#qb)"/>
+<text x="436" y="164" font-size="9" fill="var(--c3)" text-anchor="middle">戻りはポート番号で振り分け</text>
+
+<text x="20" y="204" font-size="11.5" fill="var(--ink)" font-weight="600">ルータが持つ変換テーブル</text>
+<rect x="20" y="214" width="660" height="90" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<line x1="20" y1="238" x2="680" y2="238" stroke="var(--line)"/>
+<line x1="300" y1="214" x2="300" y2="304" stroke="var(--line)"/>
+<line x1="470" y1="214" x2="470" y2="304" stroke="var(--line)"/>
+<text x="160" y="231" font-size="10" fill="var(--ink)" text-anchor="middle" font-weight="600">社内側（送信元）</text>
+<text x="385" y="231" font-size="10" fill="var(--ink)" text-anchor="middle" font-weight="600">外側に見せる送信元</text>
+<text x="575" y="231" font-size="10" fill="var(--ink)" text-anchor="middle" font-weight="600">通信先</text>
+<g font-size="10" fill="var(--muted)" text-anchor="middle">
+<text x="160" y="258">192.168.1.10 : 51001</text><text x="385" y="258">203.0.113.5 : 40001</text><text x="575" y="258">example.com : 443</text>
+<text x="160" y="278">192.168.1.11 : 49876</text><text x="385" y="278">203.0.113.5 : 40002</text><text x="575" y="278">example.com : 443</text>
+<text x="160" y="298">192.168.1.12 : 52310</text><text x="385" y="298">203.0.113.5 : 40003</text><text x="575" y="298">api.example : 443</text>
+</g>
+</svg>
+<figcaption>戻ってきたパケットの宛先ポートが 40002 なら PC-B へ——とテーブルを逆引きして配る。ポート番号を「誰宛てか」の識別子として使い回しているのがこの仕組みの肝。</figcaption>
+</figure>
+
+<h2>外から中への通信は原則できない</h2>
+<p>テーブルは<strong>内側から通信を始めたときに作られる</strong>。外から突然来たパケットには対応する行がないので、ルータはどこへ渡せばよいか分からず破棄する。</p>
+<p>結果として、IP マスカレードは<strong>意図せず簡易的なファイアウォールとして働く</strong>。ただしこれをセキュリティ対策と呼ぶのは危うい。内側から出た通信の戻りは全部通るので、端末がマルウェアに感染して外部へ接続を始めれば、そのまま通信路が開く。</p>
+<p>外部からアクセスさせたいサーバがある場合は、<strong>ポートフォワーディング（静的 NAT）</strong>で「このポートに来たらこの内部 IP へ」という行をあらかじめ作っておく。</p>
+
+<div class="note">
+<p><strong>クラウドでの対応物：</strong>AWS のプライベートサブネットから外部へ出るときの <strong>NAT ゲートウェイ</strong>がこれにあたる。動作原理が同じなので「外からは入れない、中から出た戻りは通る」という性質もそのまま。<br>
+なお NAT を挟むと、サーバ側のアクセスログには全端末が同じ IP に見える。インシデント調査で「どの端末が」を追うには、NAT 側の変換ログ（VPC フローログなど）が別に要る。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3022">RFC 3022 — Traditional IP Network Address Translator (Traditional NAT)</a></li>
+<li><a href="https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html">NAT ゲートウェイ — AWS VPC ドキュメント</a></li>
+</ul>
+
+</main>
+</body>
+</html>

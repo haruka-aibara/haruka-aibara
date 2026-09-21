@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>無線 LAN の暗号方式（WEP / WPA / WPA2）と ESSID</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>無線 LAN の暗号方式（WEP / WPA / WPA2）と ESSID</h1>
+<p class="lede">無線は電波が届く全員に届く。有線のような分離が効かないぶん、暗号方式の世代がそのまま安全性になる。</p>
+
+<h2>有線と同じ感覚では守れない</h2>
+<p>有線ならケーブルを挿した相手しか通信に触れないが、無線は電波の届く範囲にいる全員にフレームが届く。建物の外からでも受信できる。したがって<strong>暗号化されているかどうか、それも「どの世代の暗号方式か」が防御のほぼすべて</strong>になる。</p>
+
+<figure>
+<svg viewBox="0 0 700 168" role="img" aria-label="無線LAN暗号方式の世代と安全性">
+  <g font-size="10.5">
+    <rect x="0" y="24" width="168" height="44" rx="6" fill="var(--stop)"/>
+    <text x="84" y="44" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">WEP</text>
+    <text x="84" y="60" fill="var(--on)" text-anchor="middle" opacity=".9">RC4 + 24bit IV</text>
+
+    <rect x="176" y="24" width="168" height="44" rx="6" fill="var(--c2)"/>
+    <text x="260" y="44" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">WPA</text>
+    <text x="260" y="60" fill="var(--on)" text-anchor="middle" opacity=".9">TKIP</text>
+
+    <rect x="352" y="24" width="168" height="44" rx="6" fill="var(--c1)"/>
+    <text x="436" y="44" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">WPA2</text>
+    <text x="436" y="60" fill="var(--on)" text-anchor="middle" opacity=".9">CCMP（AES）</text>
+
+    <rect x="528" y="24" width="172" height="44" rx="6" fill="var(--c3)"/>
+    <text x="614" y="44" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">WPA3</text>
+    <text x="614" y="60" fill="var(--on)" text-anchor="middle" opacity=".9">SAE</text>
+  </g>
+  <line x1="0" y1="84" x2="700" y2="84" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="0" y="100" font-size="10.5" fill="var(--muted)">古い</text>
+  <text x="700" y="100" font-size="10.5" fill="var(--muted)" text-anchor="end">新しい</text>
+  <g font-size="10.5">
+    <text x="84" y="122" fill="var(--stop)" text-anchor="middle">数分で鍵を</text>
+    <text x="84" y="137" fill="var(--stop)" text-anchor="middle">復元できる</text>
+    <text x="260" y="122" fill="var(--c2)" text-anchor="middle">旧機器を救う</text>
+    <text x="260" y="137" fill="var(--c2)" text-anchor="middle">ための暫定策</text>
+    <text x="436" y="122" fill="var(--c1)" text-anchor="middle">長く実質標準</text>
+    <text x="436" y="137" fill="var(--c1)" text-anchor="middle">合言葉は長く</text>
+    <text x="614" y="122" fill="var(--c3)" text-anchor="middle">総当たりが</text>
+    <text x="614" y="137" fill="var(--c3)" text-anchor="middle">成立しにくい</text>
+  </g>
+</svg>
+<figcaption>WEP と WPA は「設定できてしまうが選んではいけない」項目。機器の設定画面に残っていることがあるので、既存環境を引き継いだときは実際の設定値を確認する。</figcaption>
+</figure>
+
+<table>
+<tr><th>方式</th><th>暗号</th><th>状況</th></tr>
+<tr><td>WEP</td><td>RC4 + 24 ビットの IV</td><td>短い IV が使い回されるため、通信量さえあれば鍵を復元できる。使ってはいけない</td></tr>
+<tr><td>WPA</td><td>TKIP（RC4 のまま鍵を都度変える）</td><td>WEP 世代の機器をファーム更新で救うための暫定策。現在は非推奨</td></tr>
+<tr><td>WPA2</td><td>CCMP（AES）</td><td>長く実質標準。ただし個人モードは接続時のやりとりを捕まえるとオフラインで総当たりできるため、合言葉を長くする必要がある</td></tr>
+<tr><td>WPA3</td><td>SAE</td><td>合言葉が弱くてもオフラインでの総当たりが成立しないよう作り直された世代</td></tr>
+</table>
+
+<h2>ESSID を隠しても対策にはならない</h2>
+<p><strong>ESSID</strong> は無線ネットワークの名前。「ステルス設定にして名前を発信しなければ見つからない」と言われることがあるが、これは対策にならない。</p>
+
+<figure>
+<svg viewBox="0 0 700 152" role="img" aria-label="ESSIDステルスでも端末側から名前が漏れる仕組み">
+  <defs>
+    <marker id="es-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+    <marker id="es-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="es-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+  </defs>
+  <rect x="0" y="24" width="200" height="52" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="100" y="46" font-size="11" fill="var(--ink)" text-anchor="middle">アクセスポイント</text>
+  <text x="100" y="64" font-size="10.5" fill="var(--c3)" text-anchor="middle">名前を発信しない設定</text>
+
+  <rect x="500" y="24" width="200" height="52" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="600" y="46" font-size="11" fill="var(--ink)" text-anchor="middle">接続済みの端末</text>
+  <text x="600" y="64" font-size="10.5" fill="var(--muted)" text-anchor="middle">つなぎ先を探して電波を出す</text>
+
+  <line x1="494" y1="50" x2="212" y2="50" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#es-stop)"/>
+  <text x="353" y="42" font-size="11" fill="var(--stop)" text-anchor="middle">「office-wifi はいますか？」</text>
+  <text x="353" y="68" font-size="10.5" fill="var(--muted)" text-anchor="middle">この問いかけは暗号化されていない</text>
+
+  <rect x="230" y="96" width="240" height="42" rx="7" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="350" y="122" font-size="11" fill="var(--stop)" text-anchor="middle">近くで待っていれば名前は分かる</text>
+</svg>
+<figcaption>MAC アドレスによる接続制限も同じ理由で回避される——MAC アドレスは暗号化されずに流れるので、許可されている端末のものを読み取って名乗ればいい。無線で実際に効くのは、暗号方式の世代と合言葉の長さ。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.wi-fi.org/discover-wi-fi/security">Wi-Fi Alliance — Security</a></li>
+<li><a href="https://www.ipa.go.jp/security/technicalwatch/201600330.html">IPA テクニカルウォッチ「公衆無線 LAN 利用に係る脅威と対策」</a></li>
+</ul>
+
+</main>
+</body>
+</html>

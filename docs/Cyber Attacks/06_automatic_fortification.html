@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>automatic fortification — ソースを直さずに境界チェックを入れる</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>automatic fortification — ソースを直さずに境界チェックを入れる</h1>
+<p class="lede">あふれてから気づくのではなく、コピーする時点で止める。コンパイルオプションだけで入る保護。</p>
+
+<h2>危ない関数を全部書き換えるのは現実的でない</h2>
+<p><code>strcpy</code> や <code>sprintf</code> はコピー先のサイズを受け取らないので、入力が長ければ黙ってあふれる。安全な関数に置き換えればいいのだが、既存のコードすべてを直すのは手間もリスクも大きい。</p>
+<p>そこで glibc と GCC には、<strong>コンパイル時にコピー先のサイズが分かる場合だけ、自動的に境界チェック付きの関数へ差し替える</strong>仕組みがある。ソースを1行も書き換えずに保護が入るので automatic fortification（自動要塞化）と呼ばれ、<code>-D_FORTIFY_SOURCE=2</code> のようにマクロを定義して有効にする。</p>
+
+<figure>
+<svg viewBox="0 0 700 226" role="img" aria-label="_FORTIFY_SOURCEによる関数の差し替えの流れ">
+  <defs>
+    <marker id="ft-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+    <marker id="ft-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="ft-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+  </defs>
+  <rect x="0" y="16" width="200" height="64" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="16" y="38" font-size="11" fill="var(--muted)">書いたコード</text>
+  <text x="16" y="60" font-size="11.5" fill="var(--ink)">char buf[64];</text>
+  <text x="16" y="76" font-size="11.5" fill="var(--ink)">strcpy(buf, src);</text>
+
+  <line x1="208" y1="48" x2="248" y2="48" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#ft-ink)"/>
+  <text x="228" y="38" font-size="10" fill="var(--muted)" text-anchor="middle">コンパイル</text>
+
+  <rect x="256" y="16" width="180" height="64" rx="7" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+  <text x="346" y="42" font-size="11" fill="var(--ink)" text-anchor="middle">コピー先のサイズは</text>
+  <text x="346" y="60" font-size="11" fill="var(--ink)" text-anchor="middle">コンパイル時に分かる？</text>
+
+  <path d="M444 40 L470 40 L470 26 L496 26" fill="none" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#ft-c3)"/>
+  <text x="466" y="20" font-size="10.5" fill="var(--c3)" text-anchor="end">分かる</text>
+  <path d="M444 60 L470 60 L470 118 L496 118" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#ft-ink)"/>
+  <text x="466" y="112" font-size="10.5" fill="var(--muted)" text-anchor="end">分からない</text>
+
+  <rect x="500" y="10" width="200" height="34" rx="6" fill="var(--c3)"/>
+  <text x="600" y="31" font-size="11" fill="var(--on)" text-anchor="middle">__strcpy_chk(buf, src, 64)</text>
+  <rect x="500" y="102" width="200" height="34" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="600" y="123" font-size="11" fill="var(--muted)" text-anchor="middle">strcpy のまま（保護なし）</text>
+
+  <rect x="0" y="152" width="700" height="62" rx="7" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="16" y="174" font-size="11.5" font-weight="600" fill="var(--ink)">差し替わった側の実行時の動き</text>
+  <text x="16" y="193" font-size="11" fill="var(--muted)">コピーする前に「64 バイトに収まるか」を確認する</text>
+  <text x="16" y="209" font-size="11" fill="var(--muted)">収まる → そのままコピー　／　<tspan fill="var(--stop)">はみ出す → その場で異常終了させる</tspan></text>
+</svg>
+<figcaption>ポイントは「サイズが分かる場合だけ」という条件。<code>char buf[64]</code> のように宣言されていれば分かるが、ポインタで渡ってきた領域は分からないので保護されない。全部が守られるわけではないが、有効にするコストがほぼゼロなので入れない理由がない。</figcaption>
+</figure>
+
+<h2>使うときに知っておくこと</h2>
+<ul>
+<li><strong>最適化を有効にしないと効かない。</strong><code>-O1</code> 以上と一緒に指定する必要がある（サイズの判定にコンパイラの解析結果を使うため）。</li>
+<li><strong>レベルがある。</strong><code>=1</code> は動作を変えない範囲の検査、<code>=2</code> はより厳しく、規格違反の使い方も落とす。ディストリビューションの標準ビルドでは <code>=2</code> 以上が既定になっていることが多い。</li>
+<li>検知したときの動作は「異常終了」。攻撃は防げるが、そこで落ちること自体は避けられない。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.gnu.org/software/libc/manual/html_node/Source-Fortification.html">The GNU C Library — Source Fortification (_FORTIFY_SOURCE)</a></li>
+<li><a href="https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html">GCC — Option Summary</a></li>
+</ul>
+
+</main>
+</body>
+</html>

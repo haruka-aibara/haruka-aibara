@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CBC モードを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>CBC モード — 前のブロックを混ぜて、模様を消す</h1>
+<p class="lede">長く標準だったモード。いまも既存システムで必ず出会う。</p>
+
+<h2>何が問題なのか</h2>
+<p><a href="ECB.html">ECB</a> の欠点は「同じ平文ブロックが必ず同じ暗号文ブロックになる」こと。これを消すには、<strong>同じ平文でも位置によって違う結果になる</strong>ようにすればいい。そのために、暗号化する直前に<strong>直前のブロックの暗号文を XOR で混ぜてしまう</strong>のが CBC モード（Cipher Block Chaining、暗号ブロック連鎖）。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="CBC モードの暗号化。IVと前ブロックの暗号文を平文にXORしてから暗号化する">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">暗号化</text>
+  <g font-size="11">
+    <rect x="60" y="30" width="110" height="26" rx="4" fill="var(--c1)"/><text x="115" y="48" fill="var(--on)" text-anchor="middle">平文1</text>
+    <rect x="250" y="30" width="110" height="26" rx="4" fill="var(--c1)"/><text x="305" y="48" fill="var(--on)" text-anchor="middle">平文2</text>
+    <rect x="440" y="30" width="110" height="26" rx="4" fill="var(--c1)"/><text x="495" y="48" fill="var(--on)" text-anchor="middle">平文3</text>
+  </g>
+
+  <g fill="none" stroke="var(--muted)" stroke-width="1.5">
+    <path d="M115 56 L115 74" marker-end="url(#c1)"/>
+    <path d="M305 56 L305 74" marker-end="url(#c1)"/>
+    <path d="M495 56 L495 74" marker-end="url(#c1)"/>
+  </g>
+  <g>
+    <circle cx="115" cy="88" r="13" fill="none" stroke="var(--ink)" stroke-width="1.5"/><text x="115" y="93" font-size="14" fill="var(--ink)" text-anchor="middle">⊕</text>
+    <circle cx="305" cy="88" r="13" fill="none" stroke="var(--ink)" stroke-width="1.5"/><text x="305" y="93" font-size="14" fill="var(--ink)" text-anchor="middle">⊕</text>
+    <circle cx="495" cy="88" r="13" fill="none" stroke="var(--ink)" stroke-width="1.5"/><text x="495" y="93" font-size="14" fill="var(--ink)" text-anchor="middle">⊕</text>
+  </g>
+
+  <rect x="6" y="75" width="70" height="26" rx="4" fill="var(--c2)"/>
+  <text x="41" y="93" font-size="11" fill="var(--on)" text-anchor="middle">IV</text>
+  <path d="M76 88 L102 88" fill="none" stroke="var(--c2)" stroke-width="1.8" marker-end="url(#c2)"/>
+
+  <g fill="none" stroke="var(--muted)" stroke-width="1.5">
+    <path d="M115 101 L115 118" marker-end="url(#c1)"/>
+    <path d="M305 101 L305 118" marker-end="url(#c1)"/>
+    <path d="M495 101 L495 118" marker-end="url(#c1)"/>
+  </g>
+  <g font-size="11">
+    <rect x="60" y="120" width="110" height="28" rx="5" fill="var(--c4)"/><text x="115" y="139" fill="var(--on)" text-anchor="middle">AES 暗号化</text>
+    <rect x="250" y="120" width="110" height="28" rx="5" fill="var(--c4)"/><text x="305" y="139" fill="var(--on)" text-anchor="middle">AES 暗号化</text>
+    <rect x="440" y="120" width="110" height="28" rx="5" fill="var(--c4)"/><text x="495" y="139" fill="var(--on)" text-anchor="middle">AES 暗号化</text>
+  </g>
+
+  <g font-size="11">
+    <rect x="60" y="166" width="110" height="26" rx="4" fill="var(--c3)"/><text x="115" y="184" fill="var(--on)" text-anchor="middle">暗号文1</text>
+    <rect x="250" y="166" width="110" height="26" rx="4" fill="var(--c3)"/><text x="305" y="184" fill="var(--on)" text-anchor="middle">暗号文2</text>
+    <rect x="440" y="166" width="110" height="26" rx="4" fill="var(--c3)"/><text x="495" y="184" fill="var(--on)" text-anchor="middle">暗号文3</text>
+  </g>
+  <g fill="none" stroke="var(--muted)" stroke-width="1.5">
+    <path d="M115 148 L115 166"/><path d="M305 148 L305 166"/><path d="M495 148 L495 166"/>
+  </g>
+
+  <path d="M170 179 L210 179 L210 88 L292 88" fill="none" stroke="var(--c3)" stroke-width="1.8" marker-end="url(#c3)"/>
+  <path d="M360 179 L400 179 L400 88 L482 88" fill="none" stroke="var(--c3)" stroke-width="1.8" marker-end="url(#c3)"/>
+  <text x="574" y="88" font-size="11" fill="var(--muted)">1 本目だけ前の暗号文が</text>
+  <text x="574" y="105" font-size="11" fill="var(--muted)">ないので、代わりに IV</text>
+  <text x="574" y="122" font-size="11" fill="var(--muted)">を使う。</text>
+  <defs>
+    <marker id="c1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="c2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="c3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>復号は逆向きに、AES で復号してから同じ値を XOR して戻す。復号に必要なのは「1 つ前の<strong>暗号文</strong>」だけなので、復号は全ブロック並列にできる。暗号化は前の結果を待つため逐次にしかならない、という非対称性がある。</figcaption>
+</figure>
+
+<h2>IV（初期化ベクタ）の扱いが要点</h2>
+<p>先頭ブロックには「前の暗号文」がないので、代わりに <strong>IV</strong> という同じ長さの値を用意する。ここでよくある事故が 2 つ。</p>
+<ul>
+<li><strong>IV を固定にする</strong> — 同じ鍵・同じ IV で同じ平文を暗号化すると、毎回まったく同じ暗号文になる。先頭ブロックについては ECB と同じ問題が復活し、「前回と同じデータを送ったこと」が外から分かる。IV は<strong>毎回ランダムに生成する</strong>。</li>
+<li><strong>IV を秘密にしようとする</strong> — IV は秘密ではない。復号側に渡す必要があるので、<strong>暗号文の先頭にそのまま付けて送る</strong>のが通常の運用。秘密なのは鍵だけ。</li>
+</ul>
+
+<h2>改ざんは検知できない</h2>
+<p>CBC が守るのは中身の秘密だけで、<strong>暗号文が書き換えられても復号は成功する</strong>。しかも CBC の復号は「1 つ前の暗号文を XOR する」ので、<strong>前のブロックを 1 ビット反転させると、次のブロックの平文が同じ位置で 1 ビット反転する</strong>。攻撃者は前のブロックを壊す代わりに、次のブロックの平文を狙いどおりに書き換えられる（ビットフリッピング攻撃）。</p>
+
+<div class="note">
+<p><strong>パディングの検証結果を返してはいけない</strong></p>
+<p>CBC は末尾をパディングで埋めるため、復号側は「パディングの形が正しいか」を必ず判定する。この判定の成否がエラーメッセージや応答時間の差として外から見えると、攻撃者は暗号文を少しずつ変えて送りつけ、<strong>鍵なしで平文を 1 バイトずつ復元できる</strong>（パディングオラクル攻撃）。これを SSL 3.0 に対して実行したのが <a href="../../Cyber Attacks/25_POODLE攻撃.html">POODLE</a>。</p>
+</div>
+
+<p>新規に設計するなら CBC ではなく、暗号化と改ざん検知が一体になった <strong>AES-GCM</strong> を選ぶ。上に挙げた事故は、どれも「暗号化しかしていない」ことに起因していて、AEAD ならまとめて消える。モード全体の位置づけは <a href="ブロック暗号と暗号利用モード.html">ブロック暗号と暗号利用モード</a> を参照。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/38/a/final">NIST SP 800-38A - Recommendation for Block Cipher Modes of Operation</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5246">RFC 5246 - The Transport Layer Security (TLS) Protocol Version 1.2</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html">OWASP Cryptographic Storage Cheat Sheet</a></li>
+</ul>
+
+</main>
+</body>
+</html>

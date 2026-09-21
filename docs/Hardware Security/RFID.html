@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RFID を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>RFID — 触れずに読めるということは、気づかれずに読めるということ</h1>
+<p class="lede">電池のないタグが電波で応答する。便利さの根っこにある性質が、そのままリスクになる。</p>
+
+<h2>何が問題なのか</h2>
+<p>社員証をかざしてドアを開ける。商品タグを箱ごと一括で読み取る。改札にカードを当てる。RFID（Radio Frequency Identification）は、<strong>接触も、電池も、視認も要らずに情報をやり取りできる</strong>ことで普及した。</p>
+<p>だがこの3つは、そのまま攻撃者にとっての利点でもある。<strong>持ち主に気づかれずに読める</strong>。カバンの中でも、すれ違いざまでも。</p>
+
+<figure>
+<svg viewBox="0 0 700 230" role="img" aria-label="RFIDの周波数帯と読み取り距離の違い">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">周波数帯によって届く距離が違う</text>
+  <g font-size="10.5">
+    <text x="8" y="48" fill="var(--ink)" font-weight="600">LF（低周波）</text>
+    <text x="8" y="64" fill="var(--muted)">〜数十 cm</text>
+    <rect x="150" y="34" width="40" height="20" rx="3" fill="var(--c1)"/>
+    <text x="200" y="49" fill="var(--muted)">家畜の個体識別、車のイモビライザー</text>
+
+    <text x="8" y="110" fill="var(--ink)" font-weight="600">HF（高周波・13.56MHz）</text>
+    <text x="8" y="126" fill="var(--muted)">〜10 cm 程度</text>
+    <rect x="150" y="96" width="70" height="20" rx="3" fill="var(--c3)"/>
+    <text x="230" y="111" fill="var(--muted)">交通系 IC カード、社員証、マイナンバーカード、NFC</text>
+
+    <text x="8" y="172" fill="var(--ink)" font-weight="600">UHF（極超短波）</text>
+    <text x="8" y="188" fill="var(--muted)">数 m 〜10 m</text>
+    <rect x="150" y="158" width="420" height="20" rx="3" fill="var(--c2)"/>
+    <text x="580" y="173" fill="var(--muted)">物流・在庫管理</text>
+  </g>
+  <text x="8" y="216" font-size="11" fill="var(--stop)">「10cm しか届かないから安全」とは言えない。読み取り機の出力とアンテナを大きくすれば、規定より遠くから読める。</text>
+</svg>
+<figcaption>UHF 帯が棚卸しに使われるのは、箱を開けずに数十枚を一度に読めるから。用途に応じて距離が選ばれているが、その距離は<strong>正規の機器を使った場合の目安</strong>であって、攻撃者が守る制約ではない。</figcaption>
+</figure>
+
+<h2>3つのリスク</h2>
+<ul>
+<li><strong>スキミング</strong>：無断で読み取り、内容を控える。単純な ID を返すだけのタグ（古い入退室カードなど）は、これだけで複製できる。</li>
+<li><strong>追跡</strong>：タグが常に同じ ID を返すなら、その ID を各所で拾うだけで人や物の移動が追える。持ち主が意図しない形での行動把握につながる。</li>
+<li><strong>リレー攻撃</strong>：距離の制約そのものを無効化する手口。もっとも厄介。</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 190" role="img" aria-label="リレー攻撃で通信を中継して距離を無効化する仕組み">
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="60" width="130" height="50" rx="6" fill="var(--c3)"/>
+    <text x="73" y="82" fill="var(--on)">カード（自宅）</text>
+    <text x="73" y="98" fill="var(--on)" opacity=".9">持ち主は気づかない</text>
+
+    <rect x="176" y="60" width="130" height="50" rx="6" fill="var(--stop)"/>
+    <text x="241" y="82" fill="var(--on)">攻撃者 A</text>
+    <text x="241" y="98" fill="var(--on)" opacity=".9">そばで電波を拾う</text>
+
+    <rect x="394" y="60" width="130" height="50" rx="6" fill="var(--stop)"/>
+    <text x="459" y="82" fill="var(--on)">攻撃者 B</text>
+    <text x="459" y="98" fill="var(--on)" opacity=".9">読み取り機のそば</text>
+
+    <rect x="562" y="60" width="130" height="50" rx="6" fill="var(--c1)"/>
+    <text x="627" y="82" fill="var(--on)">読み取り機</text>
+    <text x="627" y="98" fill="var(--on)" opacity=".9">ドア・車・レジ</text>
+  </g>
+  <path d="M142 85 L172 85" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h9)"/>
+  <path d="M528 85 L558 85" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#h9)"/>
+  <path d="M310 85 L390 85" stroke="var(--stop)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#h8)"/>
+  <text x="350" y="70" font-size="10.5" fill="var(--stop)" text-anchor="middle">インターネットや無線で中継</text>
+  <text x="350" y="132" font-size="11" fill="var(--stop)" text-anchor="middle">やり取りをそのまま転送するだけなので、暗号化されていても成立する</text>
+  <text x="350" y="152" font-size="11" fill="var(--muted)" text-anchor="middle">カードは正しい応答を返し、読み取り機は正しい応答を受け取る。どちらも異常を検知できない。</text>
+  <text x="350" y="176" font-size="11" fill="var(--muted)" text-anchor="middle">車のスマートキーを狙った盗難（リレーアタック）は、この手口が現実の被害になった例。</text>
+  <defs>
+    <marker id="h8" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--stop)"/></marker>
+    <marker id="h9" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+  </defs>
+</svg>
+<figcaption>リレー攻撃が防げないのは、認証プロトコルが「正しい鍵を持っているか」しか確かめていないから。<strong>相手が本当にそこにいるか</strong>は別の問題で、これを解くには往復にかかる時間を測って距離を推定する仕組み（超広帯域無線を使った測距など）が要る。新しい車のキーやスマートフォンの鍵機能に採用が進んでいる。</figcaption>
+</figure>
+
+<h2>対策</h2>
+<ul>
+<li><strong>単純な ID を返すだけのタグを認証に使わない</strong>：入退室管理で古い方式のカードが残っていないかは、確認する価値がある。<a href="ICカードと磁気カード.html">IC カード</a>のように鍵を持って演算するタイプに置き換える。</li>
+<li><strong>使わないときは電波を遮る</strong>：金属を挟んだカードケース。単純だが確実。</li>
+<li><strong>利用者側の操作を挟む</strong>：スマートフォンの決済がロック解除や生体認証を求めるのは、勝手に応答させないため。</li>
+<li><strong>キーの節電機能を使う</strong>：車のスマートキーには、一定時間動かないと電波を止める設定が用意されていることが多い。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.iso.org/standard/70171.html">ISO/IEC 14443 - Proximity cards</a></li>
+<li><a href="https://www.npa.go.jp/bureau/traffic/anzen/jidousha.html">警察庁 - 自動車盗難の手口と対策</a></li>
+<li><a href="https://www.ipa.go.jp/security/reports/technicalwatch/index.html">IPA - 技術レポート</a></li>
+</ul>
+
+</main>
+</body>
+</html>

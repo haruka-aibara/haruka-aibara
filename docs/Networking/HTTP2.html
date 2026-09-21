@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HTTP/2 を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>HTTP/2 を図で理解する</h1>
+<p class="lede">1本のコネクションを多重化して、HTTP/1.1 の「順番待ち」を消したプロトコル。</p>
+
+<h2>何が問題だったのか</h2>
+<p>ページが遅い。個々の応答は速いのに、画像・CSS・JS が数十個あって全体が遅い。原因は HTTP/1.1 の構造にある——1本のコネクションでは、前のレスポンスが返るまで次のリクエストを送れない。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="HTTP/1.1の順番待ちとHTTP/2の多重化の比較">
+  <text x="0" y="12" font-size="13" font-weight="600" fill="var(--ink)">HTTP/1.1 — 前が終わるまで次が送れない</text>
+  <rect x="110" y="26" width="560" height="26" rx="4" fill="var(--lane)"/>
+  <rect x="110" y="26" width="138" height="26" rx="4" fill="var(--c1)"/>
+  <rect x="250" y="26" width="138" height="26" rx="4" fill="var(--c2)"/>
+  <rect x="390" y="26" width="138" height="26" rx="4" fill="var(--c3)"/>
+  <rect x="530" y="26" width="140" height="26" rx="4" fill="var(--c4)"/>
+  <text x="179" y="44" font-size="11" fill="var(--on)" text-anchor="middle">HTML</text>
+  <text x="319" y="44" font-size="11" fill="var(--on)" text-anchor="middle">CSS</text>
+  <text x="459" y="44" font-size="11" fill="var(--on)" text-anchor="middle">JS</text>
+  <text x="600" y="44" font-size="11" fill="var(--on)" text-anchor="middle">画像</text>
+  <text x="0" y="44" font-size="11.5" fill="var(--muted)">コネクション</text>
+  <text x="110" y="70" font-size="11" fill="var(--stop)">↑ 送信できるのは常に1つだけ = Head-of-Line ブロッキング</text>
+
+  <text x="0" y="118" font-size="13" font-weight="600" fill="var(--ink)">HTTP/2 — 同じ1本の上を並行して流れる</text>
+  <rect x="110" y="132" width="560" height="26" rx="4" fill="var(--lane)"/>
+  <g>
+    <rect x="112" y="132" width="20" height="26" rx="3" fill="var(--c1)"/>
+    <rect x="134" y="132" width="20" height="26" rx="3" fill="var(--c2)"/>
+    <rect x="156" y="132" width="20" height="26" rx="3" fill="var(--c1)"/>
+    <rect x="178" y="132" width="20" height="26" rx="3" fill="var(--c3)"/>
+    <rect x="200" y="132" width="20" height="26" rx="3" fill="var(--c4)"/>
+    <rect x="222" y="132" width="20" height="26" rx="3" fill="var(--c2)"/>
+    <rect x="244" y="132" width="20" height="26" rx="3" fill="var(--c4)"/>
+    <rect x="266" y="132" width="20" height="26" rx="3" fill="var(--c3)"/>
+    <rect x="288" y="132" width="20" height="26" rx="3" fill="var(--c1)"/>
+    <rect x="310" y="132" width="20" height="26" rx="3" fill="var(--c4)"/>
+    <rect x="332" y="132" width="20" height="26" rx="3" fill="var(--c2)"/>
+    <rect x="354" y="132" width="20" height="26" rx="3" fill="var(--c3)"/>
+  </g>
+  <text x="0" y="150" font-size="11.5" fill="var(--muted)">コネクション</text>
+
+  <line x1="376" y1="20" x2="376" y2="176" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>
+  <line x1="670" y1="20" x2="670" y2="176" stroke="var(--ink)" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>
+  <text x="376" y="190" font-size="10.5" fill="var(--muted)" text-anchor="middle">HTTP/2 完了</text>
+  <text x="670" y="190" font-size="10.5" fill="var(--muted)" text-anchor="end">HTTP/1.1 完了</text>
+
+  <g font-size="11" fill="var(--muted)">
+    <rect x="110" y="228" width="11" height="11" rx="2" fill="var(--c1)"/><text x="127" y="238">HTML</text>
+    <rect x="185" y="228" width="11" height="11" rx="2" fill="var(--c2)"/><text x="202" y="238">CSS</text>
+    <rect x="250" y="228" width="11" height="11" rx="2" fill="var(--c3)"/><text x="267" y="238">JS</text>
+    <rect x="305" y="228" width="11" height="11" rx="2" fill="var(--c4)"/><text x="322" y="238">画像</text>
+    <text x="380" y="238">← 細かい塊は「フレーム」（後述）</text>
+  </g>
+</svg>
+<figcaption>ブラウザは HTTP/1.1 の制約を、ドメインあたり6本前後のコネクションを張ることで緩和していた。それでも足りず、画像を1枚に結合する CSS スプライト、JS/CSS のバンドル、静的ファイルを別ドメインに逃がすドメインシャーディングといったハックが常識になっていた。HTTP/2 はこれをプロトコル側で解決した。</figcaption>
+</figure>
+
+<h2>仕組み：フレームとストリーム</h2>
+<p>HTTP/2 はテキスト形式をやめ、<strong>フレーム</strong>という固定構造の単位で送る。ヘッダは HEADERS フレーム、ボディは DATA フレーム。そして各フレームは<strong>ストリーム ID</strong> を持つ。</p>
+
+<figure>
+<svg viewBox="0 0 700 214" role="img" aria-label="コネクション・ストリーム・フレームの入れ子構造">
+  <rect x="8" y="8" width="684" height="198" rx="10" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+  <text x="22" y="30" font-size="12.5" font-weight="600" fill="var(--ink)">TCP コネクション（1本）</text>
+
+  <g>
+    <rect x="24" y="42" width="652" height="46" rx="7" fill="var(--lane)"/>
+    <text x="40" y="70" font-size="11.5" fill="var(--muted)">ストリーム 1</text>
+    <rect x="140" y="52" width="96" height="26" rx="4" fill="var(--c1)"/>
+    <text x="188" y="70" font-size="10.5" fill="var(--on)" text-anchor="middle">HEADERS</text>
+    <rect x="244" y="52" width="76" height="26" rx="4" fill="var(--c1)" opacity=".72"/>
+    <text x="282" y="70" font-size="10.5" fill="var(--on)" text-anchor="middle">DATA</text>
+    <rect x="328" y="52" width="76" height="26" rx="4" fill="var(--c1)" opacity=".72"/>
+    <text x="366" y="70" font-size="10.5" fill="var(--on)" text-anchor="middle">DATA</text>
+  </g>
+  <g>
+    <rect x="24" y="96" width="652" height="46" rx="7" fill="var(--lane)"/>
+    <text x="40" y="124" font-size="11.5" fill="var(--muted)">ストリーム 3</text>
+    <rect x="140" y="106" width="96" height="26" rx="4" fill="var(--c2)"/>
+    <text x="188" y="124" font-size="10.5" fill="var(--on)" text-anchor="middle">HEADERS</text>
+    <rect x="244" y="106" width="76" height="26" rx="4" fill="var(--c2)" opacity=".72"/>
+    <text x="282" y="124" font-size="10.5" fill="var(--on)" text-anchor="middle">DATA</text>
+  </g>
+  <g>
+    <rect x="24" y="150" width="652" height="46" rx="7" fill="var(--lane)"/>
+    <text x="40" y="178" font-size="11.5" fill="var(--muted)">ストリーム 5</text>
+    <rect x="140" y="160" width="96" height="26" rx="4" fill="var(--c4)"/>
+    <text x="188" y="178" font-size="10.5" fill="var(--on)" text-anchor="middle">HEADERS</text>
+    <rect x="244" y="160" width="76" height="26" rx="4" fill="var(--c4)" opacity=".72"/>
+    <text x="282" y="178" font-size="10.5" fill="var(--on)" text-anchor="middle">DATA</text>
+    <rect x="328" y="160" width="76" height="26" rx="4" fill="var(--c4)" opacity=".72"/>
+    <text x="366" y="178" font-size="10.5" fill="var(--on)" text-anchor="middle">DATA</text>
+  </g>
+  <text x="424" y="70" font-size="11" fill="var(--muted)">← 1リクエスト／レスポンスの往復が</text>
+  <text x="424" y="86" font-size="11" fill="var(--muted)">　 1本のストリームに対応</text>
+</svg>
+<figcaption>送信時はこれらのフレームを1本のコネクションに混ぜて流し、受信側がストリーム ID を見て元のリクエスト単位に組み直す。これが多重化の実体。結果としてスプライト画像もドメインシャーディングも不要になる——むしろシャーディングはコネクションを分散させて多重化の利点を潰すので逆効果になる。</figcaption>
+</figure>
+
+<h2>ヘッダ圧縮（HPACK）</h2>
+<p><code>Cookie</code> や <code>User-Agent</code> は、毎リクエストほぼ同じ内容が繰り返し送られる。HPACK は既出のヘッダをテーブルのインデックス参照に置き換える。</p>
+
+<figure>
+<svg viewBox="0 0 700 218" role="img" aria-label="HPACKによるヘッダサイズの削減">
+  <text x="0" y="12" font-size="13" font-weight="600" fill="var(--ink)">HTTP/1.1 — 毎回フルテキストで送る</text>
+  <g font-size="11" fill="var(--muted)">
+    <text x="0" y="40">1回目</text><rect x="72" y="26" width="205" height="18" rx="3" fill="var(--c2)" opacity=".85"/><text x="287" y="40">≈ 700 B</text>
+    <text x="0" y="66">2回目</text><rect x="72" y="52" width="205" height="18" rx="3" fill="var(--c2)" opacity=".85"/><text x="287" y="66">≈ 700 B</text>
+    <text x="0" y="92">3回目</text><rect x="72" y="78" width="205" height="18" rx="3" fill="var(--c2)" opacity=".85"/><text x="287" y="92">≈ 700 B</text>
+  </g>
+
+  <text x="0" y="134" font-size="13" font-weight="600" fill="var(--ink)">HTTP/2 — HPACK でテーブル参照に置き換える</text>
+  <g font-size="11" fill="var(--muted)">
+    <text x="0" y="162">1回目</text><rect x="72" y="148" width="205" height="18" rx="3" fill="var(--c3)" opacity=".85"/><text x="287" y="162">≈ 700 B（同時に動的テーブルへ登録）</text>
+    <text x="0" y="188">2回目</text><rect x="72" y="174" width="16" height="18" rx="3" fill="var(--c3)"/><text x="98" y="188">≈ 20 B（インデックス番号だけ）</text>
+    <text x="0" y="214">3回目</text><rect x="72" y="200" width="16" height="18" rx="3" fill="var(--c3)"/><text x="98" y="214">≈ 20 B</text>
+  </g>
+</svg>
+<figcaption>頻出ヘッダ名は静的テーブル（61 エントリ）にあらかじめ載っており、それ以外は接続ごとの動的テーブルに蓄積される。リクエスト数が多いページほど効く。数値は説明用の目安。</figcaption>
+</figure>
+
+<h2>実質使われなくなった機能</h2>
+<table>
+<tr><th>機能</th><th>意図</th><th>現状</th></tr>
+<tr><td>ストリーム優先度</td><td>「CSS を画像より先に」と重み付けする</td><td class="dead">実装差が大きく、RFC 9113 で非推奨扱い</td></tr>
+<tr><td>サーバプッシュ</td><td>HTML を返すついでに CSS も送る</td><td class="dead">キャッシュ済みでも送るため無駄が多く、Chrome が 2022 年に既定で無効化。代替は <code>103 Early Hints</code></td></tr>
+</table>
+<p>つまり実務で効いているのは<strong>多重化とヘッダ圧縮の2つ</strong>と考えてよい。</p>
+
+<h2>限界：TCP の HoL は残っている</h2>
+<p>HTTP レベルの順番待ちは消えたが、その下の TCP はバイト列の順序保証をするため、パケットが1つ落ちると<strong>無関係なストリームまで全部待たされる</strong>。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="HTTP/1.1・HTTP/2・HTTP/3のプロトコルスタック比較">
+  <g font-size="11.5" text-anchor="middle">
+    <text x="120" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">HTTP/1.1</text>
+    <rect x="15" y="22" width="210" height="30" rx="5" fill="var(--lane)"/><text x="120" y="42" fill="var(--ink)">HTTP/1.1</text>
+    <rect x="15" y="56" width="210" height="30" rx="5" fill="var(--lane)"/><text x="120" y="76" fill="var(--ink)">TLS</text>
+    <rect x="15" y="90" width="210" height="30" rx="5" fill="var(--lane)"/><text x="120" y="110" fill="var(--ink)">TCP</text>
+    <rect x="15" y="124" width="210" height="30" rx="5" fill="var(--lane)"/><text x="120" y="144" fill="var(--ink)">IP</text>
+
+    <text x="350" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">HTTP/2</text>
+    <rect x="245" y="22" width="210" height="30" rx="5" fill="var(--c1)"/><text x="350" y="42" fill="var(--on)">HTTP/2（多重化）</text>
+    <rect x="245" y="56" width="210" height="30" rx="5" fill="var(--lane)"/><text x="350" y="76" fill="var(--ink)">TLS（ALPN で h2 を選択）</text>
+    <rect x="245" y="90" width="210" height="30" rx="5" fill="var(--stop)" opacity=".85"/><text x="350" y="110" fill="var(--on)">TCP ← ここに HoL が残る</text>
+    <rect x="245" y="124" width="210" height="30" rx="5" fill="var(--lane)"/><text x="350" y="144" fill="var(--ink)">IP</text>
+
+    <text x="580" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">HTTP/3</text>
+    <rect x="475" y="22" width="210" height="30" rx="5" fill="var(--c3)"/><text x="580" y="42" fill="var(--on)">HTTP/3</text>
+    <rect x="475" y="56" width="210" height="64" rx="5" fill="var(--c3)" opacity=".72"/>
+    <text x="580" y="82" fill="var(--on)">QUIC（TLS 1.3 内蔵）</text>
+    <text x="580" y="102" fill="var(--on)" font-size="10.5">ストリームごとに独立して再送</text>
+    <rect x="475" y="124" width="210" height="30" rx="5" fill="var(--lane)"/><text x="580" y="144" fill="var(--ink)">UDP / IP</text>
+  </g>
+  <text x="15" y="180" font-size="11" fill="var(--muted)">HTTP/2 は HTTP レベルの HoL を解消した。TCP レベルの HoL を潰したのが、UDP 上に載る HTTP/3（QUIC）。</text>
+</svg>
+<figcaption>仕様上は平文の HTTP/2（h2c）も定義されているが、主要ブラウザは TLS 上でしかサポートしない。どのバージョンで話すかは TLS 拡張の ALPN でネゴシエートされる。</figcaption>
+</figure>
+
+<h2>運用で押さえること</h2>
+<ul>
+<li><strong>HTTP/1.1 向けの最適化を消す</strong>：ドメインシャーディング、CSS スプライト、過剰なバンドルは残っていると足を引っ張る。</li>
+<li><strong>有効化は端点だけで済むことが多い</strong>：ALB / CloudFront / nginx などフロント側で有効にすれば、バックエンドは HTTP/1.1 のままでよい。</li>
+<li><strong>効果はリソース数に比例する</strong>：リクエストが数個しかない API では体感差はほぼ出ない。効くのは細かいリソースが多いページ。</li>
+</ul>
+
+<h2>セキュリティ視点</h2>
+<p>多重化は「1本のコネクションで大量のリクエストを投げられる」ことでもあり、そのまま攻撃側の効率にもなる。</p>
+
+<div class="note">
+<p><strong>HTTP/2 Rapid Reset（CVE-2023-44487）</strong></p>
+<p>リクエストを送った直後に <code>RST_STREAM</code> でキャンセルする——これを繰り返すと、サーバの同時ストリーム上限にカウントされないまま処理だけを積み上げられる。2023 年に観測史上最大級の DDoS に使われた。対策はサーバ／ミドルウェアのパッチ適用と、ストリームリセットのレート制限。</p>
+</div>
+
+<div class="note">
+<p><strong>ダウングレード時のリクエストスマグリング（H2.CL / H2.TE）</strong></p>
+<p>フロントが HTTP/2、バックエンドが HTTP/1.1 という一般的な構成では、変換時のヘッダ解釈の差が悪用されうる。フロント側で <code>Content-Length</code> と <code>Transfer-Encoding</code> の整合性を検証しているかを確認する。</p>
+</div>
+
+<p>提案するときの言い方——「HTTP/2 は表示速度の改善策だが、同時に1コネクションあたりの負荷特性が変わる。WAF やレート制限の閾値がコネクション数・リクエスト数の前提で組まれているなら、見直しが要る」。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9113.html">RFC 9113 - HTTP/2</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7541.html">RFC 7541 - HPACK: Header Compression for HTTP/2</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/HTTP/Guides/Evolution_of_HTTP">MDN - HTTP の進化</a></li>
+<li><a href="https://blog.cloudflare.com/technical-breakdown-http2-rapid-reset-ddos-attack/">Cloudflare - HTTP/2 Rapid Reset の技術解説</a></li>
+<li><a href="https://developer.chrome.com/blog/removing-push">Chrome - Removing HTTP/2 Server Push</a></li>
+<li><a href="https://portswigger.net/research/http2">PortSwigger - HTTP/2: The Sequel is Always Worse</a></li>
+</ul>
+
+</main>
+</body>
+</html>

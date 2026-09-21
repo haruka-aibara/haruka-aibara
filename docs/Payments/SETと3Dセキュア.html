@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SET と 3D セキュアを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>SET と 3D セキュア — 技術的に正しくても、面倒なら普及しない</h1>
+<p class="lede">カード情報を店に見せない完璧な仕組みは消え、利用者の手間を減らした仕組みが残った。</p>
+
+<h2>何が問題なのか</h2>
+<p>ネット通販でカード決済をするとき、リスクは2種類ある。</p>
+<ul>
+<li><strong>カード情報が加盟店から漏れる</strong>：店のデータベースが侵害されれば、番号がまとめて流出する</li>
+<li><strong>盗まれた番号で他人が買い物をする</strong>：番号さえ分かれば決済できてしまう（対面と違い、カードの現物も本人確認もない）</li>
+</ul>
+<p>この2つに、まったく違うアプローチで挑んだのが SET と 3D セキュア。<strong>片方は技術的に優れていたが消え、もう片方が生き残った</strong>——その理由まで含めて、設計を考えるときの教材になる。</p>
+
+<h2>SET：カード番号を店に渡さない</h2>
+<p>1996 年に Visa と Mastercard が策定した仕様。発想は徹底していて、<strong>加盟店にはカード番号を一切見せない</strong>。利用者・加盟店・決済ゲートウェイのすべてが証明書を持ち、「二重署名」という手法で情報を分離した。</p>
+
+<figure>
+<svg viewBox="0 0 700 218" role="img" aria-label="SETの二重署名による情報の分離">
+  <rect x="8" y="30" width="150" height="120" rx="8" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="83" y="54" font-size="11.5" font-weight="600" fill="var(--ink)" text-anchor="middle">利用者</text>
+  <rect x="24" y="68" width="118" height="30" rx="5" fill="var(--c1)"/>
+  <text x="83" y="88" font-size="10.5" fill="var(--on)" text-anchor="middle">注文情報</text>
+  <rect x="24" y="106" width="118" height="30" rx="5" fill="var(--c2)"/>
+  <text x="83" y="126" font-size="10.5" fill="var(--on)" text-anchor="middle">カード情報</text>
+
+  <path d="M162 83 L270 68" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#u1)"/>
+  <path d="M162 121 L270 148" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#u2)"/>
+
+  <rect x="274" y="30" width="180" height="70" rx="8" fill="var(--c1)"/>
+  <text x="364" y="54" font-size="11.5" font-weight="600" fill="var(--on)" text-anchor="middle">加盟店</text>
+  <text x="364" y="76" font-size="10.5" fill="var(--on)" text-anchor="middle">注文内容だけ見える</text>
+  <text x="364" y="92" font-size="10.5" fill="var(--on)" opacity=".9" text-anchor="middle">カード番号は復号できない</text>
+
+  <rect x="274" y="118" width="180" height="70" rx="8" fill="var(--c2)"/>
+  <text x="364" y="142" font-size="11.5" font-weight="600" fill="var(--on)" text-anchor="middle">決済ゲートウェイ</text>
+  <text x="364" y="164" font-size="10.5" fill="var(--on)" text-anchor="middle">カード情報だけ見える</text>
+  <text x="364" y="180" font-size="10.5" fill="var(--on)" opacity=".9" text-anchor="middle">何を買ったかは分からない</text>
+
+  <text x="474" y="86" font-size="11" fill="var(--c3)">両者は別々の情報しか持たないが、</text>
+  <text x="474" y="104" font-size="11" fill="var(--c3)">二重署名によって「同じ1件の取引である」</text>
+  <text x="474" y="122" font-size="11" fill="var(--c3)">ことは互いに検証できる</text>
+  <defs>
+    <marker id="u1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="u2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+  </defs>
+</svg>
+<figcaption>2つの情報のハッシュを連結してもう一度ハッシュし、それに署名する——これが二重署名。片方しか持たない相手でも、もう片方のハッシュ値さえ渡せば署名を検証できる。「見せずに、辻褄が合っていることだけ証明する」という設計として、いま見てもよくできている。</figcaption>
+</figure>
+
+<p>それでも SET は普及しなかった。<strong>利用者が専用ソフト（電子ウォレット）を入れ、証明書を取得しなければ買い物ができない</strong>からだ。結局、加盟店まで SSL/TLS で暗号化して番号を送るという簡便な方法が事実上の標準になった。</p>
+
+<h2>3D セキュア：カード会社が本人確認する</h2>
+<p>そこで狙いを「漏洩の防止」から<strong>「なりすましの防止」</strong>に切り替えたのが 3D セキュア。番号は従来どおり流れるが、決済の途中でカード発行会社が本人確認を行う。名前の 3D は、関わる3つの領域（カード発行会社・加盟店側・両者をつなぐ決済網）から来ている。</p>
+<p>初期のバージョンは<strong>専用のパスワードを入力させる</strong>方式だった。これが不評で、入力画面で購入をやめる利用者が続出した（カゴ落ち）。SET ほどではないにせよ、やはり手間が普及の壁になった。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="EMV 3-Dセキュアのリスクベース認証の流れ">
+  <rect x="8" y="24" width="180" height="52" rx="7" fill="var(--c1)"/>
+  <text x="98" y="46" font-size="11" fill="var(--on)" text-anchor="middle">決済時に情報を送る</text>
+  <text x="98" y="64" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">端末・購入履歴・金額など</text>
+
+  <path d="M192 50 L236 50" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#i1)"/>
+  <rect x="240" y="24" width="180" height="52" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="330" y="46" font-size="11" fill="var(--ink)" text-anchor="middle">カード会社がリスクを判定</text>
+  <text x="330" y="64" font-size="10" fill="var(--muted)" text-anchor="middle">いつもと同じ端末か、不審な額か</text>
+
+  <path d="M424 42 L474 24" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#i2)"/>
+  <path d="M424 60 L474 108" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#i3)"/>
+
+  <rect x="478" y="8" width="214" height="48" rx="7" fill="var(--c3)"/>
+  <text x="585" y="28" font-size="11" fill="var(--on)" text-anchor="middle">リスクが低い → 認証なしで通す</text>
+  <text x="585" y="46" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">利用者は何も気づかない（大多数はこちら）</text>
+
+  <rect x="478" y="94" width="214" height="48" rx="7" fill="var(--c2)"/>
+  <text x="585" y="114" font-size="11" fill="var(--on)" text-anchor="middle">リスクが高い → 追加の認証</text>
+  <text x="585" y="132" font-size="10" fill="var(--on)" opacity=".9" text-anchor="middle">ワンタイムパスワード、生体認証など</text>
+
+  <text x="8" y="176" font-size="11" fill="var(--muted)">全員に手間をかけさせるのではなく、怪しいものだけを止める。認証の強さと使いやすさの折り合いを、</text>
+  <text x="8" y="194" font-size="11" fill="var(--muted)">「常に」ではなく「必要なときだけ」で付けた設計。</text>
+  <defs>
+    <marker id="i1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="i2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="i3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+  </defs>
+</svg>
+<figcaption>現行の EMV 3-D セキュア（3D セキュア 2.0）はこの形。加盟店側にとっては、導入することで不正利用時の損害の負担がカード会社側に移る（ライアビリティシフト）という実利もあり、日本では EC 加盟店への導入が求められる流れになっている。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>設計を考えるときに持ち帰る点</strong></p>
+<p>SET は技術的に隙がなかったが、<strong>利用者に手間を要求した</strong>ために消えた。3D セキュアも初期版は同じ失敗をし、リスクベースにして手間を「必要なときだけ」に絞ったことで定着した。<br>
+社内でセキュリティ施策を提案するときも構図は同じ。<strong>全員に恒常的な手間を課す案は、正しくても運用で骨抜きにされる</strong>。リスクの高い操作にだけ強い認証を求める、普段は透過的に済ませる、という設計に寄せられないかを先に検討する。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.emvco.com/emv-technologies/3-d-secure/">EMVCo - EMV 3-D Secure</a></li>
+<li><a href="https://www.j-credit.or.jp/security/">日本クレジット協会 - クレジットカード・セキュリティ</a></li>
+<li><a href="https://www.pcisecuritystandards.org/">PCI Security Standards Council</a></li>
+</ul>
+
+</main>
+</body>
+</html>

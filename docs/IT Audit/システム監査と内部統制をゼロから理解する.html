@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>システム監査と内部統制をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+.tw{overflow-x:auto;margin:1.2rem 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem}
+@media (max-width:640px){table{min-width:34rem}}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+<marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+<path d="M0 0 L10 5 L0 10 z" fill="var(--muted)"/></marker>
+</defs></svg>
+
+<main>
+
+<h1>システム監査と内部統制をゼロから理解する</h1>
+<p class="lede">誰の依頼で、何を根拠に、どこまでやるのか。監査まわりの用語はこの 3 つを埋める順に並べると繋がる。</p>
+
+<h2>「来月、監査が入ります」と言われて困ること</h2>
+
+<p>何を準備すればいいのか分からない。ログを出せば済むのか、手順書の妥当性まで問われるのか。そもそも監査人は法律で来ているのか、社内の都合で来ているのか。指摘されたら誰が直すのか。</p>
+
+<p>監査という言葉そのものには、<strong>誰の依頼で・何を根拠に・どこまでやるか</strong>が含まれていない。だから不安になる。逆に言えば、用語はこの 3 つを埋める順に整理すれば繋がる。</p>
+
+<h2>最初の原則：監査人は自分で直さない</h2>
+
+<p>監査人がやるのは、あるべき姿（基準）と実態を突き合わせ、ズレを指摘して改善を助言するところまで。設定を直したり手順書を書き換えたりはしない。直すのは被監査部門で、直させるのは監査を依頼した経営者。</p>
+
+<p>理由は単純で、自分が作ったものを自分で評価すると甘くなるから。監査人が改善作業に手を出した瞬間、次の監査で自分の仕事を評価することになる。これを避けるのが<strong>監査人の独立性</strong>で、外観上の独立性（監査対象と身分・利害の関係がないこと）と精神上の独立性（偏りのない態度で臨むこと）の両方が求められる。</p>
+
+<figure>
+<svg viewBox="0 0 700 355" role="img" aria-label="監査の依頼者・監査人・被監査部門の三者と、計画から報告・フォローアップまでの流れ">
+  <g font-size="12" font-weight="600" text-anchor="middle">
+    <rect x="18" y="8" width="176" height="38" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+    <text x="106" y="32" fill="var(--ink)">依頼者（経営者）</text>
+    <rect x="262" y="8" width="176" height="38" rx="6" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+    <text x="350" y="32" fill="var(--ink)">監査人</text>
+    <rect x="506" y="8" width="176" height="38" rx="6" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+    <text x="594" y="32" fill="var(--ink)">被監査部門</text>
+  </g>
+  <g stroke="var(--line)" stroke-width="1.5">
+    <line x1="106" y1="50" x2="106" y2="336"/>
+    <line x1="350" y1="50" x2="350" y2="336"/>
+    <line x1="594" y1="50" x2="594" y2="336"/>
+  </g>
+
+  <g font-size="11" fill="var(--muted)" text-anchor="middle">
+    <line x1="110" y1="84" x2="342" y2="84" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#a1)"/>
+    <text x="226" y="76" fill="var(--ink)">① 監査の依頼・計画の承認</text>
+
+    <line x1="354" y1="128" x2="586" y2="128" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#a2)"/>
+    <text x="470" y="120" fill="var(--ink)">② 予備調査（資料・ヒアリング）</text>
+
+    <line x1="354" y1="172" x2="586" y2="172" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#a2)"/>
+    <text x="470" y="164" fill="var(--ink)">③ 本調査（現地確認・突合・再実行）</text>
+
+    <line x1="590" y1="206" x2="358" y2="206" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#am)"/>
+    <text x="474" y="198">監査証拠として入手</text>
+
+    <line x1="342" y1="250" x2="110" y2="250" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#a2)"/>
+    <text x="226" y="242" fill="var(--ink)">④ 評価・結論 → 監査報告書</text>
+
+    <line x1="110" y1="290" x2="586" y2="290" stroke="var(--c1)" stroke-width="1.6" marker-end="url(#a1)"/>
+    <rect x="264" y="271" width="172" height="16" fill="var(--card)"/>
+    <text x="350" y="282" fill="var(--ink)">⑤ 改善の指示（直すのはここ）</text>
+
+    <line x1="354" y1="326" x2="586" y2="326" stroke="var(--c2)" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#a2)"/>
+    <text x="470" y="318" fill="var(--ink)">⑥ フォローアップ（改善状況の確認）</text>
+  </g>
+</svg>
+<figcaption>監査人と被監査部門の間に矢印は何本もあるが、そのどれも「直す」ではない。改善を命じる権限は依頼者（経営者）の側にあり、監査人はその判断材料を作る役。監査報告書が経営者宛てに出るのはそのため。</figcaption>
+</figure>
+
+<p>ただし報告書のゴールには 2 種類ある。<strong>助言型</strong>は「ここをこう改善するとよい」と改善提案を主目的にするもの。<strong>保証型</strong>は「統制は有効に機能している」と意見を表明し、その正しさを監査人が引き受けるもの。社内の改善が目的なら助言型、取引先や市場に示す必要があるなら保証型になる。</p>
+
+<h2>システム監査とセキュリティ監査</h2>
+
+<p>どちらも情報システムを見るが、見る観点の広さが違う。セキュリティ監査はシステム監査の一部と考えてよい。</p>
+
+<div class="tw">
+<table>
+<tr><th></th><th>システム監査</th><th>情報セキュリティ監査</th></tr>
+<tr><th>何を見るか</th><td>情報システムが経営に貢献しているか。可用性・機密性・完全性に加え、有効性・効率性・準拠性まで</td><td>情報セキュリティが確保されているか（機密性・完全性・可用性）</td></tr>
+<tr><th>対象</th><td>企画・開発・運用・保守のライフサイクル全体</td><td>組織の情報セキュリティ管理策全般</td></tr>
+<tr><th>あるべき姿の拠り所</th><td>システム管理基準</td><td>情報セキュリティ管理基準</td></tr>
+</table>
+</div>
+
+<h2>誰が監査するのか — 第一者・第二者・第三者</h2>
+
+<p>監査の性格は「誰が依頼して誰がやるか」でほぼ決まる。同じチェック項目を見ても、この違いで報告書の使い道が変わる。</p>
+
+<div class="tw">
+<table>
+<tr><th>種類</th><th>やる人</th><th>典型例</th></tr>
+<tr><th>第一者監査<br>（内部監査）</th><td>自組織の監査部門</td><td>ISMS の内部監査、社内のシステム監査。目的は自分たちの改善</td></tr>
+<tr><th>第二者監査</th><td>取引先・委託元など利害関係者</td><td>委託先監査。「預けたデータが約束どおり扱われているか」を委託元が見に行く</td></tr>
+<tr><th>第三者監査</th><td>利害関係のない外部機関</td><td>ISMS 認証審査、SOC 報告書。対外的な保証が要るときはこれしかない</td></tr>
+</table>
+</div>
+
+<h2>監査証跡と監査証拠</h2>
+
+<p>この 2 つは混同しやすい。分かれ目は<strong>誰のものか</strong>にある。</p>
+
+<div class="tw">
+<table>
+<tr><th></th><th>監査証跡（audit trail）</th><th>監査証拠（audit evidence）</th></tr>
+<tr><th>誰のものか</th><td>被監査部門側にもともとあるもの</td><td>監査人が入手・評価したもの</td></tr>
+<tr><th>正体</th><td>処理の履歴。アクセスログ、変更履歴、承認記録、伝票</td><td>結論の裏付けになる事実。証跡の写しに加え、ヒアリング記録、現地で観察した事実、再実行した結果</td></tr>
+<tr><th>監査がなければ</th><td>それでも存在する</td><td>存在しない</td></tr>
+</table>
+</div>
+
+<p>関係としては、監査証跡は監査証拠の<strong>材料の一つ</strong>。証跡が残っていても監査人が入手・評価していなければ証拠ではないし、逆に証拠は証跡だけで構成されるわけでもない。実務で効いてくるのは前者で、<strong>証跡が取れていない領域は、監査で証拠を作れない</strong>。ログ設計を後回しにしたシステムは、監査の場で「有効だと言えない」と評価される。</p>
+
+<h2>監査計画は 3 階層</h2>
+
+<p>監査は毎年すべてを見るわけにはいかない。だから計画を粒度の違う 3 枚に分ける。</p>
+
+<figure>
+<svg viewBox="0 0 700 262" role="img" aria-label="中長期計画書の中に基本計画書があり、その中に個別計画書がある入れ子構造">
+  <rect x="8" y="8" width="684" height="246" rx="10" fill="none" stroke="var(--c1)" stroke-width="1.8"/>
+  <text x="24" y="30" font-size="12.5" font-weight="600" fill="var(--c1)">中長期計画書 — 3〜5 年でどの領域をどう回すか</text>
+
+  <rect x="24" y="44" width="428" height="194" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="1.6"/>
+  <text x="40" y="66" font-size="12" font-weight="600" fill="var(--c2)">基本計画書（今年度）— 実施する案件・体制・日程</text>
+
+  <g font-size="11.5" fill="var(--ink)">
+    <rect x="40" y="80" width="396" height="42" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.2"/>
+    <text x="56" y="98" font-weight="600">個別計画書：基幹システムのアクセス権限管理</text>
+    <text x="56" y="114" font-size="10.5" fill="var(--muted)">範囲・監査手続・担当・日程をここまで具体化する</text>
+
+    <rect x="40" y="130" width="396" height="34" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.2"/>
+    <text x="56" y="152" font-weight="600">個別計画書：外部委託先の管理状況</text>
+
+    <rect x="40" y="172" width="396" height="34" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.2"/>
+    <text x="56" y="194" font-weight="600">個別計画書：バックアップと復旧手順</text>
+  </g>
+  <text x="40" y="226" font-size="11" fill="var(--muted)">1 案件 = 1 枚。監査人が実際に手を動かす単位</text>
+
+  <rect x="466" y="44" width="210" height="194" rx="8" fill="none" stroke="var(--c2)" stroke-width="1.4" stroke-dasharray="5 4" opacity=".7"/>
+  <text x="482" y="66" font-size="12" fill="var(--muted)">基本計画書（次年度）</text>
+  <text x="482" y="92" font-size="11" fill="var(--muted)">今年度見なかった領域を</text>
+  <text x="482" y="110" font-size="11" fill="var(--muted)">ここで拾う</text>
+  <text x="571" y="160" font-size="20" fill="var(--muted)" text-anchor="middle">⋮</text>
+</svg>
+<figcaption>3 枚に分ける実利は「今年やらないことを正当化できる」点にある。中長期計画がないまま単年度の計画だけ立てると、毎年見やすいところばかり見て、手を付けにくい領域が永久に監査されないまま残る。</figcaption>
+</figure>
+
+<h2>拠り所になる基準類</h2>
+
+<p>基準は「監査人がどう振る舞うか」と「被監査側のあるべき姿は何か」がペアになっている。この対応が分かると、どれを開けばいいか迷わなくなる。</p>
+
+<div class="tw">
+<table>
+<tr><th>基準</th><th>発行</th><th>何を規定するか</th></tr>
+<tr><th>システム監査基準</th><td>経済産業省</td><td>監査人の行為規範と監査手続。独立性、計画、証拠の入手、報告の作法</td></tr>
+<tr><th>システム管理基準</th><td>経済産業省</td><td>被監査側のあるべき姿。IT ガバナンスと、企画・開発・運用・保守の管理項目</td></tr>
+<tr><th>情報セキュリティ管理基準</th><td>経済産業省</td><td>セキュリティ版のあるべき姿。ISO/IEC 27001・27002 がベース</td></tr>
+<tr><th>ISO 19011<br>（JIS Q 19011）</th><td>ISO / JIS</td><td>マネジメントシステム監査の指針。第一者・第二者監査で使う共通の作法（第三者の認証審査は ISO/IEC 17021-1）</td></tr>
+</table>
+</div>
+
+<h2>内部統制と IT 統制の 3 分類</h2>
+
+<p>内部統制は、業務が適正に行われることを確保するために組織に組み込む仕組み。その基本的要素の一つに「IT への対応」があり、IT の統制はさらに 3 つに分かれる。</p>
+
+<figure>
+<svg viewBox="0 0 700 268" role="img" aria-label="ITガバナンス・IT全般統制・IT業務処理統制を経営層から個々の業務処理までのレイヤで表した図">
+  <g font-size="10.5" fill="var(--muted)" text-anchor="end">
+    <text x="112" y="46">経営層</text>
+    <text x="112" y="132">全社的な IT 基盤</text>
+    <text x="112" y="218">個々の業務処理</text>
+  </g>
+
+  <rect x="128" y="14" width="500" height="62" rx="8" fill="var(--card)" stroke="var(--c1)" stroke-width="1.8"/>
+  <text x="146" y="38" font-size="13" font-weight="600" fill="var(--c1)">IT ガバナンス</text>
+  <text x="146" y="60" font-size="11.5" fill="var(--ink)">経営者が IT 戦略を方向づけ、投資を決め、実施状況を監視する</text>
+
+  <rect x="128" y="100" width="500" height="62" rx="8" fill="var(--card)" stroke="var(--c2)" stroke-width="1.8"/>
+  <text x="146" y="124" font-size="13" font-weight="600" fill="var(--c2)">IT 全般統制</text>
+  <text x="146" y="146" font-size="11.5" fill="var(--ink)">開発・変更管理／運用管理／アクセス管理／外部委託管理</text>
+
+  <rect x="128" y="186" width="500" height="62" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="1.8"/>
+  <text x="146" y="210" font-size="13" font-weight="600" fill="var(--c3)">IT 業務処理統制</text>
+  <text x="146" y="232" font-size="11.5" fill="var(--ink)">入力チェック／エラー処理／マスタ管理／自動計算の正確性</text>
+
+  <g stroke="var(--muted)" stroke-width="1.4">
+    <line x1="656" y1="30" x2="656" y2="232" marker-end="url(#am)"/>
+  </g>
+  <text x="670" y="42" font-size="10.5" fill="var(--muted)" transform="rotate(90 670 42)">上の層が崩れると下の層は信用できない</text>
+</svg>
+<figcaption>この上下関係が監査の順番を決めている。IT 全般統制が弱い環境では、業務処理統制をどれだけ作り込んでも「本当にその通り動いているか」を保証できない。だから監査人は入力チェックの実装より先に、本番環境の変更管理とアクセス権限を見に来る。</figcaption>
+</figure>
+
+<p>なぜこの順序なのかは、逆から考えると早い。誰でも本番のプログラムを差し替えられる環境なら、入力チェックが今この瞬間も実装されている保証はない。業務処理統制の有効性は、全般統制が支えていて初めて主張できる。</p>
+
+<div class="note">
+<p><strong>提案するときの言い方</strong></p>
+<p>「変更管理を整備しましょう」では通らないことが多い。「本番へのデプロイに承認記録が残っていないと、監査で業務処理統制まで有効と言えなくなる。個別の機能を作り込む前に、ここを整えるほうが安く済む」——統制は積み上げの順序があり、下から積むと手戻りが出る、という言い方のほうが伝わる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.meti.go.jp/policy/netsecurity/sys-kansa/">経済産業省 - システム監査制度について</a>（<a href="https://www.meti.go.jp/policy/netsecurity/sys-kansa/sys-kansa-2023r.pdf">システム監査基準 令和5年4月26日</a> / <a href="https://www.meti.go.jp/policy/netsecurity/sys-kansa/sys-kanri-2023.pdf">システム管理基準 令和5年4月26日</a>）</li>
+<li><a href="https://www.meti.go.jp/policy/netsecurity/is-kansa/">経済産業省 - 情報セキュリティ監査制度</a>（<a href="https://www.meti.go.jp/policy/netsecurity/is-kansa/IS_Management_Standard_R7.pdf">情報セキュリティ管理基準 令和7年改正版</a>）</li>
+<li><a href="https://www.meti.go.jp/policy/netsecurity/docs/secgov/2024_ZaimuHoukokuNiKakaruITTouseiGuidance.pdf">経済産業省 - システム管理基準 追補版（財務報告に係る IT 統制ガイダンス）</a></li>
+<li><a href="https://www.fsa.go.jp/news/r4/sonota/20230407/20230407.html">金融庁 - 財務報告に係る内部統制の評価及び監査の基準並びに実施基準の改訂について（意見書）</a></li>
+<li><a href="https://www.iso.org/standard/70017.html">ISO 19011:2018 - Guidelines for auditing management systems</a></li>
+</ul>
+
+</main>
+</body>
+</html>

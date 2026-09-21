@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SOAP を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>SOAP — 組織をまたいで手続きを呼び出すための、厳密な封筒</h1>
+<p class="lede">中身も、宛先も、エラーの返し方も XML で決めきる。REST に置き換わった後も、決済や行政の連携では現役。</p>
+
+<h2>何が問題なのか</h2>
+<p>自社のシステムから取引先のシステムの処理を呼びたい。言語もプラットフォームも違い、担当者も別の会社にいる。この状況で「どういう形式で送れば、どういう形式で返ってくるのか」を口頭やメールで合わせていくと、必ず食い違いが出る。</p>
+<p>SOAP の発想は<strong>すべてを機械可読な形式で決めきってしまう</strong>こと。メッセージの構造は XML で規定し、そのサービスがどんな操作を持ち、どんな型の値をやり取りするかは WSDL という定義ファイルで公開する。<strong>定義ファイルを読み込めばクライアントのコードが自動生成される</strong>——これが 2000 年代の企業間連携で求められたもの。</p>
+
+<figure>
+<svg viewBox="0 0 700 234" role="img" aria-label="SOAPエンベロープの構造">
+  <rect x="120" y="16" width="460" height="200" rx="10" fill="var(--card)" stroke="var(--c1)" stroke-width="2"/>
+  <text x="140" y="42" font-size="12.5" font-weight="600" fill="var(--c1)">Envelope（封筒）— 全体を包む</text>
+
+  <rect x="140" y="56" width="420" height="70" rx="7" fill="var(--c4)"/>
+  <text x="160" y="80" font-size="12" font-weight="600" fill="var(--on)">Header（任意）</text>
+  <text x="160" y="100" font-size="10.5" fill="var(--on)" opacity=".92">中身とは別の付帯情報：署名、認証情報、</text>
+  <text x="160" y="116" font-size="10.5" fill="var(--on)" opacity=".92">トランザクションの制御、経路の指示</text>
+
+  <rect x="140" y="138" width="420" height="62" rx="7" fill="var(--c3)"/>
+  <text x="160" y="162" font-size="12" font-weight="600" fill="var(--on)">Body（必須）</text>
+  <text x="160" y="182" font-size="10.5" fill="var(--on)" opacity=".92">呼び出したい処理と引数、または戻り値</text>
+  <text x="160" y="196" font-size="10.5" fill="var(--on)" opacity=".92">エラー時はここに Fault（エラーコードと説明）が入る</text>
+
+  <text x="8" y="70" font-size="10.5" fill="var(--muted)">HTTP でも</text>
+  <text x="8" y="86" font-size="10.5" fill="var(--muted)">SMTP でも</text>
+  <text x="8" y="102" font-size="10.5" fill="var(--muted)">MQ でも</text>
+  <text x="8" y="118" font-size="10.5" fill="var(--muted)">運べる</text>
+  <path d="M96 90 L116 90" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s2)"/>
+
+  <text x="596" y="86" font-size="10.5" fill="var(--muted)">エラーも</text>
+  <text x="596" y="102" font-size="10.5" fill="var(--muted)">形式が</text>
+  <text x="596" y="118" font-size="10.5" fill="var(--muted)">決まって</text>
+  <text x="596" y="134" font-size="10.5" fill="var(--muted)">いる</text>
+  <defs><marker id="s2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>Header と Body を分けているところに設計思想が出ている。認証や署名といった「配送のための情報」を、業務データ本体から切り離して扱えるようにしてある。SOAP が HTTP に限定されないのも同じ理由で、封筒の中身は運び方に依存しない。</figcaption>
+</figure>
+
+<h2>メッセージ自体に署名・暗号化できる（WS-Security）</h2>
+<p>HTTPS は<strong>1区間の通信</strong>を守る。だが企業間連携では、メッセージが中継サーバやメッセージキューをいくつも経由することがあり、途中で平文に戻る。</p>
+<p>SOAP では Header に <a href="../PKI/XMLデジタル署名.html">XML デジタル署名</a>や暗号化を入れられるため、<strong>メッセージそのものが端から端まで守られる</strong>。経由地が信用できなくても成立する、という点が金融や行政の要件に合った。この仕組みを WS-Security と呼ぶ。</p>
+
+<h2>なぜ REST に置き換わったのか</h2>
+<table>
+<tr><th></th><th>SOAP</th><th>REST（JSON）</th></tr>
+<tr><td>メッセージ</td><td>XML。冗長で人手では読みにくい</td><td>JSON。軽く、そのまま読める</td></tr>
+<tr><td>定義</td><td>WSDL で厳密に決める</td><td>OpenAPI などで記述するが、必須ではない</td></tr>
+<tr><td>実装の手軽さ</td><td>専用のライブラリと生成ツールが要る</td><td><code>curl</code>1行で試せる</td></tr>
+<tr><td>向く場面</td><td>組織をまたぐ厳密な契約、多段経由、トランザクション</td><td>Web・モバイル向けの一般的な API</td></tr>
+</table>
+<p>Web とモバイルの世界では「軽くてすぐ試せる」ことの価値が圧倒的に大きく、REST が主流になった。一方で<strong>相手が数年変わらず、仕様の食い違いが金銭事故に直結する</strong>領域——決済ネットワーク、保険、行政システム、EDI——では、いまも SOAP が動いている。レガシー統合の案件でこれに出会うことは今後もある。</p>
+
+<div class="note">
+<p><strong>XML を受け取る側の定番の脆弱性</strong></p>
+<p>SOAP に限らず XML を解析するエンドポイントには、<strong>XXE（XML 外部実体参照）</strong>という古典的な穴がある。XML の仕様には外部ファイルを読み込む機能があり、これを有効にしたまま解析すると、送りつけられた XML に <code>/etc/passwd</code> を読ませたり、内部ネットワークへ通信させたりできる。<br>
+対策は明快で、<strong>パーサの設定で外部実体の解決を無効にする</strong>。ライブラリによっては既定で有効なままなので、明示的に切る。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.w3.org/TR/soap12-part1/">W3C - SOAP Version 1.2 Part 1: Messaging Framework</a></li>
+<li><a href="https://docs.oasis-open.org/wss-m/wss/v1.1.1/os/wss-SOAPMessageSecurity-v1.1.1-os.html">OASIS - Web Services Security: SOAP Message Security</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html">OWASP - XML External Entity Prevention Cheat Sheet</a></li>
+</ul>
+
+</main>
+</body>
+</html>

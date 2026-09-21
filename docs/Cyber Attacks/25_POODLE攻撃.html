@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>POODLE 攻撃を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>POODLE 攻撃 — 「復号できたか」の返事だけで Cookie を盗む</h1>
+<p class="lede">鍵は破らない。サーバが返す成功／失敗を数千回観測するだけ。</p>
+
+<h2>何が問題なのか</h2>
+<p>2014 年に公表された POODLE（Padding Oracle On Downgraded Legacy Encryption）は、<strong>SSL 3.0 で保護された通信から、セッション Cookie を 1 バイトずつ復元する</strong>攻撃。名前のとおり 2 つの部品でできている。</p>
+<ul>
+<li>通信を SSL 3.0 に落とす（<a href="24_バージョンロールバック攻撃.html">バージョンロールバック攻撃</a>）</li>
+<li>SSL 3.0 の CBC パディングの緩さを突く（パディングオラクル攻撃）</li>
+</ul>
+<p>SSL 3.0 は 1996 年の規格で、2014 年当時すでに誰も積極的に使っていなかった。それでも影響が大きかったのは、<strong>互換性のために有効なまま残されていたから</strong>。使っていない機能が有効なだけで攻撃が成立する、という典型例になっている。</p>
+
+<h2>SSL 3.0 のパディングは中身が検証されない</h2>
+<p><a href="../Cryptography/暗号利用モード/CBC.html">CBC モード</a>ではブロック長に足りないぶんを詰め物で埋める。TLS 1.0 以降は詰め物の中身にも決まりがあり、復号側が検証できる。ところが SSL 3.0 は<strong>最後の 1 バイト（詰め物の長さ）以外は「任意の値でよい」</strong>と定めた。つまり復号側は、長さバイト以外を一切見ない。</p>
+
+<figure>
+<svg viewBox="0 0 700 280" role="img" aria-label="POODLEの手順。狙ったブロックを最終ブロックに差し替え、復号成功なら1バイトが判明する">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">最終ブロックを、狙ったブロックにすり替える</text>
+
+  <text x="8" y="42" font-size="11" fill="var(--muted)">攻撃者が観測した暗号文</text>
+  <g font-size="10.5">
+    <rect x="8" y="52" width="104" height="28" rx="4" fill="var(--c1)"/><text x="60" y="70" fill="var(--on)" text-anchor="middle">…ヘッダ…</text>
+    <rect x="118" y="52" width="104" height="28" rx="4" fill="var(--stop)"/><text x="170" y="70" fill="var(--on)" text-anchor="middle">Cookie を含む</text>
+    <rect x="228" y="52" width="104" height="28" rx="4" fill="var(--c1)"/><text x="280" y="70" fill="var(--on)" text-anchor="middle">…本文…</text>
+    <rect x="338" y="52" width="104" height="28" rx="4" fill="var(--c4)"/><text x="390" y="70" fill="var(--on)" text-anchor="middle">パディング</text>
+  </g>
+  <text x="170" y="98" font-size="10.5" fill="var(--stop)" text-anchor="middle">これが読みたい</text>
+
+  <path d="M170 104 L170 122 L390 122 L390 140" fill="none" stroke="var(--stop)" stroke-width="1.8" marker-end="url(#q1)"/>
+  <text x="290" y="118" font-size="10.5" fill="var(--stop)">コピーして最終ブロックに上書き</text>
+
+  <text x="8" y="158" font-size="11" fill="var(--muted)">サーバに送りつける改造版</text>
+  <g font-size="10.5">
+    <rect x="8" y="142" width="104" height="28" rx="4" fill="var(--c1)"/>
+    <rect x="118" y="142" width="104" height="28" rx="4" fill="var(--stop)"/>
+    <rect x="228" y="142" width="104" height="28" rx="4" fill="var(--c1)"/>
+    <rect x="338" y="142" width="104" height="28" rx="4" fill="var(--stop)"/><text x="390" y="160" fill="var(--on)" text-anchor="middle">差し替え</text>
+  </g>
+
+  <rect x="8" y="190" width="330" height="76" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="24" y="210" font-size="11" fill="var(--c3)" font-weight="600">サーバが受理した（255/256 でない側）</text>
+  <text x="24" y="230" font-size="10.5" fill="var(--muted)">復号結果の末尾がたまたま正しい長さバイトに</text>
+  <text x="24" y="246" font-size="10.5" fill="var(--muted)">なった＝計算で平文 1 バイトが確定する</text>
+  <text x="24" y="262" font-size="10.5" fill="var(--c3)" font-weight="600">→ Cookie の 1 文字が判明</text>
+
+  <rect x="352" y="190" width="340" height="76" rx="6" fill="var(--card)" stroke="var(--line)"/>
+  <text x="368" y="210" font-size="11" fill="var(--stop)" font-weight="600">サーバが拒否した</text>
+  <text x="368" y="230" font-size="10.5" fill="var(--muted)">外れ。位置をずらして再送する。</text>
+  <text x="368" y="246" font-size="10.5" fill="var(--muted)">確率 1/256 なので、平均 256 回の試行で</text>
+  <text x="368" y="262" font-size="10.5" fill="var(--muted)">1 バイトが割れる（数千回で Cookie 全体）</text>
+  <defs><marker id="q1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--stop)"/></marker></defs>
+</svg>
+<figcaption>成立には「同じ Cookie を含むリクエストを何度でも送らせられる」ことが要る。攻撃者は利用者を自分の用意したページに誘導し、JavaScript から対象サイトへリクエストを繰り返し発生させる。パスの長さを 1 文字ずつ変えることで、Cookie の狙った位置をブロック境界に合わせる。</figcaption>
+</figure>
+
+<h2>オラクルとは「答えを教えてくれる存在」</h2>
+<p>この攻撃で攻撃者が得ている情報は<strong>「復号に成功したか、しなかったか」の 1 ビットだけ</strong>。鍵も平文も返ってこない。それでも、暗号文を自分で作って何度も試せる状況では、この 1 ビットの積み重ねが平文の復元に繋がる。<strong>復号の成否を外に見せる仕組みは、それ自体が攻撃の材料になる</strong>——これがパディングオラクルという考え方で、POODLE 以外にも Lucky 13 など同じ構図の攻撃がある。</p>
+
+<div class="note">
+<p><strong>TLS でも成立した実装があった（POODLE against TLS）</strong></p>
+<p>TLS 1.0 以降はパディングの中身も検証すると仕様で決まっている。ところが一部のロードバランサや TLS アクセラレータが<strong>その検証を実装していなかった</strong>ため、TLS 1.2 の通信でも同じ攻撃が成立した（CVE-2014-8730 ほか）。「SSL 3.0 を無効にしたから安全」で終わらせず、機器側のパッチ適用まで確認する必要があった事例。</p>
+</div>
+
+<h2>どうするか</h2>
+<ul>
+<li><strong>SSL 3.0 を無効にする。</strong>これが唯一の根本対策で、修正パッチのようなものは存在しない。プロトコル仕様そのものの欠陥なので、直す方法がない。</li>
+<li><strong>TLS_FALLBACK_SCSV に対応する。</strong>互換性の都合で SSL 3.0 を残さざるを得ない場合、少なくとも「ロールバックさせられて落ちた」状態を検知して拒否できるようにする。</li>
+<li><strong>CBC 系の暗号スイートから AEAD に移行する。</strong>AES-GCM や ChaCha20-Poly1305 は改ざんを検知してから復号するため、パディングオラクルの構図自体が成り立たない。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.openssl.org/~bodo/ssl-poodle.pdf">This POODLE Bites: Exploiting The SSL 3.0 Fallback（Google）</a></li>
+<li><a href="https://nvd.nist.gov/vuln/detail/CVE-2014-3566">CVE-2014-3566 - SSL 3.0 の POODLE 脆弱性</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7568">RFC 7568 - Deprecating Secure Sockets Layer Version 3.0</a></li>
+<li><a href="https://www.ipa.go.jp/security/security-alert/2014/alert20141017.html">IPA - SSL 3.0 の脆弱性対策について</a></li>
+</ul>
+
+</main>
+</body>
+</html>

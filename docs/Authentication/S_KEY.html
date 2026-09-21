@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S/KEY を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>S/KEY — サーバに秘密を置かないワンタイムパスワード</h1>
+<p class="lede">ハッシュを何度も掛けた列を、後ろから1つずつ使う。サーバが漏れても次のパスワードは作れない。</p>
+
+<h2>何が問題なのか</h2>
+<p>チャレンジレスポンス認証は通信路でのリプレイを防ぐが、<strong>サーバ側にパスワード（かそれに準ずる秘密）を持たせる</strong>という弱点が残る。サーバが侵害されればそこから認証を突破できる。</p>
+<p>そこで「サーバには<strong>検証に必要な情報しか置かない</strong>——その情報から次のパスワードは計算できない」という形にしたのが S/KEY。1990年代のワンタイムパスワードの代表で、ハッシュ関数の一方向性だけで組み上がっている。</p>
+
+<h2>ハッシュを重ねた列を、逆から使う</h2>
+
+<figure>
+<svg viewBox="0 0 700 240" role="img" aria-label="S/KEYのハッシュ連鎖と、使用する順序">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">準備：シードとパスフレーズから、ハッシュを n 回繰り返した列を作る</text>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="30" width="88" height="30" rx="5" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="52" y="50" fill="var(--ink)">種</text>
+    <path d="M96 45 L124 45" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s1)"/>
+    <rect x="126" y="30" width="88" height="30" rx="5" fill="var(--c1)"/><text x="170" y="50" fill="var(--on)">P1 = h(種)</text>
+    <path d="M214 45 L242 45" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s1)"/>
+    <rect x="244" y="30" width="88" height="30" rx="5" fill="var(--c1)"/><text x="288" y="50" fill="var(--on)">P2 = h(P1)</text>
+    <path d="M332 45 L360 45" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s1)"/>
+    <text x="386" y="50" fill="var(--muted)">……</text>
+    <path d="M412 45 L440 45" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s1)"/>
+    <rect x="442" y="30" width="98" height="30" rx="5" fill="var(--c1)"/><text x="491" y="50" fill="var(--on)">P99</text>
+    <path d="M540 45 L568 45" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s1)"/>
+    <rect x="570" y="30" width="98" height="30" rx="5" fill="var(--c4)"/><text x="619" y="50" fill="var(--on)">P100</text>
+  </g>
+  <text x="619" y="78" font-size="10.5" fill="var(--c4)" text-anchor="middle">これをサーバに登録</text>
+
+  <text x="8" y="116" font-size="12.5" font-weight="600" fill="var(--ink)">利用：登録した値の手前から、1回ずつ逆向きに使う</text>
+  <g font-size="10.5">
+    <rect x="8" y="130" width="330" height="28" rx="5" fill="var(--c3)"/>
+    <text x="24" y="149" fill="var(--on)">1回目のログイン：利用者は P99 を送る</text>
+    <path d="M344 144 L380 144" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s1)"/>
+    <text x="390" y="149" fill="var(--ink)">サーバは h(P99) を計算し、登録済みの P100 と一致するか見る</text>
+    <rect x="8" y="166" width="330" height="28" rx="5" fill="var(--c3)" opacity=".8"/>
+    <text x="24" y="185" fill="var(--on)">2回目のログイン：利用者は P98 を送る</text>
+    <path d="M344 180 L380 180" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#s1)"/>
+    <text x="390" y="185" fill="var(--ink)">サーバは保存を P99 に更新済み。h(P98) と比較する</text>
+  </g>
+  <text x="8" y="222" font-size="11" fill="var(--stop)">サーバが持つのは「直前に使われた値」だけ。ハッシュは逆算できないので、そこから次に使われる値は作れない。</text>
+  <defs><marker id="s1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>ハッシュ連鎖を「作った向きと逆に使う」ことで、検証は簡単（1回ハッシュするだけ）なのに、先読みは不可能という非対称が生まれる。この構造はブロックチェーンやログの改ざん検知など、他の場面にも顔を出す。</figcaption>
+</figure>
+
+<h2>運用上の性質</h2>
+<ul>
+<li><strong>回数に限りがある</strong>：n 回使い切ったら、新しい種を決めて登録し直す（再初期化）。</li>
+<li><strong>回数のずれが起きる</strong>：通信が途中で切れると、利用者側とサーバ側で「次に使う番号」がずれる。そのためサーバは毎回「次はシーケンス番号いくつです」と伝える。</li>
+<li><strong>持ち歩きが必要</strong>：昔は印刷したパスワードのリストを配っていた。ここが実運用でいちばん面倒で、後の<a href="時刻同期方式.html">時刻同期方式</a>に置き換わっていった理由でもある。</li>
+</ul>
+
+<div class="note">
+<p><strong>中間者には勝てない</strong></p>
+<p>S/KEY で守れるのは「盗聴」と「サーバ側の情報漏洩」まで。攻撃者が経路に割り込み、利用者から受け取ったパスワードを<strong>そのまま本物のサーバに転送してログインする</strong>のは止められない。ワンタイムパスワードは一般にこの弱点を持っていて、フィッシングサイトに入力させる攻撃が成立する。ここまで潰すには、認証を通信路（TLS）に結びつける FIDO2 のような仕組みが要る。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc1760.html">RFC 1760 - The S/KEY One-Time Password System</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2289.html">RFC 2289 - A One-Time Password System</a></li>
+</ul>
+
+</main>
+</body>
+</html>

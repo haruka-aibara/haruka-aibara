@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ポートスキャンの4種（TCP / SYN / FIN / NULL）</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ポートスキャンの4種（TCP / SYN / FIN / NULL）</h1>
+<p class="lede">攻撃はいきなり侵入から始まらない。最初に来るのは「どのポートが開いているか」の調査。</p>
+
+<h2>なぜ応答の違いで開閉が分かるのか</h2>
+<p>TCP は接続時に SYN → SYN/ACK → ACK の3回のやりとりをする。このとき、<strong>開いているポートと閉じているポートでは返ってくるものが違う</strong>。閉じていれば RST（接続拒否）が返る。この差を外から順に確かめていくのがポートスキャンで、種類の違いは「どこまでやりとりをするか」の違いだ。</p>
+
+<figure>
+<svg viewBox="0 0 700 320" role="img" aria-label="TCPスキャン・SYNスキャン・FIN/NULLスキャンのパケットのやりとり">
+  <defs>
+    <marker id="ps-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+    <marker id="ps-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="ps-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+  </defs>
+  <g>
+    <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">① TCP（コネクト）スキャン — 開いているポート</text>
+    <text x="50" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">攻撃者</text>
+    <text x="285" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">対象</text>
+    <line x1="50" y1="38" x2="50" y2="128" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="285" y1="38" x2="285" y2="128" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="52" y1="56" x2="279" y2="56" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#ps-ink)"/>
+    <text x="166" y="51" font-size="10.5" fill="var(--muted)" text-anchor="middle">SYN</text>
+    <line x1="283" y1="80" x2="56" y2="80" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#ps-c3)"/>
+    <text x="166" y="75" font-size="10.5" fill="var(--muted)" text-anchor="middle">SYN/ACK</text>
+    <line x1="52" y1="104" x2="279" y2="104" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#ps-ink)"/>
+    <text x="166" y="99" font-size="10.5" fill="var(--muted)" text-anchor="middle">ACK（接続成立）</text>
+    <text x="0" y="146" font-size="11" fill="var(--stop)">接続が成立するのでサーバ側のログに残る</text>
+  </g>
+
+  <g transform="translate(370,0)">
+    <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">② SYN スキャン — 開いているポート</text>
+    <text x="50" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">攻撃者</text>
+    <text x="285" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">対象</text>
+    <line x1="50" y1="38" x2="50" y2="128" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="285" y1="38" x2="285" y2="128" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="52" y1="56" x2="279" y2="56" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#ps-ink)"/>
+    <text x="166" y="51" font-size="10.5" fill="var(--muted)" text-anchor="middle">SYN</text>
+    <line x1="283" y1="80" x2="56" y2="80" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#ps-c3)"/>
+    <text x="166" y="75" font-size="10.5" fill="var(--muted)" text-anchor="middle">SYN/ACK（＝開いている）</text>
+    <line x1="52" y1="104" x2="279" y2="104" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#ps-ink)"/>
+    <text x="166" y="99" font-size="10.5" fill="var(--muted)" text-anchor="middle">RST（成立させず打ち切る）</text>
+    <text x="0" y="146" font-size="11" fill="var(--c3)">接続が成立しないためアプリのログに残りにくい</text>
+  </g>
+
+  <line x1="0" y1="172" x2="700" y2="172" stroke="var(--line)"/>
+
+  <g transform="translate(0,182)">
+    <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">③ FIN / NULL スキャン — 開いているポート</text>
+    <text x="50" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">攻撃者</text>
+    <text x="285" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">対象</text>
+    <line x1="50" y1="38" x2="50" y2="112" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="285" y1="38" x2="285" y2="112" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="52" y1="60" x2="279" y2="60" stroke="var(--c4)" stroke-width="1.5" marker-end="url(#ps-ink)"/>
+    <text x="166" y="55" font-size="10.5" fill="var(--muted)" text-anchor="middle">FIN だけ／フラグ全部 0</text>
+    <line x1="283" y1="88" x2="56" y2="88" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="4 4"/>
+    <text x="166" y="83" font-size="10.5" fill="var(--muted)" text-anchor="middle">応答なし</text>
+    <text x="0" y="128" font-size="11" fill="var(--c1)">「無反応 ＝ 開いている」と読む</text>
+  </g>
+
+  <g transform="translate(370,182)">
+    <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">③' FIN / NULL スキャン — 閉じているポート</text>
+    <text x="50" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">攻撃者</text>
+    <text x="285" y="32" font-size="10.5" fill="var(--muted)" text-anchor="middle">対象</text>
+    <line x1="50" y1="38" x2="50" y2="112" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="285" y1="38" x2="285" y2="112" stroke="var(--line)" stroke-width="1.5"/>
+    <line x1="52" y1="60" x2="279" y2="60" stroke="var(--c4)" stroke-width="1.5" marker-end="url(#ps-ink)"/>
+    <text x="166" y="55" font-size="10.5" fill="var(--muted)" text-anchor="middle">FIN だけ／フラグ全部 0</text>
+    <line x1="283" y1="88" x2="56" y2="88" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#ps-stop)"/>
+    <text x="166" y="83" font-size="10.5" fill="var(--muted)" text-anchor="middle">RST</text>
+    <text x="0" y="128" font-size="11" fill="var(--muted)">RST が返る ＝ 閉じている</text>
+  </g>
+</svg>
+<figcaption>③の FIN / NULL は、接続の途中でもないのに終了フラグだけ送る、フラグを1つも立てないなど「ありえない組み合わせ」を送って反応を見る手口。まともな接続要求ではないので、接続としては記録されにくい。</figcaption>
+</figure>
+
+<table>
+<tr><th>種類</th><th>送るもの</th><th>開いている</th><th>閉じている</th><th>特徴</th></tr>
+<tr><td>TCP（コネクト）</td><td>3ウェイハンドシェイクを完走</td><td>接続成立</td><td>RST</td><td>結果は確実。接続ログに残る</td></tr>
+<tr><td>SYN（ステルス／ハーフオープン）</td><td>SYN のみ。応答が来たら RST で打ち切る</td><td>SYN/ACK</td><td>RST</td><td>成立させないのでログに残りにくい</td></tr>
+<tr><td>FIN</td><td>FIN フラグだけ</td><td>応答なし</td><td>RST</td><td>「応答なし＝開」と逆読みする</td></tr>
+<tr><td>NULL</td><td>フラグを全部 0</td><td>応答なし</td><td>RST</td><td>同上</td></tr>
+</table>
+
+<h2>知っておくこと2つ</h2>
+<p><strong>実行に必要な権限が違う。</strong>①は OS の通常の接続機能をそのまま使うので特別な権限が要らない。②③は TCP ヘッダを自分で組み立てて送るため管理者権限が必要になる。</p>
+
+<div class="note">
+<p><strong>FIN / NULL は相手の OS 次第で当てにならない。</strong>「開いているポートは無反応」は TCP の仕様どおりに実装した OS の挙動で、Windows など一部の OS は開いていても RST を返す。この場合、スキャン結果は全ポート閉じているように見える。逆にこの反応の違いは、相手の OS を推測する材料にもなる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://nmap.org/book/man-port-scanning-techniques.html">Nmap — Port Scanning Techniques</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc9293">RFC 9293 — Transmission Control Protocol (TCP)</a></li>
+</ul>
+
+</main>
+</body>
+</html>

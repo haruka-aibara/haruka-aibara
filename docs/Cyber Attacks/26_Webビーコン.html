@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Web ビーコン — 開いた瞬間に伝わるもの</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Web ビーコン — 開いた瞬間に伝わるもの</h1>
+<p class="lede">1×1 の透明画像 1 枚で、「いつ・どこから・誰が開いたか」が相手のログに残る。</p>
+
+<h2>何が問題なのか</h2>
+<p>「怪しいメールのリンクは踏まない」までは常識になっている。では<strong>開くだけ</strong>なら安全か、というとそうではない。HTML メールの本文に外部サーバの画像が 1 枚置いてあると、メールクライアントがその画像を取りに行った時点で、置いた側のサーバにアクセス記録が残る。リンクを踏まなくても、最後まで読まなくても、表示された瞬間に伝わる。</p>
+<p>これが <strong>Web ビーコン</strong>（Web バグ、トラッキングピクセル）。1×1 ピクセルの透明画像がよく使われるのは、見えないから。もともとは Web サイトのアクセス解析の仕組みで、いまもメールマーケティングの開封率測定に普通に使われている。攻撃側から見ると、これは<strong>そのアドレスが生きていて、実際に人が読んでいる</strong>ことの確認手段になる。</p>
+
+<h2>仕組み</h2>
+
+<figure>
+<svg viewBox="0 0 700 264" role="img" aria-label="HTMLメールを開くと外部サーバに開封記録が残る流れ">
+  <defs>
+    <marker id="wb-req" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="var(--c2)"/>
+    </marker>
+    <marker id="wb-res" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+
+  <text x="150" y="12" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">受信者のメールクライアント</text>
+  <text x="550" y="12" font-size="12.5" font-weight="600" fill="var(--ink)" text-anchor="middle">画像を置いた側のサーバ</text>
+  <line x1="150" y1="22" x2="150" y2="252" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="550" y1="22" x2="550" y2="252" stroke="var(--line)" stroke-width="1.5"/>
+
+  <rect x="30" y="30" width="240" height="32" rx="6" fill="var(--c1)"/>
+  <text x="150" y="51" font-size="12" fill="var(--on)" text-anchor="middle">① HTML メールを開く</text>
+
+  <rect x="30" y="82" width="240" height="46" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="150" y="101" font-size="11.5" fill="var(--ink)" text-anchor="middle">② 本文の &lt;img&gt; を自動で取得</text>
+  <text x="150" y="118" font-size="9.5" fill="var(--muted)" text-anchor="middle">width="1" height="1" の透明画像</text>
+
+  <line x1="276" y1="105" x2="418" y2="105" stroke="var(--c2)" stroke-width="1.6" marker-end="url(#wb-req)"/>
+  <text x="347" y="97" font-size="10" fill="var(--muted)" text-anchor="middle">GET /p.gif?id=a8f3</text>
+
+  <rect x="430" y="82" width="240" height="32" rx="6" fill="var(--c2)"/>
+  <text x="550" y="103" font-size="12" fill="var(--on)" text-anchor="middle">③ アクセスログに記録</text>
+
+  <rect x="430" y="122" width="240" height="80" rx="6" fill="var(--lane)"/>
+  <g font-size="10" fill="var(--muted)">
+    <text x="444" y="141">2026-08-11 09:14:22</text>
+    <text x="444" y="158">203.0.113.20</text>
+    <text x="444" y="175">Mozilla/5.0 (iPhone; ...) Mail</text>
+    <text x="444" y="192">GET /p.gif?id=a8f3</text>
+  </g>
+
+  <line x1="418" y1="228" x2="276" y2="228" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#wb-res)"/>
+  <text x="347" y="220" font-size="10" fill="var(--muted)" text-anchor="middle">透明 GIF（43 バイト）</text>
+
+  <rect x="30" y="208" width="240" height="42" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="150" y="227" font-size="11.5" fill="var(--ink)" text-anchor="middle">④ 画面には何も現れない</text>
+  <text x="150" y="243" font-size="9.5" fill="var(--muted)" text-anchor="middle">見えないので気づけない</text>
+</svg>
+<figcaption>URL の <code>id=a8f3</code> は宛先ごとに変えて発行される。だから「誰かが開いた」ではなく「このアドレスの人が開いた」が分かる。画像だけでなく、外部の CSS・Web フォント・背景画像でも同じことが起きる——本文が外部を参照していれば何でもビーコンになる。</figcaption>
+</figure>
+
+<table>
+<tr><th>ログに残るもの</th><th>そこから分かること</th></tr>
+<tr><td>アクセス日時・回数</td><td>いつ開いたか、何度読み返したか</td></tr>
+<tr><td>送信元 IP アドレス</td><td>おおよその地域、組織のネットワークかどうか</td></tr>
+<tr><td>User-Agent</td><td>使っているメールクライアントと OS・端末</td></tr>
+<tr><td>URL の ID</td><td>どの宛先が開いたか（＝生きているアドレス）</td></tr>
+</table>
+
+<h2>Web サイトでも同じ手口</h2>
+<p>メールの例で説明したが、同じものが Web ページにも埋め込まれる。複数のサイトが同じ事業者のビーコンを貼っていると、その事業者だけが横断的に閲覧を観測できる。</p>
+
+<figure>
+<svg viewBox="0 0 700 232" role="img" aria-label="複数サイトに同じビーコンが置かれると閲覧履歴が1社に集まる図">
+  <defs>
+    <marker id="wb-flow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="var(--c1)"/>
+    </marker>
+  </defs>
+
+  <g>
+    <rect x="10" y="14" width="190" height="48" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="105" y="36" font-size="11.5" fill="var(--ink)" text-anchor="middle">news.example</text>
+    <text x="105" y="52" font-size="9.5" fill="var(--muted)" text-anchor="middle">ビーコンを設置</text>
+
+    <rect x="255" y="14" width="190" height="48" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="350" y="36" font-size="11.5" fill="var(--ink)" text-anchor="middle">shop.example</text>
+    <text x="350" y="52" font-size="9.5" fill="var(--muted)" text-anchor="middle">ビーコンを設置</text>
+
+    <rect x="500" y="14" width="190" height="48" rx="7" fill="var(--lane)" stroke="var(--line)"/>
+    <text x="595" y="36" font-size="11.5" fill="var(--ink)" text-anchor="middle">blog.example</text>
+    <text x="595" y="52" font-size="9.5" fill="var(--muted)" text-anchor="middle">ビーコンを設置</text>
+  </g>
+
+  <line x1="105" y1="66" x2="255" y2="134" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#wb-flow)"/>
+  <line x1="350" y1="66" x2="350" y2="134" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#wb-flow)"/>
+  <line x1="595" y1="66" x2="445" y2="134" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#wb-flow)"/>
+
+  <rect x="200" y="140" width="300" height="58" rx="8" fill="var(--c4)"/>
+  <text x="350" y="164" font-size="12" fill="var(--on)" text-anchor="middle">tracker.example（同じ事業者）</text>
+  <text x="350" y="184" font-size="10.5" fill="var(--on)" text-anchor="middle">uid=7f2c → 3 サイトとも同じ人だと判定</text>
+
+  <text x="350" y="222" font-size="11" fill="var(--muted)" text-anchor="middle">利用者は tracker.example を訪れていないのに、閲覧履歴だけが 1 社に集まる</text>
+</svg>
+<figcaption>同一人物と判定する印は、かつては Cookie（サードパーティ Cookie）だった。ブラウザ側の制限が進んだ結果、いまは IP アドレスと User-Agent などの組み合わせで同一ブラウザを推定する手法（フィンガープリンティング）に移りつつある。</figcaption>
+</figure>
+
+<h2>読まれずに済ませる</h2>
+
+<figure>
+<svg viewBox="0 0 700 122" role="img" aria-label="画像の自動読み込みを許可した場合とブロックした場合の比較">
+  <defs>
+    <marker id="wb-go" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="var(--stop)"/>
+    </marker>
+  </defs>
+
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">画像を自動で読み込む</text>
+  <rect x="0" y="26" width="120" height="36" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="60" y="49" font-size="11" fill="var(--ink)" text-anchor="middle">メール表示</text>
+  <line x1="126" y1="44" x2="194" y2="44" stroke="var(--stop)" stroke-width="1.6" marker-end="url(#wb-go)"/>
+  <text x="160" y="36" font-size="9.5" fill="var(--muted)" text-anchor="middle">GET</text>
+  <rect x="200" y="26" width="120" height="36" rx="6" fill="var(--stop)"/>
+  <text x="260" y="49" font-size="11" fill="var(--on)" text-anchor="middle">サーバ</text>
+  <text x="0" y="86" font-size="11" fill="var(--stop)">開封の事実・IP・端末が伝わる</text>
+
+  <text x="370" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">画像をブロックする（多くの既定）</text>
+  <rect x="370" y="26" width="120" height="36" rx="6" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="430" y="49" font-size="11" fill="var(--ink)" text-anchor="middle">メール表示</text>
+  <line x1="496" y1="44" x2="564" y2="44" stroke="var(--muted)" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <g stroke="var(--stop)" stroke-width="2">
+    <line x1="524" y1="38" x2="536" y2="50"/><line x1="536" y1="38" x2="524" y2="50"/>
+  </g>
+  <rect x="570" y="26" width="120" height="36" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/>
+  <text x="630" y="49" font-size="11" fill="var(--muted)" text-anchor="middle">サーバ</text>
+  <text x="370" y="86" font-size="11" fill="var(--c3)">リクエストが飛ばない = 開封は分からない</text>
+</svg>
+<figcaption>Gmail のように画像を自分のプロキシ経由で取得するサービスもある。この場合 IP アドレスと端末情報は隠れるが、<strong>開封したこと自体は伝わる</strong>。逆に、プロキシがメール受信時にまとめて先読みすると、開いていなくても開封済みに見えることがある。</figcaption>
+</figure>
+
+<ul>
+<li><strong>画像の自動読み込みをオフにする</strong>：最も効く。主要なメールクライアントは既定でブロックし、「画像を表示」ボタンを出す。ここを押すかどうかが分かれ目。</li>
+<li><strong>心当たりのないメールでは押さない</strong>：押した瞬間に、そのアドレスが「生きている」と確定する。</li>
+<li><strong>ブラウザ側はトラッキング防止機能</strong>：Safari の ITP、Firefox の ETP など。既定で有効になっているものが多い。</li>
+</ul>
+
+<h2>セキュリティ視点</h2>
+<p>Web ビーコンは、それ自体では何も壊さない。効いてくるのは<strong>その後</strong>で、サイバーキルチェーンでいえば偵察の段階にあたる。攻撃者はばらまいたメールの開封記録から、生きているアドレス・読んでいる時間帯・使っているクライアントとバージョンを絞り込み、次に送る標的型メールの精度を上げる。</p>
+
+<div class="note">
+<p><strong>「開いただけだから大丈夫」は成り立たない</strong></p>
+<p>インシデント対応で「リンクは踏んでいないので影響なし」と報告されることがあるが、開封の事実が相手に渡っている以上、そのアドレスは次の標的リストに残る。同じ相手から続報が来る前提で扱う。</p>
+</div>
+
+<p>提案するときの言い方——「開封しただけでは実害はありません。ただし、そのアドレスが実在して読まれていることは相手に伝わっています。同じ送信元からの次のメールを警戒する必要があります」。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.ipa.go.jp/security/anshin/measures/spam.html">IPA - 迷惑メールの被害に遭わないために</a></li>
+<li><a href="https://developer.mozilla.org/ja/docs/Web/Privacy">MDN - プライバシー、権限、情報セキュリティ</a></li>
+<li><a href="https://support.google.com/mail/answer/145919">Gmail ヘルプ - 画像の表示設定</a></li>
+<li><a href="https://webkit.org/blog/7675/intelligent-tracking-prevention/">WebKit - Intelligent Tracking Prevention</a></li>
+<li><a href="https://www.eff.org/deeplinks/2009/09/online-trackers-and-social-networks">EFF - Online Trackers and Social Networks</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>セッションフィクセーション — ID を盗まずに使わせる</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>セッションフィクセーション — ID を盗まずに使わせる</h1>
+<p class="lede">セッション ID を盗むのが難しいなら、自分が知っている ID を相手に使わせればいい、という発想の攻撃。</p>
+
+<h2>盗まなくても乗っ取れてしまう</h2>
+<p>Web アプリでは、ログイン後の「この人は本人だ」という判断をセッション ID で行う。だから攻撃者はセッション ID を盗もうとする——というのが素直な発想だが、盗む必要はない。</p>
+<p><strong>攻撃者があらかじめ手に入れた ID を、利用者にそのまま使わせてログインさせる。</strong>ログインが成功した時点で、その ID は「認証済み」として扱われる。攻撃者は最初から ID を知っているので、そのまま本人としてアクセスできてしまう。</p>
+
+<figure>
+<svg viewBox="0 0 700 200" role="img" aria-label="セッションフィクセーションの流れ">
+  <defs>
+    <marker id="sf-ink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+    <marker id="sf-c3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+    <marker id="sf-stop" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+  </defs>
+  <text x="90" y="14" font-size="11" fill="var(--muted)" text-anchor="middle">攻撃者</text>
+  <text x="350" y="14" font-size="11" fill="var(--muted)" text-anchor="middle">利用者</text>
+  <text x="610" y="14" font-size="11" fill="var(--muted)" text-anchor="middle">サイト</text>
+  <line x1="90" y1="22" x2="90" y2="190" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="350" y1="22" x2="350" y2="190" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="610" y1="22" x2="610" y2="190" stroke="var(--line)" stroke-width="1.5"/>
+
+  <line x1="92" y1="48" x2="604" y2="48" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#sf-ink)"/>
+  <text x="350" y="43" font-size="11" fill="var(--ink)" text-anchor="middle">① 先にアクセスして セッション ID=ABC を受け取る</text>
+
+  <line x1="92" y1="88" x2="344" y2="88" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#sf-ink)"/>
+  <text x="218" y="83" font-size="11" fill="var(--ink)" text-anchor="middle">② ABC を仕込んだリンクを踏ませる</text>
+
+  <line x1="352" y1="128" x2="604" y2="128" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#sf-ink)"/>
+  <text x="478" y="123" font-size="11" fill="var(--ink)" text-anchor="middle">③ ABC のままログイン成功</text>
+  <text x="478" y="144" font-size="10.5" fill="var(--muted)" text-anchor="middle">→ ABC が「認証済み」になる</text>
+
+  <line x1="92" y1="176" x2="604" y2="176" stroke="var(--stop)" stroke-width="1.5" marker-end="url(#sf-stop)"/>
+  <text x="350" y="171" font-size="11" fill="var(--stop)" text-anchor="middle">④ 攻撃者が ABC でアクセス ＝ 利用者としてログイン済み</text>
+</svg>
+<figcaption>③のあと、攻撃者は利用者のパスワードを一切知らないまま、ログイン後の画面に入れる。②の踏ませ方は、URL に ID を含めたリンクを送る、罠サイトから遷移させるなど。</figcaption>
+</figure>
+
+<h2>対策は「ログイン成功時に ID を発行し直す」</h2>
+<p>③の時点でサイトが新しいセッション ID を発行し直せば、攻撃者が握っている ABC は認証済みにならず、④が成立しない。<strong>これが対策の中心で、他の細かい話はすべて補助</strong>だと考えていい。主要なフレームワークにはこの再発行の機能が用意されている。</p>
+<p>合わせて、次の2つで②の仕込み自体を難しくできる。</p>
+<ul>
+<li><strong>URL パラメータで渡されたセッション ID を採用しない。</strong>Cookie で扱う。</li>
+<li><strong>Cookie に <code>HttpOnly</code> / <code>Secure</code> を付ける。</strong>スクリプトからの読み書きと、暗号化されていない通信での送出を止める。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.ipa.go.jp/security/vuln/websecurity/session-management.html">IPA 安全なウェブサイトの作り方 — 1.4 セッション管理の不備</a></li>
+<li><a href="https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html">OWASP — Session Management Cheat Sheet</a></li>
+</ul>
+
+</main>
+</body>
+</html>

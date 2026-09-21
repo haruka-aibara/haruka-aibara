@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RADIUS を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>RADIUS — 認証を機器から引きはがして1か所に集める</h1>
+<p class="lede">アクセスポイントも VPN もスイッチも、自分では判断せず認証サーバに聞きに行く。</p>
+
+<h2>何が問題なのか</h2>
+<p>無線 AP、VPN 装置、ネットワークスイッチ。<strong>それぞれの機器がアカウントを持っている</strong>と、社員が1人入るたびに全部に登録し、辞めるたびに全部から消すことになる。消し忘れた1台が残り、退職者のアカウントで社内網に入られる——という事故はこの構成から生まれる。</p>
+<p>そこで認証を機器から切り離し、専用のサーバに集約する。その通信の取り決めが RADIUS（Remote Authentication Dial-In User Service）。名前のとおりダイヤルアップ時代の生まれだが、いまも無線 LAN と VPN の裏側で動いている。</p>
+
+<figure>
+<svg viewBox="0 0 700 230" role="img" aria-label="複数のアクセス機器が1台の認証サーバに問い合わせる構成">
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="8" y="20" width="120" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="68" y="41" fill="var(--ink)">社員 PC</text>
+    <rect x="8" y="90" width="120" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="68" y="111" fill="var(--ink)">スマートフォン</text>
+    <rect x="8" y="160" width="120" height="34" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="68" y="181" fill="var(--ink)">在宅の PC</text>
+    <text x="68" y="212" fill="var(--c1)" font-weight="600">サプリカント</text>
+
+    <rect x="230" y="20" width="150" height="34" rx="5" fill="var(--c1)"/><text x="305" y="41" fill="var(--on)">無線アクセスポイント</text>
+    <rect x="230" y="90" width="150" height="34" rx="5" fill="var(--c1)"/><text x="305" y="111" fill="var(--on)">認証スイッチ</text>
+    <rect x="230" y="160" width="150" height="34" rx="5" fill="var(--c1)"/><text x="305" y="181" fill="var(--on)">VPN ゲートウェイ</text>
+    <text x="305" y="212" fill="var(--c1)" font-weight="600">オーセンティケータ（NAS）</text>
+
+    <rect x="520" y="80" width="172" height="54" rx="7" fill="var(--c3)"/>
+    <text x="606" y="103" fill="var(--on)">RADIUS サーバ</text>
+    <text x="606" y="121" fill="var(--on)" opacity=".9">利用者情報は1か所だけ</text>
+    <text x="606" y="164" fill="var(--muted)">Active Directory や LDAP を</text>
+    <text x="606" y="180" fill="var(--muted)">参照することが多い</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="1.4" fill="none">
+    <path d="M128 37 L226 37" marker-end="url(#r1)"/>
+    <path d="M128 107 L226 107" marker-end="url(#r1)"/>
+    <path d="M128 177 L226 177" marker-end="url(#r1)"/>
+  </g>
+  <g stroke="var(--c3)" stroke-width="1.6" fill="none">
+    <path d="M380 37 L460 37 L460 95 L516 95" marker-end="url(#r2)"/>
+    <path d="M380 107 L516 107" marker-end="url(#r2)"/>
+    <path d="M380 177 L460 177 L460 119 L516 119" marker-end="url(#r2)"/>
+  </g>
+  <text x="448" y="20" font-size="10.5" fill="var(--c3)" text-anchor="middle">RADIUS（UDP）</text>
+  <defs>
+    <marker id="r1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="r2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>入口の機器（オーセンティケータ）は認証の可否を判断せず、取り次ぐだけ。だから機器を増やしても利用者情報は増えず、退職者の無効化も1か所で済む。この構成を無線 LAN に当てはめたのが <a href="../Networking/無線LAN/IEEE802.1X認証.html">IEEE 802.1X</a> のエンタープライズモード。</figcaption>
+</figure>
+
+<h2>「オーセンティケータ」が2つの意味で出てくる</h2>
+<p>ここが混乱しやすい。同じ言葉が、役割の名前とパケットの項目名の両方に使われている。</p>
+<table>
+<tr><th>言葉</th><th>指しているもの</th></tr>
+<tr><td>サプリカント</td><td>接続しようとする端末。IEEE 802.1X での役割名</td></tr>
+<tr><td>オーセンティケータ（役割）</td><td>AP やスイッチなど、入口となる機器。NAS とも呼ぶ</td></tr>
+<tr><td>Authenticator（フィールド）</td><td>RADIUS パケットの中にある 16 バイトの項目。応答が本物か確かめ、パスワードを隠すのに使う</td></tr>
+</table>
+<p>試験や設計書で「オーセンティケータ」と出てきたら、機器の話なのかパケットの話なのかを文脈で見分ける。</p>
+
+<h2>やり取りの流れ</h2>
+
+<figure>
+<svg viewBox="0 0 700 232" role="img" aria-label="RADIUSのメッセージのやり取り">
+  <text x="90" y="16" font-size="12" font-weight="600" fill="var(--c1)" text-anchor="middle">オーセンティケータ</text>
+  <text x="600" y="16" font-size="12" font-weight="600" fill="var(--c3)" text-anchor="middle">RADIUS サーバ</text>
+  <line x1="180" y1="26" x2="180" y2="214" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="560" y1="26" x2="560" y2="214" stroke="var(--line)" stroke-width="1.5"/>
+
+  <path d="M186 48 L554 48" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#q1)"/>
+  <rect x="240" y="32" width="260" height="22" rx="4" fill="var(--c1)"/>
+  <text x="370" y="48" font-size="10.5" fill="var(--on)" text-anchor="middle">Access-Request（利用者名など）</text>
+
+  <path d="M554 86 L186 86" stroke="var(--c2)" stroke-width="1.5" marker-end="url(#q2)"/>
+  <rect x="240" y="70" width="260" height="22" rx="4" fill="var(--c2)"/>
+  <text x="370" y="86" font-size="10.5" fill="var(--on)" text-anchor="middle">Access-Challenge（追加の問いかけ）</text>
+  <text x="608" y="90" font-size="10" fill="var(--muted)">※ 必要な回数だけ往復</text>
+
+  <path d="M186 124 L554 124" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#q1)"/>
+  <rect x="240" y="108" width="260" height="22" rx="4" fill="var(--c1)"/>
+  <text x="370" y="124" font-size="10.5" fill="var(--on)" text-anchor="middle">Access-Request（その答え）</text>
+
+  <path d="M554 162 L186 162" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#q3)"/>
+  <rect x="240" y="146" width="260" height="22" rx="4" fill="var(--c3)"/>
+  <text x="370" y="162" font-size="10.5" fill="var(--on)" text-anchor="middle">Access-Accept ／ Access-Reject</text>
+  <text x="8" y="166" font-size="10" fill="var(--muted)">許可なら VLAN や</text>
+  <text x="8" y="180" font-size="10" fill="var(--muted)">帯域の指定も一緒に返る</text>
+
+  <path d="M186 202 L554 202" stroke="var(--c4)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#q4)"/>
+  <rect x="240" y="186" width="260" height="22" rx="4" fill="var(--c4)"/>
+  <text x="370" y="202" font-size="10.5" fill="var(--on)" text-anchor="middle">Accounting-Request（利用開始・終了）</text>
+  <defs>
+    <marker id="q1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="q2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+    <marker id="q3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+    <marker id="q4" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c4)"/></marker>
+  </defs>
+</svg>
+<figcaption>Access-Accept に「この人はどの VLAN に入れるか」といった属性を載せられるのが実務では効く。人事情報に基づいて、同じ AP につないでも部署ごとに違うネットワークへ振り分ける、といった制御ができる。</figcaption>
+</figure>
+
+<h2>運用で押さえること</h2>
+<ul>
+<li><strong>UDP で動く</strong>：認証は 1812 番、アカウンティングは 1813 番。応答がなければ機器側が再送や別サーバへの切り替えを行うので、サーバは冗長化して機器に2台以上登録しておく。</li>
+<li><strong>共有シークレットが要</strong>：機器とサーバの間に事前に設定する固定文字列。これで応答の真正性を検証し、パスワード属性を隠している。機器ごとに別の値にする、十分長くする、設定手順書に平文で残さない。</li>
+<li><strong>プロトコル自体の保護は弱い</strong>：隠蔽の仕組みが MD5 ベースで古い。経路が信用できない区間（拠点間・クラウド接続）では、IPsec で包むか TLS 版（RADIUS over TLS、RadSec）を使う。</li>
+</ul>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2865.html">RFC 2865 - Remote Authentication Dial In User Service (RADIUS)</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc2866.html">RFC 2866 - RADIUS Accounting</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc6614.html">RFC 6614 - Transport Layer Security (TLS) Encryption for RADIUS</a></li>
+</ul>
+
+</main>
+</body>
+</html>

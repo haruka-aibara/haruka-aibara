@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>haruka-aibara-public — 目次</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --accent:#3d6b9c; --md:#b8562f; --html:#5f8248;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --accent:#5c8cc0; --md:#cf6c42; --html:#77a05c;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.7;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.6rem;margin:0 0 .3rem}
+.lede{color:var(--muted);margin:0 0 1.5rem;font-size:.95rem}
+#q{
+  width:100%;padding:.7rem .9rem;font-size:1rem;font-family:inherit;
+  background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+}
+#q:focus{outline:2px solid var(--accent);outline-offset:-1px}
+#meta{color:var(--muted);font-size:.85rem;margin:.7rem 0 1.2rem}
+details{border-bottom:1px solid var(--line)}
+details>summary{
+  cursor:pointer;padding:.55rem .3rem;font-weight:600;font-size:.98rem;
+  list-style:none;display:flex;align-items:center;gap:.5rem;
+}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▸";color:var(--muted);font-size:.8rem;transition:transform .15s}
+details[open]>summary::before{transform:rotate(90deg)}
+details>summary:hover{background:var(--lane)}
+.count{margin-left:auto;color:var(--muted);font-weight:400;font-size:.82rem}
+.body{padding-left:1.1rem;border-left:1px solid var(--line);margin-left:.45rem}
+.body details{border-bottom:none}
+a.f{
+  display:flex;align-items:center;gap:.5rem;padding:.32rem .3rem;
+  color:var(--ink);text-decoration:none;font-size:.93rem;border-radius:5px;
+}
+a.f:hover{background:var(--lane);color:var(--accent)}
+.tag{
+  font-size:.66rem;font-weight:700;letter-spacing:.03em;padding:.1rem .35rem;
+  border-radius:3px;color:#fff;flex:none;
+}
+.tag.md{background:var(--md)}
+.tag.html{background:var(--html)}
+.path{color:var(--muted);font-size:.8rem;margin-left:.2rem}
+#hits{margin-top:.5rem}
+.empty{color:var(--muted);padding:1.5rem .3rem}
+footer{margin-top:3rem;padding-top:1.2rem;border-top:1px solid var(--line);color:var(--muted);font-size:.83rem}
+footer a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>haruka-aibara-public</h1>
+<p class="lede">技術的な学びをトピック別にまとめた個人リポジトリの目次。</p>
+
+<input id="q" type="search" placeholder="ファイル名・パスで絞り込む（例: terraform, HTTP, セキュリティ）" autocomplete="off">
+<div id="meta">読み込み中…</div>
+<div id="tree"></div>
+<div id="hits" hidden></div>
+
+<footer>
+  目次は GitHub API からリポジトリのツリーを取得して生成しているため、記事を追加すれば自動で反映される。<br>
+  <code>.html</code> はこのサイト上で表示し、<code>.md</code> は整形表示のため GitHub 上のページを開く。<br>
+  <a id="repolink" href="#">リポジトリを見る</a>
+</footer>
+
+</main>
+
+<script>
+const OWNER = "haruka-aibara", REPO = "haruka-aibara-public", BRANCH = "main";
+const BLOB  = `https://github.com/${OWNER}/${REPO}/blob/${BRANCH}/`;
+const API   = `https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
+
+const $tree = document.getElementById("tree");
+const $hits = document.getElementById("hits");
+const $meta = document.getElementById("meta");
+const $q    = document.getElementById("q");
+document.getElementById("repolink").href = `https://github.com/${OWNER}/${REPO}`;
+
+let files = [];
+
+const isHtml = p => p.toLowerCase().endsWith(".html");
+const href   = p => isHtml(p) ? encodeURI(p) : BLOB + encodeURI(p);
+const label  = p => p.replace(/\.(md|html)$/i, "").replace(/^\d+[_-]/, "");
+const cmp    = (a, b) => a.localeCompare(b, "ja");
+
+function link(file, showPath) {
+  const a = document.createElement("a");
+  a.className = "f";
+  a.href = href(file.path);
+  const tag = document.createElement("span");
+  tag.className = "tag " + (isHtml(file.path) ? "html" : "md");
+  tag.textContent = isHtml(file.path) ? "HTML" : "MD";
+  a.append(tag, document.createTextNode(label(file.name)));
+  if (showPath) {
+    const s = document.createElement("span");
+    s.className = "path";
+    s.textContent = file.path.includes("/") ? file.path.slice(0, file.path.lastIndexOf("/")) : "/";
+    a.append(s);
+  }
+  return a;
+}
+
+function buildTree(list) {
+  const root = { dirs: new Map(), files: [] };
+  for (const path of list) {
+    const parts = path.split("/");
+    const name = parts.pop();
+    let node = root;
+    for (const d of parts) {
+      if (!node.dirs.has(d)) node.dirs.set(d, { dirs: new Map(), files: [] });
+      node = node.dirs.get(d);
+    }
+    node.files.push({ name, path });
+  }
+  return root;
+}
+
+const total = node =>
+  node.files.length + [...node.dirs.values()].reduce((n, d) => n + total(d), 0);
+
+function render(node, depth) {
+  const frag = document.createDocumentFragment();
+  for (const name of [...node.dirs.keys()].sort(cmp)) {
+    const child = node.dirs.get(name);
+    const det = document.createElement("details");
+    const sum = document.createElement("summary");
+    sum.append(document.createTextNode(name));
+    const c = document.createElement("span");
+    c.className = "count";
+    c.textContent = total(child);
+    sum.append(c);
+    const body = document.createElement("div");
+    body.className = "body";
+    body.append(render(child, depth + 1));
+    det.append(sum, body);
+    frag.append(det);
+  }
+  for (const f of node.files.sort((a, b) => cmp(a.name, b.name))) frag.append(link(f, false));
+  return frag;
+}
+
+function search(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) {
+    $hits.hidden = true;
+    $tree.hidden = false;
+    return;
+  }
+  const found = files.filter(f => f.path.toLowerCase().includes(q)).slice(0, 300);
+  $hits.textContent = "";
+  if (!found.length) {
+    const p = document.createElement("div");
+    p.className = "empty";
+    p.textContent = `「${query}」に一致するファイルはありません。`;
+    $hits.append(p);
+  } else {
+    for (const f of found) $hits.append(link(f, true));
+  }
+  $tree.hidden = true;
+  $hits.hidden = false;
+}
+
+(async () => {
+  try {
+    const res = await fetch(API);
+    if (!res.ok) throw new Error(res.status === 403 ? "rate" : `HTTP ${res.status}`);
+    const data = await res.json();
+    const paths = data.tree
+      .filter(e => e.type === "blob" && /\.(md|html)$/i.test(e.path) && e.path !== "index.html")
+      .map(e => e.path);
+    files = paths.map(p => ({ name: p.split("/").pop(), path: p }));
+    $tree.append(render(buildTree(paths), 0));
+    $meta.textContent = `${paths.length} 件`;
+    if (data.truncated) $meta.textContent += "（一部のみ表示：ツリーが大きすぎます）";
+  } catch (e) {
+    $meta.textContent = e.message === "rate"
+      ? "GitHub API のレート制限に達しました。1時間ほど待つか、リポジトリを直接開いてください。"
+      : `目次を取得できませんでした（${e.message}）。`;
+  }
+})();
+
+$q.addEventListener("input", e => search(e.target.value));
+</script>
+</body>
+</html>

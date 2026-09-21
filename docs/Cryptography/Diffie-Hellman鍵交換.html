@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diffie-Hellman 鍵交換を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>Diffie-Hellman 鍵交換 — 盗聴されている回線の上で共通鍵を作る</h1>
+<p class="lede">やり取りを全部見られていても、両者だけが同じ鍵にたどり着く。TLS の前方秘匿性の土台。</p>
+
+<h2>何が問題なのか</h2>
+<p>共通鍵暗号を使うには、送信者と受信者が同じ鍵を持っている必要がある。だが初めて通信する相手と、事前に鍵を渡し合う機会などない。<strong>やり取りは全部盗聴されている前提で、それでも共通の鍵を作りたい</strong>——これを解いたのが 1976 年の Diffie-Hellman 鍵交換。</p>
+<p>「相手の公開鍵で暗号化して送ればいい」という解き方もある（<a href="ハイブリッド方式.html">ハイブリッド方式</a>）。しかしその形は、サーバの秘密鍵が後から漏れると、記録されていた過去の通信がまとめて復号されてしまう。DH はここが違う。</p>
+
+<h2>手順</h2>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="Diffie-Hellman鍵交換で共有鍵ができるまでの手順">
+  <text x="60" y="16" font-size="12.5" font-weight="600" fill="var(--c1)" text-anchor="middle">A さん</text>
+  <text x="640" y="16" font-size="12.5" font-weight="600" fill="var(--c4)" text-anchor="middle">B さん</text>
+  <text x="350" y="16" font-size="12.5" font-weight="600" fill="var(--stop)" text-anchor="middle">盗聴者から見えるもの</text>
+  <line x1="130" y1="26" x2="130" y2="284" stroke="var(--line)" stroke-width="1.5"/>
+  <line x1="570" y1="26" x2="570" y2="284" stroke="var(--line)" stroke-width="1.5"/>
+
+  <rect x="180" y="34" width="340" height="26" rx="4" fill="var(--lane)"/>
+  <text x="350" y="52" font-size="11.5" fill="var(--ink)" text-anchor="middle">① 公開のパラメータ p と g を決める（誰でも見てよい）</text>
+
+  <text x="8" y="92" font-size="11.5" fill="var(--c1)">② 秘密の数 a を作る</text>
+  <text x="8" y="110" font-size="11" fill="var(--muted)">（外に出さない）</text>
+  <text x="600" y="92" font-size="11.5" fill="var(--c4)">② 秘密の数 b を作る</text>
+  <text x="600" y="110" font-size="11" fill="var(--muted)">（外に出さない）</text>
+
+  <path d="M136 148 L516 148" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#d1)"/>
+  <rect x="230" y="132" width="240" height="24" rx="4" fill="var(--c1)"/>
+  <text x="350" y="149" font-size="11" fill="var(--on)" text-anchor="middle">③ A = g^a mod p を送る</text>
+
+  <path d="M564 186 L184 186" stroke="var(--c4)" stroke-width="1.5" marker-end="url(#d2)"/>
+  <rect x="230" y="170" width="240" height="24" rx="4" fill="var(--c4)"/>
+  <text x="350" y="187" font-size="11" fill="var(--on)" text-anchor="middle">③ B = g^b mod p を送る</text>
+
+  <rect x="8" y="212" width="240" height="52" rx="6" fill="var(--c3)"/>
+  <text x="128" y="234" font-size="11.5" fill="var(--on)" text-anchor="middle">④ 受け取った B に</text>
+  <text x="128" y="252" font-size="11.5" fill="var(--on)" text-anchor="middle">自分の a を掛ける：B^a mod p</text>
+  <rect x="452" y="212" width="240" height="52" rx="6" fill="var(--c3)"/>
+  <text x="572" y="234" font-size="11.5" fill="var(--on)" text-anchor="middle">④ 受け取った A に</text>
+  <text x="572" y="252" font-size="11.5" fill="var(--on)" text-anchor="middle">自分の b を掛ける：A^b mod p</text>
+  <text x="350" y="242" font-size="12" font-weight="600" fill="var(--c3)" text-anchor="middle">どちらも g^(ab) mod p</text>
+  <text x="350" y="260" font-size="11" fill="var(--muted)" text-anchor="middle">= 同じ値になる</text>
+
+  <text x="350" y="292" font-size="11.5" fill="var(--stop)" text-anchor="middle">盗聴者が持っているのは p, g, A, B だけ。ここから a や b は求められない（離散対数問題）</text>
+  <defs>
+    <marker id="d1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="d2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c4)"/></marker>
+  </defs>
+</svg>
+<figcaption>絵の具の混色でたとえられることが多い仕組み。共通の色に各自が秘密の色を混ぜて交換し、受け取った色にもう一度自分の秘密の色を混ぜると、両者が同じ色になる。混ざった色から元の色を分離できない、という点が離散対数問題に対応する。</figcaption>
+</figure>
+
+<h2>使い捨てにすると前方秘匿性が得られる</h2>
+<p>a と b を接続のたびに作り直し、終わったら捨てる。こうすると、後からサーバに侵入して長期の秘密鍵を盗んでも、<strong>過去に記録された通信の鍵は復元できない</strong>——鍵の材料はもうどこにも存在しないから。これが前方秘匿性（Forward Secrecy）で、末尾に E が付く <code>DHE</code> / <code>ECDHE</code> の E は Ephemeral（使い捨て）の意味。TLS 1.3 では鍵交換がこの方式だけに絞られた。</p>
+
+<figure>
+<svg viewBox="0 0 700 190" role="img" aria-label="秘密鍵が漏れたときに過去の通信が復号できるかどうかの比較">
+  <g>
+    <text x="8" y="16" font-size="12.5" font-weight="600" fill="var(--ink)">RSA 鍵交換（古い TLS）</text>
+    <rect x="8" y="28" width="150" height="24" rx="4" fill="var(--lane)"/><text x="83" y="45" font-size="10.5" fill="var(--ink)" text-anchor="middle">過去の通信 1</text>
+    <rect x="166" y="28" width="150" height="24" rx="4" fill="var(--lane)"/><text x="241" y="45" font-size="10.5" fill="var(--ink)" text-anchor="middle">過去の通信 2</text>
+    <rect x="324" y="28" width="150" height="24" rx="4" fill="var(--lane)"/><text x="399" y="45" font-size="10.5" fill="var(--ink)" text-anchor="middle">過去の通信 3</text>
+    <rect x="500" y="28" width="192" height="24" rx="4" fill="var(--stop)"/><text x="596" y="45" font-size="10.5" fill="var(--on)" text-anchor="middle">サーバの秘密鍵が漏洩</text>
+    <path d="M560 56 L560 68 L83 68 L83 56" fill="none" stroke="var(--stop)" stroke-width="1.5"/>
+    <path d="M241 68 L241 56 M399 68 L399 56" stroke="var(--stop)" stroke-width="1.5"/>
+    <text x="8" y="88" font-size="11.5" font-weight="600" fill="var(--stop)">→ 記録されていた通信がすべて復号できる</text>
+  </g>
+  <g>
+    <text x="8" y="124" font-size="12.5" font-weight="600" fill="var(--ink)">ECDHE（現在の TLS）</text>
+    <rect x="8" y="136" width="150" height="24" rx="4" fill="var(--c3)"/><text x="83" y="153" font-size="10.5" fill="var(--on)" text-anchor="middle">鍵は接続ごとに廃棄</text>
+    <rect x="166" y="136" width="150" height="24" rx="4" fill="var(--c3)"/><text x="241" y="153" font-size="10.5" fill="var(--on)" text-anchor="middle">鍵は接続ごとに廃棄</text>
+    <rect x="324" y="136" width="150" height="24" rx="4" fill="var(--c3)"/><text x="399" y="153" font-size="10.5" fill="var(--on)" text-anchor="middle">鍵は接続ごとに廃棄</text>
+    <rect x="500" y="136" width="192" height="24" rx="4" fill="var(--stop)"/><text x="596" y="153" font-size="10.5" fill="var(--on)" text-anchor="middle">サーバの秘密鍵が漏洩</text>
+    <text x="8" y="182" font-size="11.5" font-weight="600" fill="var(--c3)">→ これから先の成りすましはできても、過去の通信は読めない</text>
+  </g>
+</svg>
+<figcaption>「今は暗号化されているから安全」ではなく「今記録されたものが将来読まれるか」で考える視点。同じ発想が耐量子暗号への移行（Harvest Now, Decrypt Later）でも使われる。</figcaption>
+</figure>
+
+<h2>DH だけでは相手が誰か分からない</h2>
+<p>DH は「同じ鍵を作る」ことしかしない。<strong>相手が本物かは一切確認していない</strong>ので、通信路の途中に割り込んだ攻撃者が、A とも B とも別々に DH を成立させれば、両側の通信を復号しながら中継できる（中間者攻撃）。</p>
+<p>だから実際のプロトコルでは、サーバが自分の送った DH の値に<strong>証明書の秘密鍵で署名する</strong>。クライアントは証明書で相手を確認したうえで署名を検証し、割り込みがないことを確かめる。鍵交換（DH）と認証（証明書・署名）は別の役割で、両方そろって初めて成立する。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8446.html">RFC 8446 - The Transport Layer Security (TLS) Protocol Version 1.3</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc7748.html">RFC 7748 - Elliptic Curves for Security（X25519）</a></li>
+<li><a href="https://weakdh.org/">Weak Diffie-Hellman and the Logjam Attack</a></li>
+</ul>
+
+</main>
+</body>
+</html>

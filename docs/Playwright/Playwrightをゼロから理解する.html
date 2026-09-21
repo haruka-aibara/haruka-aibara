@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Playwright をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:30rem}}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Playwright をゼロから理解する</h1>
+<p class="lede">ブラウザが何をしているかの話から始めて、5 ステップで「API のない画面作業を自動化する」までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+
+<p>Playwright の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+
+<p>それは読解力の問題ではありません。多くの記事は「ロケータを自動待機で解決する E2E テストフレームワーク」という説明から始まります。この説明が成立するのは、E2E・ロケータ・待機という言葉がすでに体に入っている人だけです。しかも記事の多くはテストの話で終わるので、<strong>毎月の画面作業を自動化したい</strong>という動機で読みに来た人は、自分の用件との距離が最後まで縮まりません。</p>
+
+<p>そこでこの記事は、あえて遠回りします。ブラウザが画面を組み立てる仕組みから始めて、5 ステップで「手作業運用の自動化」までたどり着きます。ゴールは用語を覚えることではなく、<strong>Playwright で何が置き換えられて何が置き換えられないかを自分の言葉で説明できるようになること</strong>です。最後に、そのまま口に出せる説明テンプレートを用意しました。</p>
+
+<div class="dg">
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>画面は人が見る前提でできている</li>
+<li><span class="n">STEP 2</span>ブラウザを外から動かす</li>
+<li><span class="n">STEP 3</span>自動化の最大の敵は「待つこと」</li>
+<li><span class="n">STEP 4</span>壊れにくい指し方とログイン状態</li>
+<li><span class="n">STEP 5</span>手作業運用を自動化する</li>
+</ol>
+</nav>
+<p class="cap">STEP 4 まではすべて前提知識です。手作業運用の自動化そのものの話は STEP 5 だけですが、そこに至るまでの 4 ステップがないと「なぜ自動化したジョブは半年後に壊れるのか」が分かりません。逆に言えば、STEP 4 まで進めば STEP 5 はほとんど自明に感じられるはずです。</p>
+</div>
+
+<h2>STEP 1：画面は人が見る前提でできている</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>画面は人が見る前提でできている</li>
+<li><span class="n">STEP 2</span>ブラウザを外から動かす</li>
+<li><span class="n">STEP 3</span>自動化の最大の敵は「待つこと」</li>
+<li><span class="n">STEP 4</span>壊れにくい指し方とログイン状態</li>
+<li><span class="n">STEP 5</span>手作業運用を自動化する</li>
+</ol>
+</nav>
+
+<p>まず、これから何を自動化しようとしているのかを具体的にします。運用の現場にはこういう作業が残っています。</p>
+
+<figure><svg viewBox="0 0 780 190" role="img" aria-labelledby="f1t f1d"><title id="f1t">毎月の画面作業 1 サイクル</title><desc id="f1d">コンソールにログインし、対象画面を開き、スクリーンショットを撮り、共有フォルダに保存し、台帳に記録するまでの5工程。すべて人が手を動かしている</desc>
+<defs><marker id="am1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="390" y="22" text-anchor="middle" fill="var(--muted)" font-size="12" font-weight="700">毎月やっている「証跡を残す」作業</text>
+<rect x="6" y="40" width="120" height="62" rx="9" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="66" y="66" text-anchor="middle" fill="var(--ink)" font-size="12">① ログイン</text>
+<text x="66" y="85" text-anchor="middle" fill="var(--muted)" font-size="11">ID・PW・MFA</text>
+<line x1="128" y1="71" x2="164" y2="71" stroke="var(--wire)" stroke-width="2" marker-end="url(#am1)"/>
+<rect x="168" y="40" width="120" height="62" rx="9" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="228" y="66" text-anchor="middle" fill="var(--ink)" font-size="12">② 画面を開く</text>
+<text x="228" y="85" text-anchor="middle" fill="var(--muted)" font-size="11">権限一覧・設定</text>
+<line x1="290" y1="71" x2="326" y2="71" stroke="var(--wire)" stroke-width="2" marker-end="url(#am1)"/>
+<rect x="330" y="40" width="120" height="62" rx="9" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="390" y="66" text-anchor="middle" fill="var(--ink)" font-size="12">③ スクショ</text>
+<text x="390" y="85" text-anchor="middle" fill="var(--muted)" font-size="11">画面を画像で残す</text>
+<line x1="452" y1="71" x2="488" y2="71" stroke="var(--wire)" stroke-width="2" marker-end="url(#am1)"/>
+<rect x="492" y="40" width="120" height="62" rx="9" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="552" y="66" text-anchor="middle" fill="var(--ink)" font-size="12">④ 保存</text>
+<text x="552" y="85" text-anchor="middle" fill="var(--muted)" font-size="11">日付付きで置く</text>
+<line x1="614" y1="71" x2="650" y2="71" stroke="var(--wire)" stroke-width="2" marker-end="url(#am1)"/>
+<rect x="654" y="40" width="120" height="62" rx="9" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="714" y="66" text-anchor="middle" fill="var(--ink)" font-size="12">⑤ 台帳に記録</text>
+<text x="714" y="85" text-anchor="middle" fill="var(--muted)" font-size="11">実施済みにする</text>
+<rect x="6" y="120" width="768" height="46" rx="9" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="390" y="140" text-anchor="middle" fill="var(--stop)" font-size="12.5">この 5 工程のどこにも「判断」がない</text>
+<text x="390" y="158" text-anchor="middle" fill="var(--muted)" font-size="11.5">人がやっているのは、決まった順に手を動かすことだけ</text>
+</svg><figcaption>自動化の対象を選ぶときは、この図の「判断がない」という性質を先に確認します。判断が混ざる作業を丸ごと自動化しようとすると、あとで STEP 5 の落とし穴にぶつかります。</figcaption></figure>
+
+<p>ここで最初の疑問が出ます。<strong>この程度なら <code>curl</code> で済むのではないか</strong>、と。実際、対象が API を持っているなら <code>curl</code> で済みます。済まないのは、対象が管理コンソールの「画面」しか提供していない場合です。</p>
+
+<figure><svg viewBox="0 0 780 230" role="img" aria-labelledby="f2t f2d"><title id="f2t">curl が受け取るものと、ブラウザが作るもの</title><desc id="f2d">curlはサーバから返るHTMLをそのまま受け取るだけで中身は空の入れ物。ブラウザは同じHTMLを受け取った後JavaScriptを実行し、APIを呼んで画面を組み立てる</desc>
+<defs><marker id="am2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="20" y="28" fill="var(--muted)" font-size="12" font-weight="700">curl</text>
+<rect x="20" y="40" width="150" height="52" rx="9" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="95" y="71" text-anchor="middle" fill="var(--ink)" font-size="12.5">リクエストを送る</text>
+<line x1="174" y1="66" x2="214" y2="66" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<rect x="220" y="40" width="200" height="52" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/>
+<text x="320" y="64" text-anchor="middle" fill="var(--ink)" font-size="12.5">返ってきた HTML</text>
+<text x="320" y="82" text-anchor="middle" fill="var(--muted)" font-size="11">&lt;div id="root"&gt;&lt;/div&gt;</text>
+<line x1="424" y1="66" x2="464" y2="66" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<rect x="470" y="40" width="200" height="52" rx="9" fill="var(--card)" stroke="var(--stop)" stroke-width="1.5"/>
+<text x="570" y="71" text-anchor="middle" fill="var(--stop)" font-size="12.5">欲しい一覧が無い</text>
+<line x1="20" y1="112" x2="760" y2="112" stroke="var(--line)" stroke-width="1"/>
+<text x="20" y="136" fill="var(--muted)" font-size="12" font-weight="700">ブラウザ</text>
+<rect x="20" y="148" width="150" height="52" rx="9" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="95" y="179" text-anchor="middle" fill="var(--ink)" font-size="12.5">同じ HTML を受け取る</text>
+<line x1="174" y1="174" x2="214" y2="174" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<rect x="220" y="148" width="200" height="52" rx="9" fill="var(--lane)" stroke="var(--c4)" stroke-width="1.5"/>
+<text x="320" y="172" text-anchor="middle" fill="var(--ink)" font-size="12.5">JavaScript を実行</text>
+<text x="320" y="190" text-anchor="middle" fill="var(--muted)" font-size="11">裏の API を呼んで描く</text>
+<line x1="424" y1="174" x2="464" y2="174" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<rect x="470" y="148" width="200" height="52" rx="9" fill="var(--c3)"/>
+<text x="570" y="179" text-anchor="middle" fill="var(--on)" font-size="12.5" font-weight="700">一覧が表示される</text>
+<text x="690" y="179" fill="var(--muted)" font-size="11.5">← 人が見るのはここ</text>
+</svg><figcaption>差が生まれるのは JavaScript を実行するかどうかの一点です。裏の API を直接叩くという手もありますが、それは公開されていない内部仕様なので、いつ変わっても文句は言えません。</figcaption></figure>
+
+<p>もうひとつ、認証があります。ログインしてから見る画面は、<strong>ログイン後に発行されたセッション情報を持っていること</strong>が前提です。人はブラウザがそれを勝手に保持してくれるので意識しませんが、自動化する側は「誰としてアクセスするか」を毎回用意しなければなりません。</p>
+
+<p>つまり、画面しかない相手を自動化するには、<strong>本物のブラウザに開かせて、人と同じ経路をたどらせる</strong>のがいちばん確実です。ここまでが Playwright の手前の話です。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題 1</b>　ログイン画面に ID とパスワードを <code>curl</code> で POST して Cookie を受け取り、それを付けて一覧ページを取りにいく——この方針はどこで行き詰まりますか。</p>
+<details><summary>答えを見る</summary>
+<div class="ans">
+<p>2 か所で行き詰まります。1 つ目は、ログインフォームが CSRF トークンや画面上でしか発行されない値を要求する場合で、その値は画面を組み立てないと手に入りません。2 つ目は、Cookie が取れても一覧ページの中身は JavaScript が後から描くので、受け取った HTML には入っていない点です。</p>
+<p>どちらも「画面を組み立てる処理を自分で肩代わりしていない」ことが原因です。であれば、組み立てる装置ごと動かせばいい。次はその装置——ブラウザを外から動かす話です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：ブラウザを外から動かす</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">✓ STEP 1</span>画面は人が見る前提</li>
+<li class="now"><span class="n">STEP 2</span>ブラウザを外から動かす</li>
+<li><span class="n">STEP 3</span>自動化の最大の敵は「待つこと」</li>
+<li><span class="n">STEP 4</span>壊れにくい指し方とログイン状態</li>
+<li><span class="n">STEP 5</span>手作業運用を自動化する</li>
+</ol>
+</nav>
+
+<p>ブラウザには、外部のプログラムから操作を受け付ける口が用意されています。開発者ツールが使っているのと同じ仕組みで、「このページを開け」「この座標をクリックしろ」「今の DOM を返せ」といった命令をやり取りできます。<strong>Playwright は、この口を使ってブラウザを操るプログラム</strong>です。</p>
+
+<figure><svg viewBox="0 0 780 220" role="img" aria-labelledby="f3t f3d"><title id="f3t">スクリプトとブラウザの関係</title><desc id="f3d">Node.jsのスクリプトが自動化用のプロトコル経由でブラウザプロセスに命令を送る。ブラウザの中はbrowser、context、pageの入れ子構造で、CookieやlocalStorageはcontextが持つ</desc>
+<defs><marker id="am3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="14" y="52" width="210" height="110" rx="12" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="119" y="82" text-anchor="middle" fill="var(--ink)" font-size="13" font-weight="700">あなたのスクリプト</text>
+<text x="119" y="104" text-anchor="middle" fill="var(--muted)" font-size="11.5">Node.js のプロセス</text>
+<text x="119" y="130" text-anchor="middle" fill="var(--c1)" font-size="11.5">page.goto(...)</text>
+<text x="119" y="148" text-anchor="middle" fill="var(--c1)" font-size="11.5">page.screenshot(...)</text>
+<line x1="228" y1="107" x2="298" y2="107" stroke="var(--wire)" stroke-width="2" marker-end="url(#am3)"/>
+<text x="263" y="98" text-anchor="middle" fill="var(--muted)" font-size="11">命令</text>
+<text x="263" y="126" text-anchor="middle" fill="var(--muted)" font-size="11">結果</text>
+<rect x="304" y="28" width="462" height="164" rx="14" fill="none" stroke="var(--line)" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="535" y="50" text-anchor="middle" fill="var(--muted)" font-size="12" font-weight="700">ブラウザプロセス（画面は出さなくても動く）</text>
+<rect x="322" y="62" width="426" height="112" rx="11" fill="var(--lane)" stroke="var(--c4)" stroke-width="1.5"/>
+<text x="352" y="82" fill="var(--c4)" font-size="11.5" font-weight="700">browser</text>
+<rect x="336" y="92" width="196" height="70" rx="9" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="362" y="111" fill="var(--c3)" font-size="11.5" font-weight="700">context A</text>
+<text x="434" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">Cookie・localStorage</text>
+<rect x="352" y="138" width="164" height="18" rx="5" fill="var(--c1)"/>
+<text x="434" y="151" text-anchor="middle" fill="var(--on)" font-size="10.5" font-weight="700">page（タブ）</text>
+<rect x="546" y="92" width="188" height="70" rx="9" fill="var(--card)" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="572" y="111" fill="var(--c3)" font-size="11.5" font-weight="700">context B</text>
+<text x="640" y="132" text-anchor="middle" fill="var(--muted)" font-size="11">別人としてのログイン</text>
+<rect x="558" y="138" width="164" height="18" rx="5" fill="var(--c1)"/>
+<text x="640" y="151" text-anchor="middle" fill="var(--on)" font-size="10.5" font-weight="700">page（タブ）</text>
+</svg><figcaption>context が Cookie を持つ、という一点だけ覚えておいてください。「別アカウントで同時に開く」も「ログイン済みの状態を保存して使い回す」も、STEP 4 でここに戻ってきます。</figcaption></figure>
+
+<p>導入は 2 コマンドです。npm パッケージを入れ、続けて操作対象のブラウザ本体を落とします。Playwright は OS にインストール済みの Chrome を使うのではなく、動作を検証したバージョンのブラウザを自前で持ちます。<strong>実行環境によって挙動が変わらない</strong>のはこのためです。</p>
+
+<pre><code>$ npm init playwright@latest     # プロジェクトに導入（設定ファイルごと作られる）
+$ npx playwright install          # 操作対象のブラウザ本体を取得</code></pre>
+
+<p>最初のスクリプトはこれだけです。ページを開いて、画面を画像で保存します。</p>
+
+<pre><code>import { chromium } from 'playwright';
+
+const browser = await chromium.launch();          // 画面を出さずに起動
+const page = await browser.newPage();
+await page.goto('https://example.com/');
+await page.screenshot({ path: 'shot.png', fullPage: true });
+await browser.close();</code></pre>
+
+<p>画面を出さずに動かすモードを<strong>ヘッドレス</strong>と呼びます。人の画面を占領しないので、サーバ上で動かせます。開発中は <code>chromium.launch({ headless: false })</code> にすると実際の操作が目で見えるので、最初はこちらから始めるのが分かりやすいです。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題 2</b>　このスクリプトは 10 回動かせば 10 回とも同じ結果になりそうに見えます。実際にはどんなときに落ちますか。</p>
+<details><summary>答えを見る</summary>
+<div class="ans">
+<p>スクリーンショットを撮る瞬間に、まだ欲しい内容が描かれていないときです。<code>goto</code> はページの読み込みを待ちますが、その後に JavaScript が API を呼んで表を描くなら、画像には空の枠しか写りません。ネットワークが遅い日だけ失敗する、という形で表面化します。</p>
+<p>これは Playwright に限らず、画面の自動化でいちばん多い失敗です。次の STEP で正面から扱います。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：自動化の最大の敵は「待つこと」</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">✓ STEP 1</span>画面は人が見る前提</li>
+<li class="done"><span class="n">✓ STEP 2</span>ブラウザを外から動かす</li>
+<li class="now"><span class="n">STEP 3</span>自動化の最大の敵は「待つこと」</li>
+<li><span class="n">STEP 4</span>壊れにくい指し方とログイン状態</li>
+<li><span class="n">STEP 5</span>手作業運用を自動化する</li>
+</ol>
+</nav>
+
+<p>人が手作業でやるとき、待ち時間を意識することはありません。表が出るまで<strong>目で見て待ち</strong>、出たら次に進むからです。スクリプトにはその目がないので、「出たかどうか」を誰かが判定する必要があります。</p>
+
+<p>ここで最初に思いつくのが「5 秒待つ」という固定待ちですが、これは両方向に外れます。</p>
+
+<figure><svg viewBox="0 0 780 235" role="img" aria-labelledby="f4t f4d"><title id="f4t">固定待ちと自動待機の比較</title><desc id="f4d">同じ時間軸上で、5秒の固定待ちは速い日に3.8秒を無駄にし遅い日には間に合わず失敗する。自動待機は条件を満たした瞬間に次へ進む</desc>
+<defs><marker id="am4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="20" y="24" fill="var(--muted)" font-size="12" font-weight="700">固定待ち：sleep(5 秒)</text>
+<rect x="20" y="36" width="70" height="26" rx="6" fill="var(--c1)"/><text x="55" y="54" text-anchor="middle" fill="var(--on)" font-size="11" font-weight="700">開く</text>
+<rect x="94" y="36" width="126" height="26" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="157" y="54" text-anchor="middle" fill="var(--c3)" font-size="11">1.2 秒で表示済み</text>
+<rect x="222" y="36" width="374" height="26" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/><text x="409" y="54" text-anchor="middle" fill="var(--stop)" font-size="11">何もせず待っている 3.8 秒</text>
+<rect x="600" y="36" width="80" height="26" rx="6" fill="var(--c1)"/><text x="640" y="54" text-anchor="middle" fill="var(--on)" font-size="11" font-weight="700">スクショ</text>
+<text x="694" y="54" fill="var(--muted)" font-size="11">速い日</text>
+<rect x="20" y="76" width="70" height="26" rx="6" fill="var(--c1)"/><text x="55" y="94" text-anchor="middle" fill="var(--on)" font-size="11" font-weight="700">開く</text>
+<rect x="94" y="76" width="502" height="26" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/><text x="345" y="94" text-anchor="middle" fill="var(--muted)" font-size="11">まだ描画中（6.5 秒かかった）</text>
+<rect x="600" y="76" width="80" height="26" rx="6" fill="var(--stop)"/><text x="640" y="94" text-anchor="middle" fill="var(--on)" font-size="11" font-weight="700">空を撮る</text>
+<text x="694" y="94" fill="var(--stop)" font-size="11">遅い日</text>
+<line x1="20" y1="122" x2="760" y2="122" stroke="var(--line)" stroke-width="1"/>
+<text x="20" y="148" fill="var(--muted)" font-size="12" font-weight="700">自動待機：条件が満たされるまで待つ</text>
+<rect x="20" y="160" width="70" height="26" rx="6" fill="var(--c1)"/><text x="55" y="178" text-anchor="middle" fill="var(--on)" font-size="11" font-weight="700">開く</text>
+<rect x="94" y="160" width="126" height="26" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="157" y="178" text-anchor="middle" fill="var(--c3)" font-size="11">1.2 秒で表示済み</text>
+<rect x="224" y="160" width="80" height="26" rx="6" fill="var(--c1)"/><text x="264" y="178" text-anchor="middle" fill="var(--on)" font-size="11" font-weight="700">スクショ</text>
+<line x1="222" y1="150" x2="222" y2="196" stroke="var(--c3)" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="318" y="178" fill="var(--muted)" font-size="11">出た瞬間に次へ進む</text>
+<text x="20" y="218" fill="var(--muted)" font-size="11.5">遅い日も、表示された時点で進む（上限に達したときだけ失敗として扱われる）</text>
+</svg><figcaption>固定待ちは「速い日は遅く、遅い日は落ちる」という性質を必ず持ちます。時間ではなく状態を待つ、というのがこの図の全部です。</figcaption></figure>
+
+<p>Playwright は、クリックや入力のたびに対象の状態を確認してから実行します。DOM に存在するか、見えているか、アニメーションが止まって位置が固定されたか、操作可能か（<code>disabled</code> でないか）、そして<strong>他の要素に覆われていないか</strong>。これらを満たすまで短い間隔で再確認し、既定では最大 30 秒待ちます。この仕組みを<strong>自動待機</strong>と呼びます。</p>
+
+<p>覆われていないかの確認は、地味ですが効きます。ダイアログや読み込み中のオーバーレイが上に乗っているとき、人なら「まだ押せない」と分かりますが、座標クリックは黙ってオーバーレイを押してしまいます。</p>
+
+<p>この仕組みが働くのは、<strong>ロケータ</strong>という形で対象を指したときです。ロケータは要素そのものではなく「この条件で探す」という手順の記述で、使う瞬間に毎回探し直されます。だから、探した後で画面が描き直されても壊れません。</p>
+
+<pre><code>// 「請求」という名前のリンクを押し、表が出るまで待ってから撮る
+await page.getByRole('link', { name: '請求' }).click();
+await expect(page.getByRole('table')).toBeVisible();   // 条件が満たされるまで再試行
+await page.screenshot({ path: 'billing.png', fullPage: true });</code></pre>
+
+<p><code>expect(...)</code> の確認も、失敗したらすぐ諦めるのではなく、条件を満たすまで再試行します。「表示されていること」を待ち合わせの手段として書けるわけです。</p>
+
+<div class="note">
+<p><strong>やりがちな回避策</strong>　どうしても安定しないとき、<code>click({ force: true })</code> で確認を飛ばしたくなります。これは「押せない状態のものを押す」ことなので、原因を隠すだけです。押せない理由（ローディング中・別要素が覆っている）を突き止めるほうが結局は早く終わります。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題 3</b>　自動待機があるなら、要素の指し方は何でもよいはずです。ところが「画面をちょっと直したら自動化が止まった」は頻発します。なぜでしょうか。</p>
+<details><summary>答えを見る</summary>
+<div class="ans">
+<p>自動待機が面倒を見るのは「見つけた要素が操作できる状態になるまで」であって、<strong>そもそも見つけられるかどうか</strong>は別問題だからです。指し方が画面の作りに依存していると、見た目が同じでも中身の構造が変われば見つからなくなり、30 秒待ったすえに失敗します。</p>
+<p>つまり待ちの次の課題は、<strong>何を手がかりに要素を指すか</strong>です。次の STEP へ。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：壊れにくい指し方とログイン状態</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">✓ STEP 1</span>画面は人が見る前提</li>
+<li class="done"><span class="n">✓ STEP 2</span>ブラウザを外から動かす</li>
+<li class="done"><span class="n">✓ STEP 3</span>待つこと</li>
+<li class="now"><span class="n">STEP 4</span>壊れにくい指し方とログイン状態</li>
+<li><span class="n">STEP 5</span>手作業運用を自動化する</li>
+</ol>
+</nav>
+
+<p>要素の指し方には 2 系統あります。<strong>構造で指す</strong>（3 番目の div の中の 2 番目のボタン）か、<strong>役割と表示名で指す</strong>（「書き出し」という名前のボタン）かです。</p>
+
+<figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f5t f5d"><title id="f5t">構造で指す指定と、役割と名前で指す指定</title><desc id="f5d">同じボタンを構造で指す指定と役割・名前で指す指定。画面にラッパーが1段増えると構造の指定だけが見つけられなくなる</desc>
+<rect x="14" y="34" width="330" height="196" rx="12" fill="var(--lane)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="179" y="58" text-anchor="middle" fill="var(--muted)" font-size="12" font-weight="700">いまの画面</text>
+<rect x="44" y="72" width="270" height="52" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="179" y="103" text-anchor="middle" fill="var(--muted)" font-size="12">検索条件のパネル</text>
+<rect x="104" y="138" width="150" height="38" rx="8" fill="var(--c1)"/>
+<text x="179" y="163" text-anchor="middle" fill="var(--on)" font-size="13" font-weight="700">書き出し</text>
+<text x="179" y="204" text-anchor="middle" fill="var(--muted)" font-size="11.5">このボタンを押したい</text>
+<rect x="436" y="34" width="330" height="196" rx="12" fill="var(--lane)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="601" y="58" text-anchor="middle" fill="var(--muted)" font-size="12" font-weight="700">1 段ラッパーが増えた後の画面</text>
+<rect x="452" y="70" width="298" height="112" rx="10" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="601" y="88" text-anchor="middle" fill="var(--c4)" font-size="11">新しく増えた入れ物</text>
+<rect x="466" y="96" width="270" height="34" rx="8" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+<text x="601" y="118" text-anchor="middle" fill="var(--muted)" font-size="11.5">検索条件のパネル</text>
+<rect x="526" y="140" width="150" height="34" rx="8" fill="var(--c1)"/>
+<text x="601" y="162" text-anchor="middle" fill="var(--on)" font-size="12.5" font-weight="700">書き出し</text>
+<text x="601" y="204" text-anchor="middle" fill="var(--muted)" font-size="11.5">見た目も名前も変わっていない</text>
+<line x1="179" y1="230" x2="179" y2="252" stroke="var(--stop)" stroke-width="2" stroke-dasharray="4 3"/>
+<line x1="601" y1="230" x2="601" y2="252" stroke="var(--c3)" stroke-width="2" stroke-dasharray="4 3"/>
+<rect x="14" y="252" width="330" height="38" rx="8" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="1.5"/>
+<text x="179" y="268" text-anchor="middle" fill="var(--stop)" font-size="11.5" font-weight="700">構造で指す：見つからなくなる</text>
+<text x="179" y="284" text-anchor="middle" fill="var(--muted)" font-size="11">div &gt; div:nth-child(3) &gt; button</text>
+<rect x="436" y="252" width="330" height="38" rx="8" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/>
+<text x="601" y="268" text-anchor="middle" fill="var(--c3)" font-size="11.5" font-weight="700">役割と名前で指す：そのまま通る</text>
+<text x="601" y="284" text-anchor="middle" fill="var(--muted)" font-size="11">getByRole('button', { name: '書き出し' })</text>
+</svg><figcaption>右の変更は見た目に出ないので、画面を直した人は自動化が壊れたことに気づきません。表示名を手がかりにしておけば、この種の変更では折れません。逆に、ボタンの文言が変わるときは自動化も直すべきなので、壊れてくれたほうが正しい挙動です。</figcaption></figure>
+
+<p>Playwright はこの「役割と名前で指す」方を標準の書き方として用意しています。使う順の目安は次のとおりです。</p>
+
+<div class="tw">
+<table>
+<thead><tr><th>書き方</th><th>指すもの</th><th>向いている場面</th></tr></thead>
+<tbody>
+<tr><td><code>getByRole('button', { name: '書き出し' })</code></td><td>役割＋表示名</td><td>第一候補。人が画面を説明するときの言い方に近い</td></tr>
+<tr><td><code>getByLabel('メールアドレス')</code></td><td>ラベル付きの入力欄</td><td>フォームの入力</td></tr>
+<tr><td><code>getByText('前月比')</code></td><td>表示されている文字</td><td>見出しや本文の存在確認</td></tr>
+<tr><td><code>getByTestId('export-btn')</code></td><td>自分で付けた印</td><td>自社アプリで、上の方法では一意に絞れないとき</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>とはいえ、他社の管理画面を相手に「何が role になっているか」を読み解くのは骨が折れます。ここで <code>npx playwright codegen &lt;URL&gt;</code> が効きます。ブラウザが開き、自分で操作するとその操作に対応するコードが書き出されます。<strong>手作業をそのまま実演すれば下書きができる</strong>ので、最初の 1 本はこれで作り、あとから読みやすく直すのが早いです。</p>
+
+<h3>ログイン状態を毎回作り直さない</h3>
+
+<p>ここまでで操作は書けますが、ジョブが 5 本あれば 5 回ログインすることになります。遅いだけでなく、実害があります。ログイン試行が増えればアカウントロックや不審ログイン検知に触れますし、MFA があるなら毎回そこで止まります。</p>
+
+<p>STEP 2 の図を思い出してください。Cookie や localStorage を持っているのは context でした。つまり<strong>ログイン直後の context の中身をファイルに書き出して、次回はそれを読み込んで始めればいい</strong>。これが <code>storageState</code> です。</p>
+
+<figure><svg viewBox="0 0 780 240" role="img" aria-labelledby="f6t f6d"><title id="f6t">毎回ログインする場合と storageState を再利用する場合</title><desc id="f6d">毎回ログインする場合は3本のジョブがそれぞれID入力とMFAを通るが、storageStateを使う場合は一度だけログインして保存したauth.jsonを3本が読み込む</desc>
+<defs><marker id="am6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="20" y="24" fill="var(--muted)" font-size="12" font-weight="700">毎回ログインする</text>
+<rect x="20" y="34" width="112" height="24" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/><text x="76" y="51" text-anchor="middle" fill="var(--stop)" font-size="10.5">ID・PW・MFA</text>
+<rect x="140" y="34" width="120" height="24" rx="6" fill="var(--c1)"/><text x="200" y="51" text-anchor="middle" fill="var(--on)" font-size="10.5" font-weight="700">ジョブ A の本題</text>
+<rect x="20" y="64" width="112" height="24" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/><text x="76" y="81" text-anchor="middle" fill="var(--stop)" font-size="10.5">ID・PW・MFA</text>
+<rect x="140" y="64" width="120" height="24" rx="6" fill="var(--c1)"/><text x="200" y="81" text-anchor="middle" fill="var(--on)" font-size="10.5" font-weight="700">ジョブ B の本題</text>
+<rect x="20" y="94" width="112" height="24" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/><text x="76" y="111" text-anchor="middle" fill="var(--stop)" font-size="10.5">ID・PW・MFA</text>
+<rect x="140" y="94" width="120" height="24" rx="6" fill="var(--c1)"/><text x="200" y="111" text-anchor="middle" fill="var(--on)" font-size="10.5" font-weight="700">ジョブ C の本題</text>
+<text x="288" y="81" fill="var(--stop)" font-size="11.5">ログイン試行 3 回ぶんのリスクと時間</text>
+<line x1="20" y1="136" x2="760" y2="136" stroke="var(--line)" stroke-width="1"/>
+<text x="20" y="160" fill="var(--muted)" font-size="12" font-weight="700">storageState を使う</text>
+<rect x="20" y="170" width="112" height="24" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="76" y="187" text-anchor="middle" fill="var(--c3)" font-size="10.5">一度だけログイン</text>
+<line x1="136" y1="182" x2="168" y2="182" stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"/>
+<rect x="174" y="166" width="126" height="32" rx="7" fill="var(--c4)"/><text x="237" y="180" text-anchor="middle" fill="var(--on)" font-size="10.5" font-weight="700">auth.json</text><text x="237" y="193" text-anchor="middle" fill="var(--on)" font-size="9.5">Cookie・localStorage</text>
+<line x1="304" y1="182" x2="336" y2="182" stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"/>
+<rect x="342" y="158" width="130" height="20" rx="5" fill="var(--c1)"/><text x="407" y="173" text-anchor="middle" fill="var(--on)" font-size="10" font-weight="700">ジョブ A の本題</text>
+<rect x="342" y="182" width="130" height="20" rx="5" fill="var(--c1)"/><text x="407" y="197" text-anchor="middle" fill="var(--on)" font-size="10" font-weight="700">ジョブ B の本題</text>
+<rect x="342" y="206" width="130" height="20" rx="5" fill="var(--c1)"/><text x="407" y="221" text-anchor="middle" fill="var(--on)" font-size="10" font-weight="700">ジョブ C の本題</text>
+<text x="490" y="182" fill="var(--stop)" font-size="11.5">auth.json はセッションそのもの＝要秘匿</text>
+</svg><figcaption>右側の注意書きが重要です。このファイルを持っている人は、ログインし直さずにその利用者になれます。リポジトリに入れない、CI では実行のたびに作って捨てる、が基本です。</figcaption></figure>
+
+<pre><code>// 1) 一度だけログインして状態を保存する
+const page = await browser.newPage();
+await page.goto('https://console.example.com/login');
+await page.getByLabel('メールアドレス').fill(process.env.OPS_USER!);
+await page.getByLabel('パスワード').fill(process.env.OPS_PASS!);
+await page.getByRole('button', { name: 'ログイン' }).click();
+await expect(page.getByRole('heading', { name: 'ダッシュボード' })).toBeVisible();
+await page.context().storageState({ path: 'auth.json' });   // ← Cookie などを書き出す
+
+// 2) 以降のジョブはログイン済みの状態から始める
+const ctx = await browser.newContext({ storageState: 'auth.json' });</code></pre>
+
+<p>ID とパスワードをコードに直接書かず環境変数から読んでいるのは、そのままリポジトリに入るのを防ぐためです。<code>auth.json</code> も同じ理由で <code>.gitignore</code> に入れます。セッションには期限があるので、失効したら取り直す前提で組みます。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題 4</b>　手元で書いたスクリプトが完走しました。これを「毎月 1 日に自動で実行される運用」にするには、あと何を決める必要がありますか。3 つ挙げてください。</p>
+<details><summary>答えを見る</summary>
+<div class="ans">
+<p>最低限、次の 3 つです。<strong>どこで動かすか</strong>（ブラウザが入った実行環境と、そのスケジュール）、<strong>認証情報をどこから渡すか</strong>（手元の環境変数は使えない）、<strong>結果をどこに残すか</strong>（撮った画像とジョブの成否）。</p>
+<p>3 つ目が抜けると、動いているのか止まっているのか誰にも分からないジョブができあがります。次の STEP の主題です。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：手作業運用を自動化する</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">✓ STEP 1</span>画面は人が見る前提</li>
+<li class="done"><span class="n">✓ STEP 2</span>ブラウザを外から動かす</li>
+<li class="done"><span class="n">✓ STEP 3</span>待つこと</li>
+<li class="done"><span class="n">✓ STEP 4</span>指し方とログイン状態</li>
+<li class="now"><span class="n">STEP 5</span>手作業運用を自動化する</li>
+</ol>
+</nav>
+
+<p>ここが本題です。STEP 1 の 5 工程を、そのまま置き換えます。</p>
+
+<figure><svg viewBox="0 0 780 275" role="img" aria-labelledby="f7t f7d"><title id="f7t">運用ジョブとしての実行の流れ</title><desc id="f7d">スケジュール起動からブラウザ入り実行環境、秘密情報の読み込み、画面操作、成果物の保存へ進み、失敗時はtraceを添えて人に通知する分岐を持つ</desc>
+<defs><marker id="am7" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="14" y="70" width="128" height="58" rx="9" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/>
+<text x="78" y="94" text-anchor="middle" fill="var(--ink)" font-size="12">① 定時に起動</text>
+<text x="78" y="113" text-anchor="middle" fill="var(--muted)" font-size="11">毎月 1 日 / 毎週月曜</text>
+<line x1="146" y1="99" x2="180" y2="99" stroke="var(--wire)" stroke-width="2" marker-end="url(#am7)"/>
+<rect x="186" y="58" width="150" height="82" rx="9" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="261" y="82" text-anchor="middle" fill="var(--ink)" font-size="12">② 実行環境</text>
+<text x="261" y="101" text-anchor="middle" fill="var(--muted)" font-size="11">ブラウザ入りの環境</text>
+<text x="261" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">秘密情報は金庫から</text>
+<line x1="340" y1="99" x2="374" y2="99" stroke="var(--wire)" stroke-width="2" marker-end="url(#am7)"/>
+<rect x="380" y="58" width="150" height="82" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="455" y="82" text-anchor="middle" fill="var(--ink)" font-size="12">③ 画面を操作</text>
+<text x="455" y="101" text-anchor="middle" fill="var(--muted)" font-size="11">ログイン済みで開始</text>
+<text x="455" y="120" text-anchor="middle" fill="var(--muted)" font-size="11">条件を待って取得</text>
+<line x1="534" y1="86" x2="572" y2="56" stroke="var(--c3)" stroke-width="2" marker-end="url(#am7)"/>
+<text x="556" y="52" text-anchor="middle" fill="var(--c3)" font-size="11" font-weight="700">成功</text>
+<path d="M455 142 L455 178 L570 178" fill="none" stroke="var(--stop)" stroke-width="2" marker-end="url(#am7)"/>
+<text x="500" y="171" text-anchor="middle" fill="var(--stop)" font-size="11" font-weight="700">失敗</text>
+<rect x="578" y="20" width="186" height="72" rx="9" fill="var(--c3)"/>
+<text x="671" y="44" text-anchor="middle" fill="var(--on)" font-size="12" font-weight="700">④ 成果物を残す</text>
+<text x="671" y="63" text-anchor="middle" fill="var(--on)" font-size="11">PNG・PDF・CSV</text>
+<text x="671" y="80" text-anchor="middle" fill="var(--on)" font-size="11">日付付きで保管</text>
+<rect x="578" y="132" width="186" height="72" rx="9" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="1.5"/>
+<text x="671" y="156" text-anchor="middle" fill="var(--stop)" font-size="12" font-weight="700">人に知らせる</text>
+<text x="671" y="175" text-anchor="middle" fill="var(--muted)" font-size="11">trace.zip を添えて</text>
+<text x="671" y="192" text-anchor="middle" fill="var(--muted)" font-size="11">その月は手作業で代替</text>
+<rect x="14" y="222" width="750" height="42" rx="9" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="6 5"/>
+<text x="389" y="240" text-anchor="middle" fill="var(--ink)" font-size="12">自動化して消えるのは「作業時間」だけ。「壊れたときに気づく仕組み」は新しく要る</text>
+<text x="389" y="257" text-anchor="middle" fill="var(--muted)" font-size="11.5">失敗が誰にも届かないジョブは、動いていないことに半年気づけない</text>
+</svg><figcaption>手作業には、人がその場にいるという暗黙の監視が付いていました。自動化はそれを外すので、下段が新しい仕事として増えます。ここを用意しない自動化は、作業を消したのではなく隠しただけです。</figcaption></figure>
+
+<h3>置き換えるジョブを書く</h3>
+
+<p>実行の形は 2 つあります。<code>@playwright/test</code> のテストランナーを使う形と、<code>playwright</code> ライブラリだけを使ってただのスクリプトとして書く形です。<strong>運用ジョブなら前者を勧めます</strong>。テストではないのに、と思うかもしれませんが、欲しいものが最初から付いてくるからです——失敗時の再試行、結果レポート、そして後述する trace です。</p>
+
+<pre><code>import { test, expect } from '@playwright/test';
+
+test('月次：権限一覧のエビデンスを取得する', async ({ page }) => {
+  const today = new Date().toISOString().slice(0, 10);
+
+  await page.goto('https://console.example.com/members');
+  await expect(page.getByRole('table')).toBeVisible();          // 出るまで待つ
+
+  // 中身が空でないことを確かめてから撮る（空の画面を証跡にしない）
+  await expect(page.getByRole('row')).not.toHaveCount(1);
+
+  await page.screenshot({ path: `evidence/${today}-members.png`, fullPage: true });
+  await page.pdf({ path: `evidence/${today}-members.pdf` });    // Chromium のみ
+});</code></pre>
+
+<p>手作業との差が出るのは <code>not.toHaveCount(1)</code> の行です。人は空の表を見れば「おかしい」と気づきますが、スクリプトは白紙でも平然と保存します。<strong>人が無意識にやっていた確認を、明示的に書き起こす</strong>——これが手作業を自動化するときの本体の作業です。取得だけ移して確認を落とすと、証跡が積み上がっているのに中身は空、という事故になります。</p>
+
+<h3>どこで動かすか</h3>
+
+<p>ブラウザ本体が入った環境が要ります。CI で動かすなら、実行前に <code>npx playwright install --with-deps chromium</code> でブラウザと OS 側の依存パッケージを入れるか、必要なものが揃った公式のコンテナイメージを使います。スケジュール実行は CI 側の cron に任せ、認証情報はシークレットとして環境変数で渡します。出来上がった画像や PDF は成果物として保存すれば、そのまま証跡の保管先になります。</p>
+
+<h3>失敗したときに何が残るか</h3>
+
+<p>手作業が失敗したときは、やった本人の記憶しか残りません。自動化の利点はここで出ます。<strong>trace</strong> を有効にしておくと、各操作の前後の画面、DOM の状態、通信、コンソール出力が 1 つの zip にまとまります。</p>
+
+<pre><code>// playwright.config.ts
+export default {
+  retries: 1,
+  use: { trace: 'on-first-retry' },   // 失敗して再試行したときだけ記録する
+};</code></pre>
+
+<pre><code>$ npx playwright show-trace trace.zip   # 操作を 1 手ずつ巻き戻して見る</code></pre>
+
+<p><code>on-first-retry</code> は、成功したときの負荷を増やさずに失敗時だけ証拠を残す設定です。「ログイン画面に戻されていた」「表は出ていたが列名が変わっていた」が、その場にいなくても分かります。</p>
+
+<h3>自動化してよい作業、してはいけない作業</h3>
+
+<div class="tw">
+<table>
+<thead><tr><th>作業</th><th>判断</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>画面を開いて証跡を取得・保存する</td><td>自動化する</td><td>手順が固定で、判断がない</td></tr>
+<tr><td>一覧を取得して差分を出す</td><td>自動化する</td><td>差分を出すところまでは機械の仕事</td></tr>
+<tr><td>差分を見て「この権限は妥当か」を決める</td><td>人がやる</td><td>判断そのもの。自動化の対象ではない</td></tr>
+<tr><td>画面から設定を変更する・削除する</td><td>原則やらない</td><td>失敗時の巻き戻しが効かない。API があるならそちらで</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>方針としては、<strong>取得と提示までを自動化し、判断と変更操作は人に残す</strong>のが扱いやすい線です。読み取りだけのジョブなら、壊れても被害は「その月は手作業に戻る」で済みます。</p>
+
+<div class="note">
+<p><strong>先に確認すること</strong>　自動化する前に、対象に API・CSV エクスポート・定期レポート配信がないかを必ず調べてください。<strong>画面の自動化は、機械が読める口が無いときの最後の手段</strong>です。画面は予告なく変わるので、API があるならそちらのほうが桁違いに寿命が長くなります。また、自社が管理する画面か、利用規約上の扱いはどうかも先に確認します。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題 5</b>　毎月のエビデンス取得を自動化して半年が経ちました。フォルダには 6 か月分のファイルが並んでいます。何を確認すべきでしょうか。</p>
+<details><summary>答えを見る</summary>
+<div class="ans">
+<p>ファイルが並んでいることは、正しく取れたことを意味しません。確認すべきは <strong>6 回とも成功で終わったか</strong>（ジョブの実行履歴）と、<strong>中身が空でないか</strong>です。画面の作りが変わってジョブが失敗し続けていても、誰も見ていなければ気づけません。</p>
+<p>だから STEP 5 の図の下段——失敗が人に届く経路——が、自動化そのものと同じくらい重要になります。ついでに言えば「そもそも 6 か月間、誰もこの証跡を使わなかった」なら、自動化ではなく作業自体をやめる相談をするほうが筋です。</p>
+</div>
+</details>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題 6（考える問題）</b>　「ブラウザを自動操作できる」と分かると、SaaS の設定変更まで自動化したくなります。それでも読み取りに留めておくほうがよいのは、なぜでしょうか。</p>
+<details><summary>答えを見る</summary>
+<div class="ans">
+<p>正解は一つではありませんが、考える筋は 2 つあります。1 つは<strong>失敗の形</strong>です。読み取りの失敗は「取れなかった」で終わりますが、変更の失敗は途中まで適用された中途半端な状態を残し、それを画面操作で巻き戻すのは困難です。もう 1 つは<strong>記録</strong>で、画面操作による変更は「誰が変えたか」が自動化用アカウントの名前でしか残りません。</p>
+<p>自動化の範囲は、うまくいったときの得ではなく、失敗したときに何が起きるかで決めるのが安全です。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<h3>30 秒版</h3>
+<blockquote><p>Playwright は、本物のブラウザを外から動かす道具です。ページを開き、ボタンを押し、画面を画像や PDF で保存するところまでを、人と同じ経路でやらせられます。ポイントは 2 つで、操作の前に「見えているか・押せる状態か」を自動で待ってくれること、そしてログイン済みの状態をファイルに保存して使い回せることです。おかげで、API を持たない管理画面から毎月エビデンスを取る、といった手作業を定時実行に置き換えられます。テスト用のツールとして知られていますが、仕組みとしては「画面操作の自動化」そのものです。</p></blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote><p>出発点は、DevOps を進めても消えない「画面しかない作業」です。対象が API を持たないと、ログインして画面を開いてスクリーンショットを撮る、という工程が人の手に残ります。<code>curl</code> で済まないのは、画面が JavaScript で組み立てられるからで、受け取った HTML には欲しい表が入っていません。だから本物のブラウザに開かせます。</p><p>自動化で最初につまずくのは待ち時間です。人は表が出るまで目で見て待ちますが、スクリプトは待ちません。固定の秒数を入れると、速い日は無駄に遅く、遅い日は落ちます。Playwright は要素が見えて操作できる状態になるまで自動で待ちます。次につまずくのが要素の指し方で、構造に依存した指定は画面の小さな変更で折れるので、役割と表示名で指します。さらに毎回ログインすると遅いうえにアカウントロックや MFA に触れるので、ログイン済みの状態を保存して使い回します。その保存ファイルはセッションそのものなので、リポジトリには入れません。</p><p>運用に載せるときに増える仕事が 2 つあります。人が無意識にやっていた「中身が空でないことの確認」をコードに書き起こすこと、そして失敗が人に届く経路を作ることです。手作業には人がその場にいるという監視が付いていましたが、自動化はそれを外します。失敗時は trace を見れば操作を 1 手ずつ巻き戻せます。範囲は読み取りと提示までに留め、判断と設定変更は人に残すのが安全です。そして大前提として、API があるならそちらを使います。画面の自動化は最後の手段です。</p></blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>「Playwright はテストのツールなので、運用の自動化には使えない」</h3>
+<p>中身は「ブラウザを外から動かすライブラリ」で、テストランナーはその上に乗っている層です。テストを書かずにライブラリだけを使うこともできますし、運用ジョブをテストランナーの形で書いて、再試行・レポート・trace をそのまま使うこともできます。呼び名に引きずられる必要はありません。</p>
+
+<h3>「自動化すれば、その作業はもう考えなくていい」</h3>
+<p>逆に、考えることが 1 つ増えます。手作業には「人がその場にいる」という監視が暗黙で付いていました。自動化はそれを外すので、失敗を検知して人に届ける経路を別に作らないと、止まっていることに誰も気づけません。消えるのは作業時間であって、責任ではありません。</p>
+
+<h3>「自動待機があるから、待ちのことは考えなくていい」</h3>
+<p>自動待機が面倒を見るのは「指した要素が操作できる状態になるまで」です。<strong>どこまで進んだら次へ行ってよいか</strong>を決めるのは書く側の仕事で、ページを開いた直後に撮れば白紙が保存されます。何が表示されていれば完了なのかを、確認として明示的に書く必要があります。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では「手作業運用の自動化まで」を優先し、次の話には意図的に踏み込みませんでした。</p>
+<ul>
+<li>本来の用途である E2E テスト（アサーションの書き方、テスト設計、並列実行）</li>
+<li>画面の見た目の変化を検知するビジュアル比較（<code>toHaveScreenshot</code>）</li>
+<li>通信の差し替え（<code>page.route</code>）や、ブラウザを介さない API リクエスト</li>
+<li>Python・.NET・Java 版のバインディング（この記事の内容はそのまま当てはまります）</li>
+<li>CI に載せる部分の詳細：<a href="../GitHub Actions/00_GitHub_Actions_はじめに/00-01_GitHub Actionsとは.md">GitHub Actions とは</a>、<a href="../GitHub Actions/08_セキュリティと権限/08-04_GitHubトークン.md">シークレットと権限の扱い</a></li>
+<li>「外部依存を含む処理をどうテストするか」という近い問題設定：<a href="../Python/18_テスト/pytestとmotoをゼロから理解する.html">pytest と moto をゼロから理解する</a></li>
+</ul>
+<p>次は、いま毎月やっている画面作業を 1 つ選び、<code>npx playwright codegen</code> を起動してその手順をそのまま実演してみるのがおすすめです。自分の手作業がコードとして書き出されるのを見ると、どこまでが機械の仕事でどこからが判断なのかがはっきりします。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://playwright.dev/docs/intro">Playwright — Installation</a></li>
+<li><a href="https://playwright.dev/docs/library">Playwright — Library（テストランナーを使わない形）</a></li>
+<li><a href="https://playwright.dev/docs/actionability">Playwright — Auto-waiting（操作前に確認される条件）</a></li>
+<li><a href="https://playwright.dev/docs/locators">Playwright — Locators</a></li>
+<li><a href="https://playwright.dev/docs/other-locators">Playwright — Other locators</a></li>
+<li><a href="https://playwright.dev/docs/codegen">Playwright — Test generator（codegen）</a></li>
+<li><a href="https://playwright.dev/docs/auth">Playwright — Authentication（storageState）</a></li>
+<li><a href="https://playwright.dev/docs/trace-viewer">Playwright — Trace viewer</a></li>
+<li><a href="https://playwright.dev/docs/screenshots">Playwright — Screenshots</a></li>
+<li><a href="https://playwright.dev/docs/ci">Playwright — Continuous Integration</a></li>
+<li><a href="https://playwright.dev/docs/docker">Playwright — Docker</a></li>
+<li><a href="https://playwright.dev/docs/browsers">Playwright — Browsers</a></li>
+<li><a href="https://playwright.dev/docs/best-practices">Playwright — Best Practices</a></li>
+<li><a href="https://github.com/microsoft/playwright">GitHub — microsoft/playwright</a></li>
+</ul>
+</main></body></html>

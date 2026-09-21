@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DNS 水責め攻撃とマルチベクトル型 DDoS</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DNS 水責め攻撃とマルチベクトル型 DDoS</h1>
+<p class="lede">「攻撃元をブロックすればいい」が通じないように作られた DDoS。</p>
+
+<h2>何が問題なのか</h2>
+<p>DDoS 対応の定石は「攻撃元を特定して落とす」「攻撃の種類を見て対応する緩和策を当てる」。この 2 つを<strong>意図的に外しにいく</strong>攻撃が存在する。片方は<em>攻撃元が正規のサーバになる</em>もの、もう片方は<em>1 つの緩和策では足りない</em>ようにするもの。</p>
+
+<h2>DNS 水責め攻撃（ランダムサブドメイン攻撃）</h2>
+<p>標的は Web サーバではなく、ドメインの<strong>権威 DNS サーバ</strong>。ここが落ちれば、Web もメールもまとめて名前解決できなくなる。</p>
+<p>攻撃者はボットネットを使い、世界中のキャッシュ DNS サーバ（特にアクセス制御されていないオープンリゾルバ）に対して <code>a8f3k2xq.example.com</code> のような<strong>実在しないランダムなサブドメイン</strong>を問い合わせさせる。</p>
+
+<figure>
+<svg viewBox="0 0 700 292" role="img" aria-label="DNS水責め攻撃で権威DNSサーバにクエリが集中する流れ">
+  <rect x="0" y="30" width="118" height="86" rx="7" fill="var(--c2)"/>
+  <text x="59" y="66" font-size="12" fill="var(--on)" text-anchor="middle">ボットネット</text>
+  <text x="59" y="86" font-size="10.5" fill="var(--on)" text-anchor="middle">（多数の端末）</text>
+
+  <rect x="238" y="6" width="170" height="30" rx="6" fill="var(--lane)"/>
+  <text x="323" y="26" font-size="11.5" fill="var(--ink)" text-anchor="middle">キャッシュ DNS（リゾルバ）</text>
+  <rect x="238" y="44" width="170" height="30" rx="6" fill="var(--lane)"/>
+  <text x="323" y="64" font-size="11.5" fill="var(--ink)" text-anchor="middle">キャッシュ DNS（リゾルバ）</text>
+  <rect x="238" y="82" width="170" height="30" rx="6" fill="var(--lane)"/>
+  <text x="323" y="102" font-size="11.5" fill="var(--ink)" text-anchor="middle">キャッシュ DNS（リゾルバ）</text>
+  <rect x="238" y="120" width="170" height="30" rx="6" fill="var(--lane)"/>
+  <text x="323" y="140" font-size="11.5" fill="var(--ink)" text-anchor="middle">キャッシュ DNS（リゾルバ）</text>
+  <text x="323" y="170" font-size="11" fill="var(--muted)" text-anchor="middle">ISP などの正規のサーバ／オープンリゾルバ</text>
+
+  <g stroke="var(--c2)" stroke-width="1.5">
+    <line x1="118" y1="66" x2="230" y2="21"/><line x1="118" y1="70" x2="230" y2="59"/>
+    <line x1="118" y1="74" x2="230" y2="97"/><line x1="118" y1="78" x2="230" y2="135"/>
+  </g>
+  <polygon points="238,21 228,17 229,25" fill="var(--c2)"/>
+  <polygon points="238,59 228,55 229,63" fill="var(--c2)"/>
+  <polygon points="238,97 228,93 229,101" fill="var(--c2)"/>
+  <polygon points="238,135 228,131 229,139" fill="var(--c2)"/>
+  <text x="176" y="196" font-size="10.5" fill="var(--c2)" text-anchor="middle">毎回ちがうランダム名</text>
+  <text x="176" y="211" font-size="10.5" fill="var(--c2)" text-anchor="middle">a8f3k2xq.example.com</text>
+
+  <g stroke="var(--stop)" stroke-width="2.6">
+    <line x1="408" y1="21" x2="558" y2="66"/><line x1="408" y1="59" x2="558" y2="70"/>
+    <line x1="408" y1="97" x2="558" y2="74"/><line x1="408" y1="135" x2="558" y2="78"/>
+  </g>
+  <polygon points="568,72 554,64 554,79" fill="var(--stop)"/>
+  <rect x="568" y="30" width="132" height="86" rx="7" fill="var(--stop)"/>
+  <text x="634" y="60" font-size="12" fill="var(--on)" text-anchor="middle">権威 DNS サーバ</text>
+  <text x="634" y="80" font-size="11" fill="var(--on)" text-anchor="middle">example.com</text>
+  <text x="634" y="99" font-size="10.5" fill="var(--on)" text-anchor="middle">← 過負荷でダウン</text>
+  <text x="500" y="196" font-size="10.5" fill="var(--stop)" text-anchor="middle">キャッシュに無い＝必ず転送</text>
+  <text x="500" y="211" font-size="10.5" fill="var(--stop)" text-anchor="middle">世界中のリゾルバから集中</text>
+
+  <rect x="0" y="232" width="700" height="52" rx="8" fill="var(--lane)"/>
+  <text x="16" y="254" font-size="11.5" font-weight="600" fill="var(--ink)">なぜランダムな名前なのか</text>
+  <text x="16" y="274" font-size="11" fill="var(--muted)">同じ名前を繰り返すとリゾルバのキャッシュに載り、2 回目以降は権威サーバまで届かない。毎回変えることでキャッシュを無効化している。</text>
+</svg>
+<figcaption>権威サーバ側から見ると、送信元は ISP の正規リゾルバで、クエリの形式も正常。攻撃元 IP を落とすと、そのリゾルバを使っている正規ユーザまで一緒に落とすことになる——これが「ブロックで対処できない」の中身。</figcaption>
+</figure>
+
+<p>被害は権威サーバ側だけではない。踏み台にされたキャッシュ DNS も、応答が返らない未解決クエリを大量に抱え込み、そのリゾルバを使う<strong>無関係な利用者の名前解決まで遅くなる／失敗する</strong>。両側がじわじわ溺れるので「水責め」と呼ばれる。</p>
+
+<table>
+<tr><th>立場</th><th>やること</th></tr>
+<tr><td>権威 DNS を運用する側</td><td>Anycast で受け口を分散する。マネージド DNS（Amazon Route 53 など）に寄せて規模で吸収させるのが現実的。自前運用なら RRL（Response Rate Limiting）を設定</td></tr>
+<tr><td>キャッシュ DNS を運用する側</td><td><strong>オープンリゾルバにしない</strong>（問い合わせ元を自組織内に限定）。同一ドメイン宛の未解決クエリ数に上限を設ける</td></tr>
+</table>
+
+<h2>マルチベクトル型 DDoS</h2>
+<p>単一の手法なら、たいてい対応する緩和策が 1 つある。SYN Flood には SYN Cookie、UDP 増幅には上流でのフィルタ、HTTP Flood には WAF のレート制限。</p>
+<p>マルチベクトル型はこれらを<strong>同時に、あるいは切り替えながら</strong>仕掛ける。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="マルチベクトル型DDoSが複数レイヤに同時に来る図と、対策が層ごとに分かれる図">
+  <text x="0" y="12" font-size="12.5" font-weight="600" fill="var(--ink)">攻撃は同時に別のレイヤへ、防御も層ごとに別の場所で効く</text>
+
+  <rect x="152" y="26" width="396" height="42" rx="6" fill="var(--lane)"/>
+  <text x="70" y="52" font-size="11.5" fill="var(--muted)" text-anchor="middle">L3／L4</text>
+  <rect x="160" y="33" width="180" height="28" rx="4" fill="var(--c2)"/>
+  <text x="250" y="52" font-size="11" fill="var(--on)" text-anchor="middle">UDP 反射増幅（帯域を埋める）</text>
+  <rect x="348" y="33" width="192" height="28" rx="4" fill="var(--c2)" opacity=".75"/>
+  <text x="444" y="52" font-size="11" fill="var(--on)" text-anchor="middle">SYN Flood（接続テーブル）</text>
+  <text x="566" y="52" font-size="10.5" fill="var(--c3)">→ 上流で吸収</text>
+
+  <rect x="152" y="78" width="396" height="42" rx="6" fill="var(--lane)"/>
+  <text x="70" y="104" font-size="11.5" fill="var(--muted)" text-anchor="middle">L7（HTTP）</text>
+  <rect x="160" y="85" width="240" height="28" rx="4" fill="var(--c4)"/>
+  <text x="280" y="104" font-size="11" fill="var(--on)" text-anchor="middle">HTTP Flood（重い検索 API を連打）</text>
+  <text x="566" y="104" font-size="10.5" fill="var(--c3)">→ WAF で吸収</text>
+
+  <rect x="152" y="130" width="396" height="42" rx="6" fill="var(--lane)"/>
+  <text x="70" y="156" font-size="11.5" fill="var(--muted)" text-anchor="middle">DNS</text>
+  <rect x="160" y="137" width="200" height="28" rx="4" fill="var(--c1)"/>
+  <text x="260" y="156" font-size="11" fill="var(--on)" text-anchor="middle">水責め（権威サーバを落とす）</text>
+  <text x="566" y="156" font-size="10.5" fill="var(--c3)">→ DNS 側の設計で吸収</text>
+
+  <line x1="0" y1="188" x2="700" y2="188" stroke="var(--line)"/>
+  <text x="0" y="212" font-size="11.5" font-weight="600" fill="var(--stop)">同じ時間帯に並行して発生する</text>
+  <text x="0" y="234" font-size="11" fill="var(--muted)">→ どれか 1 つを塞いでもサービスは戻らない。「WAF を入れてあるから大丈夫」が成立しない構造。</text>
+</svg>
+<figcaption>もう 1 つの狙いは陽動。派手な帯域攻撃に運用チームが張り付いている裏で、別経路から侵入や情報の持ち出しを進める使い方があり、スモークスクリーン（煙幕）型と呼ばれる。DDoS の最中に「攻撃が来ている」以外のアラートを止めてしまうと、こちらを見落とす。</figcaption>
+</figure>
+
+<p>対策の考え方は、手法ごとに個別の防御を積み上げるのではなく<strong>層で持つ</strong>こと。L3/L4 は自社回線の手前（CDN・DDoS 緩和サービス）、L7 は WAF、DNS は DNS 側の設計。そのうえで<strong>手順を先に決めておく</strong>——誰が緩和サービスの防御モードを上げるか、誰が上流の ISP に連絡するか。攻撃を受けている最中に手順を考えるのは無理がある。</p>
+
+<div class="note">
+<p><strong>提案するときの言い方</strong></p>
+<p>「DDoS 対策は攻撃を受けてから買うと間に合いません。契約と連絡経路、切り替え手順まで含めて<em>平常時に一度通しで確認しておく</em>ところまでが対策です」——製品の導入ではなく、手順の有無として説明するほうが通りやすい。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://jprs.jp/tech/security/2014-04-30-water-torture.html">JPRS - 名前解決を狙った DNS への攻撃（DNS 水責め攻撃）</a></li>
+<li><a href="https://www.nic.ad.jp/ja/basics/terms/random-subdomain-attack.html">JPNIC - ランダムサブドメイン攻撃</a></li>
+<li><a href="https://kb.isc.org/docs/aa-01000">ISC - BIND の Response Rate Limiting (RRL)</a></li>
+<li><a href="https://docs.aws.amazon.com/whitepapers/latest/aws-best-practices-ddos-resiliency/welcome.html">AWS Best Practices for DDoS Resiliency</a></li>
+<li><a href="https://www.cloudflare.com/ja-jp/learning/ddos/what-is-a-ddos-attack/">Cloudflare - DDoS 攻撃とは</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ゾーン転送</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ゾーン転送</h1>
+<p class="lede">権威サーバが 1 台きりだと、その 1 台が落ちた瞬間にドメインごと世界から見えなくなる。台数を増やせば、今度は中身の同期が要る。</p>
+
+<h2>プライマリの原本をセカンダリに複製する</h2>
+<p>権威サーバは必ず複数台で運用する。原本（<a href="ゾーン.html">ゾーン</a>ファイル）を編集するのは<strong>プライマリ</strong> 1 台だけにして、<strong>セカンダリ</strong>はプライマリからゾーンデータを丸ごと複製する。この複製の仕組みがゾーン転送。</p>
+<p>全レコードを送る AXFR（完全転送）と、前回からの差分だけ送る IXFR（差分転送）がある。データ量が多く確実に届く必要があるため、通常の名前解決（UDP）と違って <strong>TCP の 53 番</strong>を使う。</p>
+
+<figure>
+<svg viewBox="0 0 700 260" role="img" aria-label="プライマリからセカンダリへゾーン転送が行われ、攻撃者からの転送要求は拒否される">
+<defs>
+<marker id="z1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+<marker id="z3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+<marker id="zs" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+</defs>
+<rect x="40" y="60" width="170" height="76" rx="8" fill="var(--c1)" opacity=".1"/>
+<rect x="40" y="60" width="170" height="76" rx="8" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="125" y="88" font-size="11.5" fill="var(--ink)" text-anchor="middle" font-weight="600">プライマリ</text>
+<text x="125" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">ゾーンの原本を編集する</text>
+<text x="125" y="124" font-size="10" fill="var(--muted)" text-anchor="middle">SOA のシリアル値を上げる</text>
+<rect x="470" y="60" width="170" height="76" rx="8" fill="var(--card)" stroke="var(--c3)" stroke-width="1.7"/>
+<text x="555" y="88" font-size="11.5" fill="var(--ink)" text-anchor="middle" font-weight="600">セカンダリ</text>
+<text x="555" y="108" font-size="10" fill="var(--muted)" text-anchor="middle">複製を持ち、同じように</text>
+<text x="555" y="124" font-size="10" fill="var(--muted)" text-anchor="middle">問い合わせに答える</text>
+<line x1="210" y1="82" x2="466" y2="82" stroke="var(--c1)" stroke-width="1.3" marker-end="url(#z1)"/>
+<text x="338" y="72" font-size="10" fill="var(--c1)" text-anchor="middle">① NOTIFY「更新したよ」</text>
+<line x1="466" y1="106" x2="210" y2="106" stroke="var(--c3)" stroke-width="1.3" marker-end="url(#z3)"/>
+<text x="338" y="126" font-size="10" fill="var(--c3)" text-anchor="middle">② シリアル値を確認し、新しければ転送要求</text>
+<line x1="210" y1="148" x2="466" y2="148" stroke="var(--c1)" stroke-width="2" marker-end="url(#z1)"/>
+<text x="338" y="168" font-size="10" fill="var(--c1)" text-anchor="middle">③ ゾーン転送（AXFR＝全部 / IXFR＝差分）TCP 53</text>
+<rect x="40" y="196" width="130" height="40" rx="8" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/>
+<text x="105" y="220" font-size="11" fill="var(--stop)" text-anchor="middle">攻撃者</text>
+<line x1="170" y1="216" x2="300" y2="216" stroke="var(--stop)" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#zs)"/>
+<text x="235" y="206" font-size="9.5" fill="var(--stop)" text-anchor="middle">AXFR 要求</text>
+<line x1="296" y1="204" x2="320" y2="228" stroke="var(--stop)" stroke-width="2"/>
+<line x1="320" y1="204" x2="296" y2="228" stroke="var(--stop)" stroke-width="2"/>
+<text x="470" y="220" font-size="10" fill="var(--muted)" text-anchor="middle">転送要求元はセカンダリの IP に限定する</text>
+</svg>
+<figcaption>更新の検知は、ゾーンの管理情報（SOA レコード）にあるシリアル値の比較で行う。プライマリからの NOTIFY を待つほか、セカンダリが定期的に自分から確認しにも行く。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>転送要求元を制限しないと、ゾーンの全レコードを誰でも入手できる。</strong>ゾーン転送は「全部ください」に全部答える仕組みなので、無制限だと攻撃者が内部のホスト名・サーバ構成を一覧で手に入れる偵察手段になる。セカンダリの IP アドレスだけに許可するのが基本。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc5936">RFC 5936 — DNS Zone Transfer Protocol (AXFR)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1995">RFC 1995 — Incremental Zone Transfer in DNS (IXFR)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc1996">RFC 1996 — A Mechanism for Prompt Notification of Zone Changes (NOTIFY)</a></li>
+</ul>
+
+</main>
+</body>
+</html>

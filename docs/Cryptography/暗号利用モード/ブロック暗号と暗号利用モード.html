@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ブロック暗号と暗号利用モードを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>ブロック暗号と暗号利用モード — <code>AES-256-CBC</code> の後半は何か</h1>
+<p class="lede">アルゴリズムを決めたあとに、もう一段の選択が残っている。</p>
+
+<h2>何が問題なのか</h2>
+<p>「暗号は AES を使う」と決めても、設定ファイルやライブラリでは <code>AES-256-CBC</code> <code>AES-128-GCM</code> のような文字列を書かされる。<code>AES</code> と <code>256</code> は分かるとして、<strong>最後の 3〜4 文字は何を選んでいるのか</strong>。ここが分からないままコピペすると、AES を使っているのに中身が推測できる状態を作ってしまうことがある。</p>
+
+<h2>ブロック暗号は「決まった長さの箱」1個ぶんしか暗号化できない</h2>
+<p>AES や <a href="../DES.html">DES</a> のようなブロック暗号は、<strong>固定長のデータを同じ長さのデータに変換する</strong>装置でしかない。AES なら 16 バイト入れて 16 バイト出てくる。それだけ。実際に暗号化したいファイルや通信は 16 バイトぴったりではないので、<strong>どう切り分けて、切ったブロックをどう繋ぐか</strong>を別に決める必要がある。この決めごとが<strong>暗号利用モード</strong>（block cipher mode of operation）。</p>
+
+<figure>
+<svg viewBox="0 0 700 220" role="img" aria-label="平文をブロックに分割し、最後のブロックにパディングを詰めてブロック暗号に通す流れ">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">長い平文をブロック暗号に通すには</text>
+
+  <rect x="8" y="34" width="470" height="28" rx="4" fill="var(--c1)"/>
+  <text x="243" y="53" font-size="11.5" fill="var(--on)" text-anchor="middle">平文（長さは中途半端）</text>
+
+  <path d="M243 62 L243 78" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#m1)"/>
+
+  <g font-size="11">
+    <rect x="8" y="90" width="110" height="28" rx="4" fill="var(--c1)"/><text x="63" y="109" fill="var(--on)" text-anchor="middle">ブロック1</text>
+    <rect x="126" y="90" width="110" height="28" rx="4" fill="var(--c1)"/><text x="181" y="109" fill="var(--on)" text-anchor="middle">ブロック2</text>
+    <rect x="244" y="90" width="110" height="28" rx="4" fill="var(--c1)"/><text x="299" y="109" fill="var(--on)" text-anchor="middle">ブロック3</text>
+    <rect x="362" y="90" width="60" height="28" rx="4" fill="var(--c1)"/><text x="392" y="109" fill="var(--on)" text-anchor="middle">端数</text>
+    <rect x="422" y="90" width="50" height="28" rx="4" fill="var(--lane)" stroke="var(--c2)" stroke-dasharray="3 2"/>
+    <text x="447" y="109" fill="var(--c2)" text-anchor="middle">詰め物</text>
+  </g>
+  <text x="490" y="108" font-size="11" fill="var(--muted)">足りないぶんを埋めるのが</text>
+  <text x="490" y="124" font-size="11" fill="var(--muted)">パディング（PKCS#7 など）</text>
+
+  <path d="M63 118 L63 138" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#m1)"/>
+  <path d="M181 118 L181 138" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#m1)"/>
+  <path d="M299 118 L299 138" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#m1)"/>
+  <path d="M420 118 L420 138" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#m1)"/>
+
+  <g font-size="11">
+    <rect x="8" y="140" width="110" height="30" rx="5" fill="var(--c2)"/><text x="63" y="160" fill="var(--on)" text-anchor="middle">AES</text>
+    <rect x="126" y="140" width="110" height="30" rx="5" fill="var(--c2)"/><text x="181" y="160" fill="var(--on)" text-anchor="middle">AES</text>
+    <rect x="244" y="140" width="110" height="30" rx="5" fill="var(--c2)"/><text x="299" y="160" fill="var(--on)" text-anchor="middle">AES</text>
+    <rect x="362" y="140" width="110" height="30" rx="5" fill="var(--c2)"/><text x="417" y="160" fill="var(--on)" text-anchor="middle">AES</text>
+  </g>
+  <text x="490" y="160" font-size="11" fill="var(--muted)">AES 自体は 16 バイト固定</text>
+
+  <rect x="8" y="184" width="464" height="26" rx="4" fill="var(--c4)"/>
+  <text x="240" y="202" font-size="11.5" fill="var(--on)" text-anchor="middle">暗号文</text>
+  <text x="490" y="202" font-size="11" fill="var(--stop)" font-weight="600">← この繋ぎ方がモード</text>
+  <defs><marker id="m1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker></defs>
+</svg>
+<figcaption>パディングは「復号側が後から取り除ける」形で詰める必要があり、そのためパディングの中身自体に規則がある。この規則の検証をサボった実装が <a href="../../Cyber Attacks/25_POODLE攻撃.html">POODLE</a> のようなパディングオラクル攻撃の入口になった。</figcaption>
+</figure>
+
+<h2>モードの違いは「隣のブロックの影響を受けるか」</h2>
+<p>代表的な 3 つを並べると、違いは一目で分かる。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="ECB・CBC・OFB の3モードで、ブロック同士がどう繋がるかの比較">
+  <g font-size="11">
+    <text x="8" y="18" font-size="12" font-weight="600" fill="var(--ink)">ECB</text>
+    <text x="8" y="34" fill="var(--muted)">独立</text>
+    <rect x="90" y="8" width="76" height="26" rx="4" fill="var(--c2)"/><text x="128" y="26" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <rect x="200" y="8" width="76" height="26" rx="4" fill="var(--c2)"/><text x="238" y="26" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <rect x="310" y="8" width="76" height="26" rx="4" fill="var(--c2)"/><text x="348" y="26" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <text x="410" y="26" fill="var(--stop)" font-weight="600">同じ平文 → 同じ暗号文。模様が残る</text>
+
+    <text x="8" y="106" font-size="12" font-weight="600" fill="var(--ink)">CBC</text>
+    <text x="8" y="122" fill="var(--muted)">前の暗号文を XOR</text>
+    <rect x="90" y="96" width="76" height="26" rx="4" fill="var(--c1)"/><text x="128" y="114" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <rect x="200" y="96" width="76" height="26" rx="4" fill="var(--c1)"/><text x="238" y="114" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <rect x="310" y="96" width="76" height="26" rx="4" fill="var(--c1)"/><text x="348" y="114" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <path d="M166 109 L200 109" stroke="var(--c1)" stroke-width="1.8" marker-end="url(#m2)"/>
+    <path d="M276 109 L310 109" stroke="var(--c1)" stroke-width="1.8" marker-end="url(#m2)"/>
+    <text x="410" y="114" fill="var(--muted)">前のブロックに依存 → 逐次処理</text>
+
+    <text x="8" y="194" font-size="12" font-weight="600" fill="var(--ink)">OFB</text>
+    <text x="8" y="210" fill="var(--muted)">鍵ストリームを作る</text>
+    <rect x="90" y="184" width="76" height="26" rx="4" fill="var(--c3)"/><text x="128" y="202" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <rect x="200" y="184" width="76" height="26" rx="4" fill="var(--c3)"/><text x="238" y="202" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <rect x="310" y="184" width="76" height="26" rx="4" fill="var(--c3)"/><text x="348" y="202" fill="var(--on)" text-anchor="middle">暗号化</text>
+    <path d="M166 197 L200 197" stroke="var(--c3)" stroke-width="1.8" marker-end="url(#m3)"/>
+    <path d="M276 197 L310 197" stroke="var(--c3)" stroke-width="1.8" marker-end="url(#m3)"/>
+    <text x="410" y="196" fill="var(--muted)">平文は最後に XOR するだけ</text>
+    <text x="410" y="214" fill="var(--muted)">→ パディング不要</text>
+  </g>
+  <line x1="8" y1="62" x2="692" y2="62" stroke="var(--line)"/>
+  <line x1="8" y1="150" x2="692" y2="150" stroke="var(--line)"/>
+  <line x1="8" y1="234" x2="692" y2="234" stroke="var(--line)"/>
+  <text x="8" y="248" font-size="10.5" fill="var(--muted)">矢印は「前のブロックの出力が次に渡る」ことを表す。ECB だけ矢印がない＝並列に処理できるが、それが弱点でもある。</text>
+  <defs>
+    <marker id="m2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c1)"/></marker>
+    <marker id="m3" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c3)"/></marker>
+  </defs>
+</svg>
+<figcaption>ブロック同士を繋ぐと、同じ平文でも位置が違えば違う暗号文になる。この「同じものを同じに見せない」ためのしくみが、モードの主な仕事。</figcaption>
+</figure>
+
+<table>
+<tr><th>モード</th><th>性質</th><th>いま選ぶか</th></tr>
+<tr><td><a href="ECB.html">ECB</a></td><td>ブロックごとに独立して暗号化</td><td>選ばない</td></tr>
+<tr><td><a href="CBC.html">CBC</a></td><td>前の暗号文と XOR してから暗号化。IV が必要</td><td>既存システムで見る。新規なら避ける</td></tr>
+<tr><td><a href="OFB.html">OFB</a></td><td>鍵ストリームを作って XOR。パディング不要</td><td>新規なら CTR を使う</td></tr>
+<tr><td>CTR</td><td>カウンタから鍵ストリームを作る。並列処理できる</td><td>可</td></tr>
+<tr><td>GCM</td><td>CTR に改ざん検知を統合（AEAD）</td><td><strong>これを選ぶ</strong></td></tr>
+</table>
+
+<div class="note">
+<p><strong>ECB / CBC / OFB は「暗号化しかしない」</strong></p>
+<p>これら 3 つが守るのは中身の秘密だけで、<strong>途中で書き換えられたことは検知できない</strong>。復号は成功してしまうので、アプリ側は改ざんされた平文をそのまま受け取る。実運用ではこれが事故になるため、いまは暗号化と改ざん検知を 1 つにまとめた <strong>AEAD</strong>（AES-GCM、ChaCha20-Poly1305）を使う。ECB / CBC / OFB を学ぶのは、既存システムの設定を読んだり、上のような古い方式が残っている理由を判断したりするため。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/38/a/final">NIST SP 800-38A - Recommendation for Block Cipher Modes of Operation</a></li>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">NIST SP 800-38D - Galois/Counter Mode (GCM) and GMAC</a></li>
+<li><a href="https://www.cryptrec.go.jp/list.html">CRYPTREC暗号リスト</a></li>
+</ul>
+
+</main>
+</body>
+</html>

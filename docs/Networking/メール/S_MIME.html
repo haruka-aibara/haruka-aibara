@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>S/MIME を図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.dead{color:var(--muted)}
+</style>
+</head>
+<body>
+<main>
+<h1>S/MIME — メール本文そのものを署名・暗号化する</h1>
+<p class="lede">経路を暗号化しても、中継サーバの中では平文に戻っている。端から端まで守るなら本文を守るしかない。</p>
+
+<h2>何が問題なのか</h2>
+<p>メールの暗号化というと <a href="SMTPS.html">SMTPS</a> や STARTTLS が思い浮かぶ。だがこれらが守るのは<strong>サーバとサーバの間の1区間だけ</strong>。メールは複数のサーバを経由するので、<strong>途中のサーバの中では毎回平文に戻っている</strong>。</p>
+<p>加えて送信者の詐称も止められない。差出人欄は自由に書けるので、取引先を名乗ったメールを送ることは誰にでもできる（<a href="送信ドメイン認証.html">送信ドメイン認証</a>はドメイン単位の対策で、本文が本人のものかまでは示さない）。</p>
+<p>この2つを本文のレベルで解決するのが S/MIME。<strong>メールを書いた人が署名・暗号化し、受け取る人が検証・復号する</strong>ので、間のサーバが何をしていようと関係ない。</p>
+
+<figure>
+<svg viewBox="0 0 700 230" role="img" aria-label="経路の暗号化とエンドツーエンドの暗号化の違い">
+  <g>
+    <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--c2)">TLS（経路の暗号化）だけの場合</text>
+    <g font-size="10.5" text-anchor="middle">
+      <rect x="8" y="26" width="120" height="36" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="68" y="49" fill="var(--ink)">送信者</text>
+      <rect x="200" y="26" width="120" height="36" rx="5" fill="var(--stop)"/><text x="260" y="49" fill="var(--on)">送信サーバ</text>
+      <rect x="392" y="26" width="120" height="36" rx="5" fill="var(--stop)"/><text x="452" y="49" fill="var(--on)">受信サーバ</text>
+      <rect x="572" y="26" width="120" height="36" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="632" y="49" fill="var(--ink)">受信者</text>
+    </g>
+    <g stroke="var(--c3)" stroke-width="2">
+      <line x1="130" y1="44" x2="196" y2="44"/><line x1="322" y1="44" x2="388" y2="44"/><line x1="514" y1="44" x2="568" y2="44"/>
+    </g>
+    <text x="164" y="78" font-size="9.5" fill="var(--c3)" text-anchor="middle">暗号化</text>
+    <text x="355" y="78" font-size="9.5" fill="var(--c3)" text-anchor="middle">暗号化</text>
+    <text x="541" y="78" font-size="9.5" fill="var(--c3)" text-anchor="middle">暗号化</text>
+    <text x="260" y="80" font-size="10.5" fill="var(--stop)" text-anchor="middle">中は平文</text>
+    <text x="452" y="80" font-size="10.5" fill="var(--stop)" text-anchor="middle">中は平文</text>
+  </g>
+  <line x1="8" y1="104" x2="692" y2="104" stroke="var(--line)"/>
+  <g>
+    <text x="8" y="128" font-size="12.5" font-weight="600" fill="var(--c3)">S/MIME（本文の暗号化）を足した場合</text>
+    <g font-size="10.5" text-anchor="middle">
+      <rect x="8" y="140" width="120" height="36" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="68" y="163" fill="var(--ink)">送信者</text>
+      <rect x="200" y="140" width="120" height="36" rx="5" fill="var(--c3)"/><text x="260" y="163" fill="var(--on)">送信サーバ</text>
+      <rect x="392" y="140" width="120" height="36" rx="5" fill="var(--c3)"/><text x="452" y="163" fill="var(--on)">受信サーバ</text>
+      <rect x="572" y="140" width="120" height="36" rx="5" fill="var(--lane)" stroke="var(--line)"/><text x="632" y="163" fill="var(--ink)">受信者</text>
+    </g>
+    <path d="M130 158 L568 158" stroke="var(--c3)" stroke-width="2" stroke-dasharray="6 4"/>
+    <text x="350" y="196" font-size="11" fill="var(--c3)" text-anchor="middle">本文は受信者の秘密鍵でしか開けない ＝ 途中のサーバはどれも中身を読めない</text>
+    <text x="350" y="216" font-size="11" fill="var(--muted)" text-anchor="middle">ただし宛先・件名・経路といったヘッダは暗号化されない（誰が誰に送ったかは見える）</text>
+  </g>
+</svg>
+<figcaption>2つは排他ではなく重ねて使う。TLS はヘッダを含む経路全体を隠し、S/MIME は本文を端から端まで守る。守っている範囲が違う。</figcaption>
+</figure>
+
+<h2>やっていることは署名＋ハイブリッド暗号</h2>
+<ul>
+<li><strong>署名</strong>：本文のハッシュを送信者の秘密鍵で署名し、証明書と一緒に添付する。受信側は証明書から本人を確認し、改ざんの有無も分かる。</li>
+<li><strong>暗号化</strong>：本文は使い捨ての共通鍵で暗号化し、その鍵を<strong>受信者の公開鍵</strong>で包んで添付する（<a href="../../Cryptography/ハイブリッド方式.html">ハイブリッド方式</a>）。宛先が3人なら包みが3つ付く。</li>
+</ul>
+<p>署名だけ、暗号化だけ、両方、のいずれも選べる。実務では<strong>署名だけを全社的に有効にする</strong>運用のほうが多い——なりすまし対策としては署名で足り、暗号化は運用の負担が跳ね上がるため。</p>
+
+<h2>導入で詰まるところ</h2>
+<ul>
+<li><strong>全員に証明書が要る</strong>：暗号化して送るには、<strong>相手の証明書を先に持っている</strong>必要がある。社外との往復では事前のやり取りが必須で、これが普及しない最大の理由。</li>
+<li><strong>鍵を失うと過去のメールが読めなくなる</strong>：端末の故障や離職で秘密鍵が失われると、暗号化された過去のメールは誰にも開けない。鍵の預託（エスクロー）を用意するかを、導入前に決めておく。</li>
+<li><strong>ゲートウェイが中身を検査できない</strong>：暗号化されたメールは、ウイルス検査もデータ持ち出し検査も通り抜ける。<strong>セキュリティ対策が別のセキュリティ対策を無効化する</strong>という、正面からのトレードオフになる。</li>
+</ul>
+
+<div class="note">
+<p><strong>提案するときの言い方</strong></p>
+<p>「メールを暗号化しましょう」ではなく、<strong>「何から守るのか」を先に切り分ける</strong>。盗聴を心配しているなら経路の TLS でおおむね足りる。取引先へのなりすまし（詐欺メール）を心配しているなら署名が効く。取引先のメールサーバ管理者にすら見せたくない情報があるなら、そこで初めて暗号化の話になる。<br>
+S/MIME の暗号化は運用コストが大きいので、<strong>「誰に見せたくないのか」が具体的に言えないうちは導入しない</strong>のが妥当。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.rfc-editor.org/rfc/rfc8551.html">RFC 8551 - S/MIME Version 4.0 Message Specification</a></li>
+<li><a href="https://www.rfc-editor.org/rfc/rfc5652.html">RFC 5652 - Cryptographic Message Syntax (CMS)</a></li>
+<li><a href="https://efail.de/">EFAIL - 暗号化メールクライアントの実装不備を突く攻撃</a></li>
+</ul>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DuckDB をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.flow{display:flex;flex-direction:column;gap:.45rem}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.84rem;background:var(--card);
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:30rem}}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>DuckDB をゼロから理解する</h1>
+<p class="lede">「手元にある大きなファイルをどう集計するか」という手前の話から始め、5 ステップで DuckDB の使いどころまでたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+<p>DuckDB の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+<p>それは読解力の問題ではありません。多くの記事は「DuckDB は列指向・ベクトル化実行の組み込み型 OLAP データベースです」という、中級者向けの前提から始まるからです。<strong>その一語一語が、どの面倒を消すために出てきたのか</strong>が分からないまま、特徴の箇条書きだけが増えていきます。</p>
+<p>そこでこの記事は、あえて遠回りします。「大きなファイルをどう集計するか」という、いちばん手前の話から始めて 5 ステップで進みます。ゴールは特徴を暗記することではなく、<strong>DuckDB がどの手間をなくした道具なのかを自分の言葉で説明できること</strong>です。</p>
+
+<div class="dg rmbox"><p class="ttl">この記事の道のり</p><nav class="rm" aria-label="全体のロードマップ"><ol>
+<li><span class="n">STEP 1</span>大きなデータの集計で詰まる場所</li><li><span class="n">STEP 2</span>サーバーを立てないデータベース</li><li><span class="n">STEP 3</span>列で持ち、まとめて処理する</li><li><span class="n">STEP 4</span>ファイルをそのままテーブルにする</li><li><span class="n">STEP 5</span>DuckDB として組み立てる</li>
+</ol></nav><p class="cap">STEP 4 まではすべて前提知識です。本題の DuckDB は STEP 5 だけですが、そこに至る 4 ステップがないと「組み込み型」「列指向」「ファイルを直接クエリ」がばらばらの特徴の暗記になります。</p></div>
+
+<h2>STEP 1：大きなデータの集計で詰まる場所</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="now"><span class="n">STEP 1</span>大きなデータの集計で詰まる場所</li><li><span class="n">STEP 2</span>サーバーを立てないデータベース</li><li><span class="n">STEP 3</span>列で持ち、まとめて処理する</li><li><span class="n">STEP 4</span>ファイルをそのままテーブルにする</li><li><span class="n">STEP 5</span>DuckDB として組み立てる</li></ol></nav>
+<p>1 か月分のアクセスログが、CSV で 8 GB 手元にあります。「先月いちばん多く叩かれた URL を、日別に上位 10 件出してほしい」と頼まれました。</p>
+<p>表計算ソフトで開こうとすると、行数の上限に引っかかるか、そもそも開けません。スクリプトで 1 行ずつ読んで数える方法なら動きますが、数十分かかります。しかも分析は一度で終わりません。「エラーだけに絞って」「先々月と比べて」と条件が変わるたびに、また数十分待つことになります。</p>
+<p>やりたいことは、突きつめれば <strong>絞る・まとめる・つなぐ</strong> の 3 つです。これは SQL がいちばん短く書ける仕事です。</p>
+<figure><svg viewBox="0 0 780 275" role="img" aria-labelledby="f1t f1d"><title id="f1t">データ量が増えると使えなくなる手段</title><desc id="f1d">表計算ソフトとスクリプトは途中で限界に達し、SQL エンジンだけが大きなデータ量まで届く</desc>
+<defs><marker id="am1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="158" y="66" text-anchor="end" fill="var(--ink)" font-size="13">表計算ソフトで開く</text>
+<rect x="168" y="48" width="135" height="32" rx="7" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/>
+<line x1="310" y1="40" x2="310" y2="88" stroke="var(--stop)" stroke-width="2.5" stroke-dasharray="5 4"/>
+<text x="322" y="68" fill="var(--stop)" font-size="13">開けない</text>
+<text x="158" y="131" text-anchor="end" fill="var(--ink)" font-size="13">スクリプトで 1 行ずつ</text>
+<rect x="168" y="113" width="295" height="32" rx="7" fill="var(--lane)" stroke="var(--c4)" stroke-width="1.5"/>
+<line x1="470" y1="105" x2="470" y2="153" stroke="var(--stop)" stroke-width="2.5" stroke-dasharray="5 4"/>
+<text x="482" y="133" fill="var(--stop)" font-size="13">待ち時間が現実的でない</text>
+<text x="158" y="196" text-anchor="end" fill="var(--ink)" font-size="13">SQL で集計する</text>
+<rect x="168" y="178" width="560" height="32" rx="7" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/>
+<text x="448" y="199" text-anchor="middle" fill="var(--c3)" font-size="13" font-weight="700">絞る・まとめる・つなぐ を 1 文で書ける</text>
+<line x1="168" y1="235" x2="740" y2="235" stroke="var(--wire)" stroke-width="2" marker-end="url(#am1)"/>
+<text x="215" y="258" text-anchor="middle" fill="var(--muted)" font-size="12">1 万行</text>
+<text x="390" y="258" text-anchor="middle" fill="var(--muted)" font-size="12">100 万行</text>
+<text x="600" y="258" text-anchor="middle" fill="var(--muted)" font-size="12">1 億行</text>
+<text x="740" y="258" text-anchor="end" fill="var(--muted)" font-size="12">データ量 →</text>
+</svg><figcaption>限界の位置はマシンによって前後します。重要なのは順番で、データが増えるほど選べる手段が減り、最後に SQL が残るという点は変わりません。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　では PostgreSQL を 1 台立ててこの CSV を取り込めば、問題は解決するでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>解決はします。ただし割に合いません。</strong> この分析のためだけにサーバーを用意し、8 GB を取り込む時間をかけ、来月また別のファイルで同じことをやります。使いたいのは SQL であって、サーバーの運用ではありません。「SQL は使いたいが、サーバーは立てたくない」——これが次の話です。</p></div></details></div>
+
+<h2>STEP 2：サーバーを立てないデータベース</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>大きなデータの集計で詰まる場所</li><li class="now"><span class="n">STEP 2</span>サーバーを立てないデータベース</li><li><span class="n">STEP 3</span>列で持ち、まとめて処理する</li><li><span class="n">STEP 4</span>ファイルをそのままテーブルにする</li><li><span class="n">STEP 5</span>DuckDB として組み立てる</li></ol></nav>
+<p>PostgreSQL や MySQL は<strong>サーバー型</strong>です。データベースは常駐するプロセスとして動き、こちらは接続してから SQL を送ります。データはそのサーバーの管理下にあるので、使う前に必ず取り込みが要ります。複数人・複数アプリで同じデータを共有するには理にかなった形ですが、1 人が手元のファイルを集計したいだけなら重い仕組みです。</p>
+<p>もう一つの形が<strong>組み込み型</strong>です。データベースがライブラリとして、こちらのプログラムと<strong>同じプロセスの中</strong>で動きます。接続先はホスト名ではなくファイルパス（あるいはメモリ上だけの一時的な領域）です。先例は SQLite で、DuckDB も同じ形をとります。</p>
+<p><code>pip install duckdb</code> して <code>import duckdb</code> と書いた瞬間、データベースエンジンは自分のプロセスの中にいます。コマンドラインで使う場合も、依存関係のない実行ファイルが 1 つあるだけです。</p>
+<figure><svg viewBox="0 0 780 310" role="img" aria-labelledby="f2t f2d"><title id="f2t">サーバー型と組み込み型</title><desc id="f2d">左はアプリとDBサーバーが別プロセスで接続する図、右はアプリとDuckDBが同じプロセス内にある図</desc>
+<defs><marker id="am2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<line x1="390" y1="12" x2="390" y2="300" stroke="var(--line)" stroke-width="2"/>
+<text x="197" y="28" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">サーバー型（PostgreSQL など）</text>
+<rect x="57" y="46" width="280" height="44" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="197" y="74" text-anchor="middle" fill="var(--ink)" font-size="13">アプリのプロセス</text>
+<line x1="197" y1="92" x2="197" y2="138" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<text x="207" y="120" fill="var(--muted)" font-size="12">接続して SQL を送る</text>
+<rect x="57" y="142" width="280" height="44" rx="9" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/><text x="197" y="170" text-anchor="middle" fill="var(--ink)" font-size="13">DB サーバープロセス</text>
+<line x1="197" y1="188" x2="197" y2="222" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<rect x="57" y="226" width="280" height="42" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/><text x="197" y="253" text-anchor="middle" fill="var(--ink)" font-size="13">サーバーが管理するデータ</text>
+<text x="197" y="292" text-anchor="middle" fill="var(--stop)" font-size="13">使う前に取り込みが要る</text>
+<text x="583" y="28" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">組み込み型（DuckDB・SQLite）</text>
+<rect x="423" y="42" width="320" height="146" rx="14" fill="none" stroke="var(--c3)" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="583" y="66" text-anchor="middle" fill="var(--c3)" font-size="12" font-weight="700">1 つのプロセス</text>
+<rect x="443" y="80" width="130" height="46" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="508" y="109" text-anchor="middle" fill="var(--ink)" font-size="13">アプリ</text>
+<rect x="593" y="80" width="130" height="46" rx="9" fill="var(--c1)"/><text x="658" y="109" text-anchor="middle" fill="var(--on)" font-size="13" font-weight="700">DuckDB</text>
+<line x1="573" y1="103" x2="591" y2="103" stroke="var(--wire)" stroke-width="2"/>
+<text x="583" y="158" text-anchor="middle" fill="var(--muted)" font-size="12">ネットワークも変換も挟まず、同じメモリでやり取りする</text>
+<line x1="583" y1="190" x2="583" y2="222" stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"/>
+<rect x="443" y="226" width="280" height="42" rx="9" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="583" y="253" text-anchor="middle" fill="var(--ink)" font-size="13">読み先をパスで指定するだけ</text>
+<text x="583" y="292" text-anchor="middle" fill="var(--c3)" font-size="13">立ち上げるものがない</text>
+</svg><figcaption>組み込み型はサーバー型の上位互換ではありません。共有・同時書き込み・権限管理といったサーバー型の役割を持たない代わりに、準備がゼロで済みます。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　組み込み型でよいのなら、すでにある SQLite を使えば済むのではないでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>済みません。得意な仕事が違います。</strong> SQLite は「1 件の行を読む・書く」処理のために作られています。1 億行の合計を出すような集計を投げると、極端に時間がかかります。同じ組み込み型でありながら中身がまったく違う——その違いが次のステップです。</p></div></details></div>
+
+<h2>STEP 3：列で持ち、まとめて処理する</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>大きなデータの集計で詰まる場所</li><li class="done"><span class="n">STEP 2 ✓</span>サーバーを立てないデータベース</li><li class="now"><span class="n">STEP 3</span>列で持ち、まとめて処理する</li><li><span class="n">STEP 4</span>ファイルをそのままテーブルにする</li><li><span class="n">STEP 5</span>DuckDB として組み立てる</li></ol></nav>
+<p>集計のクエリには、はっきりした癖があります。<strong>行はほぼ全部見るのに、列はごく一部しか見ない</strong>ということです。<code>SELECT path, count(*) FROM logs GROUP BY path</code> は、30 列あるテーブルの 1 列しか使いません。</p>
+<p>ところが行指向のデータベースは、1 行分をひとかたまりにして置きます。1 列だけ欲しくても、行ごと読むしかありません。列指向は逆に、同じ列の値をまとめて置きます。必要な列だけを読めるうえ、同じ列は値の傾向がそろうので圧縮もよく効きます。</p>
+<figure><svg viewBox="0 0 780 275" role="img" aria-labelledby="f3t f3d"><title id="f3t">行指向と列指向のデータの置き方</title><desc id="f3d">行指向は1行分をまとめて置くため全列を読み、列指向は列ごとにまとめて置くため必要な列だけを読む</desc>
+<line x1="390" y1="12" x2="390" y2="262" stroke="var(--line)" stroke-width="2"/>
+<text x="197" y="26" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">行指向：1 行分をまとめて置く</text>
+<g font-size="11" fill="var(--muted)" text-anchor="middle"><text x="74" y="58">日時</text><text x="152" y="58">パス</text><text x="230" y="58">状態</text><text x="308" y="58">バイト</text></g>
+<g fill="var(--lane)" stroke="var(--c2)" stroke-width="2">
+<rect x="35" y="68" width="324" height="30" rx="6"/><rect x="35" y="104" width="324" height="30" rx="6"/><rect x="35" y="140" width="324" height="30" rx="6"/><rect x="35" y="176" width="324" height="30" rx="6"/></g>
+<g stroke="var(--wire)" stroke-width="1" stroke-dasharray="3 3">
+<line x1="113" y1="68" x2="113" y2="206"/><line x1="191" y1="68" x2="191" y2="206"/><line x1="269" y1="68" x2="269" y2="206"/></g>
+<text x="197" y="234" text-anchor="middle" fill="var(--stop)" font-size="13">1 列しか要らなくても、行ごと全部読む</text>
+<text x="583" y="26" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">列指向：1 列分をまとめて置く</text>
+<g font-size="11" fill="var(--muted)" text-anchor="middle"><text x="459" y="58">日時</text><text x="541" y="58">パス</text><text x="623" y="58">状態</text><text x="705" y="58">バイト</text></g>
+<g fill="var(--card)" stroke="var(--line)" stroke-width="1.5">
+<rect x="420" y="68" width="78" height="138" rx="6"/><rect x="584" y="68" width="78" height="138" rx="6"/><rect x="666" y="68" width="78" height="138" rx="6"/></g>
+<rect x="502" y="68" width="78" height="138" rx="6" fill="var(--lane)" stroke="var(--c3)" stroke-width="2.5"/>
+<g stroke="var(--wire)" stroke-width="1" stroke-dasharray="3 3">
+<line x1="420" y1="103" x2="744" y2="103"/><line x1="420" y1="138" x2="744" y2="138"/><line x1="420" y1="173" x2="744" y2="173"/></g>
+<text x="583" y="234" text-anchor="middle" fill="var(--c3)" font-size="13">要る列だけ読む・同じ列なので圧縮も効く</text>
+</svg><figcaption>この違いは「どちらが優れているか」ではありません。1 件の注文をまるごと読み書きする処理では、1 行がまとまっている行指向のほうが有利です。</figcaption></figure>
+<p>速さの理由はもう一つあります。DuckDB は 1 行ずつ処理を進めるのではなく、<strong>数千行を 1 かたまり（ベクトル）にして処理します</strong>。既定では 2048 行単位です。1 行ごとに関数を呼び出す形に比べて、呼び出しの手間や条件分岐が激減し、CPU のキャッシュにも載りやすくなります。</p>
+<figure><svg viewBox="0 0 780 230" role="img" aria-labelledby="f4t f4d"><title id="f4t">1 行ずつの処理とベクトル化実行</title><desc id="f4d">左は1行ごとに処理を呼び出す図、右は数千行のかたまりを一度に処理する図</desc>
+<defs><marker id="am4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--wire)"/></marker></defs>
+<line x1="390" y1="12" x2="390" y2="218" stroke="var(--line)" stroke-width="2"/>
+<text x="197" y="30" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">1 行ずつ処理する</text>
+<g><rect x="45" y="48" width="90" height="18" rx="4" fill="var(--lane)" stroke="var(--c2)"/><rect x="45" y="74" width="90" height="18" rx="4" fill="var(--lane)" stroke="var(--c2)"/><rect x="45" y="100" width="90" height="18" rx="4" fill="var(--lane)" stroke="var(--c2)"/><rect x="45" y="126" width="90" height="18" rx="4" fill="var(--lane)" stroke="var(--c2)"/><rect x="45" y="152" width="90" height="18" rx="4" fill="var(--lane)" stroke="var(--c2)"/></g>
+<g stroke="var(--wire)" stroke-width="1.5" marker-end="url(#am4)"><line x1="137" y1="57" x2="163" y2="57"/><line x1="137" y1="83" x2="163" y2="83"/><line x1="137" y1="109" x2="163" y2="109"/><line x1="137" y1="135" x2="163" y2="135"/><line x1="137" y1="161" x2="163" y2="161"/></g>
+<g font-size="11" fill="var(--ink)" text-anchor="middle"><rect x="168" y="48" width="80" height="18" rx="4" fill="var(--card)" stroke="var(--c1)"/><text x="208" y="61">処理</text><rect x="168" y="74" width="80" height="18" rx="4" fill="var(--card)" stroke="var(--c1)"/><text x="208" y="87">処理</text><rect x="168" y="100" width="80" height="18" rx="4" fill="var(--card)" stroke="var(--c1)"/><text x="208" y="113">処理</text><rect x="168" y="126" width="80" height="18" rx="4" fill="var(--card)" stroke="var(--c1)"/><text x="208" y="139">処理</text><rect x="168" y="152" width="80" height="18" rx="4" fill="var(--card)" stroke="var(--c1)"/><text x="208" y="165">処理</text></g>
+<text x="197" y="200" text-anchor="middle" fill="var(--stop)" font-size="13">行の数だけ呼び出しが起きる</text>
+<text x="583" y="30" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">かたまりで処理する（ベクトル化）</text>
+<rect x="425" y="48" width="150" height="122" rx="8" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/>
+<text x="500" y="103" text-anchor="middle" fill="var(--ink)" font-size="13">2048 行の</text><text x="500" y="125" text-anchor="middle" fill="var(--ink)" font-size="13">かたまり</text>
+<line x1="578" y1="109" x2="618" y2="109" stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)"/>
+<rect x="623" y="88" width="110" height="42" rx="8" fill="var(--c1)"/><text x="678" y="115" text-anchor="middle" fill="var(--on)" font-size="13" font-weight="700">処理</text>
+<text x="583" y="200" text-anchor="middle" fill="var(--c3)" font-size="13">呼び出しは 1 回で済む</text>
+</svg><figcaption>1 行ずつでも、全行を一度にメモリへ載せるのでもない中間の粒度、というのがベクトルの位置づけです。だからメモリに収まらない量でも動きます。</figcaption></figure>
+<p>この「列で持つ」「かたまりで処理する」の 2 つが、同じ SQL でも桁違いに速くなる中身です。1 件ずつの読み書きに強い <strong>OLTP</strong> 型（SQLite や PostgreSQL の主戦場）に対して、集計に強い <strong>OLAP</strong> 型がここにあたります。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　列指向で速くなるのは分かりました。では 8 GB の CSV を DuckDB のデータベースファイルに取り込めば、STEP 1 の悩みは解決するでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>半分だけ解決します。</strong> 集計は速くなりますが、「取り込む」という工程が残っています。一度きりの集計のために取り込みを待つのは、STEP 1 で PostgreSQL を立てるのが割に合わなかったのと同じ理由で面倒です。次のステップが、この工程そのものを消します。</p></div></details></div>
+
+<h2>STEP 4：ファイルをそのままテーブルにする</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>大きなデータの集計で詰まる場所</li><li class="done"><span class="n">STEP 2 ✓</span>サーバーを立てないデータベース</li><li class="done"><span class="n">STEP 3 ✓</span>列で持ち、まとめて処理する</li><li class="now"><span class="n">STEP 4</span>ファイルをそのままテーブルにする</li><li><span class="n">STEP 5</span>DuckDB として組み立てる</li></ol></nav>
+<p>DuckDB では、CSV・Parquet・JSON といったファイルを<strong>テーブル名の位置にそのまま書けます</strong>。STEP 1 の依頼は、取り込みなしでこう書けます。</p>
+<pre><code>SELECT path, count(*) AS hits
+FROM 'logs/2026-08-*.csv'
+GROUP BY path
+ORDER BY hits DESC
+LIMIT 10;</code></pre>
+<p>拡張子から読み方が決まり、CSV なら区切り文字・ヘッダの有無・各列の型が推測されます。<code>*</code> を使えば複数ファイルがまとめて 1 つのテーブルになります。読むのは必要な列と行だけで、Parquet ならファイル内の統計情報を見て不要な部分を飛ばします。</p>
+<p>Python から使う場合は、メモリ上の DataFrame も同じくテーブル名として書けます。渡す・変換するという手順がありません。</p>
+<pre><code>import duckdb, pandas as pd
+
+df = pd.read_csv("sales.csv")
+duckdb.sql("SELECT region, sum(amount) FROM df GROUP BY region").df()</code></pre>
+<p>書き出しも SQL のままです。<code>COPY (SELECT ...) TO 'summary.parquet' (FORMAT parquet)</code> と書けば、集計結果をそのまま次の処理に渡せる形で保存できます。</p>
+<figure><svg viewBox="0 0 780 240" role="img" aria-labelledby="f5t f5d"><title id="f5t">取り込んでから集計する流れと、ファイルを直接集計する流れ</title><desc id="f5d">上段は取り込み工程とテーブル作成を経る流れ、下段はファイルを直接クエリする流れ</desc>
+<defs><marker id="am5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="30" y="30" fill="var(--muted)" font-size="13" font-weight="700">これまで</text>
+<g font-size="12.5" text-anchor="middle" fill="var(--ink)">
+<rect x="30" y="48" width="130" height="46" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="95" y="76">CSV / Parquet</text>
+<rect x="205" y="48" width="160" height="46" rx="9" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/><text x="285" y="76" fill="var(--stop)">取り込み待ち</text>
+<rect x="410" y="48" width="140" height="46" rx="9" fill="var(--warn-bg)" stroke="var(--warn-line)" stroke-width="1.5"/><text x="480" y="76" fill="var(--stop)">テーブル作成</text>
+<rect x="595" y="48" width="150" height="46" rx="9" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="670" y="76">SQL で集計</text></g>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am5)"><line x1="162" y1="71" x2="200" y2="71"/><line x1="367" y1="71" x2="405" y2="71"/><line x1="552" y1="71" x2="590" y2="71"/></g>
+<line x1="30" y1="120" x2="750" y2="120" stroke="var(--line)" stroke-width="1" stroke-dasharray="5 5"/>
+<text x="30" y="152" fill="var(--muted)" font-size="13" font-weight="700">DuckDB</text>
+<g font-size="12.5" text-anchor="middle" fill="var(--ink)">
+<rect x="30" y="168" width="130" height="46" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="95" y="196">CSV / Parquet</text>
+<rect x="205" y="168" width="340" height="46" rx="9" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/><text x="375" y="196">SELECT … FROM 'logs/*.csv'</text></g>
+<line x1="162" y1="191" x2="200" y2="191" stroke="var(--wire)" stroke-width="2" marker-end="url(#am5)"/>
+<text x="660" y="196" text-anchor="middle" fill="var(--c3)" font-size="13" font-weight="700">工程が 2 つ消える</text>
+</svg><figcaption>消えているのは待ち時間だけではありません。取り込み用のスクリプトや、取り込み済みかどうかを気にする管理も一緒になくなります。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　ファイルを直接読めるなら、DuckDB のデータベースファイル（<code>.duckdb</code>）は何のためにあるのでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>同じデータを何度も使うときのためです。</strong> データベースファイルに入れておけば、列指向で圧縮され統計情報も付いた形で持てるので、繰り返しのクエリはさらに速くなります。ビューや複数テーブルの関係もそこに保存できます。一度きりの集計はファイル直読み、何度も使うなら取り込む、という使い分けになります。</p></div></details></div>
+
+<h2>STEP 5：DuckDB として組み立てる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>大きなデータの集計で詰まる場所</li><li class="done"><span class="n">STEP 2 ✓</span>サーバーを立てないデータベース</li><li class="done"><span class="n">STEP 3 ✓</span>列で持ち、まとめて処理する</li><li class="done"><span class="n">STEP 4 ✓</span>ファイルをそのままテーブルにする</li><li class="now"><span class="n">STEP 5</span>DuckDB として組み立てる</li></ol></nav>
+<p>ここまでの 3 つを重ねると、DuckDB の姿になります。<strong>自分のプロセスの中で動き（STEP 2）、列指向とベクトル化で集計が速く（STEP 3）、手元のファイルや DataFrame をそのままテーブルとして扱える（STEP 4）</strong> SQL エンジンです。オープンソースで、コマンドライン・Python・R・Java・ブラウザ（WebAssembly）など、いろいろな場所に同じエンジンが載ります。</p>
+<figure><svg viewBox="0 0 780 320" role="img" aria-labelledby="f6t f6d"><title id="f6t">DuckDB の全体像</title><desc id="f6d">複数の入力元がDuckDBエンジンに入り、DataFrameやファイルとして出力される図</desc>
+<defs><marker id="am6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<text x="25" y="26" fill="var(--muted)" font-size="12" font-weight="700">読み先</text>
+<g font-size="12" text-anchor="middle" fill="var(--ink)">
+<rect x="25" y="36" width="170" height="50" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="110" y="58">CSV / Parquet</text><text x="110" y="76">/ JSON ファイル</text>
+<rect x="210" y="36" width="170" height="50" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="295" y="58">DuckDB の</text><text x="295" y="76">データベースファイル</text>
+<rect x="395" y="36" width="170" height="50" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="480" y="58">DataFrame</text><text x="480" y="76">（pandas / Polars）</text>
+<rect x="580" y="36" width="175" height="50" rx="9" fill="var(--card)" stroke="var(--c4)" stroke-width="1.5"/><text x="667" y="58" font-size="11.5">S3 / HTTP 上のファイル</text><text x="667" y="76" fill="var(--muted)">（拡張を入れる）</text></g>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"><line x1="110" y1="88" x2="110" y2="128"/><line x1="295" y1="88" x2="295" y2="128"/><line x1="480" y1="88" x2="480" y2="128"/><line x1="667" y1="88" x2="667" y2="128"/></g>
+<rect x="25" y="134" width="730" height="86" rx="14" fill="none" stroke="var(--c3)" stroke-width="2" stroke-dasharray="7 5"/>
+<rect x="48" y="152" width="684" height="50" rx="10" fill="var(--c1)"/>
+<text x="390" y="174" text-anchor="middle" fill="var(--on)" font-size="13.5" font-weight="700">DuckDB エンジン</text>
+<text x="390" y="193" text-anchor="middle" fill="var(--on)" font-size="12">列指向 × ベクトル化実行で SQL を処理する</text>
+<text x="390" y="240" text-anchor="middle" fill="var(--c3)" font-size="12.5">点線の中はアプリと同じプロセス。サーバーもネットワークもない</text>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"><line x1="180" y1="250" x2="180" y2="272"/><line x1="390" y1="250" x2="390" y2="272"/><line x1="600" y1="250" x2="600" y2="272"/></g>
+<g font-size="12" text-anchor="middle" fill="var(--ink)">
+<rect x="95" y="276" width="170" height="38" rx="9" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="180" y="300">DataFrame で受け取る</text>
+<rect x="305" y="276" width="170" height="38" rx="9" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="390" y="300">Parquet / CSV に書く</text>
+<rect x="515" y="276" width="170" height="38" rx="9" fill="var(--lane)" stroke="var(--c3)" stroke-width="1.5"/><text x="600" y="300">そのまま画面で見る</text></g>
+</svg><figcaption>読み先が拡張で増えるのが設計の要点です。PostgreSQL や SQLite の中身を読む拡張もあり、別々の場所にあるデータを 1 つの SQL で突き合わせられます。</figcaption></figure>
+<p>実際の作業は、だいたいこの流れになります。</p>
+<div class="flow">
+<div><b>1</b> 手元や S3 のファイルを <code>FROM</code> に書いて、まず <code>LIMIT 5</code> で中身を確かめる</div>
+<div><b>2</b> 絞る・まとめる・つなぐを SQL で書き、条件を変えながら試す</div>
+<div><b>3</b> 結果を DataFrame で受け取るか、Parquet に書き出して次の処理へ渡す</div>
+</div>
+<p>SQL の書き味にも工夫があります。<code>SELECT * EXCLUDE (password)</code> で列を除いたり、<code>GROUP BY ALL</code> で集計キーの書き写しを省いたりできます。標準 SQL の範囲を超えた便利な構文が用意されているので、試行錯誤の 1 回あたりが短くなります。</p>
+<p>そして、向く場面と向かない場面がはっきりしています。ここが実務でいちばん効く判断材料です。</p>
+<div class="tw"><table>
+<thead><tr><th>場面</th><th>向くか</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td>手元や S3 の大きなファイルを集計・変換する</td><td>向く</td><td>準備なしで SQL が書ける。ここが本領</td></tr>
+<tr><td>データ処理バッチの前処理、CI でのデータ検証</td><td>向く</td><td>実行環境に入れるものが 1 つで済む</td></tr>
+<tr><td>多人数が同時に読み書きする業務アプリの DB</td><td>向かない</td><td>1 つのデータベースファイルに書き込めるプロセスは同時に 1 つ</td></tr>
+<tr><td>1 件の更新が毎秒何千件も走る処理</td><td>向かない</td><td>集計向けの設計で、行単位の更新は得意ではない</td></tr>
+</tbody>
+</table></div>
+<div class="note"><p><strong>置き換える対象を間違えない。</strong> DuckDB が置き換えるのは、業務アプリのデータベースではありません。「分析のためだけに立てていた DB」や「遅い前処理スクリプト」のほうです。</p></div>
+<div class="quiz"><p class="q"><b>確認問題</b>　メモリが 16 GB のノート PC で、100 GB の Parquet を集計できるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>条件しだいで、できることが多いです。</strong> 必要な列と行だけを読む仕組み（STEP 3・STEP 4）が効くので、100 GB のうち実際に読む量はずっと小さくなります。かたまり単位で処理し、足りなければディスクに退避しながら進めます。ただし何でも通るわけではなく、巨大な結合などは限界に当たります。そこから先は分散処理エンジンの領域です。</p></div></details></div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+<h3>30 秒版</h3><blockquote><p>DuckDB は、集計に特化したオープンソースのデータベースです。いちばんの特徴はサーバーを立てないこと。ライブラリとしてアプリと同じプロセスの中で動くので、インストールしたらすぐ SQL が書けます。中身は列指向で、数千行をまとめて処理するので集計が速い。しかも CSV や Parquet をそのままテーブルとして <code>FROM</code> に書けるため、取り込みの工程が要りません。手元の大きなファイルを SQL で集計したいとき用の道具です。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>背景にあるのは、「SQL は使いたいが、そのためにサーバーを立てて取り込む手間は払いたくない」という場面です。組み込み型という形はそこを解きます。先例の SQLite と同じ形ですが、SQLite は 1 件ずつの読み書き（OLTP）向けで、集計は苦手です。</p><p>DuckDB はそこを OLAP 向けに作り替えています。データを列ごとにまとめて置くので、30 列のうち 1 列しか使わない集計では 1 列分しか読みません。処理も 1 行ずつではなく 2048 行のかたまり単位で進めます。この 2 つで集計が桁違いに速くなります。</p><p>さらに読み先が自由です。ローカルのファイル、S3 上のファイル、メモリ上の DataFrame、DuckDB 自身のデータベースファイルを同じ SQL で扱えます。一方で、1 つのデータベースファイルに書き込めるプロセスは同時に 1 つなので、多人数が同時に更新する業務アプリの DB としては使いません。置き換わるのは分析用に立てていた DB や、遅い前処理スクリプトのほうです。</p></blockquote>
+
+<h2>よくある誤解</h2>
+<h3>「SQLite の新しい版のようなもので、置き換えられる」</h3><p>形（組み込み型）は同じですが、想定する仕事が逆です。SQLite は 1 件ずつの読み書き、DuckDB は大量行の集計に向いています。アプリの設定や履歴を保存する用途なら SQLite のままが適切です。</p>
+<h3>「大きなデータを扱うのだからクラスタが要る」</h3><p>DuckDB は 1 台のマシンで動きます。数十 GB 規模なら、分散エンジンを立てるより手元の 1 台で済ませたほうが速く、簡単です。分散が必要になるのはもっと先です。</p>
+<h3>「使う前にデータを取り込む必要がある」</h3><p>取り込みは選択肢の一つであって、必須ではありません。ファイルをそのまま <code>FROM</code> に書けます。何度も同じデータを使うときだけ、取り込んだほうが得になります。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では全体像を優先し、次の話には意図的に踏み込みませんでした。</p>
+<ul>
+<li>ウィンドウ関数・<code>QUALIFY</code>・リスト型や構造体型といった SQL 側の機能</li>
+<li>拡張の追加（S3 アクセス、PostgreSQL や SQLite の中身を読む、テーブルフォーマットを読む）</li>
+<li><code>EXPLAIN ANALYZE</code> による実行計画の確認と、メモリ上限・並列度の設定</li>
+<li>前提となる考え方：<a href="../Data Engineering/200_中級_OLTPとOLAP.md">OLTP と OLAP</a>、<a href="../Data Engineering/100_入門_データウェアハウスとデータレイク.md">データウェアハウスとデータレイク</a>、<a href="../Data Engineering/100_入門_ETLとETLパイプライン.md">ETL と ETL パイプライン</a></li>
+</ul>
+<p>次は手元にある CSV を 1 つ選び、コマンドラインで <code>duckdb</code> を起動して <code>SELECT * FROM 'ファイル名.csv' LIMIT 5;</code> を打ってみるのがおすすめです。取り込みなしで結果が返ってくる感覚を、一度で確かめられます。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://duckdb.org/">DuckDB — An in-process SQL OLAP database management system</a></li>
+<li><a href="https://duckdb.org/why_duckdb">DuckDB — Why DuckDB</a></li>
+<li><a href="https://duckdb.org/docs/current/">DuckDB Documentation</a></li>
+<li><a href="https://duckdb.org/docs/current/data/data_sources">DuckDB Docs — Data Sources</a></li>
+<li><a href="https://duckdb.org/docs/current/guides/file_formats/query_parquet">DuckDB Docs — Querying Parquet Files</a></li>
+<li><a href="https://duckdb.org/docs/current/clients/python/overview">DuckDB Docs — Python API</a></li>
+<li><a href="https://duckdb.org/docs/current/guides/python/sql_on_pandas">DuckDB Docs — SQL on Pandas</a></li>
+<li><a href="https://duckdb.org/docs/current/dev/release_cycle">DuckDB Docs — Release Cycle</a></li>
+<li><a href="https://github.com/duckdb/duckdb">GitHub — duckdb/duckdb</a></li>
+<li><a href="https://mytherin.github.io/papers/2019-duckdbdemo.pdf">Raasveldt, Mühleisen — DuckDB: an Embeddable Analytical Database (SIGMOD 2019)</a></li>
+</ul>
+</main></body></html>

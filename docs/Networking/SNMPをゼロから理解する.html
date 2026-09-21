@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SNMP をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center;align-items:center}
+.node{
+  border:1.5px solid var(--c1);border-radius:8px;padding:.4rem .7rem;background:var(--card);
+  font-size:.84rem;text-align:center;line-height:1.5;min-width:5.2rem;
+}
+.node small{display:block;font-size:.72rem;color:var(--muted)}
+.node.sw{border-color:var(--c4)}
+.node.rt{border-color:var(--c2)}
+.node.hi{border-color:var(--c3);background:var(--lane)}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;text-align:center}
+.grid4 .lbl{font-size:.74rem;color:var(--muted)}
+.stems{display:grid;grid-template-columns:repeat(4,1fr)}
+.stems i{display:block;height:18px;width:0;border-left:2px solid var(--wire);margin:0 auto}
+.bus{height:0;border-top:2px solid var(--wire);margin:0 12.5%}
+.stem{height:18px;width:0;border-left:2px solid var(--wire);margin:0 auto}
+.link{flex:0 0 2.4rem;height:0;border-top:2px solid var(--wire)}
+.island{
+  border:1.5px dashed var(--c3);border-radius:12px;padding:.7rem;background:var(--lane);
+  display:flex;flex-direction:column;gap:.4rem;align-items:center;
+}
+.island .name{font-size:.76rem;color:var(--c3);font-weight:600}
+.wallbox{
+  border:1.5px solid var(--c4);border-radius:12px;padding:.9rem;
+  display:grid;grid-template-columns:1fr auto 1fr;gap:.8rem;align-items:center;
+}
+.wall{
+  width:0;align-self:stretch;border-left:3px dashed var(--stop);position:relative;margin:0 1rem;
+}
+.wall span{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  writing-mode:vertical-rl;font-size:.74rem;color:var(--stop);
+  background:var(--card);padding:.3rem 0;
+}
+.pkt{display:flex;flex-wrap:wrap;gap:.35rem;align-items:stretch}
+.pkt div{
+  border-radius:6px;padding:.45rem .5rem;font-size:.76rem;line-height:1.45;text-align:center;
+  border:1.5px solid var(--line);
+}
+.pkt .o1{flex:1 1 8rem;border-color:var(--c1);background:var(--card)}
+.pkt .o2{flex:0 1 5rem;border-color:var(--c1);background:var(--card)}
+.pkt .o3{flex:1 1 8rem;border-color:var(--c4);background:var(--card)}
+.pkt .o4{flex:2 1 12rem;border-color:var(--c3);background:var(--lane)}
+.pkt b{display:block;font-size:.78rem}
+.pkt em{display:block;font-style:normal;font-size:.72rem;color:var(--muted)}
+.pkt .hint{
+  display:block;font-style:normal;font-size:.72rem;line-height:1.45;
+  margin-top:.4rem;padding-top:.35rem;border-top:1px dashed var(--line);
+}
+.pkt .h1{color:var(--c1)}
+.pkt .h3{color:var(--c3)}
+.arrow{align-self:center;color:var(--muted);font-size:1rem}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+
+@media (max-width:640px){
+  .tw table{min-width:30rem}
+  .node{min-width:0}
+  .grid4{gap:.3rem}
+  .grid4 .node{padding:.4rem .2rem;font-size:.78rem}
+  .pkt .o1,.pkt .o2,.pkt .o3,.pkt .o4{flex:1 1 100%}
+  .wallbox{grid-template-columns:1fr;gap:.4rem}
+  .wall{
+    width:auto;height:0;align-self:auto;margin:1rem 0;
+    border-left:none;border-top:3px dashed var(--stop);
+  }
+  .wall span{writing-mode:horizontal-tb;padding:0 .4rem}
+}
+.flow{display:flex;flex-direction:column;gap:.45rem}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.84rem;background:var(--card);
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>SNMP をゼロから理解する</h1>
+<p class="lede">「機器が動いている」だけでは運用できない。観測の必要性から始め、5 ステップで SNMP の全体像までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+<p>SNMP の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+<p>それは読解力の問題ではありません。多くの記事は「マネージャが MIB の OID を GET する」「エージェントが Trap を送る」という、中級者向けの前提から始まるからです。監視する側とされる側、値に共通の名前を付ける理由が分からないままでは、略語だけが増えていきます。</p>
+<p>そこでこの記事は、あえて遠回りします。「離れた機器の状態は外から見えない」という、いちばん手前の話から始めて 5 ステップで進みます。ゴールは用語を暗記することではなく、<strong>SNMP が誰と誰の間で、何を、どのように運ぶ仕組みなのかを自分の言葉で説明できること</strong>です。</p>
+
+<div class="dg rmbox"><p class="ttl">この記事の道のり</p><nav class="rm" aria-label="全体のロードマップ"><ol>
+<li><span class="n">STEP 1</span>機器の中は外から見えない</li><li><span class="n">STEP 2</span>窓口を一つにする</li><li><span class="n">STEP 3</span>値に共通の住所を付ける</li><li><span class="n">STEP 4</span>聞く方法と知らせる方法</li><li><span class="n">STEP 5</span>SNMP として組み立てる</li>
+</ol></nav><p class="cap">STEP 4 まではすべて前提知識です。本題の SNMP は STEP 5 だけですが、そこに至る 4 ステップがないと「MIB」「OID」「Trap」がばらばらの暗記になります。</p></div>
+
+<h2>STEP 1：機器の中は外から見えない</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="now"><span class="n">STEP 1</span>機器の中は外から見えない</li><li><span class="n">STEP 2</span>窓口を一つにする</li><li><span class="n">STEP 3</span>値に共通の住所を付ける</li><li><span class="n">STEP 4</span>聞く方法と知らせる方法</li><li><span class="n">STEP 5</span>SNMP として組み立てる</li></ol></nav>
+<p>オフィスの通信が突然遅くなりました。利用者から見えるのは「Web 会議が途切れる」という結果だけです。原因は、回線の混雑かもしれません。スイッチのポートでエラーが増えているのかもしれません。ルーターの CPU が限界なのかもしれません。</p>
+<p>機器のランプを一台ずつ見に行けば分かることもあります。しかし、別のフロアや拠点に何十台もある機器を、人が巡回して調べる運用は続きません。必要なのは、離れた場所から同じ方法で状態を取り出し、一か所に集める仕組みです。</p>
+<figure><svg viewBox="0 0 760 300" role="img" aria-labelledby="s1t s1d"><title id="s1t">利用者からは機器内部の原因が見えない</title><desc id="s1d">通信が遅い利用者と、複数の原因候補を持つネットワーク機器、その間の見えない壁</desc>
+<defs><marker id="a1" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--wire)"/></marker></defs>
+<rect x="30" y="90" width="150" height="105" rx="12" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="105" y="125" text-anchor="middle" fill="var(--ink)" font-weight="700">利用者</text><text x="105" y="154" text-anchor="middle" fill="var(--muted)">「通信が遅い」</text>
+<line x1="185" y1="143" x2="315" y2="143" stroke="var(--wire)" stroke-width="3" marker-end="url(#a1)"/><line x1="300" y1="40" x2="300" y2="245" stroke="var(--stop)" stroke-width="3" stroke-dasharray="8 7"/><text x="285" y="270" text-anchor="middle" fill="var(--stop)">中の状態は見えない</text>
+<rect x="345" y="45" width="370" height="205" rx="16" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/><text x="530" y="75" text-anchor="middle" fill="var(--ink)" font-weight="700">ネットワーク機器</text>
+<rect x="380" y="100" width="130" height="55" rx="8" fill="var(--c1)"/><text x="445" y="133" text-anchor="middle" fill="var(--on)">CPU 95%</text><rect x="550" y="100" width="130" height="55" rx="8" fill="var(--c2)"/><text x="615" y="133" text-anchor="middle" fill="var(--on)">温度 72℃</text><rect x="380" y="175" width="130" height="55" rx="8" fill="var(--c3)"/><text x="445" y="208" text-anchor="middle" fill="var(--on)">受信量</text><rect x="550" y="175" width="130" height="55" rx="8" fill="var(--c4)"/><text x="615" y="208" text-anchor="middle" fill="var(--on)">エラー数</text></svg><figcaption>障害が起きてから値を集め始めても、直前に何が変化したかは分かりません。監視は「現在値を見る」だけでなく、平常時から変化を残すために行います。</figcaption></figure>
+<p>ここで集めたいのは、通信の中身ではなく<strong>機器自身が持つ状態やカウンター</strong>です。たとえば CPU 使用率、インターフェースの送受信量、エラー数、稼働時間です。これらを同じ場所で時系列に並べれば、「いつから」「どの機器で」「何が変わったか」を追えます。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　疎通確認で機器から応答がありました。これだけで「機器に問題はない」と判断できるでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>判断できません。</strong> 到達できることは分かっても、CPU 使用率やポートのエラー数までは分からないからです。次は、機器ごとに異なる状態をどうやって一か所へ集めるかを考えます。</p></div></details></div>
+
+<h2>STEP 2：窓口を一つにする</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>機器の中は外から見えない</li><li class="now"><span class="n">STEP 2</span>窓口を一つにする</li><li><span class="n">STEP 3</span>値に共通の住所を付ける</li><li><span class="n">STEP 4</span>聞く方法と知らせる方法</li><li><span class="n">STEP 5</span>SNMP として組み立てる</li></ol></nav>
+<p>機器の状態を集めるとき、監視サーバーが各機器の内部構造を直接知る設計には無理があります。メーカーや機種が変わるたび、監視側の作りを変えなければならないからです。</p>
+<p>そこで、機器の中に「状態を答える窓口」を置きます。監視サーバーは窓口に質問し、窓口が機器内部から値を取り出して答えます。この役割分担なら、監視サーバーは機器内部の実装を知る必要がありません。</p>
+<figure><svg viewBox="0 0 760 315" role="img" aria-labelledby="s2t"><title id="s2t">監視する側と機器側の窓口</title><defs><marker id="a2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c1)"/></marker><marker id="b2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c3)"/></marker></defs>
+<rect x="30" y="85" width="190" height="145" rx="14" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="125" y="125" text-anchor="middle" fill="var(--ink)" font-weight="700">監視サーバー</text><text x="125" y="154" text-anchor="middle" fill="var(--muted)">質問をまとめる</text><text x="125" y="180" text-anchor="middle" fill="var(--muted)">結果を保存・表示</text>
+<rect x="510" y="35" width="220" height="245" rx="14" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/><text x="620" y="67" text-anchor="middle" fill="var(--ink)" font-weight="700">ルーター</text><rect x="550" y="95" width="140" height="65" rx="10" fill="var(--c4)"/><text x="620" y="122" text-anchor="middle" fill="var(--on)" font-weight="700">窓口</text><text x="620" y="145" text-anchor="middle" fill="var(--on)">状態を答える</text><rect x="550" y="190" width="140" height="55" rx="8" fill="var(--lane)" stroke="var(--line)"/><text x="620" y="223" text-anchor="middle" fill="var(--ink)">機器内部</text>
+<line x1="220" y1="120" x2="535" y2="120" stroke="var(--c1)" stroke-width="3" marker-end="url(#a2)"/><text x="375" y="103" text-anchor="middle" fill="var(--c1)">「受信量を教えて」</text><line x1="535" y1="185" x2="235" y2="185" stroke="var(--c3)" stroke-width="3" marker-end="url(#b2)"/><text x="375" y="215" text-anchor="middle" fill="var(--c3)">「1,204,500 byte」</text><line x1="620" y1="160" x2="620" y2="187" stroke="var(--wire)" stroke-width="2"/></svg><figcaption>窓口を置くことで、監視側と機器内部を切り離せます。監視対象がスイッチ、ルーター、サーバーへ増えても、会話の形式は変わりません。</figcaption></figure>
+<p>この形には二つの登場人物しかいません。「情報を集めて管理する側」と「機器上で質問に答える側」です。まずこの主語を見失わなければ、後で出てくる操作も理解しやすくなります。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　機器側に窓口を置く最大の利点は何でしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p>監視サーバーが、メーカーごとの内部実装を直接扱わなくてよいことです。しかし「受信量」とだけ質問しても、複数のポートや似た値のうち、どれを指すか曖昧です。次は値の指定方法が必要になります。</p></div></details></div>
+
+<h2>STEP 3：値に共通の住所を付ける</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>機器の中は外から見えない</li><li class="done"><span class="n">STEP 2 ✓</span>窓口を一つにする</li><li class="now"><span class="n">STEP 3</span>値に共通の住所を付ける</li><li><span class="n">STEP 4</span>聞く方法と知らせる方法</li><li><span class="n">STEP 5</span>SNMP として組み立てる</li></ol></nav>
+<p>「ポートの受信量を教えて」では、どのポートか分かりません。「機器の名前」も、メーカーが違えば表記が違うかもしれません。異なる機器を同じ方法で監視するには、値の意味と場所を共通の規則で表す必要があります。</p>
+<p>そこで値を木構造に整理し、枝を数字でたどれるようにします。図書館で「技術 → ネットワーク → 監視」と棚を絞るのと同じです。末端の数字列が、その値を一意に指す住所になります。</p>
+<figure><svg viewBox="0 0 780 410" role="img" aria-labelledby="s3t"><title id="s3t">管理情報を整理する木構造と数値の住所</title>
+<g stroke="var(--wire)" stroke-width="2" fill="none"><path d="M390 65V105M390 105L215 145M390 105L565 145M215 195V235M215 235L105 275M215 235L325 275M565 195V275M565 325V360"/></g>
+<g font-family="system-ui,sans-serif" text-anchor="middle"><rect x="320" y="25" width="140" height="55" rx="10" fill="var(--c1)"/><text x="390" y="59" fill="var(--on)" font-weight="700">root</text><rect x="145" y="145" width="140" height="52" rx="9" fill="var(--lane)" stroke="var(--c4)"/><text x="215" y="177" fill="var(--ink)">標準の枝</text><rect x="495" y="145" width="140" height="52" rx="9" fill="var(--lane)" stroke="var(--c2)"/><text x="565" y="177" fill="var(--ink)">企業固有の枝</text><rect x="35" y="275" width="140" height="52" rx="9" fill="var(--card)" stroke="var(--c3)"/><text x="105" y="307" fill="var(--ink)">機器名</text><rect x="255" y="275" width="140" height="52" rx="9" fill="var(--card)" stroke="var(--c3)"/><text x="325" y="307" fill="var(--ink)">稼働時間</text><rect x="495" y="275" width="140" height="52" rx="9" fill="var(--card)" stroke="var(--c2)"/><text x="565" y="307" fill="var(--ink)">独自センサー</text><rect x="470" y="360" width="190" height="42" rx="8" fill="var(--warn-bg)" stroke="var(--warn-line)"/><text x="565" y="387" fill="var(--ink)">数字列で一意に指定</text></g></svg><figcaption>人は名前で意味を読み、通信では数字列で対象を指定します。実際の木はさらに深く、機器の各インターフェースなどは末尾の番号で区別します。</figcaption></figure>
+<p>ここでは二つを分けます。<strong>何の値があり、型や意味が何かを定義する設計図</strong>と、<strong>その木の中で一つの値を指す数字の住所</strong>です。設計図があるから、監視側と機器側が同じ意味を共有できます。</p>
+<div class="note"><strong>数字列を暗記する必要はありません。</strong> 実際の監視では、機器の文書や定義ファイルで調べます。初学者が押さえるのは「値が木構造で整理され、住所で一意に指定できる」という仕組みです。</div>
+<div class="quiz"><p class="q"><b>確認問題</b>　値に数字の住所を付けても、まだ解決していないことは何でしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p>監視側がいつ質問するか、異常を機器側からどう知らせるかです。値の「場所」は決まりましたが、値を運ぶ「会話の方法」はまだ決まっていません。</p></div></details></div>
+
+<h2>STEP 4：聞く方法と知らせる方法</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>機器の中は外から見えない</li><li class="done"><span class="n">STEP 2 ✓</span>窓口を一つにする</li><li class="done"><span class="n">STEP 3 ✓</span>値に共通の住所を付ける</li><li class="now"><span class="n">STEP 4</span>聞く方法と知らせる方法</li><li><span class="n">STEP 5</span>SNMP として組み立てる</li></ol></nav>
+<p>値を集める方法は、大きく二つあります。監視側から定期的に聞く方法と、機器側から出来事を知らせる方法です。どちらか一方では十分ではありません。</p>
+<figure><svg viewBox="0 0 780 410" role="img" aria-labelledby="s4t"><title id="s4t">定期的な問い合わせと機器からの通知</title><defs><marker id="a4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--c1)"/></marker><marker id="b4" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--c2)"/></marker></defs>
+<text x="30" y="35" fill="var(--ink)" font-weight="700">A：定期的に聞く</text><rect x="35" y="70" width="145" height="65" rx="10" fill="var(--lane)" stroke="var(--c1)"/><text x="108" y="108" text-anchor="middle" fill="var(--ink)">監視側</text><rect x="600" y="70" width="145" height="65" rx="10" fill="var(--card)" stroke="var(--c4)"/><text x="672" y="108" text-anchor="middle" fill="var(--ink)">機器側</text><g stroke="var(--c1)" stroke-width="2" marker-end="url(#a4)"><line x1="185" y1="82" x2="585" y2="82"/><line x1="585" y1="105" x2="195" y2="105"/><line x1="185" y1="128" x2="585" y2="128"/></g><text x="385" y="68" text-anchor="middle" fill="var(--c1)">質問 → 応答 → 次の質問</text>
+<line x1="25" y1="180" x2="755" y2="180" stroke="var(--line)"/><text x="30" y="220" fill="var(--ink)" font-weight="700">B：出来事が起きたら知らせる</text><rect x="35" y="255" width="145" height="65" rx="10" fill="var(--lane)" stroke="var(--c1)"/><text x="108" y="293" text-anchor="middle" fill="var(--ink)">監視側</text><rect x="600" y="255" width="145" height="65" rx="10" fill="var(--card)" stroke="var(--c4)"/><text x="672" y="293" text-anchor="middle" fill="var(--ink)">機器側</text><line x1="590" y1="287" x2="190" y2="287" stroke="var(--c2)" stroke-width="4" marker-end="url(#b4)"/><text x="390" y="273" text-anchor="middle" fill="var(--c2)">「ポートが停止した」</text><path d="M645 345l27-15 27 15-27 15z" fill="var(--warn-bg)" stroke="var(--stop)"/><text x="672" y="390" text-anchor="middle" fill="var(--stop)">イベント発生</text></svg><figcaption>定期取得はグラフ化と変化の比較に向き、通知は突発的な出来事を早く知るのに向きます。通知だけでは届かなかった可能性や平常時の推移を補えません。</figcaption></figure>
+<p>定期的に聞けば、時刻ごとの値がそろいます。通信量が徐々に増えた、毎朝だけ CPU が上がる、といった傾向を見つけられます。一方、次の質問までの間にポートが停止して復旧すると、その出来事を見逃すかもしれません。</p>
+<p>機器からの通知なら、出来事をすぐ知らせられます。ただし通知は「異常の瞬間を知らせるベル」であり、状態を継続して測る代わりにはなりません。現場では、定期取得を土台にし、すぐ知る必要がある出来事だけ通知で補います。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　ポート停止の通知を受け取れるなら、定期的な取得は不要でしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>不要にはなりません。</strong> 通知前の通信量やエラー数の推移、通知自体が届かなかった場合を確認できないからです。二つの方法を組み合わせたところで、ようやく全体を一つの仕組みとして組み立てられます。</p></div></details></div>
+
+<h2>STEP 5：SNMP として組み立てる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>機器の中は外から見えない</li><li class="done"><span class="n">STEP 2 ✓</span>窓口を一つにする</li><li class="done"><span class="n">STEP 3 ✓</span>値に共通の住所を付ける</li><li class="done"><span class="n">STEP 4 ✓</span>聞く方法と知らせる方法</li><li class="now"><span class="n">STEP 5</span>SNMP として組み立てる</li></ol></nav>
+<p>ここまでの仕組みに名前を付けます。ネットワーク機器の管理情報をやり取りする共通のプロトコルが <strong>SNMP（Simple Network Management Protocol）</strong> です。STEP 1〜4 の登場人物と道具は、SNMP では次の名前になります。</p>
+<div class="tw"><table><thead><tr><th>ここまでの呼び方</th><th>SNMP の用語</th><th>役割</th></tr></thead><tbody><tr><td>情報を集める監視側</td><td><strong>マネージャ</strong></td><td>質問し、応答や通知を受け取る</td></tr><tr><td>機器側の窓口</td><td><strong>エージェント</strong></td><td>機器上で動き、管理情報を返す</td></tr><tr><td>値の設計図</td><td><strong>MIB</strong></td><td>管理対象の名前・型・意味を定義する</td></tr><tr><td>値の数字の住所</td><td><strong>OID</strong></td><td>MIB の木から一つの対象を指す</td></tr></tbody></table></div>
+<figure><svg viewBox="0 0 800 430" role="img" aria-labelledby="s5t"><title id="s5t">SNMP の全体像</title><defs><marker id="a5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c1)"/></marker><marker id="b5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--c2)"/></marker></defs>
+<rect x="25" y="80" width="210" height="235" rx="16" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="130" y="120" text-anchor="middle" fill="var(--ink)" font-size="20" font-weight="700">SNMP マネージャ</text><text x="130" y="152" text-anchor="middle" fill="var(--muted)">値を収集・保存</text><text x="130" y="178" text-anchor="middle" fill="var(--muted)">グラフ・アラート</text>
+<rect x="555" y="35" width="220" height="330" rx="16" fill="var(--card)" stroke="var(--c4)" stroke-width="2"/><text x="665" y="72" text-anchor="middle" fill="var(--ink)" font-size="20" font-weight="700">管理対象機器</text><rect x="590" y="100" width="150" height="75" rx="10" fill="var(--c4)"/><text x="665" y="132" text-anchor="middle" fill="var(--on)" font-weight="700">SNMP エージェント</text><text x="665" y="157" text-anchor="middle" fill="var(--on)">UDP 161</text><rect x="590" y="225" width="150" height="95" rx="10" fill="var(--lane)" stroke="var(--c3)"/><text x="665" y="258" text-anchor="middle" fill="var(--ink)" font-weight="700">MIB</text><text x="665" y="285" text-anchor="middle" fill="var(--muted)">OID → 値</text><text x="665" y="308" text-anchor="middle" fill="var(--muted)">状態・カウンター</text><line x1="665" y1="176" x2="665" y2="220" stroke="var(--wire)" stroke-width="2"/>
+<line x1="240" y1="120" x2="575" y2="120" stroke="var(--c1)" stroke-width="3" marker-end="url(#a5)"/><text x="405" y="105" text-anchor="middle" fill="var(--c1)">GET：OID の値を要求</text><line x1="575" y1="170" x2="245" y2="170" stroke="var(--c3)" stroke-width="3" marker-end="url(#a5)"/><text x="405" y="198" text-anchor="middle" fill="var(--c3)">Response：値を返す</text><line x1="575" y1="265" x2="245" y2="265" stroke="var(--c2)" stroke-width="4" marker-end="url(#b5)"/><text x="405" y="250" text-anchor="middle" fill="var(--c2)">Trap / Inform：出来事を通知</text><text x="400" y="347" text-anchor="middle" fill="var(--muted)">通知の受信先は通常 UDP 162</text></svg><figcaption><code>SET</code> で値を変更する操作もありますが、初めて構成する監視では読み取り専用から始めるのが安全です。図は理解に必要な主経路だけを示しています。</figcaption></figure>
+<h3>基本の操作</h3>
+<ul><li><strong>GET</strong>：指定した OID の値を一つ取得する</li><li><strong>GETNEXT</strong>：木構造で次に並ぶ OID の値を取得する。順番にたどると一覧を集められる</li><li><strong>GETBULK</strong>：複数の値をまとめて効率よく取得する（SNMPv2 以降）</li><li><strong>Response</strong>：エージェントが要求への結果を返す</li><li><strong>Trap</strong>：エージェントが一方向にイベントを知らせる</li><li><strong>Inform</strong>：受領確認を求める通知。届いたかを送信側で確認できる</li></ul>
+<p>通常、マネージャからエージェントへの要求は UDP 161 番ポートへ送られ、通知はマネージャ側の UDP 162 番ポートで受けます。UDP なので接続を張り続けず軽量ですが、ネットワーク上で失われる可能性があります。だから定期取得では次回の取得や再試行があり、重要な通知では Inform も選択肢になります。</p>
+<figure><svg viewBox="0 0 790 420" role="img" aria-labelledby="s6t"><title id="s6t">SNMP のポーリングと通知の時間軸</title><defs><marker id="a6" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="var(--wire)"/></marker></defs><text x="95" y="40" text-anchor="middle" fill="var(--ink)" font-weight="700">マネージャ</text><text x="690" y="40" text-anchor="middle" fill="var(--ink)" font-weight="700">エージェント</text><line x1="95" y1="60" x2="95" y2="390" stroke="var(--c1)" stroke-width="3"/><line x1="690" y1="60" x2="690" y2="390" stroke="var(--c4)" stroke-width="3"/><g stroke="var(--wire)" stroke-width="2" marker-end="url(#a6)"><line x1="100" y1="95" x2="680" y2="95"/><line x1="685" y1="135" x2="105" y2="135"/><line x1="100" y1="210" x2="680" y2="210"/><line x1="685" y1="250" x2="105" y2="250"/></g><text x="390" y="84" text-anchor="middle" fill="var(--c1)">GET（UDP 161）</text><text x="390" y="125" text-anchor="middle" fill="var(--c3)">Response：受信量 1,204,500</text><text x="390" y="199" text-anchor="middle" fill="var(--c1)">次の GET</text><text x="390" y="240" text-anchor="middle" fill="var(--c3)">Response：受信量 1,604,800</text><circle cx="690" cy="305" r="10" fill="var(--stop)"/><text x="660" y="310" text-anchor="end" fill="var(--stop)">ポート停止</text><line x1="680" y1="330" x2="105" y2="330" stroke="var(--c2)" stroke-width="4" marker-end="url(#a6)"/><text x="390" y="320" text-anchor="middle" fill="var(--c2)">Trap（UDP 162）</text><text x="390" y="375" text-anchor="middle" fill="var(--muted)">時間 ↓</text></svg><figcaption>ポーリング間隔を短くすれば変化を早く捉えられますが、機器とネットワークの負荷も増えます。「何秒なら正解」ではなく、検知したい変化の速さから決めます。</figcaption></figure>
+
+<h3>バージョンは「v3 を選ぶ」が出発点</h3>
+<p>SNMP には主に v1、v2c、v3 があります。v1 と v2c は <strong>community string</strong> という共通文字列でアクセスを制御しますが、その文字列や管理情報を暗号化して守る仕組みがありません。読み取られれば、機器情報の漏えいや不正操作につながります。</p>
+<p>SNMPv3 は、利用者単位の認証、メッセージの改ざん検知、暗号化を扱えます。新しく構成するなら、<strong>認証と暗号化を有効にした SNMPv3</strong> を基本にします。互換性のため v2c が必要なら、監視サーバーからだけ到達できる管理ネットワークや ACL に制限し、初期値・推測しやすい community string を使わず、書き込み権限を与えないようにします。</p>
+<div class="tw"><table><thead><tr><th>版</th><th>アクセスの考え方</th><th>通信の保護</th><th>新規構成での位置づけ</th></tr></thead><tbody><tr><td>v1</td><td>community string</td><td>認証・暗号化なし</td><td>古い機器との互換用途に限定</td></tr><tr><td>v2c</td><td>community string</td><td>認証・暗号化なし</td><td>v3 非対応時だけ、経路を厳しく制限</td></tr><tr><td><strong>v3</strong></td><td>利用者ベース</td><td>認証と暗号化を選べる</td><td><strong>認証＋暗号化を基本にする</strong></td></tr></tbody></table></div>
+<div class="note"><strong>「SNMP を有効化する」こと自体は目的ではありません。</strong> まず「回線逼迫を検知する」「ポート停止を担当者へ通知する」など用途を決めます。その用途に必要な OID、取得間隔、しきい値、通知先だけを設定します。誰も見ない値を大量に集めても、運用は良くなりません。</div>
+<div class="quiz"><p class="q"><b>確認問題</b>　新しい機器を監視するとき、最初に決めるべきなのは「取得できる OID を全部登録すること」でしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>違います。</strong> 先に、何を検知し、誰がどう対応するかを決めます。たとえば「回線使用率が継続して高ければ増強を判断する」という用途なら、対象ポートの通信カウンターを定期取得します。そのうえで SNMPv3 の認証・暗号化と到達元の制限を設定します。</p></div></details></div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+<h3>30 秒版</h3><blockquote><p>SNMP は、ルーターやスイッチなどの状態を離れた監視サーバーから取得するためのプロトコルです。監視する側をマネージャ、機器上で応答する側をエージェントと呼びます。MIB で管理情報を定義し、OID という数字の住所で値を指定します。定期的な GET と、機器からの Trap などを組み合わせて監視します。新規構成では認証と暗号化を使える SNMPv3 が基本です。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>マネージャは通常、UDP 161 番ポートのエージェントへ GET を送り、Response で CPU 使用率やインターフェースのカウンターを受け取ります。これを一定間隔で繰り返すのがポーリングです。ポート停止のような出来事は、エージェントから UDP 162 番ポートへ送る Trap や、受領確認のある Inform で補います。</p><p>MIB は管理できる値の名前・型・意味を表す設計図で、OID はその木構造の一項目を指す住所です。v1 と v2c の community string は通信を暗号化しません。そのため v3 で認証と暗号化を使い、監視サーバー以外から到達できないようにも制限します。集める値は網羅性ではなく、検知後に実行する運用から逆算して選びます。</p></blockquote>
+
+<h2>よくある誤解</h2>
+<h3>「MIB と OID は同じもの」</h3><p>同じではありません。MIB は管理情報の定義をまとめた設計図、OID はその木構造にある一項目を指す住所です。定義と住所の関係です。</p>
+<h3>「Trap があればポーリングはいらない」</h3><p>Trap は出来事の通知に向きますが、平常時からの推移を残せず、届かない可能性もあります。定期取得を土台に、即時性が必要な出来事を通知で補います。</p>
+<h3>「community string はパスワードだから安全」</h3><p>v1 と v2c では通信を暗号化する保護ではありません。文字列を複雑にするだけで終わらせず、v3 の認証・暗号化とネットワーク上の到達制限を使います。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では全体像を優先し、次の話には意図的に踏み込みませんでした。</p><ul><li>実機での SNMPv3 ユーザー、認証・暗号化アルゴリズム、アクセス制御の設定</li><li>64 bit カウンター、カウンターの折り返し、差分から帯域使用率を求める計算</li><li>ベンダー独自 MIB の読み方と MIB ファイルの導入</li><li>監視製品での再試行、タイムアウト、しきい値、アラート抑制の設計</li></ul><p>次は手元の検証環境で、用途を一つだけ決めて進めるのがおすすめです。「特定ポートの受信量を定期取得してグラフにする」なら、マネージャ、エージェント、MIB、OID、GET、Response の関係を一度に確認できます。</p>
+
+<h2>参考</h2>
+<ul><li><a href="https://www.rfc-editor.org/rfc/rfc3411.html">RFC 3411 — An Architecture for Describing Simple Network Management Protocol (SNMP) Management Frameworks</a></li><li><a href="https://www.rfc-editor.org/rfc/rfc3416.html">RFC 3416 — Version 2 of the Protocol Operations for SNMP</a></li><li><a href="https://www.rfc-editor.org/rfc/rfc3414.html">RFC 3414 — User-based Security Model (USM) for SNMPv3</a></li><li><a href="https://www.rfc-editor.org/rfc/rfc3415.html">RFC 3415 — View-based Access Control Model (VACM) for SNMP</a></li><li><a href="https://www.cisa.gov/news-events/alerts/2017/06/15/reducing-risk-snmp-abuse">CISA — Reducing the Risk of SNMP Abuse</a></li></ul>
+</main></body></html>

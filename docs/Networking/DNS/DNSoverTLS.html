@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DNS over TLS</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>DNS over TLS</h1>
+<p class="lede">Web は HTTPS で暗号化した。でもその直前に飛ぶ DNS の問い合わせは平文のまま。「どのサイトを見ようとしているか」は経路上から丸見えだった。</p>
+
+<h2>通信内容は隠せても、行き先は漏れる</h2>
+<p>従来の DNS は UDP 53 番ポートの平文。端末からキャッシュサーバへの問い合わせは、公衆 Wi-Fi の管理者や経路上の第三者から<strong>盗聴も改ざんもし放題</strong>だった。HTTPS でページの中身を守っても、「この端末が <code>example.jp</code> を引いた」という行動履歴は筒抜けになる。</p>
+<p>この<strong>スタブリゾルバ〜キャッシュサーバ間</strong>を TLS で包んだのが DNS over TLS（DoT）。TCP 853 番ポートを使う。</p>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="平文のDNSは経路上から問い合わせ内容が見えるが、DNS over TLSではTLSのトンネルに包まれて見えない">
+<defs>
+<marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c2)"/></marker>
+<marker id="d2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+</defs>
+<text x="30" y="30" font-size="11.5" fill="var(--c2)" font-weight="600">従来の DNS（UDP 53・平文）</text>
+<rect x="30" y="44" width="100" height="36" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="80" y="66" font-size="11" fill="var(--ink)" text-anchor="middle">端末</text>
+<line x1="130" y1="62" x2="546" y2="62" stroke="var(--c2)" stroke-width="1.4" marker-end="url(#d1)"/>
+<text x="338" y="52" font-size="10" fill="var(--ink)" text-anchor="middle">「example.jp の IP は？」</text>
+<rect x="550" y="44" width="120" height="36" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="610" y="66" font-size="11" fill="var(--ink)" text-anchor="middle">キャッシュサーバ</text>
+<g transform="translate(322,74)">
+<circle cx="16" cy="14" r="9" fill="none" stroke="var(--stop)" stroke-width="1.6"/>
+<circle cx="16" cy="14" r="3.4" fill="var(--stop)"/>
+<text x="16" y="42" font-size="10" fill="var(--stop)" text-anchor="middle">経路上の第三者に見える・書き換えられる</text>
+</g>
+<text x="30" y="152" font-size="11.5" fill="var(--c1)" font-weight="600">DNS over TLS（TCP 853）</text>
+<rect x="30" y="166" width="100" height="36" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="80" y="188" font-size="11" fill="var(--ink)" text-anchor="middle">端末</text>
+<rect x="140" y="160" width="400" height="48" rx="24" fill="var(--c1)" opacity=".1"/>
+<rect x="140" y="160" width="400" height="48" rx="24" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="340" y="152" font-size="10" fill="var(--c1)" text-anchor="middle">TLS のトンネル</text>
+<line x1="160" y1="184" x2="526" y2="184" stroke="var(--c1)" stroke-width="1.4" marker-end="url(#d2)"/>
+<rect x="550" y="166" width="120" height="36" rx="6" fill="var(--card)" stroke="var(--ink)" stroke-width="1.5"/>
+<text x="610" y="188" font-size="11" fill="var(--ink)" text-anchor="middle">キャッシュサーバ</text>
+<text x="340" y="234" font-size="10" fill="var(--muted)" text-anchor="middle">問い合わせ内容は暗号化され、相手のサーバも証明書で本物と確認できる</text>
+</svg>
+<figcaption>守られるのは端末〜キャッシュサーバの区間。キャッシュサーバから先（権威サーバへの反復問い合わせ）は別の話で、そちらの応答の真正性は <a href="../../Cyber Attacks/19_カミンスキーアタックとDNSSEC.html">DNSSEC</a> の担当。</figcaption>
+</figure>
+
+<p>同じ目的で、DNS を HTTPS（443 番）に載せる DNS over HTTPS（DoH）もある。DoT は専用ポートなのでネットワーク管理者から「DNS の暗号化通信」と識別できるのに対し、DoH は普通の Web 通信に紛れる、という運用上の違いがある。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc7858">RFC 7858 — Specification for DNS over Transport Layer Security (TLS)</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8484">RFC 8484 — DNS Queries over HTTPS (DoH)</a></li>
+</ul>
+
+</main>
+</body>
+</html>

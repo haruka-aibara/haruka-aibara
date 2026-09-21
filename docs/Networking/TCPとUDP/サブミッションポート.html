@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>サブミッションポート</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>サブミッションポート</h1>
+<p class="lede">メール送信のポートが 25 ではなく 587 になっている理由。迷惑メール対策として導入された分離。</p>
+
+<h2>25 番は「利用者の送信」と「サーバ間の転送」を兼ねていた</h2>
+<p>従来、メールの送信は SMTP の 25 番ポートで行われていた。問題は、この 1 つのポートが 2 つの役割を兼ねていたこと。</p>
+<ul>
+<li><strong>利用者のメールソフトが自社のメールサーバへ送る</strong>（送信）</li>
+<li><strong>メールサーバどうしが配送する</strong>（転送）</li>
+</ul>
+<p>後者は世界中の見知らぬサーバから受け付ける必要があるので、認証を必須にできない。すると前者にも認証を課しづらく、<strong>誰でも 25 番に接続してメールを送り出せる状態</strong>が残った。ウイルスに感染した PC が直接 25 番で大量の迷惑メールを送る、という事態が多発した。</p>
+<p>そこで<strong>「利用者からの送信」専用のポートを分け、認証を必須にした</strong>。これが <strong>587 番＝サブミッションポート</strong>。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="サブミッションポート587と転送用25番の役割分離、およびOP25Bによる直接送信の遮断">
+<defs>
+<marker id="ua" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c3)"/></marker>
+<marker id="ub" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--stop)"/></marker>
+</defs>
+<text x="20" y="22" font-size="12" fill="var(--ink)" font-weight="600">正規の経路 — 587 で認証してから送る</text>
+<g font-size="10" fill="var(--ink)" text-anchor="middle">
+<rect x="20" y="44" width="120" height="40" rx="6" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="80" y="60">メールソフト</text><text x="80" y="76" font-size="9" fill="var(--muted)">利用者</text>
+<rect x="270" y="44" width="130" height="40" rx="6" fill="var(--c3)" opacity=".2"/>
+<rect x="270" y="44" width="130" height="40" rx="6" fill="none" stroke="var(--c3)" stroke-width="1.6"/>
+<text x="335" y="60">自社メールサーバ</text><text x="335" y="76" font-size="9" fill="var(--muted)">587 で待ち受け</text>
+<rect x="540" y="44" width="130" height="40" rx="6" fill="var(--card)" stroke="var(--line)"/>
+<text x="605" y="60">相手のサーバ</text><text x="605" y="76" font-size="9" fill="var(--muted)">25 で待ち受け</text>
+</g>
+<line x1="144" y1="64" x2="266" y2="64" stroke="var(--c3)" stroke-width="1.7" marker-end="url(#ua)"/>
+<text x="205" y="56" font-size="10" fill="var(--c3)" text-anchor="middle">587 番</text>
+<text x="205" y="102" font-size="9.5" fill="var(--muted)" text-anchor="middle">SMTP-AUTH で</text>
+<text x="205" y="116" font-size="9.5" fill="var(--muted)" text-anchor="middle">ID/パスワード認証が必須</text>
+<line x1="404" y1="64" x2="536" y2="64" stroke="var(--c1)" stroke-width="1.7" marker-end="url(#ua)"/>
+<text x="470" y="56" font-size="10" fill="var(--c1)" text-anchor="middle">25 番</text>
+<text x="470" y="102" font-size="9.5" fill="var(--muted)" text-anchor="middle">サーバ間の転送</text>
+<text x="470" y="116" font-size="9.5" fill="var(--muted)" text-anchor="middle">（認証は課さない）</text>
+
+<line x1="20" y1="142" x2="680" y2="142" stroke="var(--line)"/>
+<text x="20" y="166" font-size="12" fill="var(--ink)" font-weight="600">迷惑メール送信の経路 — OP25B で塞ぐ</text>
+<g font-size="10" fill="var(--ink)" text-anchor="middle">
+<rect x="20" y="188" width="120" height="40" rx="6" fill="var(--stop)" opacity=".16"/>
+<rect x="20" y="188" width="120" height="40" rx="6" fill="none" stroke="var(--stop)" stroke-width="1.5"/>
+<text x="80" y="204">感染した PC</text><text x="80" y="220" font-size="9" fill="var(--muted)">大量送信を試みる</text>
+<rect x="270" y="188" width="130" height="40" rx="6" fill="var(--c4)" opacity=".2"/>
+<rect x="270" y="188" width="130" height="40" rx="6" fill="none" stroke="var(--c4)" stroke-width="1.6"/>
+<text x="335" y="204">ISP のルータ</text><text x="335" y="220" font-size="9" fill="var(--c4)">OP25B</text>
+<rect x="540" y="188" width="130" height="40" rx="6" fill="var(--lane)"/>
+<text x="605" y="212" fill="var(--muted)">外部サーバ</text>
+</g>
+<line x1="144" y1="208" x2="266" y2="208" stroke="var(--stop)" stroke-width="1.7" marker-end="url(#ub)"/>
+<text x="205" y="200" font-size="10" fill="var(--stop)" text-anchor="middle">25 番で直接</text>
+<line x1="404" y1="208" x2="490" y2="208" stroke="var(--stop)" stroke-width="1.7" stroke-dasharray="5 4"/>
+<circle cx="510" cy="208" r="12" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="1.6"/>
+<text x="510" y="212" font-size="11" fill="var(--stop)" text-anchor="middle">✕</text>
+<text x="470" y="242" font-size="10" fill="var(--stop)" text-anchor="middle">遮断</text>
+<text x="350" y="272" font-size="10.5" fill="var(--muted)" text-anchor="middle">OP25B（Outbound Port 25 Blocking）＝ ISP が家庭・企業回線からの外向き 25 番を止める仕組み</text>
+<text x="350" y="292" font-size="10.5" fill="var(--muted)" text-anchor="middle">正規利用者は 587 の認証経由で送れるので影響を受けない</text>
+</svg>
+<figcaption>「メールが急に送れなくなった」の原因がこれであることは多い。自前のサーバやアプリから直接 25 番で送ろうとすると ISP に塞がれる。587 と認証情報を使う設定に変える。</figcaption>
+</figure>
+
+<h2>587 と 465 の使い分け</h2>
+<table>
+<tr><th>ポート</th><th>用途</th><th>暗号化</th></tr>
+<tr><td>25</td><td>サーバ間の転送</td><td>STARTTLS（任意）</td></tr>
+<tr><td>587</td><td>利用者からの送信（サブミッション）</td><td>接続後に STARTTLS で暗号化</td></tr>
+<tr><td>465</td><td>同上</td><td>最初から TLS（<a href="../メール/SMTPS.html">SMTPS</a>）</td></tr>
+</table>
+<p>587 は「平文で接続してから暗号化に切り替える」方式なので、切り替えを省略される余地がある。最初から暗号化する 465 を使うほうが確実で、現在は 465 が推奨される場面が増えている。</p>
+
+<div class="note">
+<p><strong>提案者としての言い換え：</strong>「587 で SMTP-AUTH を必須にする」は、ビジネス側には「うちのメールサーバを他人に勝手に使われて、迷惑メールの発信元として社名がブラックリストに載る事態を防ぐ」と説明する。実際にブラックリスト入りすると、取引先にメールが届かなくなる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc6409">RFC 6409 — Message Submission for Mail</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8314">RFC 8314 — Cleartext Considered Obsolete: Use of TLS for Email</a></li>
+</ul>
+
+</main>
+</body>
+</html>

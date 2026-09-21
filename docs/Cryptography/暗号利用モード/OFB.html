@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OFB モードを図で理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>OFB モード — ブロック暗号をストリーム暗号として使う</h1>
+<p class="lede">パディングも、ブロック境界も要らなくなるかわりに、絶対に守るべき条件が 1 つ増える。</p>
+
+<h2>何が問題なのか</h2>
+<p><a href="CBC.html">CBC</a> はブロック単位で処理するので、データを 16 バイトの倍数に切り揃える必要があり、末尾にパディングが要る。ところが実際には<strong>ブロックが埋まるまで待てない</strong>場面がある。音声や制御信号のように少量のデータが連続して流れてくる通信では、16 バイト貯まるまで送出を待つと遅延になる。「暗号文の長さを平文と同じにしたい」という要件もある。</p>
+<p>これを解くのが <strong>OFB モード</strong>（Output FeedBack、出力フィードバック）。<strong>平文とは無関係に鍵ストリームを先に作っておき、平文とは XOR するだけ</strong>にする。</p>
+
+<figure>
+<svg viewBox="0 0 700 210" role="img" aria-label="OFB モード。IVをAESに通した出力を次の入力に戻して鍵ストリームを作り、平文とXORする">
+  <text x="8" y="14" font-size="12.5" font-weight="600" fill="var(--ink)">鍵ストリームは平文を見ずに作られる</text>
+
+  <rect x="8" y="34" width="66" height="28" rx="4" fill="var(--c2)"/>
+  <text x="41" y="53" font-size="11" fill="var(--on)" text-anchor="middle">IV</text>
+  <path d="M74 48 L104 48" fill="none" stroke="var(--muted)" stroke-width="1.5" marker-end="url(#o1)"/>
+
+  <g font-size="11">
+    <rect x="106" y="34" width="106" height="28" rx="5" fill="var(--c4)"/><text x="159" y="53" fill="var(--on)" text-anchor="middle">AES 暗号化</text>
+    <rect x="296" y="34" width="106" height="28" rx="5" fill="var(--c4)"/><text x="349" y="53" fill="var(--on)" text-anchor="middle">AES 暗号化</text>
+    <rect x="486" y="34" width="106" height="28" rx="5" fill="var(--c4)"/><text x="539" y="53" fill="var(--on)" text-anchor="middle">AES 暗号化</text>
+  </g>
+  <path d="M212 48 L294 48" fill="none" stroke="var(--c2)" stroke-width="1.8" marker-end="url(#o2)"/>
+  <path d="M402 48 L484 48" fill="none" stroke="var(--c2)" stroke-width="1.8" marker-end="url(#o2)"/>
+  <path d="M592 48 L640 48" fill="none" stroke="var(--c2)" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#o2)"/>
+  <text x="238" y="40" font-size="10" fill="var(--c2)">出力を戻す</text>
+
+  <g fill="none" stroke="var(--muted)" stroke-width="1.5">
+    <path d="M159 62 L159 92" marker-end="url(#o1)"/>
+    <path d="M349 62 L349 92" marker-end="url(#o1)"/>
+    <path d="M539 62 L539 92" marker-end="url(#o1)"/>
+  </g>
+  <g font-size="10.5" fill="var(--muted)">
+    <text x="166" y="82">鍵ストリーム1</text><text x="356" y="82">鍵ストリーム2</text><text x="546" y="82">鍵ストリーム3</text>
+  </g>
+
+  <g>
+    <circle cx="159" cy="106" r="13" fill="none" stroke="var(--ink)" stroke-width="1.5"/><text x="159" y="111" font-size="14" fill="var(--ink)" text-anchor="middle">⊕</text>
+    <circle cx="349" cy="106" r="13" fill="none" stroke="var(--ink)" stroke-width="1.5"/><text x="349" y="111" font-size="14" fill="var(--ink)" text-anchor="middle">⊕</text>
+    <circle cx="539" cy="106" r="13" fill="none" stroke="var(--ink)" stroke-width="1.5"/><text x="539" y="111" font-size="14" fill="var(--ink)" text-anchor="middle">⊕</text>
+  </g>
+  <g font-size="11">
+    <rect x="30" y="93" width="100" height="26" rx="4" fill="var(--c1)"/><text x="80" y="111" fill="var(--on)" text-anchor="middle">平文1</text>
+    <rect x="220" y="93" width="100" height="26" rx="4" fill="var(--c1)"/><text x="270" y="111" fill="var(--on)" text-anchor="middle">平文2</text>
+    <rect x="410" y="93" width="100" height="26" rx="4" fill="var(--c1)"/><text x="460" y="111" fill="var(--on)" text-anchor="middle">平文3</text>
+  </g>
+  <g fill="none" stroke="var(--muted)" stroke-width="1.5">
+    <path d="M130 106 L146 106" marker-end="url(#o1)"/>
+    <path d="M320 106 L336 106" marker-end="url(#o1)"/>
+    <path d="M510 106 L526 106" marker-end="url(#o1)"/>
+    <path d="M159 119 L159 138" marker-end="url(#o1)"/>
+    <path d="M349 119 L349 138" marker-end="url(#o1)"/>
+    <path d="M539 119 L539 138" marker-end="url(#o1)"/>
+  </g>
+  <g font-size="11">
+    <rect x="109" y="140" width="100" height="26" rx="4" fill="var(--c3)"/><text x="159" y="158" fill="var(--on)" text-anchor="middle">暗号文1</text>
+    <rect x="299" y="140" width="100" height="26" rx="4" fill="var(--c3)"/><text x="349" y="158" fill="var(--on)" text-anchor="middle">暗号文2</text>
+    <rect x="489" y="140" width="100" height="26" rx="4" fill="var(--c3)"/><text x="539" y="158" fill="var(--on)" text-anchor="middle">暗号文3</text>
+  </g>
+
+  <text x="8" y="190" font-size="11" fill="var(--muted)">復号もまったく同じ図。同じ鍵ストリームを作って暗号文と XOR すれば平文に戻る（XOR を 2 回かけると元に戻る）。</text>
+  <text x="8" y="206" font-size="11" fill="var(--muted)">つまり暗号化と復号で処理が同一で、ブロック暗号の「復号」機能を一切使わない。</text>
+  <defs>
+    <marker id="o1" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--muted)"/></marker>
+    <marker id="o2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0 0 L7 3.5 L0 7 z" fill="var(--c2)"/></marker>
+  </defs>
+</svg>
+<figcaption>鍵ストリームは平文に依存しないので、通信が始まる前に先に生成しておける。必要なぶんだけ使って XOR するため、平文が 3 バイトなら暗号文も 3 バイト。パディングが不要になるのはこのため。</figcaption>
+</figure>
+
+<h2>絶対に守る条件：同じ鍵と IV の組み合わせを二度使わない</h2>
+<p>鍵ストリームは鍵と IV だけで決まる。ということは、<strong>同じ鍵・同じ IV で 2 つのデータを暗号化すると、まったく同じ鍵ストリームで XOR される</strong>。この 2 つの暗号文を XOR すると鍵ストリームが打ち消し合い、<strong>平文どうしの XOR がそのまま残る</strong>。片方の平文の一部が推測できれば、もう片方のその部分が読める。</p>
+<p>CBC の IV 使い回しは「先頭ブロックが同一かどうか漏れる」程度で済むが、OFB の場合は<strong>全体が壊れる</strong>。重さが違う。</p>
+
+<div class="note">
+<p><strong>ビット単位で狙って書き換えられる</strong></p>
+<p>暗号文の 1 ビットを反転させると、復号後の平文の同じ位置がそのまま 1 ビット反転する。<strong>攻撃者は平文を知らなくても、狙った位置の値を意図どおりに変えられる</strong>（金額の桁、フラグの 0/1 など）。ストリーム的に XOR するモードに共通する性質で、改ざん検知を別に用意しないと成立してしまう。</p>
+</div>
+
+<h2>いまから選ぶなら CTR、あるいは GCM</h2>
+<p>OFB は「前の出力を次の入力に戻す」ので、鍵ストリームを<strong>先頭から順にしか作れない</strong>。ファイルの途中だけ復号したい、といった用途に向かない。同じ「鍵ストリームを作って XOR する」方式でも、入力をカウンタの連番にする <strong>CTR モード</strong>なら任意の位置の鍵ストリームを単独で計算でき、並列化もできる。さらに改ざん検知を統合したのが <strong>GCM</strong>。OFB を知っておく価値は、CTR や GCM が何をしているかの土台になる点と、既存の古い機器の設定で見かけたときに読める点にある。</p>
+
+<p>モード全体の位置づけは <a href="ブロック暗号と暗号利用モード.html">ブロック暗号と暗号利用モード</a> を参照。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/38/a/final">NIST SP 800-38A - Recommendation for Block Cipher Modes of Operation</a></li>
+<li><a href="https://csrc.nist.gov/pubs/sp/800/38/d/final">NIST SP 800-38D - Galois/Counter Mode (GCM) and GMAC</a></li>
+<li><a href="https://www.cryptrec.go.jp/list.html">CRYPTREC暗号リスト</a></li>
+</ul>
+
+</main>
+</body>
+</html>

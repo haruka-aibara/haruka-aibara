@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SMTPS</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>SMTPS</h1>
+<p class="lede">認証を付けても、通信が平文のままならパスワードも本文も盗聴できる。SMTP を TLS で包む話。</p>
+
+<h2>最初から包むか、途中から包むか</h2>
+<p><a href="SMTP-AUTH.html">SMTP-AUTH</a> で本人確認はできたが、通信自体は平文なので、経路上では認証情報もメール本文も丸見えのまま。これを TLS で暗号化する方法が 2 系統ある。</p>
+<ul>
+<li><strong>SMTPS（465 番）</strong> — 接続した瞬間から TLS。暗号化してから SMTP を始める</li>
+<li><strong>STARTTLS（587 番）</strong> — まず平文の SMTP で接続し、<code>STARTTLS</code> コマンドで途中から TLS に切り替える</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 250" role="img" aria-label="SMTPSは接続時から全体がTLSで包まれ、STARTTLSは平文で始まり途中からTLSに切り替わる">
+<defs>
+<marker id="t1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="var(--c1)"/></marker>
+</defs>
+<text x="30" y="30" font-size="11.5" fill="var(--c1)" font-weight="600">SMTPS（465 番）：最初から TLS</text>
+<rect x="30" y="44" width="640" height="44" rx="22" fill="var(--c1)" opacity=".1"/>
+<rect x="30" y="44" width="640" height="44" rx="22" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="350" y="70" font-size="10.5" fill="var(--ink)" text-anchor="middle">接続 → TLS ハンドシェイク → 認証もメール本文もすべて暗号化の中</text>
+<text x="30" y="140" font-size="11.5" fill="var(--c2)" font-weight="600">STARTTLS（587 番）：平文で始めて途中から TLS</text>
+<rect x="30" y="154" width="240" height="44" rx="8" fill="var(--lane)"/>
+<text x="150" y="174" font-size="10.5" fill="var(--ink)" text-anchor="middle">平文の SMTP</text>
+<text x="150" y="190" font-size="9.5" fill="var(--muted)" text-anchor="middle">「TLS 使える？」のやりとりまで</text>
+<line x1="270" y1="176" x2="296" y2="176" stroke="var(--c1)" stroke-width="1.5" marker-end="url(#t1)"/>
+<rect x="300" y="154" width="370" height="44" rx="22" fill="var(--c1)" opacity=".1"/>
+<rect x="300" y="154" width="370" height="44" rx="22" fill="none" stroke="var(--c1)" stroke-width="1.7"/>
+<text x="485" y="174" font-size="10.5" fill="var(--ink)" text-anchor="middle">STARTTLS 以降は暗号化</text>
+<text x="485" y="190" font-size="9.5" fill="var(--muted)" text-anchor="middle">認証・本文はここから先で送る</text>
+<text x="150" y="226" font-size="9.5" fill="var(--stop)" text-anchor="middle">この平文区間で「TLS 使える」という申告を</text>
+<text x="150" y="240" font-size="9.5" fill="var(--stop)" text-anchor="middle">中間者に消されると平文のまま進む恐れ</text>
+</svg>
+<figcaption>歴史的経緯で 2 方式が併存しているが、現在の推奨は「利用者の送信はどちらかで必ず暗号化する」こと。RFC 8314 は 465 番の Implicit TLS を推している。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>暗号化されるのは「区間」であって「メール」ではない。</strong>TLS で守られるのは端末〜サーバ、サーバ〜サーバの通信路ごと。中継サーバ上ではメールは平文に戻る。メールそのものを暗号化したいなら S/MIME や PGP といった別のレイヤの話になる。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc8314">RFC 8314 — Cleartext Considered Obsolete: Use of TLS for Email Submission and Access</a></li>
+<li><a href="https://datatracker.ietf.org/doc/html/rfc3207">RFC 3207 — SMTP Service Extension for Secure SMTP over TLS (STARTTLS)</a></li>
+</ul>
+
+</main>
+</body>
+</html>

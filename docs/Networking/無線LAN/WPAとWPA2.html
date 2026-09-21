@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>WPA / WPA2</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>WPA / WPA2</h1>
+<p class="lede">壊れた WEP の後始末が WPA、作り直した本命が WPA2。</p>
+<h2>急ぎの手当てと、本来の姿</h2>
+<p>WEP が実用的に破られると、置き換えが必要になった。ただし当時の無線チップは RC4 という暗号しか処理できず、<strong>新方式に対応するには機器の買い替えが要る</strong>。そこで 2 段構えになった。</p>
+<ul>
+<li><strong>WPA</strong>：RC4 のまま鍵の使い方だけを直す（TKIP）。ファームウェア更新で既存機器を救うための暫定策</li>
+<li><strong>WPA2</strong>：AES を使う CCMP に作り直した本命。対応ハードウェアが行き渡ってから普及し、長く実質標準だった</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 700 210" role="img" aria-label="WEPからWPA3までの世代を錠前の状態で表した図">
+<g transform="translate(73,20) scale(1.0)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--stop)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--stop)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><g transform="translate(249,20) scale(1.0)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--c2)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--c2)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><g transform="translate(425,20) scale(1.0)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--c1)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--c1)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><g transform="translate(601,20) scale(1.0)"><path d="M5.5 12 V8 a5.5 5.5 0 0 1 11 0 V12" fill="none" stroke="var(--c3)" stroke-width="2.2"/><rect x="1" y="12" width="20" height="16" rx="3" fill="var(--c3)"/><circle cx="11" cy="20" r="2.4" fill="var(--card)"/></g><circle cx="102" cy="24" r="9" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="1.6"/><path d="M98.22 20.22 L105.78 27.78 M105.78 20.22 L98.22 27.78" stroke="var(--stop)" stroke-width="2.4" stroke-linecap="round"/><text x="84" y="74" font-size="12" fill="var(--stop)" text-anchor="middle" font-weight="600">WEP</text><text x="84" y="92" font-size="10.5" fill="var(--muted)" text-anchor="middle">RC4 ＋ 24 ビット IV</text><text x="260" y="74" font-size="12" fill="var(--c2)" text-anchor="middle" font-weight="600">WPA</text><text x="260" y="92" font-size="10.5" fill="var(--muted)" text-anchor="middle">TKIP（RC4 のまま）</text><text x="436" y="74" font-size="12" fill="var(--c1)" text-anchor="middle" font-weight="600">WPA2</text><text x="436" y="92" font-size="10.5" fill="var(--muted)" text-anchor="middle">CCMP（AES）</text><text x="612" y="74" font-size="12" fill="var(--c3)" text-anchor="middle" font-weight="600">WPA3</text><text x="612" y="92" font-size="10.5" fill="var(--muted)" text-anchor="middle">SAE</text><line x1="0" y1="108" x2="700" y2="108" stroke="var(--line)" stroke-width="1.5"/><text x="0" y="124" font-size="10" fill="var(--muted)" text-anchor="start">古い</text><text x="700" y="124" font-size="10" fill="var(--muted)" text-anchor="end">新しい</text><text x="84" y="146" font-size="10.5" fill="var(--stop)" text-anchor="middle">通信を眺めるだけで</text><text x="84" y="162" font-size="10.5" fill="var(--stop)" text-anchor="middle">鍵が割れる</text><text x="260" y="146" font-size="10.5" fill="var(--c2)" text-anchor="middle">旧機器を救う暫定策</text><text x="260" y="162" font-size="10.5" fill="var(--c2)" text-anchor="middle">現在は非推奨</text><text x="436" y="146" font-size="10.5" fill="var(--c1)" text-anchor="middle">長く実質標準</text><text x="436" y="162" font-size="10.5" fill="var(--c1)" text-anchor="middle">合言葉は長くする</text><text x="612" y="146" font-size="10.5" fill="var(--c3)" text-anchor="middle">総当たりが</text><text x="612" y="162" font-size="10.5" fill="var(--c3)" text-anchor="middle">成立しにくい</text><text x="350" y="198" font-size="10.5" fill="var(--muted)" text-anchor="middle">機器の設定に「WPA/WPA2 混在」が残っていることがある。混在は古い側に引きずられる</text>
+</svg>
+<figcaption>WEP と WPA は「設定できてしまうが選んではいけない」項目。既存環境を引き継いだときは実際の設定値を確認する。</figcaption>
+</figure>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://www.wi-fi.org/discover-wi-fi/security">Wi-Fi Alliance — Security</a></li>
+</ul>
+
+</main>
+</body>
+</html>
