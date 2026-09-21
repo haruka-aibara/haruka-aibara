@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cloudflare をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+ol{padding-left:1.4rem}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:34rem}}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+.rmbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.rmbox .ttl{font-size:.86rem;font-weight:600;margin:0 0 .2rem}
+.rmbox .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Cloudflare をゼロから理解する</h1>
+<p class="lede">「ブラウザはどうやってサーバにたどり着くのか」から始めて、5 ステップで「Cloudflare を通すと何が起きるのか」までたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+
+<p>Cloudflare の解説を読んで、途中で分からなくなった経験はありませんか。</p>
+
+<p>それは読解力の問題ではありません。多くの記事は「CDN であり、DNS であり、WAF であり、DDoS 対策であり、エッジでコードも動く」という機能の一覧から始まります。数十のプロダクト名が並び、それぞれの説明は正しいのに、読み終わっても<strong>「結局これは何なのか」「なぜ 1 社がこれを全部やれるのか」</strong>が残ります。土台がひとつ抜けているからです。</p>
+
+<p>そこでこの記事は、あえて遠回りします。<strong>「ブラウザはどうやってサーバにたどり着くのか」というところから始めて、5 ステップで Cloudflare の全体像までたどり着きます。</strong>ゴールは用語を覚えることではなく、Cloudflare を自分の言葉で説明できるようになることです。最後に、そのまま口に出せる説明テンプレートを用意しました。</p>
+
+<div class="rmbox">
+<p class="ttl">この記事の道のり</p>
+<nav class="rm" aria-label="全体のロードマップ">
+<ol>
+<li><span class="n">STEP 1</span>サーバへの行き方</li>
+<li><span class="n">STEP 2</span>間に代理を立てる</li>
+<li><span class="n">STEP 3</span>代理を世界中に置く</li>
+<li><span class="n">STEP 4</span>通り道だから止められる</li>
+<li><span class="n">STEP 5</span>1 リクエストの旅</li>
+</ol>
+</nav>
+<p class="cap">STEP 4 まではすべて「通り道に居るとはどういうことか」の話です。機能の一覧が出てくるのは STEP 5 だけですが、そこに至る 4 ステップがないと、なぜ 1 社がこれだけの機能を持てるのかが分かりません。逆に言えば、STEP 4 まで進めば STEP 5 は部品を順番に並べるだけの作業に感じられるはずです。</p>
+</div>
+
+<h2>STEP 1：ブラウザはどうやってサーバにたどり着くか</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="now"><span class="n">STEP 1</span>サーバへの行き方</li>
+<li><span class="n">STEP 2</span>間に代理を立てる</li>
+<li><span class="n">STEP 3</span>代理を世界中に置く</li>
+<li><span class="n">STEP 4</span>通り道だから止められる</li>
+<li><span class="n">STEP 5</span>1 リクエストの旅</li>
+</ol>
+</nav>
+
+<p>アドレスバーに <code>example.com</code> と入力したとき、ブラウザはまず「その名前のサーバはどの IP アドレスか」を DNS に尋ねます。答えが返ってきたら、その IP に対して直接つなぎにいきます。ここまでが、あらゆる Web アクセスの出発点です。</p>
+
+<figure>
+<svg viewBox="0 0 700 300" role="img" aria-label="DNS で IP を引いてからオリジンサーバに直接接続する流れと、その構成で起きる3つの困りごと">
+  <g font-size="11" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="40" width="110" height="110" rx="8" fill="var(--lane)"/>
+    <text x="75" y="100">ブラウザ</text>
+    <rect x="250" y="35" width="150" height="50" rx="8" fill="var(--lane)"/>
+    <text x="325" y="65">DNS サーバ</text>
+    <rect x="540" y="108" width="150" height="56" rx="8" fill="var(--lane)"/>
+    <text x="615" y="130">オリジンサーバ</text>
+    <text x="615" y="150" font-size="10" fill="var(--muted)">203.0.113.10</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="135" y1="55" x2="242" y2="55"/><polygon points="250,55 240,51 240,59" stroke="none"/>
+    <line x1="245" y1="76" x2="138" y2="76"/><polygon points="130,76 140,72 140,80" stroke="none"/>
+    <line x1="135" y1="135" x2="532" y2="135"/><polygon points="540,135 530,131 530,139" stroke="none"/>
+  </g>
+  <g font-size="10" fill="var(--muted)">
+    <text x="190" y="47" text-anchor="middle">① example.com の IP は？</text>
+    <text x="190" y="92" text-anchor="middle">② 203.0.113.10 です</text>
+    <text x="150" y="127">③ 返ってきた IP へ直接つなぐ（TCP → TLS → HTTP）</text>
+  </g>
+
+  <rect x="10" y="190" width="220" height="100" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="28" y="216" font-size="12" font-weight="600" fill="var(--c1)">遠い人ほど遅い</text>
+  <text x="28" y="240" font-size="10" fill="var(--muted)">地球の裏側からは、往復する</text>
+  <text x="28" y="256" font-size="10" fill="var(--muted)">だけで数百ミリ秒かかる</text>
+
+  <rect x="240" y="190" width="220" height="100" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="258" y="216" font-size="12" font-weight="600" fill="var(--c2)">集中に弱い</text>
+  <text x="258" y="240" font-size="10" fill="var(--muted)">世界中のアクセスが、この</text>
+  <text x="258" y="256" font-size="10" fill="var(--muted)">1 台に全部届く</text>
+
+  <rect x="470" y="190" width="220" height="100" rx="8" fill="var(--card)" stroke="var(--line)"/>
+  <text x="488" y="216" font-size="12" font-weight="600" fill="var(--stop)">直接殴られる</text>
+  <text x="488" y="240" font-size="10" fill="var(--muted)">IP が分かれば、攻撃も同じ道</text>
+  <text x="488" y="256" font-size="10" fill="var(--muted)">でそのまま届く</text>
+</svg>
+<figcaption>3 つの困りごとは別々に見えて、原因はひとつです。<strong>「ブラウザがオリジンサーバに直接つないでいる」</strong>こと。速度も、耐久性も、安全性も、すべて 1 台の性能と回線に依存しています。</figcaption>
+</figure>
+
+<p>ここで注目してほしいのは、ブラウザが接続先を決めた根拠が <strong>DNS の答えただ一点</strong>だということです。ブラウザは「203.0.113.10 が本当に example.com のサーバか」を自分で確かめていません。DNS がそう答えたから、そこへ行っただけです。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　サーバを別のデータセンターに引っ越して IP が変わったとき、世界中のユーザーに何か作業をお願いする必要がありますか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>ありません。</strong>DNS の答えを新しい IP に書き換えれば、それ以降のアクセスは自動的に新しい場所へ向かいます。</p>
+<p>これを裏返すと、もっと面白いことが言えます。<strong>DNS の答えを「自分のサーバ以外の何か」に向けることもできる</strong>ということです。次のステップはここから始まります。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 2：間に代理を立てる</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>サーバへの行き方</li>
+<li class="now"><span class="n">STEP 2</span>間に代理を立てる</li>
+<li><span class="n">STEP 3</span>代理を世界中に置く</li>
+<li><span class="n">STEP 4</span>通り道だから止められる</li>
+<li><span class="n">STEP 5</span>1 リクエストの旅</li>
+</ol>
+</nav>
+
+<p>DNS の答えを、自分のサーバではなく<strong>代理のサーバ</strong>の IP にしてみます。ブラウザは何も知らずにその代理へつなぎます。代理は受け取ったリクエストを自分のサーバ（これを<strong>オリジン</strong>と呼びます）に取りに行き、返ってきたものをブラウザへ返します。これが<strong>リバースプロキシ</strong>で、Cloudflare を使うというのは、この代理を Cloudflare に任せることです。</p>
+
+<figure>
+<svg viewBox="0 0 700 230" role="img" aria-label="プロキシ無効の直接接続と、プロキシ有効時にCloudflareエッジを経由する経路の比較">
+  <text x="20" y="26" font-size="11" font-weight="600" fill="var(--muted)">① プロキシ無効（グレー雲）＝ DNS を引けるだけ</text>
+  <g font-size="11" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="38" width="110" height="46" rx="8" fill="var(--lane)"/>
+    <text x="75" y="66">ブラウザ</text>
+    <rect x="330" y="38" width="150" height="46" rx="8" fill="var(--lane)"/>
+    <text x="405" y="60">オリジン</text>
+    <text x="405" y="76" font-size="9.5" fill="var(--muted)">203.0.113.10</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="135" y1="61" x2="322" y2="61"/><polygon points="330,61 320,57 320,65" stroke="none"/>
+  </g>
+  <text x="228" y="53" font-size="10" fill="var(--muted)" text-anchor="middle">203.0.113.10 へ直行</text>
+
+  <line x1="20" y1="104" x2="680" y2="104" stroke="var(--line)" stroke-width="1"/>
+
+  <text x="20" y="130" font-size="11" font-weight="600" fill="var(--c2)">② プロキシ有効（オレンジ雲）＝ 通信そのものが経由する</text>
+  <g font-size="11" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="142" width="110" height="46" rx="8" fill="var(--lane)"/>
+    <text x="75" y="170">ブラウザ</text>
+    <rect x="240" y="142" width="170" height="46" rx="8" fill="var(--c2)"/>
+    <text x="325" y="164" fill="var(--on)">Cloudflare エッジ</text>
+    <text x="325" y="180" font-size="9.5" fill="var(--on)">104.16.0.1</text>
+    <rect x="520" y="142" width="160" height="46" rx="8" fill="var(--lane)"/>
+    <text x="600" y="164">オリジン</text>
+    <text x="600" y="180" font-size="9.5" fill="var(--muted)">203.0.113.10</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="135" y1="165" x2="232" y2="165"/><polygon points="240,165 230,161 230,169" stroke="none"/>
+    <line x1="415" y1="165" x2="512" y2="165"/><polygon points="520,165 510,161 510,169" stroke="none"/>
+  </g>
+  <g font-size="10" fill="var(--muted)" text-anchor="middle">
+    <text x="183" y="157">104.16.0.1 へ</text>
+    <text x="463" y="157">代理が取りに行く</text>
+  </g>
+  <text x="325" y="212" font-size="10" fill="var(--c2)" text-anchor="middle">ここに「通り道」ができる ── STEP 3 以降はすべてこの箱の中の話</text>
+</svg>
+<figcaption>Cloudflare の DNS 設定画面で入力する値は、①②どちらも <code>203.0.113.10</code> のままです。オレンジ雲に切り替えると、<strong>外部から名前を引いたときの答えだけ</strong>が Cloudflare の IP に差し替わります。オリジン側のサーバには一切手を入れていません。</figcaption>
+</figure>
+
+<p>ここが Cloudflare を理解する上での最大の山場です。<strong>Cloudflare の機能は、ほぼすべて「通信の通り道に居る」ことから導かれます。</strong>サーバにエージェントを入れる必要も、アプリのコードを書き換える必要もありません。DNS の答えを差し替えて経路を変えただけだからです。</p>
+
+<p>逆に言うと、<strong>オレンジ雲にしていないレコードには Cloudflare の機能は何も効きません。</strong>「WAF を有効にしたのにブロックされない」「キャッシュが効かない」の原因の多くはこれです。通っていないものは守れません。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　代理サーバが東京に 1 台だけあるとします。ロンドンのユーザーにとって、この構成は速くなるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>むしろ遅くなります。</strong>ロンドンからわざわざ東京の代理まで行き、そこからオリジンへ、という遠回りが増えるだけです。おまけに、その 1 台が落ちればサイト全体が落ちます。</p>
+<p>代理は「間に挟まるもの」である以上、<strong>ユーザーの近くにいなければ損になる</strong>。次のステップはこの問題を解きます。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 3：代理を世界中に置く</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>サーバへの行き方</li>
+<li class="done"><span class="n">STEP 2 ✓</span>間に代理を立てる</li>
+<li class="now"><span class="n">STEP 3</span>代理を世界中に置く</li>
+<li><span class="n">STEP 4</span>通り道だから止められる</li>
+<li><span class="n">STEP 5</span>1 リクエストの旅</li>
+</ol>
+</nav>
+
+<p>Cloudflare は世界 300 都市以上にサーバ群を置いています。これを<strong>エッジ</strong>と呼びます。ここで問題になるのは「ユーザーをどうやって最寄りのエッジに案内するか」です。DNS で国ごとに違う IP を返す方法もありますが、Cloudflare が使っているのは <strong>Anycast</strong> です。</p>
+
+<p>Anycast は、<strong>同じ IP アドレスを世界中の拠点から同時に広告する</strong>やり方です。ネットワークの経路制御はもともと「その宛先への一番近い道」を選ぶので、結果としてユーザーは自動的に最寄りのエッジに着きます。DNS の答えは世界中どこでも同じ 1 つで構いません。</p>
+
+<figure>
+<svg viewBox="0 0 700 290" role="img" aria-label="世界中のエッジが同じIPを広告し、キャッシュヒット時はエッジで応答、ミス時のみオリジンへ取りに行く構成">
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="10" width="180" height="38" rx="7" fill="var(--lane)"/>
+    <text x="110" y="34">東京のユーザー</text>
+    <rect x="260" y="10" width="180" height="38" rx="7" fill="var(--lane)"/>
+    <text x="350" y="34">ロンドンのユーザー</text>
+    <rect x="500" y="10" width="180" height="38" rx="7" fill="var(--lane)"/>
+    <text x="590" y="34">サンパウロのユーザー</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="110" y1="48" x2="110" y2="76"/><polygon points="110,84 106,74 114,74" stroke="none"/>
+    <line x1="350" y1="48" x2="350" y2="76"/><polygon points="350,84 346,74 354,74" stroke="none"/>
+    <line x1="590" y1="48" x2="590" y2="76"/><polygon points="590,84 586,74 594,74" stroke="none"/>
+  </g>
+  <g font-size="10.5" text-anchor="middle">
+    <rect x="20" y="86" width="180" height="42" rx="7" fill="var(--c2)"/>
+    <text x="110" y="112" fill="var(--on)">東京エッジ</text>
+    <rect x="260" y="86" width="180" height="42" rx="7" fill="var(--c2)"/>
+    <text x="350" y="112" fill="var(--on)">ロンドンエッジ</text>
+    <rect x="500" y="86" width="180" height="42" rx="7" fill="var(--c2)"/>
+    <text x="590" y="112" fill="var(--on)">サンパウロエッジ</text>
+  </g>
+  <text x="350" y="150" font-size="10.5" fill="var(--c2)" text-anchor="middle">どのエッジも同じ IP「104.16.0.1」を広告している（Anycast）</text>
+
+  <g stroke="var(--c3)" stroke-width="1.5" fill="var(--c3)">
+    <path d="M40 128 L40 160 L96 160" fill="none"/><polygon points="104,160 94,156 94,164" stroke="none"/>
+    <path d="M280 128 L280 160 L336 160" fill="none"/><polygon points="344,160 334,156 334,164" stroke="none"/>
+    <path d="M520 128 L520 160 L576 160" fill="none"/><polygon points="584,160 574,156 574,164" stroke="none"/>
+  </g>
+  <g font-size="9.5" fill="var(--c3)">
+    <text x="110" y="177">HIT：ここで返す</text>
+    <text x="350" y="177">HIT：ここで返す</text>
+    <text x="590" y="177">HIT：ここで返す</text>
+  </g>
+
+  <g stroke="var(--muted)" stroke-width="1.3" stroke-dasharray="5 4" fill="none">
+    <path d="M150 128 L150 212 L350 212"/>
+    <path d="M350 128 L350 212"/>
+    <path d="M550 128 L550 212 L350 212"/>
+  </g>
+  <rect x="270" y="222" width="160" height="50" rx="8" fill="var(--lane)"/>
+  <text x="350" y="244" font-size="11" fill="var(--ink)" text-anchor="middle">オリジン</text>
+  <text x="350" y="261" font-size="9.5" fill="var(--muted)" text-anchor="middle">203.0.113.10</text>
+  <polygon points="350,220 346,210 354,210" fill="var(--muted)"/>
+  <text x="20" y="242" font-size="9.5" fill="var(--muted)">キャッシュ MISS の</text>
+  <text x="20" y="258" font-size="9.5" fill="var(--muted)">ときだけ取りに行く</text>
+</svg>
+<figcaption>速くなる理由は 2 つあり、混同されがちです。1 つは<strong>距離</strong>（最寄りのエッジで TLS の往復まで終わる）、もう 1 つは<strong>キャッシュ</strong>（オリジンまで行かない）。MISS でもエッジ〜オリジン間は Cloudflare の網を通るため、公衆インターネットを横断するより安定します。</figcaption>
+</figure>
+
+<p>エッジは、一度オリジンから取ってきたファイルを手元に保存しておきます。これが<strong>キャッシュ</strong>で、いわゆる CDN の正体です。次に誰かが同じファイルを要求したら、オリジンに行かずにその場で返せます。</p>
+
+<p>ただし Cloudflare は既定では <code>.js</code> や <code>.css</code>、画像など<strong>拡張子で判断できる静的ファイルだけ</strong>をキャッシュします。HTML や API のレスポンスは既定ではキャッシュされません。ユーザーごとに中身が違う可能性があるからです。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　「全部キャッシュすれば最速になるのでは？」という発想には何が抜けているでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>ログイン後のページを他人に配ってしまいます。</strong>「A さん向けのマイページ」をキャッシュすると、次に来た B さんにそれが返ります。中身がユーザーごとに変わるものはキャッシュできません。</p>
+<p>つまり、ログインや決済のような<strong>本当に守りたいリクエストほど、キャッシュを素通りしてオリジンに届く</strong>ということです。そこは無防備なのでしょうか。次のステップへ。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 4：通り道だから、止められる</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>サーバへの行き方</li>
+<li class="done"><span class="n">STEP 2 ✓</span>間に代理を立てる</li>
+<li class="done"><span class="n">STEP 3 ✓</span>代理を世界中に置く</li>
+<li class="now"><span class="n">STEP 4</span>通り道だから止められる</li>
+<li><span class="n">STEP 5</span>1 リクエストの旅</li>
+</ol>
+</nav>
+
+<p>通り道に居るということは、<strong>オリジンに届く前に中身を見て、捨てられる</strong>ということです。防御機能はここから出てきます。</p>
+
+<ul>
+<li><strong>DDoS 緩和</strong>：大量のパケットを送りつける攻撃は、世界中のエッジに分散して着弾します。オリジンの細い回線ではなく Cloudflare の巨大な容量で受け止めるため、オリジンには何も届きません</li>
+<li><strong>WAF</strong>：SQL インジェクションや XSS を狙うリクエストを、HTTP の中身を見て判定し、オリジンに渡す前にブロックします</li>
+<li><strong>Bot 対策・レート制限</strong>：同じ IP からログインを連打する、といった<strong>1 本では違法でないが量が異常</strong>な通信を止めます</li>
+</ul>
+
+<p>ここで 1 つ、どうしても避けて通れない話があります。<strong>中身を見るには、暗号を解かなければなりません。</strong>HTTPS の通信は、Cloudflare を挟むと 1 本ではなく 2 区間に分かれます。</p>
+
+<figure>
+<svg viewBox="0 0 700 180" role="img" aria-label="ブラウザとCloudflareの間、Cloudflareとオリジンの間で2区間に分かれるTLS">
+  <g font-size="11" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="46" width="120" height="50" rx="8" fill="var(--lane)"/>
+    <text x="80" y="76">ブラウザ</text>
+    <rect x="275" y="46" width="160" height="50" rx="8" fill="var(--c2)"/>
+    <text x="355" y="76" fill="var(--on)">Cloudflare エッジ</text>
+    <rect x="560" y="46" width="120" height="50" rx="8" fill="var(--lane)"/>
+    <text x="620" y="76">オリジン</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="2.5">
+    <line x1="145" y1="71" x2="270" y2="71"/>
+    <line x1="440" y1="71" x2="555" y2="71"/>
+  </g>
+  <g font-size="10" fill="var(--muted)" text-anchor="middle">
+    <text x="207" y="38">区間 A：TLS</text>
+    <text x="207" y="103">ブラウザの鍵マークはこれ</text>
+    <text x="497" y="38">区間 B：TLS</text>
+    <text x="497" y="103">設定次第で平文にもなる</text>
+  </g>
+  <rect x="245" y="126" width="220" height="42" rx="7" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+  <text x="355" y="143" font-size="10" fill="var(--ink)" text-anchor="middle">ここで一度、平文に戻る</text>
+  <text x="355" y="159" font-size="10" fill="var(--muted)" text-anchor="middle">だから WAF もキャッシュも成立する</text>
+  <line x1="355" y1="100" x2="355" y2="122" stroke="var(--warn-line)" stroke-width="1.3" stroke-dasharray="4 3"/>
+</svg>
+<figcaption>WAF が中身を検査できることと、Cloudflare が通信を復号していることは同じ事実の裏表です。区間 B をどう扱うかを選ぶのが、次の SSL/TLS モードの設定にあたります。</figcaption>
+</figure>
+
+<div class="tw">
+<table>
+<thead><tr><th>モード</th><th>区間 B（Cloudflare → オリジン）</th><th>評価</th></tr></thead>
+<tbody>
+<tr><td>Flexible</td><td>暗号化しない（平文の HTTP）</td><td>使わない。ブラウザには鍵マークが出るのに、後半が平文</td></tr>
+<tr><td>Full</td><td>暗号化するが、証明書を検証しない</td><td>途中で別のサーバにすり替えられても気づけない</td></tr>
+<tr><td>Full (strict)</td><td>暗号化し、証明書も検証する</td><td><strong>これを選ぶ</strong>。オリジンには Cloudflare 発行のオリジン証明書を置けばよい</td></tr>
+</tbody>
+</table>
+</div>
+
+<p>もう 1 つ、構成上どうしても残る穴があります。<strong>攻撃者がオリジンの IP を知ってしまえば、Cloudflare を通さずに直接つなげる</strong>ことです。DNS の答えを差し替えただけで、オリジンは今も公開されたままだからです。</p>
+
+<figure>
+<svg viewBox="0 0 700 220" role="img" aria-label="オリジンIPが判明した場合にCloudflareを迂回して直接攻撃される経路と、その3つの塞ぎ方">
+  <g font-size="10.5" fill="var(--ink)" text-anchor="middle">
+    <rect x="20" y="20" width="130" height="40" rx="7" fill="var(--lane)"/>
+    <text x="85" y="45">正規ユーザー</text>
+    <rect x="250" y="20" width="160" height="40" rx="7" fill="var(--c2)"/>
+    <text x="330" y="45" fill="var(--on)">Cloudflare エッジ</text>
+    <rect x="530" y="52" width="150" height="46" rx="7" fill="var(--lane)"/>
+    <text x="605" y="72">オリジン</text>
+    <text x="605" y="89" font-size="9.5" fill="var(--muted)">203.0.113.10</text>
+    <rect x="20" y="110" width="130" height="40" rx="7" fill="var(--card)" stroke="var(--stop)"/>
+    <text x="85" y="135" fill="var(--stop)">攻撃者</text>
+  </g>
+  <g stroke="var(--c1)" stroke-width="1.5" fill="var(--c1)">
+    <line x1="155" y1="40" x2="242" y2="40"/><polygon points="250,40 240,36 240,44" stroke="none"/>
+    <line x1="415" y1="48" x2="522" y2="60"/><polygon points="530,61 519,56 521,64" stroke="none"/>
+  </g>
+  <g stroke="var(--stop)" stroke-width="1.6" stroke-dasharray="6 4" fill="var(--stop)">
+    <path d="M155 130 L522 92" fill="none"/><polygon points="530,91 519,87 521,95" stroke="none"/>
+  </g>
+  <text x="300" y="127" font-size="10" fill="var(--stop)" text-anchor="middle">IP を知っていれば、通り道を迂回して直接叩ける</text>
+
+  <rect x="20" y="164" width="205" height="46" rx="7" fill="var(--card)" stroke="var(--line)"/>
+  <text x="122" y="182" font-size="10" fill="var(--ink)" text-anchor="middle">① Cloudflare の IP レンジ</text>
+  <text x="122" y="198" font-size="10" fill="var(--muted)" text-anchor="middle">だけを許可する FW 設定</text>
+  <rect x="245" y="164" width="205" height="46" rx="7" fill="var(--card)" stroke="var(--line)"/>
+  <text x="347" y="182" font-size="10" fill="var(--ink)" text-anchor="middle">② Authenticated</text>
+  <text x="347" y="198" font-size="10" fill="var(--muted)" text-anchor="middle">Origin Pulls（相互 TLS）</text>
+  <rect x="470" y="164" width="210" height="46" rx="7" fill="var(--card)" stroke="var(--line)"/>
+  <text x="575" y="182" font-size="10" fill="var(--ink)" text-anchor="middle">③ Cloudflare Tunnel</text>
+  <text x="575" y="198" font-size="10" fill="var(--muted)" text-anchor="middle">受信ポートを全部閉じる</text>
+</svg>
+<figcaption>③ はオリジン側から Cloudflare へ外向きの接続を張る方式で、受信ポートを 1 つも開けずに済みます。①②が「正しい相手だけ通す」なのに対し、③は「そもそも直接つなげる口を無くす」。塞ぎ方の性質が違います。</figcaption>
+</figure>
+
+<div class="note">
+<p><strong>オレンジ雲にしてもオリジン IP は自動では隠れません。</strong>過去の DNS 履歴、メールヘッダ、証明書の透明性ログなどから割れます。Cloudflare を入れた直後にやることは、上の①〜③のいずれかで直接接続を塞ぐことです。ここを放置すると、防御は「迂回できる防御」のままになります。</p>
+</div>
+
+<div class="quiz">
+<p class="q"><b>確認問題</b>　WAF でブロックされるはずのリクエストが、たまたまキャッシュ済みの URL 宛てだったとします。キャッシュから応答が返ってしまうでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p><strong>返りません。</strong>WAF の判定はキャッシュを見るより前に行われるので、ブロックされたリクエストはキャッシュにもオリジンにも到達しません。</p>
+<p>この「どちらが先か」は設定が効く／効かないを左右します。最後のステップで、1 本のリクエストが通る順番をまとめて見ます。</p>
+</div>
+</details>
+</div>
+
+<h2>STEP 5：1 リクエストの旅</h2>
+
+<nav class="rm" aria-label="進捗">
+<ol>
+<li class="done"><span class="n">STEP 1 ✓</span>サーバへの行き方</li>
+<li class="done"><span class="n">STEP 2 ✓</span>間に代理を立てる</li>
+<li class="done"><span class="n">STEP 3 ✓</span>代理を世界中に置く</li>
+<li class="done"><span class="n">STEP 4 ✓</span>通り道だから止められる</li>
+<li class="now"><span class="n">STEP 5</span>1 リクエストの旅</li>
+</ol>
+</nav>
+
+<p>ここまでの部品を、1 本のリクエストが通る順番に並べます。これが Cloudflare の全体像です。</p>
+
+<figure>
+<svg viewBox="0 0 700 330" role="img" aria-label="エッジ到着からオリジンまで、リクエストが通過する段階と各段階で脱落する通信量">
+  <g font-size="11" text-anchor="middle">
+    <rect x="20" y="16" width="290" height="40" rx="7" fill="var(--lane)"/>
+    <text x="165" y="41" fill="var(--ink)">① 最寄りのエッジに到着</text>
+    <rect x="20" y="66" width="290" height="40" rx="7" fill="var(--c1)"/>
+    <text x="165" y="91" fill="var(--on)">② DDoS 緩和（L3 / L4）</text>
+    <rect x="20" y="116" width="290" height="40" rx="7" fill="var(--c1)"/>
+    <text x="165" y="141" fill="var(--on)">③ WAF / Bot / レート制限</text>
+    <rect x="20" y="166" width="290" height="40" rx="7" fill="var(--c3)"/>
+    <text x="165" y="191" fill="var(--on)">④ キャッシュを見る</text>
+    <rect x="20" y="216" width="290" height="40" rx="7" fill="var(--c4)"/>
+    <text x="165" y="241" fill="var(--on)">⑤ Workers（任意）</text>
+    <rect x="20" y="266" width="290" height="44" rx="7" fill="var(--lane)"/>
+    <text x="165" y="293" fill="var(--ink)">⑥ オリジン</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="1.2" fill="var(--muted)">
+    <polygon points="165,64 159,56 171,56"/>
+    <polygon points="165,114 159,106 171,106"/>
+    <polygon points="165,164 159,156 171,156"/>
+    <polygon points="165,214 159,206 171,206"/>
+    <polygon points="165,264 159,256 171,256"/>
+  </g>
+  <g font-size="10" fill="var(--muted)">
+    <text x="330" y="41">同じ IP で世界中から最寄りへ</text>
+    <text x="330" y="85">パケット洪水はここで落ちる。</text>
+    <text x="330" y="99">オリジンの回線は無傷</text>
+    <text x="330" y="135">攻撃リクエストはここで落ちる。</text>
+    <text x="330" y="149">以降には一切進まない</text>
+    <text x="330" y="185">HIT ならここで折り返す。</text>
+    <text x="330" y="199">オリジンには行かない</text>
+    <text x="330" y="241">通り道でコードを動かす</text>
+    <text x="330" y="285">ここまで来るのは、通過した</text>
+    <text x="330" y="299">うちキャッシュできない分だけ</text>
+  </g>
+  <polygon points="646,16 686,16 674,310 658,310" fill="var(--lane)" stroke="var(--line)"/>
+  <text x="666" y="163" font-size="9.5" fill="var(--muted)" text-anchor="middle" transform="rotate(90 666 163)">通過する量</text>
+</svg>
+<figcaption>正確な順序は Cloudflare のドキュメント「Traffic sequence」が一次情報です（参考にリンク）。Workers の中から <code>fetch()</code> でオリジンを呼ぶと、その通信は改めてキャッシュを経由します。「通り道の中でもう一度通り道を通る」形です。</figcaption>
+</figure>
+
+<p>⑤ の <strong>Workers</strong> は、通り道でコードを実行する仕組みです。オリジンに行く前にリダイレクトする、ヘッダを書き換える、A/B テストで振り分ける、といったことがサーバを持たずにできます。さらに、オリジンを一切持たずに Workers だけで API を組むこともできます。</p>
+
+<p>そして Cloudflare の他の製品も、すべてこの図の変形として読めます。社内アプリの前に通り道を置いて認証を挟めば <strong>Zero Trust</strong>（Access）になり、オリジンから外向きに接続を張れば <strong>Tunnel</strong>、通り道に置くファイル置き場が <strong>R2</strong> です。<strong>入口は常に「DNS の答えを差し替えて、通り道になる」の一点</strong>です。</p>
+
+<div class="quiz">
+<p class="q"><b>確認問題（考察）</b>　ある日サイトが表示されなくなりました。オリジンは正常に動いています。DNS のレコードを一時的にグレー雲（プロキシ無効）に戻すと、何が起きて、何が起きなくなるでしょうか。</p>
+<details>
+<summary>答えを見る</summary>
+<div class="ans">
+<p>ブラウザがオリジンに直接つなぐ STEP 1 の状態に戻るので、Cloudflare 側の問題が原因ならサイトは復旧します。切り分けの手段として有効です。</p>
+<p>同時に、<strong>WAF も DDoS 緩和もキャッシュも Workers も全部止まります</strong>。オリジン IP も公開されます。加えて、STEP 4 の①でファイアウォールを Cloudflare の IP だけに絞っていた場合は、今度は誰も到達できません。「通り道を外す」は、速度と防御の両方を同時に外す操作です。</p>
+</div>
+</details>
+</div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+
+<h3>30 秒版</h3>
+<blockquote>
+<p>Cloudflare は、DNS の答えを自分たちの IP に差し替えることで、サイトへの通信を全部いったん自社のネットワークに通す仕組みです。世界 300 都市以上に同じ IP を持つ拠点があり、ユーザーは最寄りに着きます。通り道に居るので、そこでキャッシュを返せば速くなり、攻撃を落とせば守れる。CDN も WAF も DDoS 対策も、全部その応用です。</p>
+</blockquote>
+
+<h3>2 分版（30 秒版に足す分）</h3>
+<blockquote>
+<p>通信は 2 区間に分かれます。ブラウザ〜Cloudflare と、Cloudflare〜オリジンです。中身を検査する以上エッジで一度復号されるので、後半区間の設定は Full (strict)、つまり暗号化と証明書検証の両方を有効にします。</p>
+<p>注意点として、オリジンのサーバ自体は公開されたままなので、IP が知られると通り道を迂回して直接叩かれます。Cloudflare の IP レンジだけを許可するか、Tunnel で受信ポートを閉じるところまでやって、はじめて防御が成立します。</p>
+<p>リクエストが通る順番は、DDoS 緩和 → WAF → キャッシュ → Workers → オリジンです。ブロックされたものはキャッシュにもオリジンにも届かず、キャッシュにヒットしたものはオリジンに届きません。</p>
+</blockquote>
+
+<h2>よくある誤解</h2>
+
+<h3>「Cloudflare = CDN」</h3>
+<p>CDN は結果のひとつです。入口は DNS とリバースプロキシで、キャッシュはその上に乗っている機能にすぎません。この順番で捉えないと、なぜ同じ会社が DNS もゼロトラストもやっているのかが説明できなくなります。</p>
+
+<h3>「オレンジ雲にすればオリジンは隠れる」</h3>
+<p>隠れるのは DNS の答えだけです。サーバは今日も 203.0.113.10 で待ち受けています。過去の DNS 履歴や証明書の透明性ログから IP は割れるので、オリジン側のファイアウォールを閉じるまでが作業です。</p>
+
+<h3>「プロキシを有効にすれば、どんな通信も守られる」</h3>
+<p>オレンジ雲が通すのは HTTP / HTTPS の標準的なポートだけです。SSH や任意の TCP は、そのままでは通りません（Spectrum や Tunnel など別の仕組みを使います）。「Cloudflare を入れたからサーバは安全」ではなく、「Web の通り道が守られた」が正確な言い方です。</p>
+
+<h2>次の一歩</h2>
+
+<p>この記事では意図的に触れなかった話です。</p>
+
+<ul>
+<li><strong>AWS の構成要素との対応</strong>：Route 53（DNS）＋ CloudFront（キャッシュ）＋ AWS WAF ＋ Shield（DDoS）＋ Lambda@Edge（エッジ実行）を 1 つのダッシュボードにまとめたもの、と対応づけると既存知識から入りやすくなります</li>
+<li><strong>Workers / Pages / R2 / D1</strong>：オリジンを持たない構成。STEP 5 の⑤だけでアプリが完結する世界</li>
+<li><strong>Zero Trust（Access / Tunnel / WARP）</strong>：同じ「通り道」の考え方を、社内アプリや端末からの通信に広げたもの</li>
+<li><strong>キャッシュ制御の実務</strong>：Cache Rules、パージ、<code>Cache-Control</code> の解釈、動的コンテンツのキャッシュ設計</li>
+</ul>
+
+<p>前提知識として関連する記事：<a href="../Networking/DNS/DNS.html">DNS</a>、<a href="../TLS/TLSハンドシェイクと証明書検証をゼロから理解する.html">TLS ハンドシェイクと証明書検証をゼロから理解する</a>、<a href="../Network Security/ファイアウォールとDMZ構成をゼロから理解する.html">ファイアウォールと DMZ 構成をゼロから理解する</a>、<a href="../Web Application Security/セッション管理と入力の扱いをゼロから理解する.html">セッション管理と入力の扱いをゼロから理解する</a>。</p>
+
+<h2>参考</h2>
+
+<ul>
+<li><a href="https://developers.cloudflare.com/fundamentals/concepts/how-cloudflare-works/">How Cloudflare works - Cloudflare Docs</a></li>
+<li><a href="https://developers.cloudflare.com/fundamentals/reference/traffic-sequence/">Traffic sequence - Cloudflare Docs</a></li>
+<li><a href="https://developers.cloudflare.com/dns/proxy-status/">Proxy status - Cloudflare Docs</a></li>
+<li><a href="https://developers.cloudflare.com/cache/concepts/default-cache-behavior/">Default cache behavior - Cloudflare Docs</a></li>
+<li><a href="https://developers.cloudflare.com/ssl/origin-configuration/ssl-modes/">SSL/TLS encryption modes - Cloudflare Docs</a></li>
+<li><a href="https://developers.cloudflare.com/ssl/origin-configuration/authenticated-origin-pull/">Authenticated Origin Pulls - Cloudflare Docs</a></li>
+<li><a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/">Cloudflare Tunnel - Cloudflare Docs</a></li>
+<li><a href="https://developers.cloudflare.com/workers/">Cloudflare Workers - Cloudflare Docs</a></li>
+<li><a href="https://www.cloudflare.com/learning/cdn/glossary/anycast-network/">What is Anycast? - Cloudflare Learning Center</a></li>
+<li><a href="https://www.cloudflare.com/ips/">Cloudflare IP Ranges</a></li>
+<li><a href="https://www.cloudflare.com/network/">The Cloudflare global network</a></li>
+</ul>
+
+</main>
+</body>
+</html>
