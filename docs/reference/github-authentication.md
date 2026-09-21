@@ -1,12 +1,12 @@
 # GitHub 認証のしくみ
 
-**この文書を読むとき:** HCP Terraform の workspace 変数を見て「この `GITHUB_APP_PEM_FILE` は何だ」となったとき、GitHub の org に見覚えのない App がいて「これ消していいのか」となったとき、あるいは急に GitHub API が 401 を返しはじめたとき。
+**この文書を読むとき:** HCP Terraform の workspace 変数を見て「この `GITHUB_APP_PEM_FILE` は何だ」となったとき、GitHub の org に見覚えのない App がいて「これ消していいのか」となったとき、急に GitHub API が 401 を返しはじめたとき、あるいは **push しても run が走らなくなった**とき。
 
 **3行:**
 
-- この構成は **GitHub App** で GitHub API を叩く。PAT は使っていない
-- 実際に使われるトークンは**毎 run 発行され、1時間で失効する**
-- 恒久的に存在する秘密は **App の秘密鍵 (PEM) 1個だけ**で、HCP Terraform の workspace 変数に入っている
+- **GitHub API を叩く認証**と、**HCP がリポジトリを見る VCS 連携**は完全に別系統。前者が GitHub App、後者が OAuth App
+- 前者で実際に使われるトークンは**毎 run 発行され、1時間で失効する**
+- 恒久的に存在する秘密は **2 つ**。App の秘密鍵 (PEM) と、VCS 連携が持つ OAuth トークン。どちらも HCP Terraform 側にある
 
 ---
 
@@ -63,24 +63,27 @@ workspace `works`（リポジトリ `haruka-aibara/works`）に設定されて�
 
 **その裏返し:** Terraform はこれらの値を一切認識できない。**UI で鍵が消されても破損しても検知せず、plan はクリーンなまま通る。** 「Terraform 管理下にある」と言っても、値については実質ノータッチである。
 
-### `vcs_repo.github_app_installation_id` は別物
+### `vcs_repo.oauth_token_id` は別系統
 
-`hcp_terraform.tf` にも installation id が出てくるが、**これは上の `GITHUB_APP_INSTALLATION_ID` とは違う値**である。
+`hcp_terraform.tf` にも GitHub との接続が出てくるが、**上の `GITHUB_APP_*` とは無関係**である。層が違う。
 
-| | 値の形 | 用途 |
+| | 何と何を繋ぐか | 実体 |
 |---|---|---|
-| `GITHUB_APP_INSTALLATION_ID`（環境変数） | GitHub の数値 ID | github provider が GitHub API を叩くため |
-| `vcs_repo.github_app_installation_id` | **HCP Terraform 内部の `ghain-...`** | workspace と VCS の接続 |
+| `GITHUB_APP_*`（環境変数） | github provider → GitHub API | 自前の **GitHub App** の秘密鍵 |
+| `vcs_repo.oauth_token_id` | HCP Terraform → リポジトリ（コード取得・webhook） | 自前の **OAuth App** を authorize したユーザーのトークン |
+
+前者が壊れると `github_repository` などが落ち、後者が壊れると **push しても run が走らなくなる**。症状が全く違うので切り分けはしやすい。
 
 後者は手入力していない。データソースから引いている。
 
 ```hcl
-data "tfe_github_app_installation" "this" {
-  name = local.github_owner
+data "tfe_oauth_client" "this" {
+  organization     = local.tfe_organization
+  service_provider = "github"
 }
 ```
 
-App を入れ直して識別子が変わっても、設定の変更が要らないようにするため。ここに GitHub の数値 ID を入れると `GitHub App installation does not exist` で apply が落ちる。
+`vcs_repo` が要求するのは OAuth **トークン**の id（`ot-...`）で、これは OAuth client（`oc-...`）にぶら下がっている。接続を authorize し直すとトークン id が変わるため、値を書き込まずに毎回引いている。
 
 ---
 
@@ -88,7 +91,9 @@ App を入れ直して識別子が変わっても、設定の変更が要らな�
 
 org `haruka-aibara` の Settings → Developer settings → GitHub Apps にある。**消すと Terraform が GitHub を操作できなくなる。**
 
-HCP Terraform の VCS 連携用に HashiCorp が提供する App も別にインストールされている。そちらは VCS 接続専用で、Terraform の provider 認証とは無関係。**2 つある**ことを覚えておく。
+GitHub 側には自前のものが **2 つ**並んでいる。**GitHub App**（このセクションの主題。provider 認証用）と、**OAuth App**（HCP Terraform の VCS 連携用。Developer settings の別タブにある）。用途が全く違うので消し間違えないこと。
+
+HashiCorp が提供する VCS 連携用の App は**使っていない**。理由は §4 を参照。
 
 ### permissions と、それが必要な理由
 
@@ -135,6 +140,24 @@ App に変えても鍵の生成は手作業のままだが、**鍵に有効期�
 
 HCP Terraform の dynamic provider credentials も AWS / GCP / Azure / Vault / Kubernetes / HCP のみが対象で、GitHub provider は対象外である。
 
+### なぜ VCS 連携だけ OAuth なのか
+
+HCP Terraform の VCS 連携には GitHub App 方式と OAuth 方式があり、**この構成は後者を選んでいる**。§4 の他の判断と逆方向（人に紐づく側）に見えるので、理由を残す。
+
+App 方式は「workspace とリポジトリを結び付けてよいか」の判定を、**呼び出した HCP ユーザーの GitHub アカウント**に対して行う。installation は All repositories で入っている＝HCP から見れば org 全部の鍵束なので、呼び出し元を絞る壁がそこしかない、という設計である（公式ドキュメントいわく、App 連携は HCP の組織にすら閉じていない）。
+
+この壁は、**人でない認証情報では原理的に越えられない**。team token も organization token も GitHub アカウントを持たない合成アカウントとして認証されるため、`vcs_repo` を含む workspace の作成・更新が 422 で落ちる。そして tfe provider には user token を発行する手段が無い（`tfe_team_token` はあるが `tfe_user_token` は存在しない）。
+
+つまり App 方式のままでは、**`TFE_TOKEN` の自動ローテーションと、Terraform による workspace 作成が両立しない**。UI で workspace を作る運用に落とすなら App 方式でよいが、この repo はそれを採らない。
+
+OAuth 方式は「組織が特定の 1 ユーザーとして振る舞う」方式で、identity が呼び出し元ではなく**接続オブジェクト側**に載る。だから team token で通る。
+
+代償は正直に書いておく。
+
+- 無期限シークレットが 1 個増える（OAuth App の client secret と、authorize したユーザーのトークン。どちらも HCP 内）
+- 権限が粗くなる（App installation の permission 単位 → OAuth の `repo` スコープ）
+- **authorize したユーザーに依存し続ける**。App 方式では「繋ぐときだけ」人が要ったが、OAuth では「動き続けるのに」人が要る。revoke されたり org を抜けると全 workspace の VCS 連携が止まる
+
 ### なぜ Vault を挟まないのか
 
 Vault には **GitHub の secrets engine が標準で存在しない**。あるのは GitHub auth method で、これは「GitHub の PAT で Vault にログインする」逆方向の機能である。
@@ -179,7 +202,7 @@ provider が持つのは `github_app_installation_repository` 系（インスト
 ### App を入れ直した / 別の org に入れた
 
 - `GITHUB_APP_INSTALLATION_ID`（環境変数）を新しい数値 ID に更新する
-- `vcs_repo` 側はデータソースが解決するので**変更不要**
+- `vcs_repo` 側は VCS 連携（OAuth）の話なので**無関係**。App を入れ直しても影響しない
 
 ### 新しいリポジトリを Terraform で作る
 
@@ -225,7 +248,8 @@ awk '{printf "%s\\n", $0}' your-app.private-key.pem
 | `401` | PEM の 1 行化ミス、または App ID / installation ID の不整合 |
 | `403` | permission 不足。特に **Workflows**（`.github/workflows/` への書き込み時） |
 | `Resource not accessible by integration` | 個人アカウント配下にリポジトリを作ろうとしている |
-| `GitHub App installation does not exist` | `vcs_repo.github_app_installation_id` に GitHub の数値 ID を入れている。`ghain-...` が必要 |
+| push しても run が走らない | VCS 連携側の問題。webhook が消えたか、OAuth App の認可が revoke されている |
+| webhook 作成で apply が落ちる | OAuth App を authorize したユーザーが、その repo に admin 権限を持っていない |
 | plan が返ってこない | 資格情報が無効で匿名アクセスになっている |
 | `Value for undeclared variable` | 宣言を消した変数が workspace に残っている。UI から削除する |
 

@@ -2,12 +2,18 @@
 # HCP Terraform Management
 # =========================================
 
-# vcs_repo.github_app_installation_id wants HCP Terraform's own identifier for
-# the installation (ghain-...), not GitHub's numeric installation id from the
-# settings URL. Look it up by the account the app is installed on, so
-# reinstalling the app does not require editing a stored value.
-data "tfe_github_app_installation" "this" {
-  name = local.github_owner
+# The VCS connection is an organization-level OAuth client, not the GitHub App
+# HCP Terraform offers by default. The App ties "may this caller connect that
+# repository" to a person's GitHub account, which no API token this
+# configuration can issue for itself ever has -- see
+# docs/reference/github-authentication.md for why that ruled the App out.
+#
+# vcs_repo wants the OAuth *token* id (ot-...), which belongs to the client
+# (oc-...). Look it up rather than storing it: re-authorizing the connection
+# mints a new token id, and this way that costs no edit here.
+data "tfe_oauth_client" "this" {
+  organization     = local.tfe_organization
+  service_provider = "github"
 }
 
 # AWS Cost Allocation Tags Workspace
@@ -23,9 +29,9 @@ resource "tfe_workspace" "aws-cost-allocation-tags" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/aws-cost-allocation-tags"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/aws-cost-allocation-tags"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -41,9 +47,9 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/bedrock-slack-ai-agent"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/bedrock-slack-ai-agent"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -59,9 +65,9 @@ resource "tfe_workspace" "bedrock-slack-ai-chatbot" {
   terraform_version             = "~> 1.16.0"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/bedrock-slack-ai-chatbot"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/bedrock-slack-ai-chatbot"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -77,9 +83,9 @@ resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/deploy-hcp-vault-dedicated-with-terraform"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/deploy-hcp-vault-dedicated-with-terraform"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -95,9 +101,9 @@ resource "tfe_workspace" "generate-dev-io-summary" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/generate-dev-io-summary"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/generate-dev-io-summary"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -114,9 +120,9 @@ resource "tfe_workspace" "works" {
   terraform_version             = "~> 1.16.0"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/works"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/works"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -132,9 +138,9 @@ resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/iam-access-analyzer-policy-generate"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/iam-access-analyzer-policy-generate"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -150,9 +156,9 @@ resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/terraform-aws-budget-slack-notifier"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/terraform-aws-budget-slack-notifier"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
 
@@ -169,8 +175,8 @@ resource "tfe_workspace" "google-cloud-hands-on" {
   terraform_version             = "1.16.3"
 
   vcs_repo {
-    identifier                 = "${local.github_owner}/google-cloud-hands-on"
-    github_app_installation_id = local.github_app_installation_id
-    ingress_submodules         = false
+    identifier         = "${local.github_owner}/google-cloud-hands-on"
+    oauth_token_id     = local.oauth_token_id
+    ingress_submodules = false
   }
 }
