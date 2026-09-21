@@ -21,6 +21,20 @@ resource "github_repository" "this" {
 
   topics = var.topics
 
+  # build_type = "legacy" matches the pre-existing setup: a plain
+  # deploy-from-branch site with a .nojekyll file disabling Jekyll
+  # processing, not a GitHub Actions-built Pages deployment.
+  dynamic "pages" {
+    for_each = var.pages != null ? [var.pages] : []
+    content {
+      source {
+        branch = pages.value.branch
+        path   = pages.value.path
+      }
+      build_type = "legacy"
+    }
+  }
+
   dynamic "security_and_analysis" {
     for_each = var.visibility == "public" ? [1] : []
     content {
