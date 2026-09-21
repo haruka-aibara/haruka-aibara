@@ -7,9 +7,9 @@
 # Python repositories that should receive the CI caller workflow.
 # Add a line here to onboard a new repo.
 locals {
-  python_ci_repos = [
-    "bedrock-slack-ai-chatbot",
-  ]
+  python_ci_repos = {
+    "works" = { working_directory = "bedrock-slack-ai-chatbot" }
+  }
 }
 
 # Push the reusable workflow body into the github-actions repo.
@@ -28,14 +28,16 @@ resource "github_repository_file" "reusable_python_ci" {
 
 # Distribute the thin caller workflow to each Python repository.
 resource "github_repository_file" "python_ci_caller" {
-  for_each = toset(local.python_ci_repos)
+  for_each = local.python_ci_repos
 
   depends_on = [github_repository_file.reusable_python_ci]
 
-  repository          = each.key
-  branch              = "main"
-  file                = ".github/workflows/python-ci.yml"
-  content             = file("${path.module}/ci/templates/python-ci-caller.yml.tftpl")
+  repository = each.key
+  branch     = "main"
+  file       = ".github/workflows/python-ci.yml"
+  content = templatefile("${path.module}/ci/templates/python-ci-caller.yml.tftpl", {
+    working_directory = each.value.working_directory
+  })
   commit_message      = "Add Python CI caller workflow (managed by Terraform)"
   overwrite_on_create = true
 

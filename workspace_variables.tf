@@ -49,3 +49,46 @@ resource "tfe_variable" "github_app_pem_file" {
   sensitive    = true
   description  = "GitHub App private key (PEM). Set this value in the UI."
 }
+
+# =========================================
+# bedrock-slack-ai-chatbot module credentials
+# =========================================
+# Same reasoning as the GitHub App variables above: HCP Terraform never
+# returns a sensitive variable's value, so these are declared once with a
+# placeholder and the real value is set in the UI afterward.
+
+resource "tfe_variable" "aws_access_key_id" {
+  workspace_id = tfe_workspace.works.id
+  key          = "AWS_ACCESS_KEY_ID"
+  value        = "set-in-ui"
+  category     = "env"
+  sensitive    = true
+  description  = "AWS credentials for the bedrock-slack-ai-chatbot module. Set this value in the UI."
+}
+
+resource "tfe_variable" "aws_secret_access_key" {
+  workspace_id = tfe_workspace.works.id
+  key          = "AWS_SECRET_ACCESS_KEY"
+  value        = "set-in-ui"
+  category     = "env"
+  sensitive    = true
+  description  = "AWS credentials for the bedrock-slack-ai-chatbot module. Set this value in the UI."
+}
+
+resource "tfe_variable" "bedrock_slack_ai_chatbot_slack_bot_token" {
+  workspace_id = tfe_workspace.works.id
+  key          = "bedrock_slack_ai_chatbot_slack_bot_token"
+  value        = "set-in-ui"
+  category     = "terraform"
+  sensitive    = true
+  description  = "Slack Bot User OAuth Token for the bedrock-slack-ai-chatbot module. Set this value in the UI."
+}
+
+resource "tfe_variable" "bedrock_slack_ai_chatbot_slack_signing_secret" {
+  workspace_id = tfe_workspace.works.id
+  key          = "bedrock_slack_ai_chatbot_slack_signing_secret"
+  value        = "set-in-ui"
+  category     = "terraform"
+  sensitive    = true
+  description  = "Slack Signing Secret for the bedrock-slack-ai-chatbot module. Set this value in the UI."
+}

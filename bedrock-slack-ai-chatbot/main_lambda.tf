@@ -1,0 +1,89 @@
+resource "aws_lambda_layer_version" "slack_ai_chatbot" {
+  filename                 = data.archive_file.lambda_layer_zip.output_path
+  layer_name               = local.project_name
+  compatible_runtimes      = ["python3.13"]
+  compatible_architectures = ["x86_64"]
+  description              = "lambda layer for ${local.project_name}"
+
+  # filename/skip_destroy are write-only on this resource -- AWS never
+  # returns them on read, so importing the existing layer version leaves them
+  # null in state. Without this, the very next plan sees them going from null
+  # to a value and proposes a destroy+recreate of the live layer version.
+  # TODO(state-merge follow-up): remove once the import has landed and is
+  # confirmed stable; needed again for the layer to actually redeploy on a
+  # real code change.
+  lifecycle {
+    ignore_changes = [filename, skip_destroy]
+  }
+}
+
+resource "aws_lambda_function" "slack_ai_chatbot" {
+  filename         = data.archive_file.lambda_code.output_path
+  function_name    = local.project_name
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.13"
+  architectures    = ["x86_64"]
+  source_code_hash = data.archive_file.lambda_code.output_base64sha256
+  role             = aws_iam_role.slack_ai_chatbot.arn
+  layers           = [aws_lambda_layer_version.slack_ai_chatbot.arn]
+  # Slack gives the endpoint 3 seconds, but a timeout set to exactly that means a cold
+  # start is killed mid-enqueue and the question is lost entirely. Finishing the
+  # enqueue is worth more than matching Slack's deadline: retried deliveries are
+  # recognised and dropped by the handler.
+  timeout = 10
+
+  environment {
+    variables = {
+      SLACK_BOT_TOKEN      = var.slack_bot_token
+      SLACK_SIGNING_SECRET = var.slack_signing_secret
+      BACKEND_QUEUE_URL    = aws_sqs_queue.slack_ai_chatbot.url
+    }
+  }
+}
+
+resource "aws_lambda_layer_version" "bedrock" {
+  filename                 = data.archive_file.lambda_bedrock_layer_zip.output_path
+  layer_name               = "${local.project_name}_bedrock-backend"
+  compatible_runtimes      = ["python3.13"]
+  compatible_architectures = ["x86_64"]
+  description              = "lambda layer for ${local.project_name} bedrock backend"
+
+  # See aws_lambda_layer_version.slack_ai_chatbot above for why.
+  lifecycle {
+    ignore_changes = [filename, skip_destroy]
+  }
+}
+
+resource "aws_lambda_function" "slack_bolt_app_bedrock_backend" {
+  filename         = data.archive_file.lambda_bedrock_code.output_path
+  function_name    = "${local.project_name}_bedrock-backend"
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.13"
+  architectures    = ["x86_64"]
+  source_code_hash = data.archive_file.lambda_bedrock_code.output_base64sha256
+  role             = aws_iam_role.bedrock_backend.arn
+  layers           = [aws_lambda_layer_version.bedrock.arn]
+  timeout          = 30
+
+  environment {
+    variables = {
+      SLACK_BOT_TOKEN = var.slack_bot_token
+      # BEDROCK_MODEL_ID         = var.bedrock_model_id
+      BEDROCK_MODEL_ID    = aws_bedrock_inference_profile.claude_opus_4_6.arn
+      BEDROCK_MAX_TOKENS  = var.bedrock_max_tokens
+      DYNAMODB_TABLE_NAME = aws_dynamodb_table.idempotency.name
+    }
+  }
+}
+
+resource "aws_lambda_event_source_mapping" "bedrock" {
+  event_source_arn = aws_sqs_queue.slack_ai_chatbot.arn
+  function_name    = aws_lambda_function.slack_bolt_app_bedrock_backend.arn
+
+  # Bedrock quotas are far lower than Lambda's default concurrency. Without a cap a
+  # burst of mentions fans out, every call is throttled at once, and the retries pile
+  # up behind an already-throttled model.
+  scaling_config {
+    maximum_concurrency = 5
+  }
+}
