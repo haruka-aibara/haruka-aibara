@@ -1,6 +1,6 @@
 dumping everything i learn here.
 
-browse it here: https://haruka-aibara.github.io/haruka-aibara-public/
+browse it here: https://haruka-aibara.github.io/works/
 
 code snippets, tech concepts, random discoveries, and whatever else i pick up.
 

@@ -110,3 +110,12 @@ variable "require_up_to_date_branch" {
   type        = bool
   default     = true
 }
+
+variable "pages" {
+  description = "GitHub Pages configuration. Set to null (default) to leave Pages unmanaged/disabled. path is the folder within the branch to publish, either \"/\" or \"/docs\""
+  type = object({
+    branch = string
+    path   = optional(string, "/")
+  })
+  default = null
+}

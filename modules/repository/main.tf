@@ -42,6 +42,22 @@ resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
 }
 
+# build_type = "legacy" matches the pre-existing setup: a plain
+# deploy-from-branch site with a .nojekyll file disabling Jekyll processing,
+# not a GitHub Actions-built Pages deployment. A separate resource because
+# github_repository's own pages argument is deprecated.
+resource "github_repository_pages" "this" {
+  count = var.pages != null ? 1 : 0
+
+  repository = github_repository.this.name
+  build_type = "legacy"
+
+  source {
+    branch = var.pages.branch
+    path   = var.pages.path
+  }
+}
+
 # Branch protection is only available on private repositories with GitHub Pro or
 # above, so guard on visibility the same way security_and_analysis does. Creating
 # it on a private repository under GitHub Free fails with HTTP 403.

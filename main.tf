@@ -10,25 +10,16 @@ module "haruka-aibara" {
 
   repository_name = "works"
   description     = "Terraform-managed GitHub repositories and HCP Terraform workspaces"
+  homepage_url    = "https://haruka-aibara.github.io/works/"
 
   topics = ["terraform", "github", "iac"]
-}
 
-# =========================================
-# My Learning Repositories
-# =========================================
-
-# Learning notes, published with GitHub Pages.
-# Renamed from "haruka-aibara-public" and transferred to the organization. The
-# old owner/name combination is retired by GitHub, so the Pages URL changed.
-module "haruka-aibara-public" {
-  source = "./modules/repository"
-
-  repository_name = "docs"
-  description     = "A repository for documenting everything I learn"
-  homepage_url    = "https://haruka-aibara.github.io/docs/"
-
-  topics = ["learning", "documentation"]
+  # docs/ absorbed the old standalone "docs" repository, .nojekyll included, so
+  # Pages now publishes straight from this branch/folder instead of a separate repo.
+  pages = {
+    branch = "main"
+    path   = "/docs"
+  }
 }
 
 # =========================================

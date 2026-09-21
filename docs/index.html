@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>haruka-aibara-public — 目次</title>
+<title>works/docs — 目次</title>
 <style>
 :root{
   --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
@@ -63,7 +63,7 @@ footer a{color:var(--accent)}
 <body>
 <main>
 
-<h1>haruka-aibara-public</h1>
+<h1>works/docs</h1>
 <p class="lede">技術的な学びをトピック別にまとめた個人リポジトリの目次。</p>
 
 <input id="q" type="search" placeholder="ファイル名・パスで絞り込む（例: terraform, HTTP, セキュリティ）" autocomplete="off">
@@ -80,7 +80,7 @@ footer a{color:var(--accent)}
 </main>
 
 <script>
-const OWNER = "haruka-aibara", REPO = "haruka-aibara-public", BRANCH = "main";
+const OWNER = "haruka-aibara", REPO = "works", BRANCH = "main", ROOT = "docs/";
 const BLOB  = `https://github.com/${OWNER}/${REPO}/blob/${BRANCH}/`;
 const API   = `https://api.github.com/repos/${OWNER}/${REPO}/git/trees/${BRANCH}?recursive=1`;
 
@@ -88,12 +88,12 @@ const $tree = document.getElementById("tree");
 const $hits = document.getElementById("hits");
 const $meta = document.getElementById("meta");
 const $q    = document.getElementById("q");
-document.getElementById("repolink").href = `https://github.com/${OWNER}/${REPO}`;
+document.getElementById("repolink").href = `https://github.com/${OWNER}/${REPO}/tree/${BRANCH}/${ROOT}`;
 
 let files = [];
 
 const isHtml = p => p.toLowerCase().endsWith(".html");
-const href   = p => isHtml(p) ? encodeURI(p) : BLOB + encodeURI(p);
+const href   = p => isHtml(p) ? encodeURI(p) : BLOB + encodeURI(ROOT + p);
 const label  = p => p.replace(/\.(md|html)$/i, "").replace(/^\d+[_-]/, "");
 const cmp    = (a, b) => a.localeCompare(b, "ja");
 
@@ -180,8 +180,8 @@ function search(query) {
     if (!res.ok) throw new Error(res.status === 403 ? "rate" : `HTTP ${res.status}`);
     const data = await res.json();
     const paths = data.tree
-      .filter(e => e.type === "blob" && /\.(md|html)$/i.test(e.path) && e.path !== "index.html")
-      .map(e => e.path);
+      .filter(e => e.type === "blob" && e.path.startsWith(ROOT) && /\.(md|html)$/i.test(e.path) && e.path !== ROOT + "index.html")
+      .map(e => e.path.slice(ROOT.length));
     files = paths.map(p => ({ name: p.split("/").pop(), path: p }));
     $tree.append(render(buildTree(paths), 0));
     $meta.textContent = `${paths.length} 件`;
