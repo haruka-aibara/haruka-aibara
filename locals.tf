@@ -6,5 +6,7 @@ locals {
   # 移行後は Organization を指す。tfe_organization とは別概念なので分離している。
   github_owner = "haruka-aibara"
 
-  github_app_installation_id = data.tfe_github_app_installation.this.id
+  # HCP Terraform 側の VCS 連携（OAuth client）が持つトークンの id。
+  # vcs_repo.oauth_token_id に使う。GitHub App 認証（GITHUB_APP_*）とは別物。
+  oauth_token_id = data.tfe_oauth_client.this.oauth_token_id
 }
