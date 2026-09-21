@@ -1,0 +1,50 @@
+[project]
+name = "bedrock-slack-ai-chatbot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "boto3>=1.38.8",
+    "boto3-stubs>=1.38.8",
+    "mypy-boto3-bedrock-runtime>=1.38.4",
+    "mypy-boto3-sqs>=1.38.0",
+    "slack-bolt>=1.23.0",
+    "slack-sdk>=3.35.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+# Vendored third-party code shipped as Lambda layers — not ours to lint.
+exclude = [
+    "lambda_layer_bedrock_backend",
+    "lambda_layer_slack_ai_chatbot",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by line-length)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["boto3_utils", "conftest"]
+
+[tool.pytest.ini_options]
+# Only collect our own tests — the vendored layer directories must never be imported.
+testpaths = ["tests"]
+addopts = "-q --strict-markers --strict-config"

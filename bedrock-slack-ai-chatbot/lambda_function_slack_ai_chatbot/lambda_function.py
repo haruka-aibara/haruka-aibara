@@ -1,0 +1,105 @@
+"""
+lambda_function_slack_ai_chatbot/lambda_function.py
+This module handles Slack events and forwards requests to SQS for processing.
+"""
+
+import json
+import logging
+import os
+import re
+import time
+from collections.abc import Callable
+from typing import Any
+
+from slack_bolt import App
+from slack_bolt.adapter.aws_lambda import SlackRequestHandler
+
+from boto3_utils import get_sqs_client
+
+# Configure logger
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Initialize SQS client
+sqs = get_sqs_client()
+
+# Get SQS queue URL from environment variable
+sqs_queue_url = os.environ.get("BACKEND_QUEUE_URL", "")
+
+# Initialize Slack Bolt app
+app = App(
+    token=os.environ.get("SLACK_BOT_TOKEN"),
+    signing_secret=os.environ.get("SLACK_SIGNING_SECRET"),
+    process_before_response=True,
+)
+
+
+@app.event("app_mention")
+def handle_app_mention_events(event: dict[str, Any], body: dict[str, Any], say: Callable) -> None:
+    """
+    Handler for when the Slack app is mentioned.
+    Extracts the message text and sends it to SQS for processing.
+
+    Args:
+        event: The Slack event data containing message information
+        body: The full Slack request payload, which carries the delivery's event_id
+        say: Function to send a message to Slack
+    """
+    # Get channel ID from event
+    channel_id = event["channel"]
+
+    # thread_ts: use existing thread root if in a thread, otherwise this message becomes the root
+    thread_ts = event.get("thread_ts", event["ts"])
+
+    # Remove the app mention pattern from text and strip whitespace
+    input_text = re.sub(r"<@[A-Z0-9]+>", "", event["text"]).strip()
+
+    # Send message to SQS for processing. event_id identifies this delivery so the
+    # backend can recognise a message SQS hands it more than once, and enqueued_at lets
+    # it tell a question worth answering from one that has been sitting in the queue so
+    # long the answer would only confuse the thread.
+    sqs.send_message(
+        QueueUrl=sqs_queue_url,
+        MessageBody=json.dumps(
+            {
+                "channel_id": channel_id,
+                "thread_ts": thread_ts,
+                # This mention's own timestamp, distinct from the thread root. The
+                # backend reads the thread for context and uses it to ignore anything
+                # posted after the question was asked.
+                "message_ts": event["ts"],
+                "input_text": input_text,
+                "event_id": body.get("event_id", ""),
+                "enqueued_at": int(time.time()),
+            }
+        ),
+    )
+
+
+def lambda_handler(event: dict[str, Any], context: Any) -> dict[str, Any]:
+    """
+    AWS Lambda function handler to process API Gateway events.
+
+    Args:
+        event: AWS Lambda event data from API Gateway
+        context: AWS Lambda context object
+
+    Returns:
+        Response from Slack handler with appropriate status code and body
+    """
+    # Slack retries a delivery it believes failed, and its deadline is 3 seconds — short
+    # enough that a cold start alone can trigger one. Running the listener again would
+    # enqueue the same question a second and third time and the bot would answer it
+    # repeatedly, so acknowledge the retry and do no work.
+    headers = event.get("headers") or {}
+    retry_num = headers.get("x-slack-retry-num") or headers.get("X-Slack-Retry-Num")
+    if retry_num:
+        logger.info(
+            "Ignoring Slack retry delivery (attempt %s, reason: %s)",
+            retry_num,
+            headers.get("x-slack-retry-reason") or headers.get("X-Slack-Retry-Reason"),
+        )
+        return {"statusCode": 200, "body": ""}
+
+    slack_handler = SlackRequestHandler(app=app)
+    return slack_handler.handle(event, context)
