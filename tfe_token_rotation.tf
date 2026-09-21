@@ -99,25 +99,21 @@ locals {
   )
 }
 
-# A team of its own, holding what this configuration manages and nothing else --
-# not the organization-wide rights an owners token carries. An organization
-# token cannot be used instead (one at a time, fixed permissions, and it cannot
-# start runs) and a user token belongs to a person.
+# The tokens hang off the owners team, which every organization has. A team of
+# its own -- holding manage_workspaces, manage_vcs_settings and manage_teams and
+# nothing else -- is what this should use, but creating one needs an entitlement
+# this organization does not have: team management starts at the Essentials
+# edition, and a Free organization gets "missing entitlements to create teams".
 #
-# manage_teams is what lets the loop re-create its own token, manage_workspaces
-# covers the workspaces and their variables, and manage_vcs_settings covers
-# data.tfe_oauth_client and the vcs_repo blocks that read it. A resource added
-# here that needs more needs its permission added too, or the next run fails on
-# it.
-resource "tfe_team" "works_manager" {
-  name         = "works-manager"
+# So the narrowing is the part that is given up. An owners team token can do
+# everything an organization owner can, which means the rotation buys an expiry
+# and an unattended handover, not a smaller blast radius. What it still beats is
+# the user token it replaces: that one belongs to a person and never expires.
+#
+# On a paid edition, put the team back and point the tokens at it.
+data "tfe_team" "owners" {
+  name         = "owners"
   organization = local.tfe_organization
-
-  organization_access {
-    manage_workspaces   = true
-    manage_vcs_settings = true
-    manage_teams        = true
-  }
 }
 
 # Team tokens are keyed by description, which is what allows two of them to be
@@ -132,7 +128,7 @@ resource "tfe_team" "works_manager" {
 # authenticating with dies halfway through. With it the new token exists, and
 # TFE_TOKEN points at it, before the old one is revoked at the end of the apply.
 resource "tfe_team_token" "blue" {
-  team_id     = tfe_team.works_manager.id
+  team_id     = data.tfe_team.owners.id
   description = "works blue r${var.blue_serial} exp ${local.blue_expires_at}"
   expired_at  = local.blue_expires_at
 
@@ -142,7 +138,7 @@ resource "tfe_team_token" "blue" {
 }
 
 resource "tfe_team_token" "green" {
-  team_id     = tfe_team.works_manager.id
+  team_id     = data.tfe_team.owners.id
   description = "works green r${var.green_serial} exp ${local.green_expires_at}"
   expired_at  = local.green_expires_at
 
