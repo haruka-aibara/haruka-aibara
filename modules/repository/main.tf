@@ -33,15 +33,8 @@ resource "github_repository" "this" {
     }
   }
 
-  # prevent_destroy is lifted for one apply cycle to let
-  # bedrock-slack-ai-chatbot's github_repository.this be destroyed for real
-  # (see removed_2026.tf and docs/runbooks/bedrock-slack-ai-chatbot-state-merge.md).
-  # This affects every repository this module manages, not just that one, so
-  # restore `prevent_destroy = true` in a prompt follow-up PR right after that
-  # apply succeeds -- don't leave the whole monorepo unprotected longer than
-  # necessary.
   lifecycle {
-    prevent_destroy = false
+    prevent_destroy = true
   }
 }
 
