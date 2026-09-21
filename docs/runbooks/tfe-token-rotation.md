@@ -6,7 +6,7 @@
 
 - workspace `works` が自分の次の `TFE_TOKEN` を発行する。人が触るのは**初回だけ**
 - トークンは blue / green の 2 本を半周期ずらして持ち、run は**使っていない方**だけを作り直す
-- **`TFE_TOKEN` という変数は消えない。** これが変えるのは権限の広さと露出期間であって、静的シークレットが無くなるわけではない（無くなるのは Vault を挟んだときだけ）
+- **`TFE_TOKEN` という変数は消えないし、権限も縮んでいない。** Free では専用 team を作れないので owners team のトークンを回している。得ているのは有効期限と自動更新だけ（§7）
 
 ---
 
@@ -89,15 +89,18 @@ Organization Settings → **Variable sets** → Create variable set
 
 `auto_apply = true` なので merge した時点で apply が走り、1回の apply で
 
-1. team `works-manager` を作る
-2. blue / green のトークンを発行する
-3. **workspace 変数として `TFE_TOKEN` を作り、green のトークンを入れる**
+1. owners team に blue / green のトークンを発行する
+2. **workspace 変数として `TFE_TOKEN` を作り、green のトークンを入れる**
 
 まで終わる。この apply 自身は run 開始時に読み込まれた varset の値で最後まで動くので、途中で自分の認証を失うことはない。
 
-### 3.4 通ることを確認する
+### 3.4 通ることと、2本あることを確認する
 
-HCP で Actions → Start new run（Plan only）。これが通れば **team token で動いている**（workspace 変数が varset に勝つため）。落ちたら §6 へ。
+まず Organization Settings → API Tokens → **Team Tokens** を開き、**`works blue ...` と `works green ...` が2本とも有効な状態で並んでいること**を確認する。
+
+ここが1本しか無い場合、このワークスペースは**破綻している**。description の無いトークンは「新しく作ると古いものが無効になる」レガシー挙動で、それが起きていると blue/green が成立しない。その場合は §6 A の手順で user token に戻し、ローテーションを外すこと。
+
+2本あれば、Actions → Start new run（Plan only）。これが通れば **team token で動いている**（workspace 変数が varset に勝つため）。落ちたら §6 へ。
 
 ### 3.5 Variable Set を片付ける
 
@@ -164,15 +167,29 @@ blue と green は同時に作られるので、放っておくと**同じ日に
 2. Plan & Apply を1回通す（周期はとっくに過ぎているので `time_rotating` が作り直され、新しいトークンが発行されて `TFE_TOKEN` が上書きされる）
 3. user token を revoke する
 
-**B. team の権限が足りない**
+**B. トークンの権限が足りない**
 
-`works-manager` に足りない権限がある。`tfe_token_rotation.tf` の `organization_access` に足して、A と同じ手順で復旧する。いま持っているのは3つ。
+いまは owners team のトークンなので、権限不足は起きない。起きるとすれば、専用 team に移したあと（下記）に足りない権限があるときで、A と同じ手順で復旧する。
+
+### なぜ owners team なのか
+
+本来は「この構成が管理するものだけ」を持つ専用 team を作るべきで、必要な権限は3つだけ。
 
 | 権限 | 何のため |
 |---|---|
 | `manage_workspaces` | workspace とその変数 |
 | `manage_vcs_settings` | `data.tfe_oauth_client` と `vcs_repo` |
-| `manage_teams` | **自分のチームとトークンを作り直すため**（ループの要） |
+| `manage_teams` | **自分のトークンを作り直すため**（ループの要） |
+
+だが **team の作成には entitlement が要る**（team 管理は Essentials 以上）。Free organization で `tfe_team` を作ろうとすると
+
+```
+Error: missing entitlements to create teams
+```
+
+で落ちる。既存の owners team にトークンを発行するのは Free でもできるので、そちらに逃がしている。
+
+**有料エディションに上げたら、専用 team を作って `team_id` をそこに向け直すこと。** それをするまで、このトークンは owner 相当の権限を持つ。
 
 ---
 
@@ -184,11 +201,13 @@ blue と green は同時に作られるので、放っておくと**同じ日に
 
 | | 前 | 後 |
 |---|---|---|
-| 権限 | owner 相当（全 workspace、全 state） | team の 3 権限 |
+| 権限 | owner 相当（全 workspace、全 state） | **owner 相当のまま**（§6 のとおり、Free では専用 team を作れない） |
 | 期限 | 実質無期限 | 83 日 |
-| 紐づき | 個人アカウント | チーム |
+| 紐づき | 個人アカウント | owners team（人に紐づかない） |
 | 更新 | 手動（やらなければ永久に同じ値） | 自動 |
 | 置き場所 | workspace 変数 | workspace 変数 + **state** |
+
+**権限は縮んでいない。** いま得ているのは「期限が付く」「人に紐づかない」「勝手に入れ替わる」の3点だけで、漏れたときに何ができるかは前と変わらない。縮めたければ有料エディションで専用 team を作る（§6）。
 
 トークンが state に載るのは避けられない。この構成が発行する値だからで、`GITHUB_APP_*` のように「宣言だけ Terraform、値は UI」にはできない。
 
