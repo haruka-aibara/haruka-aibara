@@ -4,6 +4,17 @@ resource "aws_lambda_layer_version" "slack_ai_chatbot" {
   compatible_runtimes      = ["python3.13"]
   compatible_architectures = ["x86_64"]
   description              = "lambda layer for ${local.project_name}"
+
+  # filename/skip_destroy are write-only on this resource -- AWS never
+  # returns them on read, so importing the existing layer version leaves them
+  # null in state. Without this, the very next plan sees them going from null
+  # to a value and proposes a destroy+recreate of the live layer version.
+  # TODO(state-merge follow-up): remove once the import has landed and is
+  # confirmed stable; needed again for the layer to actually redeploy on a
+  # real code change.
+  lifecycle {
+    ignore_changes = [filename, skip_destroy]
+  }
 }
 
 resource "aws_lambda_function" "slack_ai_chatbot" {
@@ -36,6 +47,11 @@ resource "aws_lambda_layer_version" "bedrock" {
   compatible_runtimes      = ["python3.13"]
   compatible_architectures = ["x86_64"]
   description              = "lambda layer for ${local.project_name} bedrock backend"
+
+  # See aws_lambda_layer_version.slack_ai_chatbot above for why.
+  lifecycle {
+    ignore_changes = [filename, skip_destroy]
+  }
 }
 
 resource "aws_lambda_function" "slack_bolt_app_bedrock_backend" {
