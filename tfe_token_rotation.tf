@@ -60,15 +60,6 @@ variable "green_serial" {
   default     = 1
 }
 
-# Set only for the one bootstrap run that adopts the hand-made TFE_TOKEN
-# variable, then remove it from the workspace again -- left in place it makes
-# every later run fail on an import of a resource Terraform already manages.
-variable "tfe_token_variable_id" {
-  type        = string
-  description = "var-... id of an existing TFE_TOKEN workspace variable to import."
-  default     = null
-}
-
 # The clocks. rfc3339 (the base timestamp) is deliberately not set: without it
 # the base is the creation time, so each re-creation moves the whole schedule
 # forward. Pinning it would freeze the rotation timestamp, and the tokens would
@@ -162,6 +153,11 @@ resource "tfe_team_token" "green" {
 
 # The write-back. Unlike the GITHUB_APP_* variables next door, this value does
 # live in state: a token this configuration issues cannot be kept out of it.
+#
+# This resource creates the variable rather than adopting one, so the run that
+# creates it cannot also be reading it. The bootstrap therefore hands the first
+# token to the workspace through a variable set instead, which a workspace
+# variable of the same key always overrides -- see the runbook.
 resource "tfe_variable" "tfe_token" {
   workspace_id = tfe_workspace.works.id
   key          = "TFE_TOKEN"
@@ -169,14 +165,4 @@ resource "tfe_variable" "tfe_token" {
   category     = "env"
   sensitive    = true
   description  = "Rotated by tfe_token_rotation.tf. Only set by hand to recover a stuck workspace."
-}
-
-# One-shot adoption of the variable that was created by hand. HCP Terraform
-# rejects a second variable with the same key, so the existing one has to be
-# imported rather than created. for_each keeps this block inert once
-# tfe_token_variable_id is unset again.
-import {
-  for_each = var.tfe_token_variable_id == null ? toset([]) : toset([var.tfe_token_variable_id])
-  to       = tfe_variable.tfe_token
-  id       = "${local.tfe_organization}/works/${each.value}"
 }

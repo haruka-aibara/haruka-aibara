@@ -57,33 +57,33 @@ apply は**自分が認証に使っているトークンを消せない**。途�
 
 **前提:** いまの `TFE_TOKEN` は手で入れた user token で、これが最後の手作業になる。
 
-### 3.1 既存変数の id を調べる
+`tfe_variable.tfe_token` は変数を**新規作成する**ので、同じ key の workspace 変数が先に存在していると HCP に弾かれる（同一 workspace に同じ key の変数は2つ持てない）。かといって先に消すと、その apply 自身が認証できない。
 
-`tfe_variable` は key の重複を許さないので、UI で作った `TFE_TOKEN` を**作り直すのではなく取り込む**。そのために `var-...` の id が要る。
+そこで **Variable Set 経由で1回だけ食わせる**。HCP の変数の優先順位がこれを保証している。
 
-```bash
-export TFE_TOKEN=<いま workspace に入っているのと同じ user token>
+> **8. Workspace-specific variables**
+> Workspace-specific variables **always overwrite** variables from variable sets that have the same key.
 
-# workspace id
-WS=$(curl -s -H "Authorization: Bearer $TFE_TOKEN" \
-  https://app.terraform.io/api/v2/organizations/haruka-aibara/workspaces/works \
-  | jq -r .data.id)
+つまり「varset に置いた値で run を動かしつつ、workspace 変数を新しく作らせる」が成立する。作られた瞬間から workspace 変数のほうが勝つ。
 
-# TFE_TOKEN 変数の id
-curl -s -H "Authorization: Bearer $TFE_TOKEN" \
-  https://app.terraform.io/api/v2/workspaces/$WS/vars \
-  | jq -r '.data[] | select(.attributes.key=="TFE_TOKEN") | .id'
-```
+### 3.1 一時的な Variable Set を作る
 
-### 3.2 workspace に変数を置く
+Organization Settings → **Variable sets** → Create variable set
 
-`works` workspace の Variables に、**Terraform variable**（env ではない）として追加する。
+| | |
+|---|---|
+| 名前 | `tfe-token-bootstrap`（何でもよい） |
+| Apply to | **Apply to specific workspaces** → `works` |
+| Priority | **付けない** |
+| 変数 | `TFE_TOKEN` = いまの user token / category `env` / **sensitive** |
 
-| key | value | 備考 |
-|---|---|---|
-| `tfe_token_variable_id` | `var-xxxxxxxx` | 3.1 で調べた id |
-| `rotation_minutes` | `60` | 検証する場合のみ。しない場合は置かない |
-| `buffer_minutes` | `20` | 同上 |
+**Priority を付けてはいけない。** 付けると varset が workspace 変数を上書きし続け、ローテーションした値が永久に使われない。
+
+### 3.2 workspace 変数の `TFE_TOKEN` を消す
+
+`works` → Variables から、**workspace 変数のほう**の `TFE_TOKEN` を削除する。varset 側が効くので run は動き続ける。
+
+短周期で検証するなら、ここで Terraform 変数として `rotation_minutes = 60` / `buffer_minutes = 20` も置く（§4）。
 
 ### 3.3 マージする
 
@@ -91,17 +91,19 @@ curl -s -H "Authorization: Bearer $TFE_TOKEN" \
 
 1. team `works-manager` を作る
 2. blue / green のトークンを発行する
-3. 既存の `TFE_TOKEN` 変数を取り込み、**green のトークンで上書きする**
+3. **workspace 変数として `TFE_TOKEN` を作り、green のトークンを入れる**
 
-まで終わる。この apply 自身は、run 開始時に読み込まれた user token で最後まで動くので、途中で自分の認証を失うことはない。
+まで終わる。この apply 自身は run 開始時に読み込まれた varset の値で最後まで動くので、途中で自分の認証を失うことはない。
 
-### 3.4 `tfe_token_variable_id` を消す（必須）
+### 3.4 通ることを確認する
 
-**これを消し忘れると、次の run が「すでに Terraform が管理しているリソースを import しようとしている」で必ず失敗する。** apply が終わったら UI から削除する。
+HCP で Actions → Start new run（Plan only）。これが通れば **team token で動いている**（workspace 変数が varset に勝つため）。落ちたら §6 へ。
 
-### 3.5 通ることを確認する
+### 3.5 Variable Set を片付ける
 
-HCP で Actions → Start new run（Plan only）。これが通れば、**team token で動いている**ということ。落ちたら §6 へ。
+varset をデタッチして削除し、元の user token を revoke する。
+
+**消し忘れても動作は変わらない**（workspace 変数が常に勝つ）が、使われないまま有効な user token が残るので必ず消す。ここを飛ばすと「ローテーションしているのに、強いトークンが1本放置されている」という一番間抜けな状態になる。
 
 ### 3.6 半周期後にズラす
 
@@ -110,10 +112,6 @@ blue と green は同時に作られるので、放っておくと**同じ日に
 同値のとき `timecmp` は green を選ぶので、**初回に使っていないのは blue のほう**。上げるのは必ず blue。
 
 これで blue の基準時刻だけが半周期ずれ、以降は各色が自分の基準時刻から回るのでズレは自動で維持される。
-
-### 3.7 旧 user token を revoke する
-
-3.5 が通ったら、もう使われていない。HCP の User Settings → Tokens から消す。
 
 ---
 
@@ -160,10 +158,10 @@ blue と green は同時に作られるので、放っておくと**同じ日に
 
 **A. トークンが全部失効した**（run を長期間回していなかった）
 
-初回と同じブートストラップをやり直す。§3.2 の `tfe_token_variable_id` は不要で、代わりに:
+変数はもう Terraform の管理下にあるので、§3 の varset は要らない。値を差し替えるだけでよい。
 
-1. UI で `TFE_TOKEN` を自分の user token に差し替える
-2. Plan & Apply を1回通す（失効したトークンが作り直され、`TFE_TOKEN` が上書きされる）
+1. UI で workspace 変数 `TFE_TOKEN` の**値を**自分の user token に差し替える
+2. Plan & Apply を1回通す（周期はとっくに過ぎているので `time_rotating` が作り直され、新しいトークンが発行されて `TFE_TOKEN` が上書きされる）
 3. user token を revoke する
 
 **B. team の権限が足りない**
