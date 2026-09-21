@@ -10,3 +10,5 @@
 |---|---|
 | ルートの `*.tf` / `modules/` / `ci/` | `README.md` |
 | `docs/` 配下 | `docs/reference/README.md` |
+
+**PRを作るときは `.github/PULL_REQUEST_TEMPLATE.md` に従う。** 概要・変更内容・関連Issue の見出しをそのまま使い、本文を埋める。
