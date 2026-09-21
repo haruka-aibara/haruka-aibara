@@ -21,20 +21,6 @@ resource "github_repository" "this" {
 
   topics = var.topics
 
-  # build_type = "legacy" matches the pre-existing setup: a plain
-  # deploy-from-branch site with a .nojekyll file disabling Jekyll
-  # processing, not a GitHub Actions-built Pages deployment.
-  dynamic "pages" {
-    for_each = var.pages != null ? [var.pages] : []
-    content {
-      source {
-        branch = pages.value.branch
-        path   = pages.value.path
-      }
-      build_type = "legacy"
-    }
-  }
-
   dynamic "security_and_analysis" {
     for_each = var.visibility == "public" ? [1] : []
     content {
@@ -54,6 +40,22 @@ resource "github_repository" "this" {
 
 resource "github_repository_vulnerability_alerts" "this" {
   repository = github_repository.this.name
+}
+
+# build_type = "legacy" matches the pre-existing setup: a plain
+# deploy-from-branch site with a .nojekyll file disabling Jekyll processing,
+# not a GitHub Actions-built Pages deployment. A separate resource because
+# github_repository's own pages argument is deprecated.
+resource "github_repository_pages" "this" {
+  count = var.pages != null ? 1 : 0
+
+  repository = github_repository.this.name
+  build_type = "legacy"
+
+  source {
+    branch = var.pages.branch
+    path   = var.pages.path
+  }
 }
 
 # Branch protection is only available on private repositories with GitHub Pro or
