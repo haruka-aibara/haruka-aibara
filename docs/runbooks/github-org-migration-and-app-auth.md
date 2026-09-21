@@ -265,6 +265,7 @@ org の Settings → Developer settings → GitHub Apps → New GitHub App
 | Administration | **Read and write** | `github_repository`, `topics`, `security_and_analysis`, `github_branch_protection`, `github_repository_vulnerability_alerts`、および **`POST /orgs/{org}/repos` による新規リポジトリ作成** |
 | Contents | **Read and write** | `github_repository_file` |
 | Workflows | **Read and write** | `.github/workflows/*.yml` の書き込み（`terraform_ci.tf` / `python_ci.tf`）。**これが無いと Contents だけでは 403 になる** |
+| Pages | **Read and write** | `github_repository_pages`。Administration では代替できず、無いと `POST /repos/{owner}/{repo}/pages` が 403 になる |
 | Metadata | Read（自動付与） | — |
 
 Organization repository の作成に必要なのは Organization permissions ではなく、上記の **Repository permissions → Administration (write)** である。インストール先を All repositories にしておくことで、まだ存在しない repo の作成もこの権限で通る。
