@@ -9,8 +9,4 @@
 | 触るもの | 読む |
 |---|---|
 | ルートの `*.tf` / `modules/` / `ci/` | `README.md` |
-| `docs/` の記事 | `article-writing` スキル（Claude Code は自動）＋ `docs/reference/既存コンテンツ.md` |
-| 提案・比較・学習相談 | `docs/reference/ユーザーの好み.md` |
-| 置き場所・メモの残し方・スキル配置 | `docs/reference/運用ルール.md` |
-
-それ以外の個別トピック（GitHub 認証など）は `docs/reference/` を見る。
+| `docs/` 配下 | `docs/reference/README.md` |
