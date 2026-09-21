@@ -77,13 +77,23 @@
 
 - [ ] **C-2. speculative plan を確認する**
 
-  期待する結果:
+  期待する結果(1回目の手動planで確認済みの実績あり。詳細は下記「つまずいた点」参照):
 
-  - `module.bedrock_slack_ai_chatbot_infra.*` の約24リソースが **import**(`will be imported`)
-  - `Repository` タグが旧リポジトリ URL → `works` の URL に変わる **1件程度の in-place update**(意図した差分。§ Phase 2 参照)
-  - それ以外の **unexpected な変更・destroy が無いこと**
+  - `module.bedrock_slack_ai_chatbot_infra.*` の24リソースが **import**(`will be imported`)
+  - `Repository` タグが旧リポジトリ URL → `works` の URL に変わる **in-place update**(意図した差分。各リソースの `tags`/`tags_all` に出る)
+  - `tfe_variable.*` 4件の **create**(Phase B のプレースホルダ)
+  - `github_repository_file.*_caller["bedrock-slack-ai-chatbot"]` 2件の **destroy**(旧リポジトリから CI ファイルを削除。意図した差分)
+  - `github_repository_file.python_ci_caller["works"]` の **create**、`reusable_python_ci` の **update**(CI配布の付け替え)
+  - 2つの Lambda 関数の **in-place update**(`filename`/`source_code_hash`/`publish` が追加されるだけで、中身は同一コードの再デプロイ。危険ではない)
+  - それ以外の **unexpected な変更・destroy(特に `must be replaced` / `-/+`)が無いこと**。とくに `aws_bedrock_inference_profile` と `aws_lambda_layer_version` ×2 は要注意(下記参照)。
 
-  1件でも import 対象外の diff(re-create, unexpected update)が出た場合は **merge しない**。`works` は `auto_apply = true` のため、merge した瞬間に本番 AWS インフラへ apply される。
+  1件でも上記に当てはまらない diff が出た場合は **merge しない**。`works` は `auto_apply = true` のため、merge した瞬間に本番 AWS インフラへ apply される。
+
+  **つまずいた点(1回目のplanで発生・修正済み)**: `model_source`(inference profile)と `filename`/`skip_destroy`(layer version)は AWS 側から読み返せない作成時専用の属性で、import直後は state 上 null になる。コード側の値と比較すると「新規追加」に見えて `-/+` (destroy & recreate) が誘発された。本番で使用中のリソースなので、`lifecycle { ignore_changes = [...] }` で該当属性を一時的に無視する修正を入れている。
+
+- [ ] **C-2a. (フォローアップ、別PR) `ignore_changes` を外す**
+
+  import が安定してから、`main_bedrock.tf` の `aws_bedrock_inference_profile.claude_opus_4_6` と `main_lambda.tf` の `aws_lambda_layer_version` ×2 に付けた `lifecycle { ignore_changes = [...] }` を削除する PR を出す。外さないままだと、将来モデルや Lambda layer のコードを本当に変更しても apply に反映されない。
 
 - [ ] **C-3. 問題なければ merge して apply を確認する**
 
