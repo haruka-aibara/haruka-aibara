@@ -9,4 +9,15 @@ locals {
   # HCP Terraform 側の VCS 連携（OAuth client）が持つトークンの id。
   # vcs_repo.oauth_token_id に使う。GitHub App 認証（GITHUB_APP_*）とは別物。
   oauth_token_id = data.tfe_oauth_client.this.oauth_token_id
+
+  # bedrock-slack-ai-chatbot モジュールの AWS リソースに付与する既定タグ。
+  # provider "aws" の default_tags はモジュール単位で分離できないため、この
+  # リポジトリが AWS 管理するアプリが増えたら再設計が要る。
+  bedrock_slack_ai_chatbot_default_tags = {
+    Owner       = "haruka-aibara"
+    Terraform   = true
+    Environment = "production"
+    Project     = "bedrock-slack-ai-chatbot"
+    Repository  = "https://github.com/haruka-aibara/works"
+  }
 }

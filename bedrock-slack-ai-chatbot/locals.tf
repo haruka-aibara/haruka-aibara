@@ -1,12 +1,6 @@
 locals {
-  project_name        = "bedrock-slack-ai-chatbot"
-  git_repository_name = "https://github.com/haruka-aibara/bedrock-slack-ai-chatbot"
-
-  default_tags = {
-    Owner       = "haruka-aibara"
-    Terraform   = true
-    Environment = var.env
-    Project     = local.project_name
-    Repository  = local.git_repository_name
-  }
+  # Resource naming. default_tags (Owner/Environment/Project/Repository) moved
+  # to the root module's provider "aws" block, since a child module cannot
+  # scope default_tags to only its own resources.
+  project_name = "bedrock-slack-ai-chatbot"
 }

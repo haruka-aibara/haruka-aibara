@@ -12,7 +12,7 @@ PR / push で以下の CI が走る。コードを書いたら必ず通ること
 | ruff | `uvx ruff check .` | Python Test 以外は再利用ワークフロー呼び出し |
 | pytest | `uv run pytest` | `.github/workflows/python-test.yml` |
 
-`.github/workflows/python-ci.yml` と `terraform-ci.yml` は別リポジトリ (haruka-aibara/haruka-aibara) の Terraform が生成しているので直接編集しない。このリポジトリ固有のチェックを足すときは `python-test.yml` のような別ファイルを追加する。
+CI は works ルートの `ci/` を単一ソースとして `github_repository_file` で works 自身の `.github/workflows/` に配布される(このディレクトリの `.github/workflows/` ではない。GitHub Actions はリポジトリルートのワークフローしか読まない)。配布元は直接編集しない。
 
 ### Python コードを変更したら必ずやること
 

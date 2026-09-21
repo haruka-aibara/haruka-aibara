@@ -13,3 +13,14 @@ provider "tfe" {
   # TFE_TOKEN is already set as an environment variable on HCP Terraform Cloud
   # organization is set per resource
 }
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs
+# For the bedrock-slack-ai-chatbot module. Credentials come from the
+# AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY environment variables declared in
+# workspace_variables.tf.
+provider "aws" {
+  region = "ap-northeast-1"
+  default_tags {
+    tags = local.bedrock_slack_ai_chatbot_default_tags
+  }
+}

@@ -2,6 +2,11 @@ name: Python CI
 
 on:
   workflow_call:
+    inputs:
+      working-directory:
+        description: Directory that contains the Python project
+        type: string
+        default: "."
 
 jobs:
   lint:
@@ -9,4 +14,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uvx ruff check .
+      - working-directory: ${{ inputs.working-directory }}
+        run: uvx ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        # --locked fails the build if uv.lock is stale rather than silently re-resolving.
+        working-directory: ${{ inputs.working-directory }}
+        run: uv sync --locked
+      - working-directory: ${{ inputs.working-directory }}
+        run: uv run pytest
