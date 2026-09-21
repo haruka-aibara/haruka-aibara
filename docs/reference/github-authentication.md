@@ -46,7 +46,7 @@ workspace `works`（リポジトリ `haruka-aibara/works`）に設定されて�
 | `GITHUB_APP_ID` | App の識別子 | App の General ページ | github provider が認証できなくなる |
 | `GITHUB_APP_INSTALLATION_ID` | **GitHub 側の数値 ID** | org の installations URL 末尾 | 同上 |
 | `GITHUB_APP_PEM_FILE` | **秘密鍵**。sensitive | ダウンロードした PEM | 同上。かつ再取得不可 |
-| `TFE_TOKEN` | HCP Terraform 自身の API トークン | HCP Terraform の User/Team token | tfe provider が動かなくなる |
+| `TFE_TOKEN` | HCP Terraform 自身の API トークン | **この構成が自分で発行する team token**（[自動ローテーション](../runbooks/tfe-token-rotation.md)） | tfe provider が動かなくなる |
 
 **なぜ環境変数なのか:** `integrations/github` provider は `app_auth` ブロックが無くても `GITHUB_APP_` prefix の環境変数を読む。そのため `providers.tf` には認証の記述が一切ない。コードを見ても認証方法が分からないのはこのためで、意図的なものではなく provider の仕様にただ乗っている。
 
