@@ -1,5 +1,6 @@
 # 取り込み済みのものも含め、import ブロックはこのファイルにまとめる。
 # apply 後の import は no-op だが、どの資源をどの ID で取り込んだかの記録として残す。
+# moved / removed ブロックは記録として残さない。apply 済みになったら消す。
 
 # =========================================
 # 2025 GitHub Repositories Imports
