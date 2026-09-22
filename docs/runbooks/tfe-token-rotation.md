@@ -216,4 +216,5 @@ Error: missing entitlements to create teams
 ## 関連
 
 - [GitHub 認証のしくみ](../reference/github-authentication.md) — なぜ VCS 連携が OAuth なのか（team token でローテするための前提）
+- [ADR-0001](../decisions/0001-tfe-team-token-rotation.md) — 設計の判断と、採らなかった案
 - `modules/tfe-team-token-rotation/` — 実装（ルートの `main.tf` の `module "tfe_team_token_rotation"` から呼ぶ）
