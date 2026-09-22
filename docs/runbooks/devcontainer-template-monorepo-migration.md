@@ -4,7 +4,7 @@
 
 ## 何が変わるか
 
-- テンプレートの置き場所: `devcontainer-templates/src/haruka-aibara-dev-env/`
+- テンプレートの置き場所: `devcontainer-templates/src/haruka-aibara-dev-env/`（旧リポジトリの全コミット履歴 72 件ごと取り込み済み。`bedrock-slack-ai-chatbot` を統合したとき（`27da634`）と同じく `git filter-repo --to-subdirectory-filter` でパスを書き換えてから unrelated histories マージしている）
 - publish するワークフロー: `.github/workflows/devcontainer-release.yaml`
 - publish 先: `ghcr.io/haruka-aibara/devcontainer-templates/haruka-aibara-dev-env` → **`ghcr.io/haruka-aibara/works/haruka-aibara-dev-env`**
 
@@ -59,6 +59,8 @@ bash .devcontainer/smoke-test.sh
    - `modules/repository` の `github_repository` には `prevent_destroy = true` が付いている。**リポジトリごと消す**なら `modules/repository/main.tf` の lifecycle を一時的に外して apply する（`bedrock-slack-ai-chatbot` を消したときと同じやり方）。**リポジトリは残して管理だけ外す**なら `removed_2026.tf` に `removed { from = module.devcontainer-templates, lifecycle { destroy = false } }` を足す
    - `works` ワークスペースは `auto_apply = true`。main にマージした時点で apply が走るので、plan は PR の speculative run で確認する
 3. GitHub 上でリポジトリを archive または delete する
+
+履歴は取り込み済みなので、旧リポジトリを消してもコミットログと blame は `devcontainer-templates/` 配下に残る。
 
 ## ロールバック
 
