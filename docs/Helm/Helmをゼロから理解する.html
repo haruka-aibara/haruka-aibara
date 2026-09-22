@@ -304,6 +304,10 @@ blockquote p{margin:.4rem 0}
 
 <p>チャートはリポジトリから取ってきて使うこともできます。<code>helm repo add</code> で HTTP のリポジトリを登録するか、OCI レジストリ（コンテナイメージと同じ置き場）から <code>oci://</code> で直接引きます。他人が作った ingress-nginx や external-secrets を入れる、という使い方が実務では最初の接点になります。</p>
 
+<p><strong>Terraform を使っているなら、ほぼモジュールと同じものだと考えて差し支えありません。</strong>チャートがモジュール、values が variables、Helm リポジトリや OCI レジストリが Terraform Registry です。バージョンを固定して取り込み、入力値だけ差し替えて使い回す、という付き合い方もそのままです。</p>
+
+<p>違うのは状態の持ち方です。Terraform は tfstate をどこに置くか自分で決めますが、Helm は次のステップで見るとおり、前回送った内容をクラスタ内に自動で貯めます。また <code>terraform plan</code> に当たる標準コマンドはなく、<code>helm template</code> で生成結果を読むか helm-diff プラグインを足すことになります。</p>
+
 <div class="quiz">
 <p class="q"><b>確認問題</b>　<code>helm install</code> したあと <code>kubectl get deployment</code> で見えるのは、普通の Deployment ですか。それとも Helm 専用の何かですか。</p>
 <details>
