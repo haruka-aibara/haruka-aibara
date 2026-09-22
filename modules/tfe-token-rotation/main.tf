@@ -13,7 +13,7 @@
 #     -> the team token, whose description carries that expiry, is re-created
 #     -> TFE_TOKEN is written with the new token's value
 #
-# Nothing in this file changes for a scheduled rotation. time_rotating keeps the
+# Nothing in this module changes for a scheduled rotation. time_rotating keeps the
 # next rotation time in state and the provider compares it with the clock on
 # every plan, so the diff appears on its own and a run is all it takes. Nothing
 # announces it either: it is visible only once a plan has run.
@@ -21,44 +21,6 @@
 # Two tokens are held half a cycle apart and a run only ever re-creates the one
 # it is NOT authenticating with. Re-creating the token in use would 401 the rest
 # of that same apply, and recovering from that means a manual bootstrap.
-
-variable "rotation_minutes" {
-  type        = number
-  description = "Length of one rotation cycle. Each colour hands over to the other at half of this, so a run has to happen at least that often."
-  default     = 230400 # 160 days. 1 day = 1440, 30 days = 43200.
-
-  validation {
-    condition     = var.rotation_minutes >= 20
-    error_message = "The cycle has to leave room to start the handover run: keep it at 20 minutes or more."
-  }
-}
-
-variable "buffer_minutes" {
-  type        = number
-  description = "How long a token stays valid after the handover that stopped using it. It is also the grace period for a late run: miss it and every token has expired."
-  default     = 4320 # 3 days, which assumes runs happen at least that often.
-
-  validation {
-    condition     = var.buffer_minutes > 0 && var.buffer_minutes < var.rotation_minutes / 2
-    error_message = "The buffer has to be positive and shorter than half a cycle, or a token outlives the rotation meant to replace it."
-  }
-}
-
-# Bumping a serial restarts that colour's cycle now instead of at the next
-# rotation: the stagger step of the bootstrap, and an unplanned rotation after a
-# leak. Only ever bump the colour that is NOT in use -- a run cannot re-create
-# the token it is authenticating with.
-variable "blue_serial" {
-  type        = number
-  description = "Bump to rotate the blue token now."
-  default     = 1
-}
-
-variable "green_serial" {
-  type        = number
-  description = "Bump to rotate the green token now."
-  default     = 1
-}
 
 # The clocks. rfc3339 (the base timestamp) is deliberately not set: without it
 # the base is the creation time, so each re-creation moves the whole schedule
@@ -113,7 +75,7 @@ locals {
 # On a paid edition, put the team back and point the tokens at it.
 data "tfe_team" "owners" {
   name         = "owners"
-  organization = local.tfe_organization
+  organization = var.organization
 }
 
 # Team tokens are keyed by description, which is what allows two of them to be
@@ -155,10 +117,12 @@ resource "tfe_team_token" "green" {
 # token to the workspace through a variable set instead, which a workspace
 # variable of the same key always overrides -- see the runbook.
 resource "tfe_variable" "tfe_token" {
-  workspace_id = tfe_workspace.works.id
+  workspace_id = var.workspace_id
   key          = "TFE_TOKEN"
   value        = local.current_team_token
   category     = "env"
   sensitive    = true
-  description  = "Rotated by tfe_token_rotation.tf. Only set by hand to recover a stuck workspace."
+  # The text still names the pre-module file on purpose: changing it would be an
+  # in-place update of the live variable for nothing but a comment.
+  description = "Rotated by tfe_token_rotation.tf. Only set by hand to recover a stuck workspace."
 }

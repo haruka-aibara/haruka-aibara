@@ -362,3 +362,50 @@ module "github-actions" {
 
   topics = ["github-actions", "ci", "terraform"]
 }
+
+# =========================================
+# HCP Terraform
+# =========================================
+
+# TFE_TOKEN self-rotation (blue / green). The how and why are in the module and
+# docs/runbooks/tfe-token-rotation.md.
+module "tfe_token_rotation" {
+  source = "./modules/tfe-token-rotation"
+
+  organization = local.tfe_organization
+  workspace_id = tfe_workspace.works.id
+
+  rotation_minutes = var.rotation_minutes
+  buffer_minutes   = var.buffer_minutes
+
+  # Bump one to rotate that colour now -- only ever the one NOT in use.
+  blue_serial  = 1
+  green_serial = 1
+}
+
+# Moved from the root-level tfe_token_rotation.tf. Re-creating any of these
+# would rotate the token in use mid-apply, so the addresses have to carry over.
+moved {
+  from = time_rotating.blue
+  to   = module.tfe_token_rotation.time_rotating.blue
+}
+
+moved {
+  from = time_rotating.green
+  to   = module.tfe_token_rotation.time_rotating.green
+}
+
+moved {
+  from = tfe_team_token.blue
+  to   = module.tfe_token_rotation.tfe_team_token.blue
+}
+
+moved {
+  from = tfe_team_token.green
+  to   = module.tfe_token_rotation.tfe_team_token.green
+}
+
+moved {
+  from = tfe_variable.tfe_token
+  to   = module.tfe_token_rotation.tfe_variable.tfe_token
+}
