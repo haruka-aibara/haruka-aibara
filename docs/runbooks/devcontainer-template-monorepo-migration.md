@@ -22,19 +22,22 @@
 
 Actions の **Release Dev Container Templates** が成功すると、ジョブサマリに publish されたタグが出る。
 
-CI が push した package は **private** で作られるため、そのままでは `Dev Containers: Clone Repository in Container Volume...` から参照できない。初回だけ以下をやる（以降は引き継がれる）。
+まず匿名 pull できるか確認する。private のままだと `Dev Containers: Clone Repository in Container Volume...` から参照できない。
+
+```bash
+TOKEN=$(curl -s "https://ghcr.io/token?scope=repository:haruka-aibara/works/haruka-aibara-dev-env:pull&service=ghcr.io" | jq -r .token)
+curl -s -H "Authorization: Bearer $TOKEN" \
+  "https://ghcr.io/v2/haruka-aibara/works/haruka-aibara-dev-env/tags/list"
+```
+
+タグ一覧が返れば public。**token エンドポイントは private でも package が無くても token を返すので、token が返ったことだけを見ても判定にならない。** 実際に tags/list まで叩くこと。
+
+2026-09-21 の初回 publish（1.4.0）ではこの時点で既に public になっており、下の手作業は要らなかった。403 が返るときだけやる。
 
 1. Organization settings → Packages → Package creation で Public を許可しておく
 2. org の Packages → `works/haruka-aibara-dev-env` → Package settings
    - Danger Zone → Change visibility → **Public**
    - Manage Actions access に `works` が入っているか確認（無ければ追加）
-3. 匿名 pull できるか確認する:
-
-```bash
-curl -s "https://ghcr.io/token?scope=repository:haruka-aibara/works/haruka-aibara-dev-env:pull&service=ghcr.io"
-```
-
-`token` が返れば public。
 
 ### 3. 実際にテンプレートから開いてみる
 
