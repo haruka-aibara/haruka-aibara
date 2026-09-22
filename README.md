@@ -30,10 +30,3 @@ CI では `terraform fmt` / `tflint` / `trivy`（IaC misconfig）が走る。
 ## devcontainer テンプレート
 
 `devcontainer-templates/src/**` を触って main にマージすると、`.github/workflows/devcontainer-release.yaml` が version を bump して `ghcr.io/haruka-aibara/works/haruka-aibara-dev-env` に publish する。詳細は [`devcontainer-templates/README.md`](devcontainer-templates/README.md)。
-
-## 運用メモ
-
-- [GitHub 認証のしくみ](docs/reference/github-authentication.md) — workspace の変数や GitHub App が何者かを調べるとき
-- [GitHub Organization 移行 + GitHub App 認証 移行手順書](docs/runbooks/github-org-migration-and-app-auth.md) — この構成に至った経緯
-- [devcontainer テンプレートのモノレポ統合](docs/runbooks/devcontainer-template-monorepo-migration.md) — 旧リポジトリを畳むとき、ghcr の package を作り直すとき
-- [TFE_TOKEN 自動ローテーション](docs/runbooks/tfe-token-rotation.md) — 初回のブートストラップ、漏洩時の手順、文鎮化からの復旧
