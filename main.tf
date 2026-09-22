@@ -9,7 +9,7 @@ module "haruka-aibara" {
   source = "./modules/repository"
 
   repository_name = "works"
-  description     = "Terraform-managed GitHub repositories and HCP Terraform workspaces"
+  description     = "Personal monorepo: Terraform for GitHub repos and HCP Terraform workspaces, shared CI, learning notes/articles, and devcontainer templates"
   homepage_url    = "https://haruka-aibara.github.io/works/"
 
   topics = ["terraform", "github", "iac"]
