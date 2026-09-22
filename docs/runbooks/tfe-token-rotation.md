@@ -110,7 +110,7 @@ varset をデタッチして削除し、元の user token を revoke する。
 
 ### 3.6 半周期後にズラす
 
-blue と green は同時に作られるので、放っておくと**同じ日に両方が作り直される**。そうなると使用中のトークンごと巻き込まれる。初回 apply から半周期後（既定値なら 80 日後、検証中なら 30 分後）に、**`blue_serial` を `2` に上げる PR を1本出す**。
+blue と green は同時に作られるので、放っておくと**同じ日に両方が作り直される**。そうなると使用中のトークンごと巻き込まれる。初回 apply から半周期後（既定値なら 80 日後、検証中なら 30 分後）に、**`blue_serial` を `2` に上げる PR を1本出す**（ルートの `main.tf` の `module "tfe_team_token_rotation"` の引数）。
 
 同値のとき `timecmp` は green を選ぶので、**初回に使っていないのは blue のほう**。上げるのは必ず blue。
 
@@ -216,4 +216,5 @@ Error: missing entitlements to create teams
 ## 関連
 
 - [GitHub 認証のしくみ](../reference/github-authentication.md) — なぜ VCS 連携が OAuth なのか（team token でローテするための前提）
-- `tfe_token_rotation.tf` — 実装
+- [ADR-0001](../decisions/0001-tfe-team-token-rotation.md) — 設計の判断と、採らなかった案
+- `modules/tfe-team-token-rotation/` — 実装（ルートの `main.tf` の `module "tfe_team_token_rotation"` から呼ぶ）
