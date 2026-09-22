@@ -486,8 +486,8 @@ Name cannot be changed while a run has not completed
 | `terraform.tf` | `cloud` ブロックの `workspaces.name` |
 | `hcp_terraform.tf` | リソースラベル、`name`、`description` |
 | `workspace_variables.tf` | `tfe_workspace.<label>.id` の参照 |
-| `imports_2025.tf` | import の address と id |
-| `moved_2026.tf` | ラベル変更を吸収する `moved` ブロック |
+| `imports.tf` | import の address と id |
+| 一時的な `moved` ブロック | ラベル変更を吸収する。apply 後は消す |
 | `README.md` / `docs/` | 文中の参照 |
 | `ci/templates/*.tftpl` | 配布先に書き込まれる `Managed by Terraform (...)` の出典表記 |
 

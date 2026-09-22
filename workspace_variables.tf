@@ -63,7 +63,7 @@ resource "tfe_variable" "github_app_pem_file" {
 #
 # ignore_changes on value: these two were created by hand in the UI before
 # this code landed, so they were adopted with an `import` block (see
-# imports_2026.tf) rather than created fresh. HCP Terraform never returns a
+# imports.tf) rather than created fresh. HCP Terraform never returns a
 # sensitive value, so after import the provider has no way to know it already
 # matches "set-in-ui" and would otherwise plan to overwrite the real secret
 # with the placeholder. ignore_changes makes that impossible, since neither
