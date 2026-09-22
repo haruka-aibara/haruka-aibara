@@ -382,30 +382,3 @@ module "tfe_team_token_rotation" {
   blue_serial  = 1
   green_serial = 1
 }
-
-# Moved from the root-level tfe_token_rotation.tf. Re-creating any of these
-# would rotate the token in use mid-apply, so the addresses have to carry over.
-moved {
-  from = time_rotating.blue
-  to   = module.tfe_team_token_rotation.time_rotating.blue
-}
-
-moved {
-  from = time_rotating.green
-  to   = module.tfe_team_token_rotation.time_rotating.green
-}
-
-moved {
-  from = tfe_team_token.blue
-  to   = module.tfe_team_token_rotation.tfe_team_token.blue
-}
-
-moved {
-  from = tfe_team_token.green
-  to   = module.tfe_team_token_rotation.tfe_team_token.green
-}
-
-moved {
-  from = tfe_variable.tfe_token
-  to   = module.tfe_team_token_rotation.tfe_variable.tfe_token
-}
