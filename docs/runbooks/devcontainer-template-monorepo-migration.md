@@ -60,7 +60,17 @@ bash .devcontainer/smoke-test.sh
    - `works` ワークスペースは `auto_apply = true`。main にマージした時点で apply が走るので、plan は PR の speculative run で確認する
 3. GitHub 上でリポジトリを archive または delete する
 
-履歴は取り込み済みなので、旧リポジトリを消してもコミットログと blame は `devcontainer-templates/` 配下に残る。
+旧リポジトリの 72 コミットは #56 で取り込み済みなので、旧リポジトリを消しても履歴は失われない。
+ただし**既定の `git log` / `git blame` は取り込んだコミットではなく #47 を指す**。#47 が先に
+同じ内容を main 本線へ入れてしまい、マージの第1親（main 側）と内容が同じになるため、git の
+history simplification が第2親（取り込んだ履歴）に降りないため。元のコミットを見るとき:
+
+```bash
+git log --full-history -- devcontainer-templates/src/haruka-aibara-dev-env/.devcontainer/Dockerfile
+```
+
+blame まで元の作者・日付にするには main の履歴を書き換える（force push）しかなく、
+コストに見合わないと判断して現状維持にした。
 
 ## ロールバック
 
