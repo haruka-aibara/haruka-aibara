@@ -374,7 +374,7 @@ resource "github_repository_file" "reusable_terraform_ci" {
   repository          = module.github-actions.repository_name
   branch              = "main"
   file                = ".github/workflows/terraform-ci.yml"
-  content             = file("${path.module}/ci/workflows/terraform-ci.yml")
+  content             = file("${path.module}/workflow-dist/reusable/terraform-ci.yml")
   commit_message      = "Update reusable Terraform CI workflow (managed by Terraform)"
   overwrite_on_create = true
 
@@ -392,7 +392,7 @@ resource "github_repository_file" "terraform_ci_caller" {
   repository = each.key
   branch     = "main"
   file       = ".github/workflows/terraform-ci.yml"
-  content = templatefile("${path.module}/ci/templates/terraform-ci-caller.yml.tftpl", {
+  content = templatefile("${path.module}/workflow-dist/callers/terraform-ci-caller.yml.tftpl", {
     working_directory = each.value.working_directory
   })
   commit_message      = "Add Terraform CI caller workflow (managed by Terraform)"
@@ -414,7 +414,7 @@ resource "github_repository_file" "reusable_python_ci" {
   repository          = module.github-actions.repository_name
   branch              = "main"
   file                = ".github/workflows/python-ci.yml"
-  content             = file("${path.module}/ci/workflows/python-ci.yml")
+  content             = file("${path.module}/workflow-dist/reusable/python-ci.yml")
   commit_message      = "Update reusable Python CI workflow (managed by Terraform)"
   overwrite_on_create = true
 
@@ -432,7 +432,7 @@ resource "github_repository_file" "python_ci_caller" {
   repository = each.key
   branch     = "main"
   file       = ".github/workflows/python-ci.yml"
-  content = templatefile("${path.module}/ci/templates/python-ci-caller.yml.tftpl", {
+  content = templatefile("${path.module}/workflow-dist/callers/python-ci-caller.yml.tftpl", {
     working_directory = each.value.working_directory
   })
   commit_message      = "Add Python CI caller workflow (managed by Terraform)"

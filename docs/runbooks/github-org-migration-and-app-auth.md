@@ -489,7 +489,7 @@ Name cannot be changed while a run has not completed
 | `imports.tf` | import の address と id |
 | 一時的な `moved` ブロック | ラベル変更を吸収する。apply 後は消す |
 | `README.md` / `docs/` | 文中の参照 |
-| `ci/templates/*.tftpl` | 配布先に書き込まれる `Managed by Terraform (...)` の出典表記 |
+| `workflow-dist/callers/*.tftpl` | 配布先に書き込まれる `Managed by Terraform (...)` の出典表記 |
 
 workspace は ID で識別されるためリネームしても state は壊れず、再 import も不要である。
 

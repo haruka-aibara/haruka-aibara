@@ -45,7 +45,7 @@ devcontainer-templates/
 
 ## リリースフロー
 
-`.github/workflows/devcontainer-release.yaml` が担当する。`ci/` から配布される CI とは別で、Terraform 管理外なので直接編集してよい。
+`.github/workflows/devcontainer-release.yaml` が担当する。`workflow-dist/` から配布される CI とは別で、Terraform 管理外なので直接編集してよい。
 
 - `devcontainer-templates/src/**` または当該ワークフローへの push（main）で自動実行
 - CI が直前のコミットメッセージを見て `devcontainer-template.json` の version を bump し、main に push
