@@ -1,21 +1,50 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-      "config:base"
-    ],
-    "terraform": {
-      "enabled": true
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "customManagers:dockerfileVersions"
+  ],
+  "terraform": {
+    "enabled": true
+  },
+  "devcontainer": {
+    "enabled": false
+  },
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
+  "customManagers": [
+    {
+      "description": "devcontainer Dockerfile: タグ無し digest でピンしたベースイメージ",
+      "customType": "regex",
+      "managerFilePatterns": ["/^devcontainer-templates/src/.+/\\.devcontainer/Dockerfile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) tag=(?<currentValue>\\S+)\\nARG BASE_IMAGE=\\S+@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["terraform"],
+      "groupName": "Terraform Provider updates",
+      "labels": ["terraform", "infrastructure"]
     },
-    "packageRules": [
-      {
-        "matchManagers": ["terraform"],
-        "groupName": "Terraform Provider updates",
-        "labels": ["terraform", "infrastructure"]
-      },
-      {
-        "matchPackagePatterns": ["^hashicorp/aws$"],
-        "groupName": "AWS Provider updates",
-        "labels": ["terraform", "aws", "provider"]
-      }
-    ]
-  }
+    {
+      "matchPackageNames": ["/^hashicorp/aws$/"],
+      "groupName": "AWS Provider updates",
+      "labels": ["terraform", "aws", "provider"]
+    },
+    {
+      "description": "ARG BASE_IMAGE は tag 無しなので dockerfile マネージャーだと latest（非 LTS）に寄せてしまう。customManagers 側で扱う",
+      "matchManagers": ["dockerfile"],
+      "matchDepNames": ["mcr.microsoft.com/devcontainers/base"],
+      "enabled": false
+    },
+    {
+      "description": "Claude Code はほぼ毎日リリースされるので、週 1 回・公開から 3 日経ったものだけにする",
+      "matchPackageNames": ["@anthropic-ai/claude-code"],
+      "minimumReleaseAge": "3 days",
+      "schedule": ["* 0-8 * * 1"]
+    }
+  ]
+}
