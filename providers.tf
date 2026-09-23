@@ -4,7 +4,7 @@ provider "github" {
   # See docs/reference/github-authentication.md for what these are.
   # Authentication comes from the GITHUB_APP_ID / GITHUB_APP_INSTALLATION_ID /
   # GITHUB_APP_PEM_FILE environment variables on HCP Terraform, declared in
-  # hcp_terraform.tf. The provider reads the GITHUB_APP_ prefix without an
+  # main.tf. The provider reads the GITHUB_APP_ prefix without an
   # app_auth block and mints a one-hour installation token per run.
 }
 

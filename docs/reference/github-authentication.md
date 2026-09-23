@@ -65,7 +65,7 @@ workspace `works`（リポジトリ `haruka-aibara/works`）に設定されて�
 
 ### `vcs_repo.oauth_token_id` は別系統
 
-`hcp_terraform.tf` にも GitHub との接続が出てくるが、**上の `GITHUB_APP_*` とは無関係**である。層が違う。
+`main.tf` の `tfe_workspace` にも GitHub との接続が出てくるが、**上の `GITHUB_APP_*` とは無関係**である。層が違う。
 
 | | 何と何を繋ぐか | 実体 |
 |---|---|---|
@@ -110,7 +110,7 @@ Organization permissions は全て No access でよい。`POST /orgs/{org}/repos
 
 ### コミットの作者
 
-`github_repository_file` が作るコミットは App の bot 名義になる。`terraform_ci.tf` / `python_ci.tf` の
+`github_repository_file` が作るコミットは App の bot 名義になる。`main.tf` の CI 配布リソースの
 
 ```hcl
 lifecycle {
@@ -258,6 +258,6 @@ awk '{printf "%s\\n", $0}' your-app.private-key.pem
 ## 関連
 
 - [GitHub Organization 移行 + GitHub App 認証 移行手順書](../runbooks/github-org-migration-and-app-auth.md) — この構成に至った経緯と、各判断の根拠
-- `workspace_variables.tf` — 変数の宣言
+- `main.tf` の `tfe_variable` — 変数の宣言
 - `providers.tf` — provider 設定（認証の記述は無い）
-- `hcp_terraform.tf` — workspace と VCS 連携
+- `main.tf` の HCP Terraform セクション — workspace と VCS 連携
