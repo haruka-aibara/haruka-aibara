@@ -55,7 +55,6 @@ bash .devcontainer/smoke-test.sh
 1. 旧 package（`devcontainer-templates/haruka-aibara-dev-env`）を deprecated 扱いにするか削除する
 2. Terraform から管理を外す
    - `main.tf` の `module "devcontainer-templates"` を削除
-   - `imports.tf` の対応する `import` ブロックを削除
    - `modules/repository` の `github_repository` には `prevent_destroy = true` が付いている。**リポジトリごと消す**なら `modules/repository/main.tf` の lifecycle を一時的に外して apply する（`bedrock-slack-ai-chatbot` を消したときと同じやり方）。**リポジトリは残して管理だけ外す**なら `removed { from = module.devcontainer-templates, lifecycle { destroy = false } }` を足す（`removed` ブロックは apply 後に消す一時的なもの）
    - `works` ワークスペースは `auto_apply = true`。main にマージした時点で apply が走るので、plan は PR の speculative run で確認する
 3. GitHub 上でリポジトリを archive または delete する
