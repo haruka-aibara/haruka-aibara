@@ -234,7 +234,7 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <h3>設定ミスに気づく仕組みは他にもある。なぜ Prowler か</h3>
 <p>用途から逆算するなら、最初に片づけるべき疑問はこれです。AWS には Trusted Advisor も Config も Security Hub CSPM もあり、どれも設定ミスに気づける仕組みです。わざわざ別のツールを持ち込む理由は何なのか。</p>
 <p>4 つを同じ軸で並べると、性格がはっきり分かれます。</p>
-<div class="tw"><table><thead><tr><th></th><th>Trusted Advisor</th><th>Config</th><th>Security Hub CSPM</th><th>Prowler</th></tr></thead><tbody>
+<div class="tw"><table><thead><tr><th scope="col"></th><th scope="col">Trusted Advisor</th><th scope="col">Config</th><th scope="col">Security Hub CSPM</th><th scope="col">Prowler</th></tr></thead><tbody>
 <tr><td>本来の役割</td><td>推奨事項の提示</td><td>構成の記録と追跡</td><td>基準への準拠評価</td><td>基準への準拠評価</td></tr>
 <tr><td>CIS・PCI DSS で報告できるか</td><td>できない（基準に紐づかない）</td><td>コンフォーマンスパックで可</td><td>できる</td><td>できる</td></tr>
 <tr><td>使い始めるのに必要なもの</td><td>項目によってサポートプラン</td><td>有効化＋記録の設定</td><td>有効化（Config が前提）</td><td><code>pip install</code> だけ</td></tr>
@@ -249,7 +249,7 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <h3>Prowler にしかないチェックがある</h3>
 <p>Trusted Advisor も Config も Security Hub CSPM も、見ているのは<strong>設定項目が基準どおりか</strong>です。「暗号化が ON か」「パブリックアクセスがブロックされているか」——設定の状態を確認しています。</p>
 <p>Prowler には、それに加えて<strong>値の中身を読んで「秘密が直書きされていないか」を探すチェック</strong>があります。</p>
-<div class="tw"><table><thead><tr><th>チェック</th><th>何を見るか</th></tr></thead><tbody>
+<div class="tw"><table><thead><tr><th scope="col">チェック</th><th scope="col">何を見るか</th></tr></thead><tbody>
 <tr><td><code>awslambda_function_no_secrets_in_variables</code></td><td>Lambda の<strong>環境変数</strong>に API キー・トークン・パスワードらしき値が入っていないか</td></tr>
 <tr><td><code>ec2_instance_secrets_user_data</code></td><td>EC2 の<strong>ユーザーデータ</strong>に認証情報が書かれていないか</td></tr>
 <tr><td><code>ecs_task_definitions_no_environment_secrets</code></td><td>ECS タスク定義の環境変数に秘密が入っていないか</td></tr>
@@ -331,7 +331,7 @@ prowler aws --list-compliance   # 指定できるフレームワークの一覧<
 <div class="note"><strong>Prowler の実行はスナップショットです。</strong> 実行と実行の間に開いたポートは、次に回すまで見えません。「常時見張ってくれる」ものだと思って入れると、期待と実態がずれます。</div>
 
 <h3>提案するときの言い方</h3>
-<div class="tw"><table><thead><tr><th>技術的な言い方</th><th>ビジネス側に刺さる言い方</th></tr></thead><tbody>
+<div class="tw"><table><thead><tr><th scope="col">技術的な言い方</th><th scope="col">ビジネス側に刺さる言い方</th></tr></thead><tbody>
 <tr><td>Prowler で CIS Benchmark をスキャンする</td><td>取引先のセキュリティチェックシートに、その都度調べ直さずに数字で答えられる</td></tr>
 <tr><td>マルチクラウド対応の点検ツールを入れる</td><td>AWS も Azure も同じものさしで並べて、どちらが手薄かを比較できる</td></tr>
 <tr><td>読み取り専用の権限で実行する</td><td>本番環境に書き込む権限を渡さずに済むので、導入そのもののリスクがほぼない</td></tr>

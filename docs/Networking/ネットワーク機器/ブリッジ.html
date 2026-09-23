@@ -105,10 +105,12 @@ a{color:var(--c1)}
 <h2>ブリッジとスイッチの関係</h2>
 <p>やっていることは同じで、違いは規模と実装。</p>
 <table>
-<tr><th></th><th>ブリッジ</th><th>スイッチングハブ</th></tr>
-<tr><th>ポート数</th><td>2〜数ポート</td><td>8〜48 ポートなど多数</td></tr>
-<tr><th>処理</th><td>ソフトウェア処理が主</td><td>専用チップ（ASIC）で高速処理</td></tr>
-<tr><th>位置づけ</th><td>セグメントどうしをつなぐ</td><td>1 ポート＝1 セグメントまで細分化</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">ブリッジ</th><th scope="col">スイッチングハブ</th></tr></thead>
+<tbody>
+<tr><th scope="row">ポート数</th><td>2〜数ポート</td><td>8〜48 ポートなど多数</td></tr>
+<tr><th scope="row">処理</th><td>ソフトウェア処理が主</td><td>専用チップ（ASIC）で高速処理</td></tr>
+<tr><th scope="row">位置づけ</th><td>セグメントどうしをつなぐ</td><td>1 ポート＝1 セグメントまで細分化</td></tr>
+</tbody>
 </table>
 <p>つまりスイッチは「ポートを増やして高速化したブリッジ」。現在ブリッジという製品を買う場面はほぼないが、仮想化環境では Linux の <code>brctl</code> や仮想ブリッジとして今も現役の概念。</p>
 

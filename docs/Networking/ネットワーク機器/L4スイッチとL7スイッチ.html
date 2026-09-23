@@ -109,10 +109,12 @@ a{color:var(--c1)}
 
 <h2>使い分け</h2>
 <table>
-<tr><th></th><th>L4 スイッチ</th><th>L7 スイッチ</th></tr>
-<tr><th>判断材料</th><td>IP アドレス・ポート番号</td><td>URL・Host ヘッダ・Cookie など</td></tr>
-<tr><th>できること</th><td>台数分の負荷分散、死活監視</td><td>パスによる振り分け、セッション固定、TLS 終端、WAF 連携</td></tr>
-<tr><th>処理コスト</th><td>低い</td><td>高い（中身を解析するため）</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">L4 スイッチ</th><th scope="col">L7 スイッチ</th></tr></thead>
+<tbody>
+<tr><th scope="row">判断材料</th><td>IP アドレス・ポート番号</td><td>URL・Host ヘッダ・Cookie など</td></tr>
+<tr><th scope="row">できること</th><td>台数分の負荷分散、死活監視</td><td>パスによる振り分け、セッション固定、TLS 終端、WAF 連携</td></tr>
+<tr><th scope="row">処理コスト</th><td>低い</td><td>高い（中身を解析するため）</td></tr>
+</tbody>
 </table>
 <p>AWS でいえば <strong>NLB が L4</strong>、<strong>ALB が L7</strong> にあたる。単純に台数を並べたいだけなら NLB、マイクロサービスをパスで振り分けたり WAF を挟んだりするなら ALB、という選択になる。</p>
 

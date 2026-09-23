@@ -179,10 +179,12 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th>種類</th><th>典型的な入口</th><th>直す場所</th></tr>
+<thead><tr><th scope="col">種類</th><th scope="col">典型的な入口</th><th scope="col">直す場所</th></tr></thead>
+<tbody>
 <tr><td>Reflected</td><td>検索キーワードの再表示、エラーメッセージ、リダイレクト先の表示</td><td rowspan="2">サーバ側の<strong>出力時エスケープ</strong>。テンプレートエンジンの自動エスケープを切らない</td></tr>
 <tr><td>Stored</td><td>掲示板・コメント・プロフィール。<em>管理画面のログ表示</em>も狙われる（管理者権限を取れる）</td></tr>
 <tr><td>DOM Based</td><td><code>location.hash</code> や <code>location.search</code> を JS が DOM に流し込む箇所、SPA のルーティング</td><td><strong>サーバ側では直せない</strong>。危険なシンクを使わない</td></tr>
+</tbody>
 </table>
 
 <p>DOM Based で言う「危険なシンク」は <code>innerHTML</code> / <code>outerHTML</code> / <code>document.write</code> / <code>insertAdjacentHTML</code> / <code>eval</code> あたり。文字列として表示したいだけなら <code>textContent</code> を使う。React や Vue の標準のバインディングは自動でエスケープするので、<code>dangerouslySetInnerHTML</code> や <code>v-html</code> を使わない限りは踏みにくい。</p>

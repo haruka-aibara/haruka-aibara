@@ -100,10 +100,12 @@ a{color:var(--c1)}
 <h2>実際の範囲は IANA の定義どおりではない</h2>
 <p>IANA は動的ポートを <strong>49152〜65535</strong> と定めているが、<strong>実際の OS はこれに従っていないことが多い</strong>。1024 番以降の任意のポートを使う実装が普通で、確認や変更ができる。</p>
 <table>
-<tr><th>OS</th><th>既定の範囲</th><th>確認方法</th></tr>
+<thead><tr><th scope="col">OS</th><th scope="col">既定の範囲</th><th scope="col">確認方法</th></tr></thead>
+<tbody>
 <tr><td>Linux</td><td>32768〜60999</td><td><code>sysctl net.ipv4.ip_local_port_range</code></td></tr>
 <tr><td>Windows</td><td>49152〜65535</td><td><code>netsh int ipv4 show dynamicport tcp</code></td></tr>
 <tr><td>macOS</td><td>49152〜65535</td><td><code>sysctl net.inet.ip.portrange</code></td></tr>
+</tbody>
 </table>
 <p>Linux の範囲が 1024 番台まで下がっていないのは、そこに登録済みポートを使うサービスがあるため。ただし「49152 未満は使われない」と前提を置くと、Linux では成り立たない。</p>
 

@@ -121,10 +121,12 @@ a{color:var(--c1)}
 
 <div class="tw">
 <table>
-<tr><th></th><th>システム監査</th><th>情報セキュリティ監査</th></tr>
-<tr><th>何を見るか</th><td>情報システムが経営に貢献しているか。可用性・機密性・完全性に加え、有効性・効率性・準拠性まで</td><td>情報セキュリティが確保されているか（機密性・完全性・可用性）</td></tr>
-<tr><th>対象</th><td>企画・開発・運用・保守のライフサイクル全体</td><td>組織の情報セキュリティ管理策全般</td></tr>
-<tr><th>あるべき姿の拠り所</th><td>システム管理基準</td><td>情報セキュリティ管理基準</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">システム監査</th><th scope="col">情報セキュリティ監査</th></tr></thead>
+<tbody>
+<tr><th scope="row">何を見るか</th><td>情報システムが経営に貢献しているか。可用性・機密性・完全性に加え、有効性・効率性・準拠性まで</td><td>情報セキュリティが確保されているか（機密性・完全性・可用性）</td></tr>
+<tr><th scope="row">対象</th><td>企画・開発・運用・保守のライフサイクル全体</td><td>組織の情報セキュリティ管理策全般</td></tr>
+<tr><th scope="row">あるべき姿の拠り所</th><td>システム管理基準</td><td>情報セキュリティ管理基準</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -134,10 +136,12 @@ a{color:var(--c1)}
 
 <div class="tw">
 <table>
-<tr><th>種類</th><th>やる人</th><th>典型例</th></tr>
-<tr><th>第一者監査<br>（内部監査）</th><td>自組織の監査部門</td><td>ISMS の内部監査、社内のシステム監査。目的は自分たちの改善</td></tr>
-<tr><th>第二者監査</th><td>取引先・委託元など利害関係者</td><td>委託先監査。「預けたデータが約束どおり扱われているか」を委託元が見に行く</td></tr>
-<tr><th>第三者監査</th><td>利害関係のない外部機関</td><td>ISMS 認証審査、SOC 報告書。対外的な保証が要るときはこれしかない</td></tr>
+<thead><tr><th scope="col">種類</th><th scope="col">やる人</th><th scope="col">典型例</th></tr></thead>
+<tbody>
+<tr><th scope="row">第一者監査<br>（内部監査）</th><td>自組織の監査部門</td><td>ISMS の内部監査、社内のシステム監査。目的は自分たちの改善</td></tr>
+<tr><th scope="row">第二者監査</th><td>取引先・委託元など利害関係者</td><td>委託先監査。「預けたデータが約束どおり扱われているか」を委託元が見に行く</td></tr>
+<tr><th scope="row">第三者監査</th><td>利害関係のない外部機関</td><td>ISMS 認証審査、SOC 報告書。対外的な保証が要るときはこれしかない</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -147,10 +151,12 @@ a{color:var(--c1)}
 
 <div class="tw">
 <table>
-<tr><th></th><th>監査証跡（audit trail）</th><th>監査証拠（audit evidence）</th></tr>
-<tr><th>誰のものか</th><td>被監査部門側にもともとあるもの</td><td>監査人が入手・評価したもの</td></tr>
-<tr><th>正体</th><td>処理の履歴。アクセスログ、変更履歴、承認記録、伝票</td><td>結論の裏付けになる事実。証跡の写しに加え、ヒアリング記録、現地で観察した事実、再実行した結果</td></tr>
-<tr><th>監査がなければ</th><td>それでも存在する</td><td>存在しない</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">監査証跡（audit trail）</th><th scope="col">監査証拠（audit evidence）</th></tr></thead>
+<tbody>
+<tr><th scope="row">誰のものか</th><td>被監査部門側にもともとあるもの</td><td>監査人が入手・評価したもの</td></tr>
+<tr><th scope="row">正体</th><td>処理の履歴。アクセスログ、変更履歴、承認記録、伝票</td><td>結論の裏付けになる事実。証跡の写しに加え、ヒアリング記録、現地で観察した事実、再実行した結果</td></tr>
+<tr><th scope="row">監査がなければ</th><td>それでも存在する</td><td>存在しない</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -196,11 +202,13 @@ a{color:var(--c1)}
 
 <div class="tw">
 <table>
-<tr><th>基準</th><th>発行</th><th>何を規定するか</th></tr>
-<tr><th>システム監査基準</th><td>経済産業省</td><td>監査人の行為規範と監査手続。独立性、計画、証拠の入手、報告の作法</td></tr>
-<tr><th>システム管理基準</th><td>経済産業省</td><td>被監査側のあるべき姿。IT ガバナンスと、企画・開発・運用・保守の管理項目</td></tr>
-<tr><th>情報セキュリティ管理基準</th><td>経済産業省</td><td>セキュリティ版のあるべき姿。ISO/IEC 27001・27002 がベース</td></tr>
-<tr><th>ISO 19011<br>（JIS Q 19011）</th><td>ISO / JIS</td><td>マネジメントシステム監査の指針。第一者・第二者監査で使う共通の作法（第三者の認証審査は ISO/IEC 17021-1）</td></tr>
+<thead><tr><th scope="col">基準</th><th scope="col">発行</th><th scope="col">何を規定するか</th></tr></thead>
+<tbody>
+<tr><th scope="row">システム監査基準</th><td>経済産業省</td><td>監査人の行為規範と監査手続。独立性、計画、証拠の入手、報告の作法</td></tr>
+<tr><th scope="row">システム管理基準</th><td>経済産業省</td><td>被監査側のあるべき姿。IT ガバナンスと、企画・開発・運用・保守の管理項目</td></tr>
+<tr><th scope="row">情報セキュリティ管理基準</th><td>経済産業省</td><td>セキュリティ版のあるべき姿。ISO/IEC 27001・27002 がベース</td></tr>
+<tr><th scope="row">ISO 19011<br>（JIS Q 19011）</th><td>ISO / JIS</td><td>マネジメントシステム監査の指針。第一者・第二者監査で使う共通の作法（第三者の認証審査は ISO/IEC 17021-1）</td></tr>
+</tbody>
 </table>
 </div>
 

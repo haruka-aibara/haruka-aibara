@@ -120,11 +120,13 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th>種類</th><th>送るもの</th><th>開いている</th><th>閉じている</th><th>特徴</th></tr>
+<thead><tr><th scope="col">種類</th><th scope="col">送るもの</th><th scope="col">開いている</th><th scope="col">閉じている</th><th scope="col">特徴</th></tr></thead>
+<tbody>
 <tr><td>TCP（コネクト）</td><td>3ウェイハンドシェイクを完走</td><td>接続成立</td><td>RST</td><td>結果は確実。接続ログに残る</td></tr>
 <tr><td>SYN（ステルス／ハーフオープン）</td><td>SYN のみ。応答が来たら RST で打ち切る</td><td>SYN/ACK</td><td>RST</td><td>成立させないのでログに残りにくい</td></tr>
 <tr><td>FIN</td><td>FIN フラグだけ</td><td>応答なし</td><td>RST</td><td>「応答なし＝開」と逆読みする</td></tr>
 <tr><td>NULL</td><td>フラグを全部 0</td><td>応答なし</td><td>RST</td><td>同上</td></tr>
+</tbody>
 </table>
 
 <h2>知っておくこと2つ</h2>

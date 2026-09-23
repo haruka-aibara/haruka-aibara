@@ -138,11 +138,13 @@ a{color:var(--c1)}
 
 <h2>4つを一言で整理する</h2>
 <table>
-<tr><th>略語（英語）</th><th>日本語</th><th>一言でいうと</th></tr>
+<thead><tr><th scope="col">略語（英語）</th><th scope="col">日本語</th><th scope="col">一言でいうと</th></tr></thead>
+<tbody>
 <tr><td>CA<br><small>Certification Authority</small></td><td>認証局</td><td>証明書を信頼できるものとして運用する責任を持つ主体。RA・IA・VA を含む全体を指して使うこともある</td></tr>
 <tr><td>RA<br><small>Registration Authority</small></td><td>登録局</td><td>申請を受け、申請者と名前の結び付きを確認する</td></tr>
 <tr><td>IA<br><small>Issuing Authority</small></td><td>発行局</td><td>確認済みの内容に CA の秘密鍵で署名し、証明書を発行する</td></tr>
 <tr><td>VA<br><small>Validation Authority</small></td><td>検証局</td><td>証明書が失効していないかを確認できるようにする</td></tr>
+</tbody>
 </table>
 <p>この分担は、認証局の運用規程である CP（Certificate Policy、証明書ポリシー）や CPS（Certification Practice Statement、認証実務規程）に表れる。特に「RA はどこまで本人確認するか」は認証局ごとに違い、その差が<a href="ドメイン認証と企業認証とEV認証.html">DV／OV／EV</a> の証明書の種類につながる。</p>
 

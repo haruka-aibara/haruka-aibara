@@ -139,12 +139,14 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th>モード</th><th>性質</th><th>いま選ぶか</th></tr>
+<thead><tr><th scope="col">モード</th><th scope="col">性質</th><th scope="col">いま選ぶか</th></tr></thead>
+<tbody>
 <tr><td><a href="ECB.html">ECB</a></td><td>ブロックごとに独立して暗号化</td><td>選ばない</td></tr>
 <tr><td><a href="CBC.html">CBC</a></td><td>前の暗号文と XOR してから暗号化。IV が必要</td><td>既存システムで見る。新規なら避ける</td></tr>
 <tr><td><a href="OFB.html">OFB</a></td><td>鍵ストリームを作って XOR。パディング不要</td><td>新規なら CTR を使う</td></tr>
 <tr><td>CTR</td><td>カウンタから鍵ストリームを作る。並列処理できる</td><td>可</td></tr>
 <tr><td>GCM</td><td>CTR に改ざん検知を統合（AEAD）</td><td><strong>これを選ぶ</strong></td></tr>
+</tbody>
 </table>
 
 <div class="note">

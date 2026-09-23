@@ -262,12 +262,14 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th></th><th>共通鍵</th><th>公開鍵</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">共通鍵</th><th scope="col">公開鍵</th></tr></thead>
+<tbody>
 <tr><td>鍵の本数</td><td>1 本を両者で共有</td><td>2 本 1 組（公開鍵・秘密鍵）</td></tr>
 <tr><td>たとえると</td><td>金庫の鍵</td><td>南京錠と、その鍵</td></tr>
 <tr><td>速さ</td><td>速い</td><td>遅い</td></tr>
 <tr><td>困ること</td><td>鍵をどう渡すか</td><td>速度</td></tr>
 <tr><td>TLS での役目</td><td>実データの暗号化</td><td>その鍵を共有するまで</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -392,12 +394,14 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th>証明書に入っているもの</th><th>意味</th></tr>
+<thead><tr><th scope="col">証明書に入っているもの</th><th scope="col">意味</th></tr></thead>
+<tbody>
 <tr><td>公開鍵</td><td>このサーバの南京錠</td></tr>
 <tr><td>SAN（ホスト名）</td><td>どのホスト名のための証明書か。<code>example.com</code> など</td></tr>
 <tr><td>有効期限</td><td>いつからいつまで有効か</td></tr>
 <tr><td>発行元（CA）の名前</td><td>誰が保証したか</td></tr>
 <tr><td>CA の署名</td><td>上の内容全部に対する、CA の秘密鍵による署名</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -634,9 +638,11 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th></th><th>RSA 鍵交換</th><th>(EC)DHE</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">RSA 鍵交換</th><th scope="col">(EC)DHE</th></tr></thead>
+<tbody>
 <tr><td>証明書の公開鍵の用途</td><td>クライアントが送ってきた秘密の値を、暗号化された状態で受け取るため</td><td>サーバが出した一時公開鍵に署名するため</td></tr>
 <tr><td>鍵交換に関わるか</td><td>関わる。この鍵がないと秘密の値を渡せない</td><td>関わらない。鍵交換は <code>a</code> と <code>b</code> だけで完結する</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -809,11 +815,13 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th>症状</th><th>原因</th><th>切り分けの観点</th></tr>
+<thead><tr><th scope="col">症状</th><th scope="col">原因</th><th scope="col">切り分けの観点</th></tr></thead>
+<tbody>
 <tr><td>ブラウザでは正常、curl や古い端末・アプリだけエラー</td><td>中間 CA 証明書がサーバから配信されていない</td><td>ブラウザは過去に見た中間 CA をキャッシュしたり自力で取得したりして繋がってしまう。サーバが返す証明書チェーンを直接確認する</td></tr>
 <tr><td>名前が一致しないというエラー</td><td>SAN に接続先ホスト名がない</td><td>www 有無、ワイルドカードの階層（<code>*.example.com</code> は <code>a.b.example.com</code> に一致しない）、IP アドレス直打ちでのアクセス</td></tr>
 <tr><td>ある日突然すべての利用者でエラー</td><td>証明書の期限切れ</td><td>更新はできていて配置・再読み込みが漏れている場合もある。実際に配信されている証明書の期限を見る</td></tr>
 <tr><td>特定の端末だけ「まだ有効でない／期限切れ」</td><td>端末の時刻ずれ</td><td>期限判定は端末の時計が基準。NTP が止まっている、仮想マシンの復元直後などを疑う</td></tr>
+</tbody>
 </table>
 </div>
 

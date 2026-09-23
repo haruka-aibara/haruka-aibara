@@ -313,7 +313,7 @@ def table(aws, monkeypatch):
 <p>偽のクレデンシャルは飾りではありません。設定を間違えて moto の外に出てしまったとき、<strong>本物のアカウントに届かせないための最後の砦</strong>です。<code>monkeypatch.setenv</code> で入れておけば、テストが終わると環境変数も元に戻ります。</p>
 <p>3 本の線のうち、moto が代わりをするのは DynamoDB だけです。残り 2 本は自分で塞ぎます。</p>
 <div class="tw"><table>
-<thead><tr><th>外に出ていく線</th><th>どうするか</th><th>理由</th></tr></thead>
+<thead><tr><th scope="col">外に出ていく線</th><th scope="col">どうするか</th><th scope="col">理由</th></tr></thead>
 <tbody>
 <tr><td>DynamoDB（台帳）</td><td>moto に任せる</td><td>返り値の形も書き込みの規則も本物側が持つ。書いたものを読み返して確かめたい</td></tr>
 <tr><td>Trusted Advisor</td><td>自分の関数の境目で差し替える</td><td>moto は<strong>サービスと API 単位</strong>で対応する。<code>ListRecommendations</code> は未実装で、呼ぶと <code>404 Not yet implemented</code> が返る</td></tr>
