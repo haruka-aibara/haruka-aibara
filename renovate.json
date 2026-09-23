@@ -1,21 +1,68 @@
 {
-    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-    "extends": [
-      "config:base"
-    ],
-    "terraform": {
-      "enabled": true
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "terraform": {
+    "enabled": true
+  },
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
+  "customManagers": [
+    {
+      "description": "devcontainer Dockerfile: # renovate: コメント付きの ARG *_VERSION",
+      "customType": "regex",
+      "managerFilePatterns": ["/^devcontainer-templates/src/.+/\\.devcontainer/Dockerfile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\nARG \\w+_VERSION=(?<currentValue>\\S+)"
+      ]
     },
-    "packageRules": [
-      {
-        "matchManagers": ["terraform"],
-        "groupName": "Terraform Provider updates",
-        "labels": ["terraform", "infrastructure"]
-      },
-      {
-        "matchPackagePatterns": ["^hashicorp/aws$"],
-        "groupName": "AWS Provider updates",
-        "labels": ["terraform", "aws", "provider"]
-      }
-    ]
-  }
+    {
+      "description": "devcontainer Dockerfile: タグ無し digest でピンしたベースイメージ",
+      "customType": "regex",
+      "managerFilePatterns": ["/^devcontainer-templates/src/.+/\\.devcontainer/Dockerfile$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+) tag=(?<currentValue>\\S+)\\nARG BASE_IMAGE=\\S+@(?<currentDigest>sha256:[a-f0-9]{64})"
+      ]
+    },
+    {
+      "description": "devcontainer-lock.json: features のバージョンと digest",
+      "customType": "regex",
+      "managerFilePatterns": ["/^devcontainer-templates/src/.+/\\.devcontainer/devcontainer-lock\\.json$/"],
+      "matchStrings": [
+        "\"version\": \"(?<currentValue>[^\"]+)\",\\s*\"resolved\": \"(?<depName>[^@\"]+)@(?<currentDigest>sha256:[a-f0-9]{64})\",\\s*\"integrity\": \"sha256:[a-f0-9]{64}\""
+      ],
+      "datasourceTemplate": "docker",
+      "autoReplaceStringTemplate": "\"version\": \"{{{newValue}}}\",\n      \"resolved\": \"{{{depName}}}@{{{newDigest}}}\",\n      \"integrity\": \"{{{newDigest}}}\""
+    }
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["terraform"],
+      "groupName": "Terraform Provider updates",
+      "labels": ["terraform", "infrastructure"]
+    },
+    {
+      "matchPackagePatterns": ["^hashicorp/aws$"],
+      "groupName": "AWS Provider updates",
+      "labels": ["terraform", "aws", "provider"]
+    },
+    {
+      "description": "ARG BASE_IMAGE は tag 無しなので dockerfile マネージャーだと latest（非 LTS）に寄せてしまう。customManagers 側で扱う",
+      "matchManagers": ["dockerfile"],
+      "matchDepNames": ["mcr.microsoft.com/devcontainers/base"],
+      "enabled": false
+    },
+    {
+      "description": "lock は devcontainer.json のメジャータグ（:1 など）に揃える。メジャーは devcontainer.json 側で上げる",
+      "matchFileNames": ["devcontainer-templates/**/devcontainer-lock.json"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    },
+    {
+      "matchFileNames": ["devcontainer-templates/**/devcontainer-lock.json"],
+      "groupName": "devcontainer features"
+    }
+  ]
+}

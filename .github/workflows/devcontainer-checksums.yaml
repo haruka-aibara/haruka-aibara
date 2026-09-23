@@ -1,0 +1,35 @@
+# Renovate が devcontainer の Dockerfile のツールバージョンを上げたとき、
+# 対応する SHA256 を計算し直して同じブランチに push する。
+# Renovate は SHA256 を計算できないため、この後追いが要る。
+name: Update Dev Container Checksums
+
+on:
+  push:
+    branches:
+      - 'renovate/**'
+    paths:
+      - 'devcontainer-templates/src/haruka-aibara-dev-env/.devcontainer/Dockerfile'
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: devcontainer-templates/scripts/update-checksums.sh
+
+      # このコミットの author は renovate.json の gitIgnoredAuthors に入れてあるので、
+      # Renovate は引き続きこのブランチを rebase・更新する。
+      - name: Commit and push
+        run: |
+          if git diff --quiet; then
+            echo "checksums are up to date"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am 'fix(devcontainer): SHA256 をバージョンに合わせて更新'
+          git push

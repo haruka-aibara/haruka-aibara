@@ -17,6 +17,7 @@ ghcr.io/haruka-aibara/works/haruka-aibara-dev-env:latest
 ```
 devcontainer-templates/
   README.md                          # このファイル
+  scripts/update-checksums.sh        # Dockerfile の SHA256 をバージョンに合わせて書き換える
   docs/adr/                          # 設計判断の記録
   docs/superpowers/                  # 初期設計時の plan / spec
   src/haruka-aibara-dev-env/
@@ -40,6 +41,19 @@ devcontainer-templates/
 | post-create.sh | flake8, pylint, pyre-check, pytest, ansible-core, ansible-lint（uv tool）, Terraform 最新安定版（tenv）, Mermaid の AWS アイコン設定 |
 
 公式 Feature があるものは Feature に寄せ、無いものだけ Dockerfile にバージョンピン + SHA256 検証で残す方針。理由は [`docs/adr/0002-prefer-devcontainer-features.md`](docs/adr/0002-prefer-devcontainer-features.md)。
+
+## ハッシュの自動更新（Renovate）
+
+ピンしているハッシュはルートの `renovate.json` の `customManagers` で追跡する。
+
+| 対象 | 更新のしかた |
+|---|---|
+| `Dockerfile` の `BASE_IMAGE` digest | `# renovate:` コメントの `tag=ubuntu-24.04` の digest を Renovate が追う |
+| `Dockerfile` の `*_VERSION` | `# renovate:` コメントの datasource / depName で Renovate が上げる |
+| `Dockerfile` の `*_SHA256_*` | Renovate では計算できないので、`renovate/**` ブランチで `.github/workflows/devcontainer-checksums.yaml` が `scripts/update-checksums.sh` を実行して追いコミットする |
+| `devcontainer-lock.json` の version / digest | Renovate が同じメジャー内で更新する（1 PR にまとめる）。メジャーは `devcontainer.json` のタグ側で上げる |
+
+ツールを Dockerfile に足すときは `ARG *_VERSION` の直前に `# renovate: datasource=... depName=...` を書き、`scripts/update-checksums.sh` に SHA256 の計算を足す。
 
 ホストの認証情報はマウントしない。コンテナ内で `aws login` / `gcloud auth login` / `gh auth login` する（[`docs/adr/0004-auth-no-long-lived-secrets.md`](docs/adr/0004-auth-no-long-lived-secrets.md)）。
 
