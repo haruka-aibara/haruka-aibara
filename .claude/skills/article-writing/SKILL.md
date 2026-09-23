@@ -93,7 +93,6 @@ CI の markdownlint（設定は `.markdownlint-cli2.jsonc`）で検査される�
 - **図が主役、文章は図の補助**。図を入れたぶん文章は削る。図の内容を文章で言い直さない
 - **`figcaption` には図に描けない補足を書く**。図のキャプションが図の説明の繰り返しになっているのは無駄
 - **色は `:root` の CSS 変数で定義し、`prefers-color-scheme` でダーク対応**。SVG 内も `fill="var(--c1)"` で参照する。図の色数は4〜5色まで
-- **表は `<thead>` と `<tbody>` に分け、`<th>` には必ず `scope` を付ける**（列見出しは `scope="col"`、行見出しは `scope="row"`）。コード中の `&` は `&amp;` と書く。CI の html-validate（設定は `.htmlvalidate.json`）で検査される
 - **本文の構成ルールは markdown 記事と同じ**（問題・場面から入る、末尾に `## 参考`）
 - **実例**: `Networking/HTTP2.html`。順番待ち vs 多重化を同じ時間軸に並べる、入れ子構造をそのまま入れ子の矩形で描く、といった作り
 
