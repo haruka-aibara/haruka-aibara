@@ -25,8 +25,7 @@
 | yamllint | `*.yml` / `*.yaml` | `.yamllint.yml` |
 | actionlint | `.github/workflows/`（`run:` の shellcheck を含む） | なし |
 | zizmor | `.github/workflows/` と配布元の `ci/workflows/` | `.github/zizmor.yml` |
-| Nu Html Checker（vnu） | `*.html` | なし |
-| html-validate（補助） | `*.html` | `.htmlvalidate.json` |
+| html-validate | `*.html` | `.htmlvalidate.json` |
 | markdownlint（markdownlint-cli2） | `*.md` | `.markdownlint-cli2.jsonc` |
 
 - **ツールは各形式のデファクトから選ぶ。** 根拠は「大手の文書リポジトリが実際に使っているか」と「リンター集約ツール（[Super-Linter](https://github.com/super-linter/super-linter)・[MegaLinter](https://github.com/oxsecurity/megalinter)）がその形式の標準として採用しているか」。2026-09 時点で確認した。
@@ -34,8 +33,7 @@
   - **yamllint**: GitHub-hosted の Ubuntu ランナーイメージに最初から入っている（[actions/runner-images の Ubuntu 24.04 README](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)）。ansible-lint は内部で yamllint を使っている。Super-Linter・MegaLinter とも YAML の標準リンター。
   - **actionlint**: Super-Linter・MegaLinter とも GitHub Actions の標準リンター。
   - **zizmor**: Super-Linter が actionlint と並べて GitHub Actions 用に採用している。CPython も pre-commit に actionlint と並べて入れている（[python/cpython の .pre-commit-config.yaml](https://github.com/python/cpython/blob/main/.pre-commit-config.yaml)）。actionlint が構文を見るのに対し、こちらはテンプレートインジェクション・過剰な `permissions`・action の未固定・認証情報の残留といったセキュリティ面を見るので、役割は重ならない。
-  - **Nu Html Checker（vnu）**: W3C の公式バリデータ（[validator.w3.org/nu](https://validator.w3.org/nu/)）と同じエンジン。「HTML 仕様に適合しているか」の判定ではこれが基準になる。Bootstrap も vnu-jar で検査している（[twbs/bootstrap の package.json](https://github.com/twbs/bootstrap/blob/main/package.json)）。
-  - **html-validate は補助。** デファクトではない（Super-Linter・MegaLinter が HTML の標準にしているのは HTMLHint）。仕様上は正しいが避けたい書き方（表の `scope` 抜けなど）まで見られるので、vnu の後に追加で走らせる。HTMLHint は検査内容が vnu と html-validate の範囲に収まるので入れない。
+  - **html-validate は例外で、デファクトではない。** Super-Linter・MegaLinter が HTML の標準にしているのは HTMLHint。HTML はこれといった定番が無く、記事の崩れ（表の `scope` 抜け、エスケープ漏れなど）を一番細かく拾えるので html-validate を選んだ。
 - **Markdown は `--fix` で空行まわりを自動修正できるのも決め手。** 独自ルールを書かずに済む。
 - **見るのは「構造の崩れ」だけ。書き方の好みは見ない。** 行長・表の列揃え・コードの言語指定・見出し末尾の句読点・同名見出しなどは無効にする。1000本超の既存メモを好みに合わせて書き換えるのは割に合わず、ノイズが多いと CI を無視するようになる。
 - **自動修正で本文が変わるルールは切る。** 番号付きリストの番号チェック（`ol-prefix`）は、画像などで分断されたリストの番号を 1. に振り直して表示を変えてしまう。見出し末尾の「。」を消すルールも本文の変更になる。
@@ -53,4 +51,4 @@
 
 - 記事を書くたびに空行などで CI が落ちうる。手元で `npx markdownlint-cli2 --fix "**/*.md"` を流せば大半は直る。
 - 無効にしたルールの範囲の崩れ（表の見た目、リストの番号など）は引き続き目視頼み。
-- ツールのメジャーバージョンはワークフロー内で固定している（`html-validate@11`、`markdownlint-cli2@0.23`、`vnu-jar@26.9.16`、`zizmor@1.30.1`、actionlint のイメージ）。上げるときはルールが増えて既存ファイルが落ちることがあるので、同じ PR で直す。
+- ツールのメジャーバージョンはワークフロー内で固定している（`html-validate@11`、`markdownlint-cli2@0.23`、`zizmor@1.30.1`、actionlint のイメージ）。上げるときはルールが増えて既存ファイルが落ちることがあるので、同じ PR で直す。
