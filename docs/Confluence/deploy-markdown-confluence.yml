@@ -92,16 +92,16 @@ jobs:
           FOLDER: ${{ matrix.folder }}
         run: |
           set -euo pipefail
-          
+
           # Get the list of files that were deleted in this commit
           # Use git show to get the files that were deleted in the current commit
           deleted_files=$(git show --name-only --diff-filter=D --pretty=format: HEAD | grep -E "^$FOLDER/.*\\.md$" || true)
-          
+
           if [ -z "$deleted_files" ]; then
             echo "No deleted markdown files under $FOLDER in the current commit"
             exit 0
           fi
-          
+
           echo "Found deleted files:"
           echo "$deleted_files"
 

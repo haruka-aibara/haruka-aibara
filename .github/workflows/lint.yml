@@ -1,0 +1,45 @@
+# YAML / GitHub Actions / HTML の構文チェック。
+# Terraform 管理外（ci/ から配布される terraform-ci.yml / python-ci.yml とは別物）なので
+# このファイルは直接編集してよい。
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v5
+      - run: git ls-files -z '*.yml' '*.yaml' | xargs -0 uvx yamllint --strict -f github
+
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      # run: 内のシェルもイメージ同梱の shellcheck で検査される。
+      - uses: docker://rhysd/actionlint:latest
+        with:
+          args: -color
+
+  html-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # 設定は .htmlvalidate.json。docs の記事は単一ファイル HTML なので inline style などは許可している。
+      - run: git ls-files -z '*.html' | xargs -0 npx --yes html-validate@11 --formatter stylish

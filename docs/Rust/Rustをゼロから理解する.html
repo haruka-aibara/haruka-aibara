@@ -280,11 +280,11 @@ fn show(text: String) {
 
 <pre><code>fn main() {
     let s = String::from("hello");
-    let n = length(&s);             // 借用：持ち主は s のまま
+    let n = length(&amp;s);             // 借用：持ち主は s のまま
     println!("{s} は {n} バイト");   // s はまだ使える
 }
 
-fn length(text: &String) -> usize {
+fn length(text: &amp;String) -> usize {
     text.len()
 }                                   // 借りていただけなので解放しない</code></pre>
 
@@ -314,7 +314,7 @@ fn length(text: &String) -> usize {
 <text x="536" y="226" fill="var(--stop)" font-weight="700" font-size="14">×　同時には持てない</text></svg><figcaption>3 行目を禁止しているのは行儀の問題ではありません。「読んでいる最中に、他の誰かが書き換えられない」ことが保証されると、読んだ内容が途中で変わる状況そのものが消えます。この保証は、次のような一見おとなしいコードでも効いてきます。</figcaption></figure>
 
 <pre><code>let mut v = vec![1, 2, 3];
-let first = &v[0];    // 読むための借用
+let first = &amp;v[0];    // 読むための借用
 v.push(4);            // ← エラー：書き換えの借用と同時にはできない
 println!("{first}");</code></pre>
 
