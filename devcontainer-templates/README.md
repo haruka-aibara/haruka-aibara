@@ -49,7 +49,7 @@ devcontainer-templates/
 | 対象 | 更新のしかた |
 |---|---|
 | `Dockerfile` の `BASE_IMAGE` digest | `# renovate:` コメントの `tag=ubuntu-24.04` の digest を Renovate が追う |
-| `Dockerfile` の `*_VERSION` | `# renovate:` コメントの datasource / depName で Renovate が上げる |
+| `Dockerfile` の `*_VERSION` | `# renovate:` コメントを公式プリセット `customManagers:dockerfileVersions` が読んで Renovate が上げる |
 | `Dockerfile` の `*_SHA256_*` | Renovate では計算できないので、`renovate/**` ブランチで `.github/workflows/devcontainer-checksums.yaml` が `scripts/update-checksums.sh` を実行して追いコミットする |
 | `devcontainer-lock.json` の version / digest | Renovate が同じメジャー内で更新する（1 PR にまとめる）。メジャーは `devcontainer.json` のタグ側で上げる |
 

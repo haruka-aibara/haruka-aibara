@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended",
+    "customManagers:dockerfileVersions"
   ],
   "terraform": {
     "enabled": true
@@ -10,14 +11,6 @@
     "41898282+github-actions[bot]@users.noreply.github.com"
   ],
   "customManagers": [
-    {
-      "description": "devcontainer Dockerfile: # renovate: コメント付きの ARG *_VERSION",
-      "customType": "regex",
-      "managerFilePatterns": ["/^devcontainer-templates/src/.+/\\.devcontainer/Dockerfile$/"],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\nARG \\w+_VERSION=(?<currentValue>\\S+)"
-      ]
-    },
     {
       "description": "devcontainer Dockerfile: タグ無し digest でピンしたベースイメージ",
       "customType": "regex",
