@@ -1,6 +1,7 @@
 # YAML / GitHub Actions / HTML / Markdown の構文チェック。
 # Terraform 管理外（ci/ から配布される terraform-ci.yml / python-ci.yml とは別物）なので
 # このファイルは直接編集してよい。
+# 導入の経緯とルールの取捨は docs/decisions/0002-lint-ci-for-docs-and-config.md。
 name: Lint
 
 on:
