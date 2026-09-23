@@ -1,5 +1,5 @@
 # devcontainer テンプレートを ghcr.io に publish する。
-# Terraform 管理外（ci/ から配布される terraform-ci.yml / python-ci.yml とは別物）なので
+# Terraform 管理外（workflow-dist/ から配布される terraform-ci.yml / python-ci.yml とは別物）なので
 # このファイルは直接編集してよい。
 name: Release Dev Container Templates
 
