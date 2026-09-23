@@ -30,7 +30,7 @@
 - **ツールは各形式のデファクトから選ぶ。** 根拠は「大手の文書リポジトリが実際に使っているか」と「リンター集約ツール（[Super-Linter](https://github.com/super-linter/super-linter)・[MegaLinter](https://github.com/oxsecurity/megalinter)）がその形式の標準として採用しているか」。2026-09 時点で確認した。
   - **markdownlint**: GitHub Docs のコンテンツリンターは markdownlint の上に独自ルールを足したもの（[コンテンツ リンターの使用](https://docs.github.com/ja/contributing/collaborating-on-github-docs/using-the-content-linter)、[github/docs の content-linter README](https://github.com/github/docs/blob/main/src/content-linter/README.md)「新しいルールを作る前に Markdownlint にないか確認する」）。MDN（[mdn/content の package.json](https://github.com/mdn/content/blob/main/package.json)）は markdownlint-cli2 を使っている。Super-Linter・MegaLinter とも Markdown の標準リンター。
   - **yamllint**: GitHub-hosted の Ubuntu ランナーイメージに最初から入っている（[actions/runner-images の Ubuntu 24.04 README](https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md)）。ansible-lint は内部で yamllint を使っている。Super-Linter・MegaLinter とも YAML の標準リンター。
-  - **actionlint**: Super-Linter・MegaLinter とも GitHub Actions の標準リンター。GitHub 公式のワークフロー静的検査ツールは無く、この用途ではほぼ唯一の選択肢。
+  - **actionlint**: Super-Linter・MegaLinter とも GitHub Actions の標準リンター。
 - **Markdown は `--fix` で空行まわりを自動修正できるのも決め手。** 独自ルールを書かずに済む。
 - **見るのは「構造の崩れ」だけ。書き方の好みは見ない。** 行長・表の列揃え・コードの言語指定・見出し末尾の句読点・同名見出しなどは無効にする。1000本超の既存メモを好みに合わせて書き換えるのは割に合わず、ノイズが多いと CI を無視するようになる。
 - **自動修正で本文が変わるルールは切る。** 番号付きリストの番号チェック（`ol-prefix`）は、画像などで分断されたリストの番号を 1. に振り直して表示を変えてしまう。見出し末尾の「。」を消すルールも本文の変更になる。
