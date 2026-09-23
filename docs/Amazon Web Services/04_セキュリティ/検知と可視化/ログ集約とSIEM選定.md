@@ -13,16 +13,19 @@
 ログ基盤を作っただけでは何も起きない。実際に機能させるには以下が必要になる。
 
 **技術面**
+
 - 検知ルールの整備（何が「怪しい」かを自分たちで定義してアラートを書く）
 - チューニング（最初は false positive まみれになる。これを地道に減らす作業が続く）
 - ダッシュボードを誰かが定期的に能動的に見る仕組み
 
 **プロセス面**
+
 - アラートが鳴ったら誰が何をするかのプレイブック
 - オンコール体制
 - 定期的なスレットハンティング（受動的に待つだけでは意味がない）
 
 **人**
+
 - これを専任でやれるセキュリティエンジニアがチームにいるか
 
 これを踏まえると、**多くのチームには GuardDuty + Security Hub CSPM + AWS Chatbot の AWS ネイティブ構成で十分**というのが現実的な答えになる。
@@ -53,6 +56,7 @@ aws securitylake create-data-lake \
 「Athena でログを調査したい」「SIEM を繋ぐことが決まった」「コンプライアンス上の長期保存が必要」——このどれかが具体的に見えてきた段階で有効化する。用途なしに有効化しても S3 のコストが増えるだけ。
 
 有効化した場合の価値は以下：
+
 - SIEM を後で変えても生ログはここに残る（ベンダーロックインを避けられる）
 - Athena でアドホック分析できる（SIEM なしでも調査できる）
 - 全ベンダーの主要 SIEM が subscriber 連携をサポートしている
@@ -89,6 +93,7 @@ CrowdStrike Falcon Next-Gen SIEM は 2025 年時点で MQ 対象外だが、成�
 ### 選択肢の比較
 
 #### Google Chronicle（Google Security Operations）
+
 **検知品質・ロードマップで選ぶなら現状ベスト。**
 
 - Mandiant のインシデントレスポンス実績に基づく検知ルールが組み込み済み
@@ -103,6 +108,7 @@ AWS との連携は CloudTrail・GuardDuty のパーサーが用意されてい�
 IDC の調査では 3 年 ROI が 407%、投資回収 7 ヶ月未満という数字が出ている。
 
 #### Microsoft Sentinel
+
 **コスト重視・大規模環境向け。**
 
 - Microsoft 365・Entra ID・Defender との連携は他の追随を許さない
@@ -114,11 +120,13 @@ IDC の調査では 3 年 ROI が 407%、投資回収 7 ヶ月未満という数
 Microsoft スタックが中心でない場合はやや割高感があるが、スケールしたときのコスト効率は Splunk に比べて大幅に優れる。
 
 #### Splunk Enterprise Security
+
 2025 年時点でも最も成熟した検知コンテンツと SPL（Splunk Processing Language）の表現力は群を抜くが、**ライセンスコストが問題で移行が加速している**。
 
 `$1,800〜$2,500+/GB/day` という価格帯に加え、Cisco に買収（2024 年）されてからのロードマップ不透明感もあり、Sentinel や Chronicle への移行事例が増えている。Cribl を前段に入れてインジェスト量を削減するのが現実的なコスト対策。今から新規に導入する理由は薄い。
 
 #### Datadog Cloud SIEM
+
 **既存の Datadog 環境に追加するなら最もシンプル。**
 
 - CloudTrail・GuardDuty・Security Hub CSPM・WAF・S3 アクセスログ等の AWS 連携がネイティブ
@@ -130,6 +138,7 @@ Microsoft スタックが中心でない場合はやや割高感があるが、�
 DevOps 寄りのチームが「シフトレフトでセキュリティも見たい」という文脈で使うのが一番フィットする。
 
 #### Elastic Security
+
 **エンジニアリング文化のチームで自由度が欲しいなら。**
 
 - ELK Stack ベースにセキュリティ特化の検知ルールと ML を追加したもの
@@ -140,6 +149,7 @@ DevOps 寄りのチームが「シフトレフトでセキュリティも見た�
 - Gartner MQ はリーダーに入っていない。チューニングと運用に工数がかかる
 
 #### CrowdStrike Falcon Next-Gen SIEM
+
 **既存で Falcon（EDR）を使っているなら最有力の統合先。**
 
 - Index-free アーキテクチャで従来型 SIEM より高速・低コストをうたう（150 倍高速、50% ストレージ削減）
@@ -149,6 +159,7 @@ DevOps 寄りのチームが「シフトレフトでセキュリティも見た�
 - 検知コンテンツの成熟度は Splunk ES や Chronicle に比べるとまだ発展途上
 
 #### Wazuh + OpenSearch（OSS）
+
 **コスト最小で本番運用したいなら。**
 
 - OSS ライセンスで無償。商用サポートは Wazuh Inc. から別途
@@ -159,11 +170,13 @@ DevOps 寄りのチームが「シフトレフトでセキュリティも見た�
 - 1 ノードあたり約 500 EPS が目安。大規模はマルチノードクラスター構成が必要
 
 #### SIEM on Amazon OpenSearch Service（aws-samples）
+
 **AWS 公式の「自分で建てる SIEM」キット。**
 
 AWS が [GitHub で公開している OSS](https://github.com/aws-samples/siem-on-amazon-opensearch-service)。CloudFormation または CDK で 30 分デプロイするだけで AWS ログ特化の SIEM が立ち上がる。v2.10.4（2025 年 6 月）まで活発にメンテされている。
 
 含まれているもの：
+
 - CloudTrail・VPC Flow Logs・GuardDuty・WAF・ALB/NLB・RDS・Route53・S3・ECS・OS ログ・Okta 等の**ログパーサーがプリビルド済み**（約 30 種類）
 - ECS（Elastic Common Schema）で正規化
 - GeoIP（MaxMind）と脅威インテル（Tor・Abuse.ch・AlienVault OTX・独自 IoC）エンリッチ
@@ -213,12 +226,15 @@ per-GB 課金の SIEM（Splunk・Sentinel・Datadog 等）を使っている環�
 どの SIEM も Slack 対応しているが、シンプルさでは以下の順：
 
 **AWS ネイティブ（SIEM 不要）**：
+
 ```
 Security Hub CSPM findings → EventBridge → AWS Chatbot → Slack
 ```
+
 Lambda 不要。ただしメッセージフォーマットのカスタマイズは限定的。
 
 **カスタムフォーマットが必要な場合**：
+
 ```
 Security Hub CSPM findings → EventBridge → Lambda → Slack Webhook
 ```

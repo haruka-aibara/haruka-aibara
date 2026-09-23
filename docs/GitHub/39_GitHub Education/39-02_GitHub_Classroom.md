@@ -24,17 +24,20 @@
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - プログラミング授業
 - 演習課題
 - グループワーク
 - 評価管理
 
 ### メリット
+
 - 効率的な課題管理
 - 自動評価
 - 学習の可視化
 
 ### 注意点
+
 - 設定の複雑さ
 - 学生の習熟度
 - 評価の公平性
@@ -59,6 +62,7 @@
 ## 実践的なサンプル
 
 ### 課題テンプレート
+
 ```markdown
 # プログラミング演習
 
@@ -74,6 +78,7 @@
 ```
 
 ### 自動評価設定
+
 ```yaml
 # .github/classroom/autograding.yml
 name: 自動評価
@@ -92,6 +97,7 @@ jobs:
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. 設定の問題
    - 権限の確認
    - 設定の確認
@@ -103,6 +109,7 @@ jobs:
    - サポートの提供
 
 ### デバッグの手順
+
 1. エラーメッセージの確認
 2. 設定の見直し
 3. サポートへの連絡
@@ -110,16 +117,19 @@ jobs:
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 高度な課題の作成
 - 評価基準の最適化
 - フィードバックの改善
 
 ### おすすめの学習リソース
+
 - [GitHub Classroom 公式ドキュメント](https://docs.github.com/ja/education/manage-coursework-with-github-classroom)
 - [GitHub Education](https://education.github.com/)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Education Community
 - Stack Overflow
 - GitHub Discussions

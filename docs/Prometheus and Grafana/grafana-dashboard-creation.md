@@ -64,6 +64,7 @@ node_filesystem_free_bytes
    - Configuration → Data sources → Add data source
    - InfluxDBを選択
    - 以下の設定を行います：
+
      ```
      URL: http://localhost:8086
      Database: your_database
@@ -85,6 +86,7 @@ SELECT mean("value") FROM "measurement" WHERE $timeFilter GROUP BY time($interva
    - Configuration → Data sources → Add data source
    - MySQLを選択
    - 以下の設定を行います：
+
      ```
      Host: localhost:3306
      Database: your_database
@@ -150,4 +152,4 @@ WHERE
 - データソースの接続設定は、セキュリティを考慮して行ってください
 - 本番環境では、適切な認証設定を行ってください
 - ダッシュボードのバックアップを定期的に取得することをお勧めします
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/)を参照してください

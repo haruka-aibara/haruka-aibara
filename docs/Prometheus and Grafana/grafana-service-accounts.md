@@ -42,6 +42,7 @@ Grafanaのサービスアカウントは、APIや自動化スクリプトからG
 ### APIキーの管理
 
 1. **キーの作成**
+
    ```yaml
    # APIキーの作成例
    Name: automation-script
@@ -71,6 +72,7 @@ Grafanaのサービスアカウントは、APIや自動化スクリプトからG
 ### APIアクセス
 
 1. **ダッシュボードの操作**
+
    ```bash
    # ダッシュボードの取得
    curl -H "Authorization: Bearer $API_KEY" \
@@ -78,6 +80,7 @@ Grafanaのサービスアカウントは、APIや自動化スクリプトからG
    ```
 
 2. **アラートの管理**
+
    ```bash
    # アラートの作成
    curl -X POST \
@@ -90,6 +93,7 @@ Grafanaのサービスアカウントは、APIや自動化スクリプトからG
 ### 自動化スクリプト
 
 1. **バックアップの自動化**
+
    ```python
    # ダッシュボードのバックアップ
    import requests
@@ -106,6 +110,7 @@ Grafanaのサービスアカウントは、APIや自動化スクリプトからG
    ```
 
 2. **監視の自動化**
+
    ```python
    # メトリクスの取得
    response = requests.get(
@@ -146,4 +151,4 @@ Grafanaのサービスアカウントは、APIや自動化スクリプトからG
 - APIキーは安全に保管してください
 - 必要最小限の権限を設定してください
 - 定期的なキーのローテーションを行ってください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/administration/service-accounts/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/administration/service-accounts/)を参照してください

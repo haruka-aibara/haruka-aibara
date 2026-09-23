@@ -35,6 +35,7 @@ PowerPoint のアドイン（Microsoft AppSource）として Claude が使える
 **対象:** Claude Pro / Max / Team / Enterprise サブスクライバー（2025年末時点 Research Preview）
 
 **できること:**
+
 - 「このトピックでスライドを 5 枚作って」
 - 「箇条書きをもっと簡潔にして」
 - 「このスライドにグラフを追加して」

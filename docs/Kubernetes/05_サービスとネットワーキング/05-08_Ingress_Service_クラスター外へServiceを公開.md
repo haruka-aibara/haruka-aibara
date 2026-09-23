@@ -1,9 +1,11 @@
 # Kubernetes: Ingress Service
 
 ## はじめに
+
 「複数のサービスを効率的に公開したい」「SSL/TLS終端を一元管理したい」「パスベースのルーティングを実現したい」そんな悩みはありませんか？KubernetesのIngress Serviceは、これらの問題を解決し、クラスター外へのサービス公開を柔軟に管理する重要なリソースです。この記事では、Ingress Serviceの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 Ingress Serviceには、以下の3つの重要なポイントがあります：
 
 1. ルーティング
@@ -22,6 +24,7 @@ Ingress Serviceには、以下の3つの重要なポイントがあります：
    - セキュアな通信
 
 ## 実際の使い方
+
 Ingress Serviceは様々なシーンで活用できます：
 
 1. マイクロサービス
@@ -40,9 +43,11 @@ Ingress Serviceは様々なシーンで活用できます：
    - アクセス制御
 
 ## 手を動かしてみよう
+
 基本的なIngress Serviceの設定を説明します：
 
 1. Ingressの作成
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -72,6 +77,7 @@ spec:
 ```
 
 2. サービスの作成
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -97,9 +103,11 @@ spec:
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. SSL/TLS設定
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -126,6 +134,7 @@ spec:
 ```
 
 2. リダイレクト設定
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -148,6 +157,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. ルーティングが機能しない
@@ -166,6 +176,7 @@ spec:
    - ネットワークポリシーを確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. 高度なルーティング
@@ -184,5 +195,6 @@ spec:
    - エラー追跡
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
 - [Kubernetes公式ドキュメント: Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)

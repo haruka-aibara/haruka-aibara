@@ -28,6 +28,7 @@ Git Reflogの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. リフログの表示
+
 ```bash
 # すべてのリフログを表示
 git reflog
@@ -37,6 +38,7 @@ git reflog show <branch-name>
 ```
 
 2. 特定の操作の履歴を確認
+
 ```bash
 # コミット操作の履歴
 git reflog show HEAD
@@ -48,6 +50,7 @@ git reflog show refs/heads/<branch-name>
 ### 復旧操作
 
 1. 削除したブランチの復元
+
 ```bash
 # リフログから該当のコミットハッシュを確認
 git reflog
@@ -57,6 +60,7 @@ git branch <branch-name> <commit-hash>
 ```
 
 2. リセットしたコミットの復活
+
 ```bash
 # リフログから該当のコミットハッシュを確認
 git reflog
@@ -70,12 +74,14 @@ git reset --hard <commit-hash>
 ### 基本的な手順
 
 1. リフログの確認
+
 ```bash
 # 現在のリフログを確認
 git reflog
 ```
 
 2. 特定の操作の履歴を確認
+
 ```bash
 # 直近の5件の履歴を表示
 git reflog -n 5
@@ -85,6 +91,7 @@ git reflog --since="2 days ago"
 ```
 
 3. 復旧操作の実行
+
 ```bash
 # 特定のコミットに戻る
 git reset --hard HEAD@{1}
@@ -131,6 +138,7 @@ fi
 ### よくあるトラブルと解決方法
 
 1. **リフログが表示されない場合**
+
 ```bash
 # リポジトリが正しく初期化されているか確認
 git status
@@ -140,6 +148,7 @@ git config --get gc.reflogExpire
 ```
 
 2. **古い履歴が消えている場合**
+
 ```bash
 # リフログの保持期間を延長
 git config gc.reflogExpire 90
@@ -147,6 +156,7 @@ git config gc.reflogExpireUnreachable 90
 ```
 
 3. **特定の操作の履歴が見つからない場合**
+
 ```bash
 # より詳細なリフログを表示
 git reflog --all

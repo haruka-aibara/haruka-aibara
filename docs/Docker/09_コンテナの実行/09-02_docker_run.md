@@ -1,9 +1,11 @@
 # Docker Container講義
 
 ## コンテナの概要と重要性
+
 Dockerコンテナはアプリケーションとその依存関係をひとまとめにした軽量な実行環境で、開発環境と本番環境の一貫性を保証します。
 
 ## コンテナの主要概念
+
 コンテナはDockerイメージのインスタンスであり、分離された環境でプロセスを実行する軽量な仮想化技術です。
 
 ## コンテナの基本操作
@@ -56,12 +58,14 @@ docker container ls -s
 ## 実行例と出力結果
 
 ### docker container run の実行例
+
 ```bash
 $ docker container run -d -p 8080:80 --name web-server nginx
 a72d44d45f9b89e861e7e28a58311cf633607c123a641019f979a3e41d140a5c
 ```
 
 ### docker container ls の実行例
+
 ```bash
 $ docker container ls
 CONTAINER ID   IMAGE     COMMAND                  CREATED         STATUS         PORTS                  NAMES

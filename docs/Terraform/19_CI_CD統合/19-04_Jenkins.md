@@ -74,6 +74,7 @@ Jenkins の Credentials（Manage Jenkins → Credentials）に保存して `cred
 Jenkins Marketplace に Terraform プラグインがあり、GUI 設定でバージョン管理が可能。
 
 ただし Docker イメージで Terraform を動かす方が：
+
 - バージョン固定が明確
 - 環境差異が出にくい
 - プラグインのメンテに依存しない

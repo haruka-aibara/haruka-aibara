@@ -25,6 +25,7 @@ Claude Codeはデフォルトでファイル操作・コマンド実行・検索
 [GitHub Settings → Fine-grained tokens](https://github.com/settings/personal-access-tokens/new) で新しいトークンを作成。
 
 **必要な権限（最小構成）：**
+
 - `Contents` → Read and write（ファイル操作する場合）
 - `Issues` → Read and write
 - `Pull requests` → Read and write

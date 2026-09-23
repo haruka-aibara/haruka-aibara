@@ -1,9 +1,11 @@
 # Ansible becomeディレクティブ
 
 ## 概要と重要性
+
 becomeディレクティブはAnsibleで権限昇格を行うための重要な機能で、一般ユーザーから管理者権限へ切り替えて特権操作を実行できます。
 
 ## 理論的説明
+
 becomeはsudoやsu、runas等の権限昇格メカニズムを抽象化し、異なるOSでも一貫した方法で特権実行を可能にします。
 
 ## 基本的な使い方
@@ -83,6 +85,7 @@ becomeはsudoやsu、runas等の権限昇格メカニズムを抽象化し、異
 ```
 
 一般的なbecome_methodの値：
+
 - sudo (デフォルト・Linux/Unix)
 - su (Linux/Unix)
 - pbrun (PowerBroker)
@@ -160,21 +163,27 @@ ansible-playbook deploy.yml --become -K
 ### よくあるエラーと解決法
 
 1. **権限エラー**:
+
 ```
 "Failed to set permissions on the temporary files Ansible needs to create when becoming an unprivileged user"
 ```
+
 - 解決策: `/tmp`ディレクトリのパーミッションを確認し、`ansible_remote_tmp`変数の設定を検討
 
 2. **sudoパスワード要求との不一致**:
+
 ```
 "Missing sudo password"
 ```
+
 - 解決策: `-K`オプションでパスワード入力を有効にするか、NOPASSWD設定を確認
 
 3. **become_userが存在しない**:
+
 ```
 "Failed to set permissions... become_user does not exist"
 ```
+
 - 解決策: 指定したユーザーが対象ホストに存在することを確認
 
 ## 実践的なユースケース

@@ -1,9 +1,11 @@
 # YARN (難易度レベル: 100)
 
 ## 概要
+
 YARN（Yet Another Resource Negotiator）は、Apache Hadoopのリソース管理とジョブスケジューリングを担当するコンポーネントです。Hadoop 2.0で導入され、クラスター内のリソース（CPU、メモリ）を効率的に管理し、複数のアプリケーションが同時に実行できるようにする重要な役割を果たします。
 
 YARNを学ぶ意義：
+
 - Hadoopクラスターのリソース管理の理解
 - 分散システムのスケジューリング原理の習得
 - 大規模データ処理の基盤知識
@@ -14,6 +16,7 @@ YARNを学ぶ意義：
 ### YARNとは
 
 #### 基本的な概念
+
 YARNは、Hadoopクラスターのリソース管理とジョブスケジューリングを行うシステムです。以下の特徴があります：
 
 - **リソース管理**: CPU、メモリなどのリソースを効率的に分配
@@ -22,6 +25,7 @@ YARNは、Hadoopクラスターのリソース管理とジョブスケジュー�
 - **柔軟性**: 様々なアプリケーションフレームワークをサポート
 
 #### YARNの役割
+
 ```bash
 # YARNの主要機能
 1. リソース管理    # クラスター内のリソースを監視・分配
@@ -33,6 +37,7 @@ YARNは、Hadoopクラスターのリソース管理とジョブスケジュー�
 ### YARNのアーキテクチャ
 
 #### 基本構成
+
 YARNは以下の主要コンポーネントで構成されています：
 
 ```bash
@@ -46,6 +51,7 @@ ResourceManager    # マスターノード（リソース管理）
 #### 各コンポーネントの役割
 
 ##### ResourceManager（リソースマネージャー）
+
 ```bash
 # ResourceManagerの機能
 - クラスター全体のリソース管理
@@ -55,6 +61,7 @@ ResourceManager    # マスターノード（リソース管理）
 ```
 
 ##### NodeManager（ノードマネージャー）
+
 ```bash
 # NodeManagerの機能
 - 各ノードのリソース監視
@@ -64,6 +71,7 @@ ResourceManager    # マスターノード（リソース管理）
 ```
 
 ##### ApplicationMaster（アプリケーションマスター）
+
 ```bash
 # ApplicationMasterの機能
 - 個別アプリケーションの管理
@@ -75,6 +83,7 @@ ResourceManager    # マスターノード（リソース管理）
 ### YARNの基本操作
 
 #### クラスター情報の確認
+
 ```bash
 # YARNの基本コマンド
 
@@ -104,6 +113,7 @@ yarn rmadmin -getServiceState rm
 ```
 
 #### リソース使用状況の確認
+
 ```bash
 # リソース使用状況の確認
 
@@ -123,6 +133,7 @@ yarn node -list -all | grep "Memory"
 ### YARNの設定
 
 #### 基本設定ファイル
+
 ```xml
 <!-- yarn-site.xml（YARNの基本設定） -->
 <configuration>
@@ -165,6 +176,7 @@ yarn node -list -all | grep "Memory"
 ```
 
 #### スケジューラーの設定
+
 ```xml
 <!-- Capacity Schedulerの設定例 -->
 <configuration>
@@ -203,6 +215,7 @@ yarn node -list -all | grep "Memory"
 ### 実践的な使用例
 
 #### 基本的なジョブ実行
+
 ```bash
 # MapReduceジョブの実行例
 
@@ -222,6 +235,7 @@ yarn logs -applicationId <application_id>
 ```
 
 #### リソース制限付きジョブ実行
+
 ```bash
 # リソース制限を指定したジョブ実行
 
@@ -242,6 +256,7 @@ hadoop jar myapp.jar MyJob \
 ```
 
 #### キューの使用
+
 ```bash
 # 特定のキューを使用したジョブ実行
 
@@ -261,6 +276,7 @@ hadoop jar myapp.jar MyJob \
 ### 監視とメンテナンス
 
 #### クラスターの監視
+
 ```bash
 # クラスター監視のコマンド
 
@@ -281,6 +297,7 @@ yarn queue -status default
 ```
 
 #### ログの確認
+
 ```bash
 # ログ確認のコマンド
 
@@ -298,6 +315,7 @@ yarn logs -applicationId <application_id> | grep "ERROR"
 ```
 
 #### トラブルシューティング
+
 ```bash
 # トラブルシューティングのコマンド
 
@@ -320,6 +338,7 @@ yarn rmadmin -refreshNodes
 ### YARNのスケジューラー
 
 #### 利用可能なスケジューラー
+
 ```bash
 # YARNで利用可能なスケジューラー
 
@@ -337,6 +356,7 @@ yarn rmadmin -refreshNodes
 ```
 
 #### スケジューラーの選択
+
 ```xml
 <!-- スケジューラーの設定例 -->
 
@@ -356,6 +376,7 @@ yarn rmadmin -refreshNodes
 ### パフォーマンス最適化
 
 #### リソース設定の最適化
+
 ```xml
 <!-- パフォーマンス最適化の設定例 -->
 <configuration>
@@ -388,6 +409,7 @@ yarn rmadmin -refreshNodes
 ```
 
 #### キューの最適化
+
 ```xml
 <!-- キューの最適化設定 -->
 <configuration>
@@ -412,6 +434,7 @@ yarn rmadmin -refreshNodes
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **YARN**: Hadoopクラスターのリソース管理システム
 - **アーキテクチャ**: ResourceManager、NodeManager、ApplicationMaster
 - **基本操作**: アプリケーション管理、リソース監視
@@ -420,6 +443,7 @@ yarn rmadmin -refreshNodes
 - **最適化**: リソース設定、パフォーマンス調整
 
 ### 次のステップへの提案
+
 1. **Apache Hadoop**: 完全なHadoopエコシステムの理解
 2. **MapReduce**: 分散処理プログラミング
 3. **Apache Spark**: YARN上でのSpark実行
@@ -427,4 +451,4 @@ yarn rmadmin -refreshNodes
 5. **パフォーマンスチューニング**: 高度な最適化手法
 6. **クラウドHadoop**: AWS EMR、Azure HDInsight
 
-YARNは、Hadoopクラスターの効率的な運用に不可欠な重要なコンポーネントです。基本的な概念を理解した後は、実際のクラスターで活用することで、より実践的なスキルを身につけることができます。 
+YARNは、Hadoopクラスターの効率的な運用に不可欠な重要なコンポーネントです。基本的な概念を理解した後は、実際のクラスターで活用することで、より実践的なスキルを身につけることができます。

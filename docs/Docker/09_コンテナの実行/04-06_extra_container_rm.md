@@ -58,15 +58,19 @@ docker container rm -v コンテナID
 ## 実践例
 
 1. すべての停止中のコンテナを削除する：
+
 ```bash
 docker container prune
 ```
+
 または
+
 ```bash
 docker container rm $(docker container ls -aq -f status=exited)
 ```
 
 2. 特定のパターンに一致するコンテナを削除する：
+
 ```bash
 docker container rm $(docker container ls -a | grep "パターン" | awk '{print $1}')
 ```

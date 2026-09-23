@@ -1,9 +1,11 @@
 # Kubernetes: NodePort Service
 
 ## はじめに
+
 「クラスター外からアプリケーションにアクセスしたい」「開発環境で簡単にサービスを公開したい」「特定のノードのポートを直接公開したい」そんな悩みはありませんか？KubernetesのNodePort Serviceは、これらの問題を解決し、クラスター外からのアクセスを可能にする重要なリソースです。この記事では、NodePort Serviceの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 NodePort Serviceには、以下の3つの重要なポイントがあります：
 
 1. ポート公開
@@ -22,6 +24,7 @@ NodePort Serviceには、以下の3つの重要なポイントがあります：
    - ヘルスチェック
 
 ## 実際の使い方
+
 NodePort Serviceは様々なシーンで活用できます：
 
 1. 開発環境
@@ -40,9 +43,11 @@ NodePort Serviceは様々なシーンで活用できます：
    - ハイブリッド
 
 ## 手を動かしてみよう
+
 基本的なNodePort Serviceの設定を説明します：
 
 1. NodePort Serviceの作成
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -59,6 +64,7 @@ spec:
 ```
 
 2. アプリケーションのデプロイ
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -82,9 +88,11 @@ spec:
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. マルチポートNodePort
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -106,6 +114,7 @@ spec:
 ```
 
 2. セッションアフィニティの設定
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -126,6 +135,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. ポートが使用できない
@@ -144,6 +154,7 @@ spec:
    - スケーリング設定を確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. 高度な公開方法
@@ -162,5 +173,6 @@ spec:
    - セキュリティ監査
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: Services](https://kubernetes.io/docs/concepts/services-networking/service/)
 - [Kubernetes公式ドキュメント: NodePort](https://kubernetes.io/docs/concepts/services-networking/service/#nodeport)

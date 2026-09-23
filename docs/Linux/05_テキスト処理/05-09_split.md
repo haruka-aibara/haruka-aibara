@@ -1,9 +1,11 @@
 # 【Linux講座】分割コマンド（split）
 
 ## 概要
+
 Linuxのsplitコマンドは大きなファイルを複数の小さなファイルに分割するために使用され、大容量データの処理や管理を効率化します。
 
 ## 主要概念
+
 splitコマンドは行数やバイト数を基準にファイルを分割し、分割されたファイルには自動的に連番が付けられます。
 
 ## 実践コマンド例
@@ -43,6 +45,7 @@ ls -l part_*
 ```
 
 実行結果：
+
 ```
 -rw-r--r-- 1 user group 60 Apr 23 10:00 part_aa
 -rw-r--r-- 1 user group 60 Apr 23 10:00 part_ab
@@ -60,6 +63,7 @@ head -n 5 part_aa
 ```
 
 実行結果：
+
 ```
 1
 2
@@ -73,6 +77,7 @@ head -n 5 part_ab
 ```
 
 実行結果：
+
 ```
 21
 22
@@ -116,6 +121,7 @@ ls -l num_*
 ```
 
 実行結果：
+
 ```
 -rw-r--r-- 1 user group 60 Apr 23 10:00 num_01
 -rw-r--r-- 1 user group 60 Apr 23 10:00 num_02
@@ -141,6 +147,7 @@ ls -l seq_*
 ```
 
 実行結果：
+
 ```
 -rw-r--r-- 1 user group 60 Apr 23 10:00 seq_001
 -rw-r--r-- 1 user group 60 Apr 23 10:00 seq_002

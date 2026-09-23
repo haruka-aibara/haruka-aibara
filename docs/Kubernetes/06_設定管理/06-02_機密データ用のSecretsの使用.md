@@ -1,9 +1,11 @@
 # Kubernetes: Secrets
 
 ## はじめに
+
 「パスワードやAPIキーなどの機密情報を安全に管理したい」「機密データを暗号化して保存したい」「アクセス制御を厳密に行いたい」そんな悩みはありませんか？KubernetesのSecretsは、これらの問題を解決し、機密データを安全に管理する重要なリソースです。この記事では、Secretsの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 Secretsには、以下の3つの重要なポイントがあります：
 
 1. 機密データ管理
@@ -22,6 +24,7 @@ Secretsには、以下の3つの重要なポイントがあります：
    - イメージプルシークレットとして
 
 ## 実際の使い方
+
 Secretsは様々なシーンで活用できます：
 
 1. 認証情報
@@ -40,9 +43,11 @@ Secretsは様々なシーンで活用できます：
    - セッショントークン
 
 ## 手を動かしてみよう
+
 基本的なSecretsの設定を説明します：
 
 1. Secretの作成
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -55,6 +60,7 @@ data:
 ```
 
 2. Podでの使用
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -78,9 +84,11 @@ spec:
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. TLS証明書の管理
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -115,6 +123,7 @@ spec:
 ```
 
 2. Dockerレジストリ認証
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -146,6 +155,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. アクセスできない
@@ -164,6 +174,7 @@ spec:
    - 監査ログを確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. 高度なセキュリティ
@@ -182,5 +193,6 @@ spec:
    - 監視システム
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: Secrets](https://kubernetes.io/docs/concepts/configuration/secret/)
 - [Kubernetes公式ドキュメント: シークレットの管理](https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/)

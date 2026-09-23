@@ -28,6 +28,7 @@ GitHub REST APIの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. 認証の設定
+
 ```bash
 # 個人アクセストークンの生成
 # GitHubの設定画面から生成
@@ -37,6 +38,7 @@ export GITHUB_TOKEN='your-token-here'
 ```
 
 2. 基本的なAPIリクエスト
+
 ```bash
 # リポジトリ情報の取得
 curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -50,6 +52,7 @@ curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
 ```
 
 3. レート制限の確認
+
 ```bash
 # レート制限情報の取得
 curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -61,6 +64,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 ### 基本的な手順
 
 1. 認証の設定
+
 ```bash
 # 個人アクセストークンの生成
 # 1. GitHubの設定画面に移動
@@ -71,6 +75,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 ```
 
 2. リポジトリの操作
+
 ```bash
 # リポジトリの作成
 curl -X POST -H "Authorization: token $GITHUB_TOKEN" \
@@ -83,6 +88,7 @@ git clone https://github.com/owner/new-repo.git
 ```
 
 3. イシューの管理
+
 ```bash
 # イシューの一覧取得
 curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -175,6 +181,7 @@ async function main() {
 ### よくあるトラブルと解決方法
 
 1. **認証エラーが発生する場合**
+
 ```bash
 # トークンの権限を確認
 # GitHubの設定画面で確認
@@ -186,6 +193,7 @@ async function main() {
 ```
 
 2. **レート制限に達した場合**
+
 ```bash
 # レート制限情報の確認
 curl -H "Authorization: token $GITHUB_TOKEN" \
@@ -197,6 +205,7 @@ curl -H "Authorization: token $GITHUB_TOKEN" \
 ```
 
 3. **APIレスポンスが期待と異なる場合**
+
 ```bash
 # レスポンスヘッダーの確認
 curl -I -H "Authorization: token $GITHUB_TOKEN" \

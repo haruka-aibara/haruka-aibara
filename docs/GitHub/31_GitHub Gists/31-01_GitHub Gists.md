@@ -24,17 +24,20 @@
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - コードスニペットの共有
 - 小さなプロジェクトの管理
 - 技術ブログでのコード表示
 - チーム内でのコード共有
 
 ### メリット
+
 - 簡単な共有
 - バージョン管理
 - 埋め込み表示
 
 ### 注意点
+
 - 大きなプロジェクトには不向き
 - 非公開Gistの制限
 - ファイル数の制限
@@ -59,6 +62,7 @@
 ## 実践的なサンプル
 
 ### 基本的な使い方
+
 ```javascript
 // シンプルなJavaScriptの例
 function greet(name) {
@@ -67,6 +71,7 @@ function greet(name) {
 ```
 
 ### 複数ファイルの管理
+
 - 関連するコードを複数ファイルで管理
 - ファイル間の参照関係を維持
 - 適切なファイル名の設定
@@ -74,6 +79,7 @@ function greet(name) {
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. シンタックスハイライトが効かない
    - ファイル拡張子の確認
    - 言語の手動指定
@@ -85,6 +91,7 @@ function greet(name) {
    - 再共有の必要
 
 ### デバッグの手順
+
 1. エラーの確認
 2. 設定の見直し
 3. 必要に応じて再作成
@@ -92,16 +99,19 @@ function greet(name) {
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 高度な埋め込み機能の活用
 - APIの利用
 - 自動化との連携
 
 ### おすすめの学習リソース
+
 - [GitHub Gists 公式ドキュメント](https://docs.github.com/ja/github/writing-on-github/editing-and-sharing-content-with-gists)
 - [GitHub Gists API](https://docs.github.com/ja/rest/gists)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Community Forum
 - Stack Overflow
 - GitHub Discussions

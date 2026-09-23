@@ -1,9 +1,11 @@
 # Amazon Redshift ALTER TABLE APPEND & VACUUM (難易度レベル: 300)
 
 ## 概要
+
 Amazon Redshiftは、AWSが提供するペタバイト規模のデータウェアハウスサービスです。この記事では、Redshiftの高度なテーブル操作である`ALTER TABLE APPEND`と`VACUUM`コマンドについて詳しく解説します。これらのコマンドは、大規模データの効率的な管理とパフォーマンス最適化において重要な役割を果たします。
 
 これらの技術を学ぶ意義：
+
 - 大規模データの効率的な統合
 - テーブルパフォーマンスの最適化
 - ストレージ使用量の削減
@@ -14,6 +16,7 @@ Amazon Redshiftは、AWSが提供するペタバイト規模のデータウェ�
 ### ALTER TABLE APPEND
 
 #### ALTER TABLE APPENDとは
+
 `ALTER TABLE APPEND`は、Redshiftの高度なテーブル操作コマンドで、ソーステーブルのデータをターゲットテーブルに高速で追加する機能です。通常のINSERT文と比較して、以下の特徴があります：
 
 - **高速処理**: データの物理的な移動により高速
@@ -22,6 +25,7 @@ Amazon Redshiftは、AWSが提供するペタバイト規模のデータウェ�
 - **トランザクション安全**: アトミックな操作
 
 #### 基本的な構文
+
 ```sql
 ALTER TABLE target_table APPEND FROM source_table
 [ WHERE condition ]
@@ -33,6 +37,7 @@ ALTER TABLE target_table APPEND FROM source_table
 #### パラメータの説明
 
 ##### WHERE condition
+
 特定の条件に合致するデータのみを追加します。
 
 ```sql
@@ -42,6 +47,7 @@ WHERE sale_date >= '2024-01-01';
 ```
 
 ##### COPY GRANT
+
 ソーステーブルの権限をターゲットテーブルにコピーします。
 
 ```sql
@@ -51,6 +57,7 @@ COPY GRANT;
 ```
 
 ##### IGNOREEXTRA
+
 ターゲットテーブルに存在しない列を無視します。
 
 ```sql
@@ -60,6 +67,7 @@ IGNOREEXTRA;
 ```
 
 ##### IGNOREMISSING
+
 ソーステーブルに存在しない列をNULLで埋めます。
 
 ```sql
@@ -71,6 +79,7 @@ IGNOREMISSING;
 #### 実践的な使用例
 
 ##### パーティション化されたテーブルの統合
+
 ```sql
 -- 月次テーブルを年次テーブルに統合
 ALTER TABLE sales_2024_annual APPEND FROM sales_2024_01;
@@ -80,6 +89,7 @@ ALTER TABLE sales_2024_annual APPEND FROM sales_2024_03;
 ```
 
 ##### 条件付きデータ統合
+
 ```sql
 -- アクティブな顧客のみを統合
 ALTER TABLE active_customers APPEND FROM all_customers
@@ -87,6 +97,7 @@ WHERE status = 'active' AND last_login_date >= CURRENT_DATE - 90;
 ```
 
 ##### 複数条件での統合
+
 ```sql
 -- 特定の地域と期間のデータを統合
 ALTER TABLE regional_sales APPEND FROM global_sales
@@ -98,6 +109,7 @@ WHERE region = 'APAC'
 ### VACUUM
 
 #### VACUUMとは
+
 `VACUUM`は、Redshiftテーブルのメンテナンスコマンドで、以下の機能を提供します：
 
 - **削除マークの物理削除**: DELETE文で削除されたデータの物理的な削除
@@ -106,6 +118,7 @@ WHERE region = 'APAC'
 - **パフォーマンス向上**: クエリ実行速度の改善
 
 #### 基本的な構文
+
 ```sql
 VACUUM [ FULL | SORT ONLY | DELETE ONLY ] [ table_name ]
 [ TO threshold PERCENT ]
@@ -115,6 +128,7 @@ VACUUM [ FULL | SORT ONLY | DELETE ONLY ] [ table_name ]
 #### VACUUMの種類
 
 ##### FULL VACUUM
+
 最も包括的なメンテナンス操作です。
 
 ```sql
@@ -123,11 +137,13 @@ VACUUM FULL sales_table;
 ```
 
 **実行内容**:
+
 - 削除マークの物理削除
 - ソートキーの再ソート
 - ストレージの完全な最適化
 
 ##### SORT ONLY VACUUM
+
 ソートキーの再ソートのみを実行します。
 
 ```sql
@@ -136,10 +152,12 @@ VACUUM SORT ONLY sales_table;
 ```
 
 **実行内容**:
+
 - ソートキーの再ソート
 - 削除マークは削除しない
 
 ##### DELETE ONLY VACUUM
+
 削除マークの物理削除のみを実行します。
 
 ```sql
@@ -148,12 +166,14 @@ VACUUM DELETE ONLY sales_table;
 ```
 
 **実行内容**:
+
 - 削除マークの物理削除
 - ソートは実行しない
 
 #### 高度なVACUUMオプション
 
 ##### TO threshold PERCENT
+
 指定した割合までソートを実行します。
 
 ```sql
@@ -162,6 +182,7 @@ VACUUM sales_table TO 75 PERCENT;
 ```
 
 ##### BOOST
+
 優先度を上げてVACUUMを実行します。
 
 ```sql
@@ -172,6 +193,7 @@ VACUUM FULL sales_table BOOST;
 #### VACUUMの実行戦略
 
 ##### 自動VACUUMの設定
+
 ```sql
 -- 自動VACUUMの有効化
 ALTER TABLE sales_table SET (
@@ -181,6 +203,7 @@ ALTER TABLE sales_table SET (
 ```
 
 ##### スケジュール化されたVACUUM
+
 ```sql
 -- 定期的なVACUUM実行のためのビュー作成
 CREATE VIEW vacuum_schedule AS
@@ -201,6 +224,7 @@ WHERE schemaname = 'public';
 ### 大規模データ統合プロジェクト
 
 #### シナリオ：複数年の売上データの統合
+
 ```sql
 -- 1. 統合用テーブルの作成
 CREATE TABLE sales_consolidated (
@@ -226,6 +250,7 @@ VACUUM FULL sales_consolidated;
 ```
 
 #### パフォーマンス監視とメンテナンス
+
 ```sql
 -- テーブルの状態確認
 SELECT 
@@ -256,6 +281,7 @@ ORDER BY dead_percentage DESC;
 ### 高度なデータ管理戦略
 
 #### 段階的データ統合
+
 ```sql
 -- 1. ステージングテーブルへのデータ追加
 ALTER TABLE sales_staging APPEND FROM sales_daily
@@ -280,6 +306,7 @@ VACUUM DELETE ONLY sales_consolidated;
 ```
 
 #### パーティション戦略との組み合わせ
+
 ```sql
 -- 月次パーティションの統合
 -- 1月のデータを年次テーブルに統合
@@ -296,6 +323,7 @@ VACUUM FULL sales_2024_annual;
 ### パフォーマンス最適化の実践
 
 #### VACUUM実行のタイミング
+
 ```sql
 -- 高頻度更新テーブルの監視
 CREATE OR REPLACE FUNCTION check_vacuum_needed()
@@ -325,6 +353,7 @@ SELECT * FROM check_vacuum_needed();
 ```
 
 #### 自動化スクリプト例
+
 ```sql
 -- VACUUM実行の自動化
 CREATE OR REPLACE PROCEDURE auto_vacuum_maintenance()
@@ -353,12 +382,14 @@ $$;
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **ALTER TABLE APPEND**: 高速なデータ統合とメタデータ操作
 - **VACUUM**: テーブルメンテナンスとパフォーマンス最適化
 - 大規模データの効率的な管理手法
 - パフォーマンス監視と自動化戦略
 
 ### 次のステップへの提案
+
 1. **Redshift Spectrum**: S3データとの統合分析
 2. **Materialized Views**: 事前計算されたビューの活用
 3. **Workload Management**: クエリ優先度とリソース管理
@@ -366,4 +397,4 @@ $$;
 5. **Data Sharing**: クラスター間でのデータ共有
 6. **RA3インスタンス**: 分離されたストレージとコンピューティング
 
-Amazon Redshiftの`ALTER TABLE APPEND`と`VACUUM`は、大規模データウェアハウスの運用において重要な技術です。これらの機能を適切に活用することで、効率的で高性能なデータ分析環境を構築・維持することができます。 
+Amazon Redshiftの`ALTER TABLE APPEND`と`VACUUM`は、大規模データウェアハウスの運用において重要な技術です。これらの機能を適切に活用することで、効率的で高性能なデータ分析環境を構築・維持することができます。

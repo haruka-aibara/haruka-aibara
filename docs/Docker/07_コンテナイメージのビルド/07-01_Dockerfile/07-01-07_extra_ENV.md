@@ -1,9 +1,11 @@
 # Docker講義: ENV
 
 ## 概要
+
 ENVはDockerfileで環境変数を設定するための命令で、コンテナ内のアプリケーション設定を柔軟に管理できます。
 
 ## 理論的説明
+
 環境変数はコンテナ実行時に参照される名前と値のペアで、アプリケーションの動作をコードを変更せずに制御できます。
 
 ## ENVの基本構文
@@ -21,6 +23,7 @@ ENV 変数名1=値1 変数名2=値2
 ## ENVの使用例
 
 ### 基本的な例
+
 ```dockerfile
 FROM ubuntu:20.04
 # データベース接続情報を環境変数として設定
@@ -38,11 +41,13 @@ ENV APP_HOME=/app APP_ENV=production DEBUG=false
 コンテナ内では設定した環境変数を以下のように利用できます：
 
 1. シェルで参照：
+
 ```bash
 echo $DB_HOST        # localhost と表示される
 ```
 
 2. Dockerfileの他の命令内で参照：
+
 ```dockerfile
 ENV APP_HOME=/app
 WORKDIR $APP_HOME    # /app ディレクトリを作業ディレクトリに設定

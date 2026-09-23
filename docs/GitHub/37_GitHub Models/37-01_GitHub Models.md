@@ -24,17 +24,20 @@ AIモデルを活用した開発を始めたい、機械学習プロジェクト
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - 機械学習モデルの開発
 - モデルのバージョン管理
 - チームでのコラボレーション
 - モデルのデプロイ
 
 ### メリット
+
 - 開発効率の向上
 - 再現性の確保
 - コラボレーションの促進
 
 ### 注意点
+
 - モデルの品質管理
 - セキュリティへの配慮
 - リソースの最適化
@@ -59,6 +62,7 @@ AIモデルを活用した開発を始めたい、機械学習プロジェクト
 ## 実践的なサンプル
 
 ### モデル定義の例
+
 ```python
 # モデルの定義
 class SimpleModel(nn.Module):
@@ -73,6 +77,7 @@ class SimpleModel(nn.Module):
 ```
 
 ### トレーニング設定の例
+
 ```python
 # トレーニング設定
 config = {
@@ -90,6 +95,7 @@ config = {
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. モデルの性能
    - ハイパーパラメータの調整
    - データの確認
@@ -101,6 +107,7 @@ config = {
    - ログの確認
 
 ### デバッグの手順
+
 1. エラーメッセージの確認
 2. ログの分析
 3. 設定の見直し
@@ -108,16 +115,19 @@ config = {
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 高度なモデル管理
 - 自動化の導入
 - パフォーマンスの最適化
 
 ### おすすめの学習リソース
+
 - [GitHub Models 公式ドキュメント](https://docs.github.com/ja/models)
 - [Machine Learning Documentation](https://docs.github.com/ja/machine-learning)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Models Community
 - Stack Overflow
 - GitHub Discussions

@@ -1,0 +1,38 @@
+{
+  // 1000本超の学習メモを対象にするため、書式の好みに近いルールは切り、
+  // 構造の崩れ（見出し・リスト・コードブロック周りの空行、末尾空白など）だけを見る。
+  "config": {
+    "default": true,
+    // 日本語の長文は折り返さない。
+    "line-length": false,
+    // 表の列揃えは強制しない。
+    "table-column-style": false,
+    // 「実行結果」「解説」など同じ見出しを例ごとに繰り返すのは普通。
+    "no-duplicate-heading": false,
+    // 複数のメモを1ファイルにまとめたものは H1 が複数ある。
+    "single-title": false,
+    // 別々の引用を空行で区切って並べる書き方を許容する。
+    "no-blanks-blockquote": false,
+    // HTML の埋め込み・先頭見出しなし・強調で見出し代わりは記事の書き方として許容する。
+    "no-inline-html": false,
+    "first-line-heading": false,
+    "no-emphasis-as-heading": false,
+    // コードブロックの言語指定と裸の URL はメモ用途では強制しない。
+    "fenced-code-language": false,
+    "no-bare-urls": false,
+    // 画像やコードブロックで分断された番号付きリストは 2. 3. と続けて書くのが正しいので見ない。
+    "ol-prefix": false,
+    // 見出し末尾の「。」「！」を消すのは本文の変更になるので見ない。
+    "no-trailing-punctuation": false,
+    // Makefile や Go のコード例はタブが正しいので、コードブロック内は見ない。
+    "no-hard-tabs": { "code_blocks": false }
+  },
+  "ignores": [
+    "**/node_modules/**",
+    "modules/*/lambda_layer_*/**",
+    // Markdown の書き方の見本（* と - の両方の書き方を並べている）なので対象外。
+    "docs/Markdown/cheatsheet.md",
+    // Marp のスライド（1枚ごとに H1 を置く）なので対象外。
+    "docs/Ansible/01_基本/ansible_basics.md"
+  ]
+}

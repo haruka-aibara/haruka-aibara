@@ -1,11 +1,13 @@
 # Amazon Bedrock：基盤モデルを活用したアプリケーション開発
 
 ## 概要
+
 Amazon Bedrockは、AWSが提供する生成AIの基盤モデル（Foundation Models）を活用したアプリケーション開発のためのフルマネージドサービスです。Claude、Llama 2、Stable Diffusionなど、複数の大手AI企業の基盤モデルにアクセスでき、セキュアな環境で生成AIアプリケーションを構築することができます。
 
 ## 詳細
 
 ### 主な特徴
+
 - 複数の基盤モデルへのアクセス
   - Anthropic Claude
   - Meta Llama 2
@@ -22,6 +24,7 @@ Amazon Bedrockは、AWSが提供する生成AIの基盤モデル（Foundation Mo
   - モデルの微調整
 
 ### 使用シーン
+
 - チャットボットの開発
 - コンテンツ生成
 - テキスト要約
@@ -32,6 +35,7 @@ Amazon Bedrockは、AWSが提供する生成AIの基盤モデル（Foundation Mo
 ## 具体例
 
 ### 基本的な使用方法
+
 ```python
 import boto3
 import json
@@ -64,6 +68,7 @@ generated_text = response_body['completion']
 ```
 
 ### 画像生成の例
+
 ```python
 import boto3
 import json
@@ -101,6 +106,7 @@ image_data = base64.b64decode(response_body['artifacts'][0]['base64'])
 ```
 
 ### カスタマイズの例
+
 ```python
 import boto3
 import json
@@ -126,4 +132,5 @@ custom_model = bedrock.create_custom_model(
 ```
 
 ## まとめ
-Amazon Bedrockは、生成AIアプリケーションの開発を簡素化し、エンタープライズグレードのセキュリティとスケーラビリティを提供します。複数の基盤モデルにアクセスできる柔軟性と、カスタマイズ機能により、様々なユースケースに対応したAIアプリケーションの開発が可能です。AWSの既存のサービスとの統合も容易で、セキュアな環境で生成AIを活用することができます。 
+
+Amazon Bedrockは、生成AIアプリケーションの開発を簡素化し、エンタープライズグレードのセキュリティとスケーラビリティを提供します。複数の基盤モデルにアクセスできる柔軟性と、カスタマイズ機能により、様々なユースケースに対応したAIアプリケーションの開発が可能です。AWSの既存のサービスとの統合も容易で、セキュアな環境で生成AIを活用することができます。

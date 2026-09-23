@@ -140,4 +140,4 @@ node_memory_MemTotal_bytes{instance="$instance"}
 
 - データの更新間隔は、データソースの設定に依存します
 - パネルの設定は、JSONモデルとしてエクスポート/インポートできます
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/time-series/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/time-series/)を参照してください

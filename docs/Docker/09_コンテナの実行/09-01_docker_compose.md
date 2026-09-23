@@ -1,9 +1,11 @@
 # Docker Compose講義
 
 ## Docker Composeとは
+
 Docker Composeは複数のコンテナを定義し、単一のコマンドで一度に実行できるようにするツールです。
 
 ## 主要概念
+
 Docker Composeは`docker-compose.yml`ファイルを使用して、アプリケーションの全サービスを構成します。
 
 ## docker-compose.yml

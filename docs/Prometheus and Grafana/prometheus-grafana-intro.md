@@ -1,12 +1,15 @@
 # PrometheusとGrafana入門
 
 ## 概要
+
 PrometheusとGrafanaは、現代のクラウドネイティブ環境において不可欠な監視・可視化ツールです。Prometheusは時系列データベースとしてメトリクスを収集・保存し、Grafanaはそのデータを美しいダッシュボードで可視化します。
 
 ## 主要概念
+
 Prometheusは、プル型アーキテクチャを採用したオープンソースの監視システムで、HTTPエンドポイントから定期的にメトリクスを収集します。一方、Grafanaは、Prometheusを含む様々なデータソースからデータを取得し、インタラクティブなダッシュボードを作成できる可視化プラットフォームです。
 
 ## 基本的なアーキテクチャ
+
 ```mermaid
 graph LR
     A[アプリケーション] -->|メトリクス出力| B[Prometheus]
@@ -16,6 +19,7 @@ graph LR
 ```
 
 ## 主な特徴
+
 - **Prometheus**
   - プル型アーキテクチャ
   - 多次元データモデル
@@ -29,10 +33,12 @@ graph LR
   - チーム共有機能
 
 ## セキュリティ考慮事項
+
 - PrometheusとGrafanaの通信は、可能な限りTLSで暗号化
 - 適切なアクセス制御と認証の設定
 - センシティブなメトリクスデータの取り扱いに注意
 
 ## 参考資料
+
 - [Prometheus公式ドキュメント](https://prometheus.io/docs/)
-- [Grafana公式ドキュメント](https://grafana.com/docs/) 
+- [Grafana公式ドキュメント](https://grafana.com/docs/)

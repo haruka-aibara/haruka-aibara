@@ -1,11 +1,13 @@
 # Amazon Bedrockのベクトルデータベース
 
 ## 概要
+
 Amazon Bedrockのベクトルデータベースは、テキストや画像などのデータをベクトル表現に変換し、効率的に検索・管理するための機能です。これにより、セマンティック検索や類似性検索を実現し、RAGシステムの基盤として重要な役割を果たします。
 
 ## 詳細
 
 ### ベクトルデータベースの特徴
+
 - 高次元ベクトルの効率的な保存と検索
 - 主な機能：
   - セマンティック検索
@@ -17,6 +19,7 @@ Amazon Bedrockのベクトルデータベースは、テキストや画像など
   - レコメンデーションシステム
 
 ### サポートされるベクトルDB
+
 - Amazon OpenSearch Service
 - Amazon Aurora PostgreSQL
 - Amazon Neptune
@@ -26,6 +29,7 @@ Amazon Bedrockのベクトルデータベースは、テキストや画像など
 ## 具体例
 
 ### ベクトルDBの設定
+
 ```python
 import boto3
 import json
@@ -51,6 +55,7 @@ vector_db_config = bedrock.create_vector_database_configuration(
 ```
 
 ### ドキュメントのインデックス作成
+
 ```python
 import boto3
 import json
@@ -94,6 +99,7 @@ index_document(document['id'], document['content'])
 ```
 
 ### セマンティック検索の実装
+
 ```python
 import boto3
 import json
@@ -150,6 +156,7 @@ results = searcher.semantic_search("省電力なAIチップの特徴は？")
 ```
 
 ### ベクトルDBの管理
+
 ```python
 import boto3
 import json
@@ -190,4 +197,5 @@ def monitor_index():
 ```
 
 ## まとめ
-Amazon Bedrockのベクトルデータベースは、効率的なセマンティック検索と類似性検索を実現するための重要な機能です。複数のベクトルDBオプションをサポートし、柔軟な設定と管理が可能です。RAGシステムの基盤として、より正確で関連性の高い検索結果を提供し、生成AIの応答品質を向上させることができます。また、スケーラビリティとパフォーマンスの最適化のための機能も提供されており、エンタープライズレベルのアプリケーション開発に適しています。 
+
+Amazon Bedrockのベクトルデータベースは、効率的なセマンティック検索と類似性検索を実現するための重要な機能です。複数のベクトルDBオプションをサポートし、柔軟な設定と管理が可能です。RAGシステムの基盤として、より正確で関連性の高い検索結果を提供し、生成AIの応答品質を向上させることができます。また、スケーラビリティとパフォーマンスの最適化のための機能も提供されており、エンタープライズレベルのアプリケーション開発に適しています。

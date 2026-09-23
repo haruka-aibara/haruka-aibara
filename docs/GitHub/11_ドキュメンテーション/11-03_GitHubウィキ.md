@@ -1,27 +1,34 @@
 # GitHub Wikiの活用
 
 ## はじめに
+
 GitHub Wikiは、プロジェクトのドキュメントを管理するための強力なツールです。この記事では、効果的なWikiの作成と管理方法について解説します。
 
 ## ざっくり理解しよう
+
 1. **集中管理**: プロジェクトの情報を一箇所に
 2. **共同編集**: チーム全体でドキュメントを更新
 3. **バージョン管理**: 変更履歴の追跡が可能
 
 ## 実際の使い方
+
 ### よくある使用シーン
+
 - プロジェクトの概要説明
 - 開発環境のセットアップ手順
 - API仕様書
 - トラブルシューティングガイド
 
 ### メリット
+
 - 情報の一元管理
 - チーム内の知識共有
 - メンテナンスの容易さ
 
 ## 手を動かしてみよう
+
 ### 基本的な設定
+
 1. Wikiの有効化
    - リポジトリの設定からWikiを有効化
    - アクセス権限の設定
@@ -37,6 +44,7 @@ GitHub Wikiは、プロジェクトのドキュメントを管理するための
    - 変更履歴の確認
 
 ## 実践的なサンプル
+
 ```markdown
 # ホームページの例
 
@@ -60,7 +68,9 @@ GitHub Wikiは、プロジェクトのドキュメントを管理するための
 ```
 
 ## 困ったときは
+
 ### よくある問題
+
 1. 情報の重複
    - 解決策: 情報の整理と構造化
    - 解決策: リンクの適切な使用
@@ -74,6 +84,7 @@ GitHub Wikiは、プロジェクトのドキュメントを管理するための
    - 解決策: 編集ガイドラインの作成
 
 ## もっと知りたい人へ
+
 - [GitHub Wikiの基本](https://docs.github.com/ja/communities/documenting-your-project-with-wikis/about-wikis)
 - [Wikiの作成と編集](https://docs.github.com/ja/communities/documenting-your-project-with-wikis/adding-or-editing-wiki-pages)
 - [Wikiの管理](https://docs.github.com/ja/communities/documenting-your-project-with-wikis/changing-access-permissions-for-wikis)

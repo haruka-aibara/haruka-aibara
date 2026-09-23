@@ -1,9 +1,11 @@
 # Amazon Redshift DML EXPLAIN (難易度レベル: 300)
 
 ## 概要
+
 Amazon Redshiftの`EXPLAIN`コマンドは、SQLクエリの実行計画を詳細に分析し、パフォーマンスの最適化に不可欠な情報を提供します。特にDML（Data Manipulation Language）文の`EXPLAIN`は、INSERT、UPDATE、DELETE、MERGE文の実行効率を理解し、最適化するための重要なツールです。
 
 DMLのEXPLAINを学ぶ意義：
+
 - データ操作の実行計画の理解
 - パフォーマンスボトルネックの特定
 - クエリ最適化の実践的スキル
@@ -14,6 +16,7 @@ DMLのEXPLAINを学ぶ意義：
 ### EXPLAINコマンドとは
 
 #### 基本的な概念
+
 `EXPLAIN`コマンドは、RedshiftがSQLクエリをどのように実行するかを示す実行計画を表示します。DML文の場合、以下の情報が含まれます：
 
 - **実行順序**: 各操作の実行順序と依存関係
@@ -22,11 +25,13 @@ DMLのEXPLAINを学ぶ意義：
 - **最適化の機会**: パフォーマンス改善のポイント
 
 #### 基本的な構文
+
 ```sql
 EXPLAIN [ VERBOSE ] dml_statement;
 ```
 
 #### VERBOSEオプション
+
 `VERBOSE`オプションを使用すると、より詳細な情報が表示されます：
 
 - **コスト情報**: 各ステップの相対的なコスト
@@ -36,6 +41,7 @@ EXPLAIN [ VERBOSE ] dml_statement;
 ### INSERT文のEXPLAIN
 
 #### 基本的なINSERT文の分析
+
 ```sql
 -- 基本的なINSERT文
 EXPLAIN INSERT INTO customers (customer_id, customer_name, email)
@@ -50,6 +56,7 @@ WHERE status = 'active';
 ```
 
 #### 複雑なINSERT文の分析
+
 ```sql
 -- 複数テーブル結合を含むINSERT文
 EXPLAIN INSERT INTO customer_summary (customer_id, total_orders, total_amount)
@@ -75,6 +82,7 @@ GROUP BY c.customer_id;
 ```
 
 #### INSERT文の最適化ポイント
+
 ```sql
 -- 最適化前：全件スキャン
 EXPLAIN INSERT INTO sales_archive
@@ -91,6 +99,7 @@ ORDER BY sale_date;  -- ソートキーを活用
 ### UPDATE文のEXPLAIN
 
 #### 基本的なUPDATE文の分析
+
 ```sql
 -- 単純なUPDATE文
 EXPLAIN UPDATE customers
@@ -104,6 +113,7 @@ WHERE last_login_date < '2023-01-01';
 ```
 
 #### 結合を含むUPDATE文の分析
+
 ```sql
 -- 結合を含むUPDATE文
 EXPLAIN UPDATE customers c
@@ -125,6 +135,7 @@ WHERE c.status = 'active';
 ```
 
 #### UPDATE文の最適化戦略
+
 ```sql
 -- 最適化前：相関サブクエリ
 EXPLAIN UPDATE customers c
@@ -148,6 +159,7 @@ WHERE c.customer_id = o.customer_id;
 ### DELETE文のEXPLAIN
 
 #### 基本的なDELETE文の分析
+
 ```sql
 -- 単純なDELETE文
 EXPLAIN DELETE FROM customers
@@ -161,6 +173,7 @@ WHERE status = 'inactive'
 ```
 
 #### 結合を含むDELETE文の分析
+
 ```sql
 -- 結合を含むDELETE文
 EXPLAIN DELETE FROM customers c
@@ -182,6 +195,7 @@ WHERE NOT EXISTS (
 ```
 
 #### DELETE文の最適化手法
+
 ```sql
 -- 最適化前：NOT EXISTS
 EXPLAIN DELETE FROM customers c
@@ -198,6 +212,7 @@ WHERE o.customer_id IS NULL;
 ### MERGE文のEXPLAIN
 
 #### 基本的なMERGE文の分析
+
 ```sql
 -- MERGE文の実行計画
 EXPLAIN MERGE INTO customers c
@@ -227,6 +242,7 @@ WHEN NOT MATCHED THEN
 ```
 
 #### MERGE文の最適化
+
 ```sql
 -- 最適化前：全件処理
 EXPLAIN MERGE INTO customers c
@@ -245,6 +261,7 @@ WHEN MATCHED AND c.status != t.status THEN
 ### 実行計画の読み方
 
 #### 実行計画の構成要素
+
 ```sql
 -- 実行計画の例
 EXPLAIN INSERT INTO sales_summary
@@ -269,11 +286,13 @@ GROUP BY DATE_TRUNC('month', sale_date), region;
 #### 実行計画の解釈ポイント
 
 ##### コスト情報
+
 - **cost=開始コスト..終了コスト**: 各ステップの相対的なコスト
 - **rows=推定行数**: 各ステップで処理される行数の推定
 - **width=行幅**: 各行の平均的なバイト数
 
 ##### 操作タイプ
+
 - **XN Seq Scan**: 順次スキャン（全件読み取り）
 - **XN Hash Join**: ハッシュ結合
 - **XN HashAggregate**: ハッシュ集計
@@ -281,6 +300,7 @@ GROUP BY DATE_TRUNC('month', sale_date), region;
 - **XN Insert/Update/Delete**: DML操作
 
 ##### 最適化のヒント
+
 ```sql
 -- パフォーマンス問題の特定
 EXPLAIN VERBOSE UPDATE customers c
@@ -299,6 +319,7 @@ SET total_spent = (
 ### 実践的な最適化例
 
 #### 大規模データ更新の最適化
+
 ```sql
 -- 最適化前：相関サブクエリ
 EXPLAIN UPDATE customers c
@@ -330,6 +351,7 @@ WHERE c.customer_id = s.customer_id;
 ```
 
 #### バッチ処理の最適化
+
 ```sql
 -- 最適化前：全件一括処理
 EXPLAIN DELETE FROM sales_archive
@@ -349,6 +371,7 @@ WHERE sale_date < '2020-01-01'
 ```
 
 #### パーティション戦略との組み合わせ
+
 ```sql
 -- パーティション化されたテーブルの更新
 EXPLAIN UPDATE sales_2024
@@ -368,6 +391,7 @@ ALTER TABLE sales ADD PARTITION (sale_date = '2024-01-01');
 ### パフォーマンス監視と分析
 
 #### 実行時間の測定
+
 ```sql
 -- 実行時間の測定
 \timing on
@@ -384,6 +408,7 @@ WHERE customer_id = 123;
 ```
 
 #### 統計情報の活用
+
 ```sql
 -- 統計情報の更新
 ANALYZE customers;
@@ -399,6 +424,7 @@ SET total_spent = (
 ```
 
 #### パフォーマンス監視クエリ
+
 ```sql
 -- 長時間実行中のクエリの監視
 SELECT 
@@ -429,12 +455,14 @@ ORDER BY n_tup_upd + n_tup_del DESC;
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **EXPLAINコマンド**: DML文の実行計画分析
 - **実行計画の読み方**: コスト、行数、操作タイプの理解
 - **最適化手法**: 相関サブクエリの回避、バッチ処理、パーティション戦略
 - **パフォーマンス監視**: 実行時間測定と統計情報の活用
 
 ### 次のステップへの提案
+
 1. **クエリ最適化**: インデックス設計とソートキー最適化
 2. **ワークロード管理**: クエリ優先度とリソース制御
 3. **VACUUM最適化**: テーブルメンテナンスの自動化
@@ -442,4 +470,4 @@ ORDER BY n_tup_upd + n_tup_del DESC;
 5. **マテリアライズドビュー**: 事前計算によるパフォーマンス向上
 6. **Redshift ML**: 機械学習による自動最適化
 
-Amazon RedshiftのDMLの`EXPLAIN`は、データ操作のパフォーマンスを理解し最適化するための重要なツールです。適切に活用することで、大規模データの効率的な処理を実現できます。 
+Amazon RedshiftのDMLの`EXPLAIN`は、データ操作のパフォーマンスを理解し最適化するための重要なツールです。適切に活用することで、大規模データの効率的な処理を実現できます。

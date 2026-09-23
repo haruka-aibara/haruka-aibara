@@ -26,6 +26,7 @@ GitHub OAuth Appsは、GitHubの認証システムを利用して、アプリケ
 ## 実際の使い方
 
 ### よくある使用シーン
+
 1. **Webアプリケーションでの利用**
    - ユーザー認証
    - リポジトリ情報の取得
@@ -37,6 +38,7 @@ GitHub OAuth Appsは、GitHubの認証システムを利用して、アプリケ
    - トークンの安全な保存
 
 ### 注意点
+
 - スコープ（権限）は必要最小限に
 - トークンの安全な管理が重要
 - ユーザーへの説明を丁寧に
@@ -44,6 +46,7 @@ GitHub OAuth Appsは、GitHubの認証システムを利用して、アプリケ
 ## 手を動かしてみよう
 
 1. **OAuth Appの作成**
+
    ```bash
    # GitHubのSettings > Developer settings > OAuth Appsから作成
    # 必要な情報
@@ -57,6 +60,7 @@ GitHub OAuth Appsは、GitHubの認証システムを利用して、アプリケ
    - シークレットは安全に管理
 
 3. **認証フローの実装**
+
    ```javascript
    // 認証URLの生成
    const authUrl = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&scope=repo`;
@@ -65,6 +69,7 @@ GitHub OAuth Appsは、GitHubの認証システムを利用して、アプリケ
 ## 実践的なサンプル
 
 ### 基本的な認証フロー
+
 ```javascript
 // 認証URLの生成
 const generateAuthUrl = (clientId) => {
@@ -81,6 +86,7 @@ const handleCallback = async (code) => {
 ```
 
 ### よく使う設定パターン
+
 ```javascript
 // スコープの設定例
 const scopes = {
@@ -94,6 +100,7 @@ const scopes = {
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. **認証エラー**
    - コールバックURLの不一致
    - スコープの不足
@@ -105,6 +112,7 @@ const scopes = {
    - キャッシュの活用
 
 ### デバッグの手順
+
 1. ブラウザのコンソールでエラーを確認
 2. ネットワークタブでリクエストを確認
 3. GitHubのデベロッパーツールでログを確認
@@ -112,16 +120,19 @@ const scopes = {
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - GitHub Appsの理解
 - Webhookの実装
 - より高度な認証フローの実装
 
 ### おすすめの学習リソース
+
 - [GitHub OAuth Apps公式ドキュメント](https://docs.github.com/ja/developers/apps/building-oauth-apps)
 - [GitHub API v3](https://docs.github.com/ja/rest)
 - [OAuth 2.0仕様](https://oauth.net/2/)
 
 ### コミュニティ情報
+
 - GitHub Discussions
 - Stack Overflow
 - GitHub Community Forum

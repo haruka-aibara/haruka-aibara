@@ -1,9 +1,11 @@
 # Docker コンテナのクリーンアップ: prune / --rm / rm -f
 
 ## 概要
+
 Dockerコンテナの適切なクリーンアップは、ディスク容量の管理とシステムリソースの最適化に不可欠です。
 
 ## 理論的説明
+
 Dockerは停止したコンテナを自動的に削除せず、明示的なクリーンアップコマンドが必要です。
 
 ## docker container prune
@@ -19,6 +21,7 @@ docker container prune -f
 ```
 
 **使用例:**
+
 ```
 $ docker container prune
 WARNING! This will remove all stopped containers.
@@ -31,6 +34,7 @@ Total reclaimed space: 27.5MB
 ```
 
 **注意点:**
+
 - 実行中のコンテナには影響しません
 - 一度削除したコンテナは復元できません
 - `-f`オプションを使うと確認なしで削除します
@@ -45,6 +49,7 @@ docker container run --rm ubuntu ls
 ```
 
 **使用例:**
+
 ```
 $ docker container run --rm ubuntu ls
 bin
@@ -57,6 +62,7 @@ lib
 ```
 
 **利点:**
+
 - 一時的な作業に最適
 - コンテナの後片付けが自動化される
 - システムリソースを無駄に消費しない
@@ -71,6 +77,7 @@ docker container rm -f container-id
 ```
 
 **使用例:**
+
 ```
 $ docker container ls
 CONTAINER ID   IMAGE     COMMAND   ...
@@ -81,6 +88,7 @@ abc123def456
 ```
 
 **注意点:**
+
 - `-f`（force）フラグがなければ実行中のコンテナは削除できない
 - 実行中プロセスが強制終了するので、データ損失の可能性がある
 - 複数のコンテナIDを指定して一括削除も可能

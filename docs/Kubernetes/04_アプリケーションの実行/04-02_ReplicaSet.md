@@ -1,9 +1,11 @@
 # Kubernetes: ReplicaSet
 
 ## はじめに
+
 「アプリケーションの可用性を確保したい」「障害発生時に自動で復旧させたい」「スケーリングを自動化したい」そんな悩みはありませんか？KubernetesのReplicaSetは、これらの問題を解決し、アプリケーションの高可用性を実現するための重要なコントローラーです。この記事では、ReplicaSetの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 ReplicaSetは、指定された数の同一のPodレプリカを常に維持するコントローラーです。以下の3つの重要なポイントを押さえましょう：
 
 1. レプリカ数の維持
@@ -22,6 +24,7 @@ ReplicaSetは、指定された数の同一のPodレプリカを常に維持す�
    - 設定の一元管理
 
 ## 実際の使い方
+
 ReplicaSetは様々なシーンで活用できます：
 
 1. 高可用性の実現
@@ -40,9 +43,11 @@ ReplicaSetは様々なシーンで活用できます：
    - バージョン管理
 
 ## 手を動かしてみよう
+
 基本的なReplicaSetの作成手順を説明します：
 
 1. ReplicaSetの定義ファイルを作成
+
 ```yaml
 apiVersion: apps/v1
 kind: ReplicaSet
@@ -73,6 +78,7 @@ spec:
 ```
 
 2. ReplicaSetの作成と確認
+
 ```bash
 kubectl apply -f replicaset.yaml
 kubectl get replicasets
@@ -80,9 +86,11 @@ kubectl describe replicaset nginx-replicaset
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. セレクタの詳細設定
+
 ```yaml
 apiVersion: apps/v1
 kind: ReplicaSet
@@ -100,6 +108,7 @@ spec:
 ```
 
 2. リソース制限の設定
+
 ```yaml
 apiVersion: apps/v1
 kind: ReplicaSet
@@ -125,6 +134,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. Podが作成されない
@@ -143,6 +153,7 @@ spec:
    - 更新戦略を確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. Deploymentの理解
@@ -161,5 +172,6 @@ spec:
    - 順序付きデプロイ
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: ReplicaSet](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/)
 - [Kubernetes Best Practices: ReplicaSet](https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/#when-to-use-a-replicaset)

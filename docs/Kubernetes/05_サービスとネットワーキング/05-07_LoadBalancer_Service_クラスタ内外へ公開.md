@@ -1,9 +1,11 @@
 # Kubernetes: LoadBalancer Service
 
 ## はじめに
+
 「本番環境でアプリケーションを公開したい」「クラウド環境でロードバランサーを使いたい」「高可用性を確保したい」そんな悩みはありませんか？KubernetesのLoadBalancer Serviceは、これらの問題を解決し、クラスター内外からのアクセスを効率的に管理する重要なリソースです。この記事では、LoadBalancer Serviceの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 LoadBalancer Serviceには、以下の3つの重要なポイントがあります：
 
 1. 外部公開
@@ -22,6 +24,7 @@ LoadBalancer Serviceには、以下の3つの重要なポイントがありま�
    - 障害復旧
 
 ## 実際の使い方
+
 LoadBalancer Serviceは様々なシーンで活用できます：
 
 1. 本番環境
@@ -40,9 +43,11 @@ LoadBalancer Serviceは様々なシーンで活用できます：
    - ストレージ
 
 ## 手を動かしてみよう
+
 基本的なLoadBalancer Serviceの設定を説明します：
 
 1. LoadBalancer Serviceの作成
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -58,6 +63,7 @@ spec:
 ```
 
 2. アプリケーションのデプロイ
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -81,9 +87,11 @@ spec:
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. マルチポートLoadBalancer
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -103,6 +111,7 @@ spec:
 ```
 
 2. セッションアフィニティの設定
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -122,6 +131,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. ロードバランサーが作成できない
@@ -140,6 +150,7 @@ spec:
    - リソース制限を確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. 高度なロードバランシング
@@ -158,5 +169,6 @@ spec:
    - コスト最適化
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: Services](https://kubernetes.io/docs/concepts/services-networking/service/)
 - [Kubernetes公式ドキュメント: LoadBalancer](https://kubernetes.io/docs/concepts/services-networking/service/#loadbalancer)

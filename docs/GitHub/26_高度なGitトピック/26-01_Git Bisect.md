@@ -47,28 +47,33 @@ git bisect run npm test -- -t "特定のテストケース"
 ### 基本的な手順
 
 1. リポジトリのクローン
+
 ```bash
 git clone <repository-url>
 cd <repository-name>
 ```
 
 2. 調査の開始
+
 ```bash
 git bisect start
 ```
 
 3. 範囲の指定
+
 ```bash
 git bisect bad HEAD  # 最新のコミットが問題あり
 git bisect good v1.0.0  # このバージョンは問題なし
 ```
 
 4. 調査の実行
+
 - Gitが自動的に中間のコミットをチェックアウト
 - 問題の有無を確認
 - 結果に応じて `git bisect good` または `git bisect bad` を実行
 
 5. 調査の終了
+
 ```bash
 git bisect reset  # 元の状態に戻る
 ```
@@ -110,12 +115,14 @@ git bisect run npm run test:bisect
 ### よくあるトラブルと解決方法
 
 1. **調査をやり直したい場合**
+
 ```bash
 git bisect reset
 git bisect start
 ```
 
 2. **間違えてgood/badを指定した場合**
+
 ```bash
 git bisect reset
 git bisect start
@@ -123,6 +130,7 @@ git bisect start
 ```
 
 3. **特定のコミットをスキップしたい場合**
+
 ```bash
 git bisect skip
 ```

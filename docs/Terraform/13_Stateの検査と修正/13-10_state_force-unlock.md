@@ -43,6 +43,7 @@ terraform force-unlock 3f1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c
 apply が途中で止まっているまま force-unlock すると、別のプロセスが同時に apply を実行できるようになり、State が競合して壊れる可能性がある。
 
 確認の手順：
+
 1. ロック情報の `Who` と `Created` を確認
 2. 該当のユーザー・CI/CD パイプラインにプロセスが残っていないか確認
 3. 残っていないことを確認してから実行

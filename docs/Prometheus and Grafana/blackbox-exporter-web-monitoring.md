@@ -7,6 +7,7 @@ Blackbox Exporterは、HTTP、HTTPS、DNS、TCP、ICMPなどのプロトコル�
 ### インストールと設定
 
 1. **Blackbox Exporterのインストール**
+
    ```bash
    # 最新バージョンのダウンロード
    wget https://github.com/prometheus/blackbox_exporter/releases/download/v0.24.0/blackbox_exporter-0.24.0.linux-amd64.tar.gz
@@ -19,6 +20,7 @@ Blackbox Exporterは、HTTP、HTTPS、DNS、TCP、ICMPなどのプロトコル�
    ```
 
 2. **設定ファイルの作成**
+
    ```yaml
    # /etc/blackbox_exporter/config.yml
    modules:
@@ -39,6 +41,7 @@ Blackbox Exporterは、HTTP、HTTPS、DNS、TCP、ICMPなどのプロトコル�
    ```
 
 3. **サービスの起動**
+
    ```bash
    # systemdサービスの作成
    sudo nano /etc/systemd/system/blackbox_exporter.service
@@ -65,6 +68,7 @@ Blackbox Exporterは、HTTP、HTTPS、DNS、TCP、ICMPなどのプロトコル�
 ### ターゲットの設定
 
 1. **Prometheus設定の追加**
+
    ```yaml
    # /etc/prometheus/prometheus.yml
    scrape_configs:
@@ -86,6 +90,7 @@ Blackbox Exporterは、HTTP、HTTPS、DNS、TCP、ICMPなどのプロトコル�
    ```
 
 2. **動的ターゲットの設定**
+
    ```yaml
    # ファイルベースのサービスディスカバリ
    - job_name: 'blackbox'
@@ -109,6 +114,7 @@ Blackbox Exporterは、HTTP、HTTPS、DNS、TCP、ICMPなどのプロトコル�
 ### 基本的なメトリクス
 
 1. **可用性の監視**
+
    ```promql
    # サイトの可用性
    probe_success{instance="https://example.com"}
@@ -121,6 +127,7 @@ Blackbox Exporterは、HTTP、HTTPS、DNS、TCP、ICMPなどのプロトコル�
    ```
 
 2. **SSL証明書の監視**
+
    ```promql
    # SSL証明書の有効期限
    probe_ssl_earliest_cert_expiry{instance="https://example.com"}
@@ -203,4 +210,4 @@ Panels:
 - 監視対象のWebサイトの負荷を考慮してください
 - 適切な監視間隔を設定してください
 - アラートのしきい値は環境に応じて調整してください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://github.com/prometheus/blackbox_exporter)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://github.com/prometheus/blackbox_exporter)を参照してください

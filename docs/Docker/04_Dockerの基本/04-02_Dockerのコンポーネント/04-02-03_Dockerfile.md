@@ -37,42 +37,51 @@ CMD ["実行コマンド", "引数1", "引数2"]
 ## 主要な命令（インストラクション）
 
 ### FROM
+
 - 必ず最初に記述する命令
 - ベースとなるイメージを指定する
 - 例：`FROM ubuntu:20.04`
 
 ### RUN
+
 - イメージ構築時に実行するコマンド
 - シェルコマンドを実行してイメージにレイヤーを追加する
 - 例：`RUN apt-get update && apt-get install -y nginx`
 
 ### COPY
+
 - ホストマシンからコンテナ内にファイルやディレクトリをコピーする
 - 例：`COPY ./app /usr/src/app`
 
 ### ADD
+
 - COPYと似ているが、追加機能がある
 - tarアーカイブの自動展開やURLからのダウンロードが可能
 - 例：`ADD https://example.com/file.tar.gz /tmp/`
 
 ### WORKDIR
+
 - 以降の命令が実行される作業ディレクトリを設定する
 - 例：`WORKDIR /usr/src/app`
 
 ### ENV
+
 - 環境変数を設定する
 - 例：`ENV NODE_ENV production`
 
 ### EXPOSE
+
 - コンテナがリッスンするポートを指定する
 - 例：`EXPOSE 80`
 
 ### CMD
+
 - コンテナ起動時に実行されるコマンドを指定する
 - Dockerfileで1つだけ有効（複数あると最後のものだけが有効）
 - 例：`CMD ["nginx", "-g", "daemon off;"]`
 
 ### ENTRYPOINT
+
 - コンテナ起動時に実行されるコマンドを指定する
 - CMDと組み合わせることができる
 - 例：`ENTRYPOINT ["npm", "start"]`
@@ -80,6 +89,7 @@ CMD ["実行コマンド", "引数1", "引数2"]
 ## Dockerfileのベストプラクティス
 
 ### 1. マルチステージビルドの活用
+
 - 複数のFROM命令を使ってビルド環境と実行環境を分離する
 - 最終イメージのサイズを小さくできる
 
@@ -100,11 +110,13 @@ CMD ["nginx", "-g", "daemon off;"]
 ```
 
 ### 2. レイヤーの最適化
+
 - RUN命令を連結して使用する（`&&`で結合）
 - 不要なファイルを削除する
 - 例：`RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*`
 
 ### 3. .dockerignoreファイルの使用
+
 - 不要なファイルをビルドコンテキストから除外する
 - イメージサイズの削減とビルド時間の短縮に役立つ
 

@@ -24,17 +24,20 @@
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - プライベートパッケージの管理
 - チーム内でのパッケージ共有
 - 継続的インテグレーション
 - セキュアなパッケージ配布
 
 ### メリット
+
 - セキュリティの向上
 - 管理の簡素化
 - コストの削減
 
 ### 注意点
+
 - ストレージ制限
 - 帯域制限
 - パッケージタイプの制限
@@ -59,6 +62,7 @@
 ## 実践的なサンプル
 
 ### npmパッケージの例
+
 ```json
 {
   "name": "my-package",
@@ -70,6 +74,7 @@
 ```
 
 ### Dockerイメージの例
+
 ```dockerfile
 # Dockerfile
 FROM node:14
@@ -83,6 +88,7 @@ CMD ["npm", "start"]
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. 認証エラー
    - トークンの確認
    - 権限の確認
@@ -94,6 +100,7 @@ CMD ["npm", "start"]
    - ログの確認
 
 ### デバッグの手順
+
 1. エラーメッセージの確認
 2. 認証情報の確認
 3. パッケージ設定の確認
@@ -102,16 +109,19 @@ CMD ["npm", "start"]
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 自動パッケージングの設定
 - セキュリティスキャンの導入
 - パッケージの最適化
 
 ### おすすめの学習リソース
+
 - [GitHub Packages 公式ドキュメント](https://docs.github.com/ja/packages)
 - [GitHub Actions ドキュメント](https://docs.github.com/ja/actions)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Community Forum
 - Stack Overflow
 - GitHub Discussions

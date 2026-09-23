@@ -28,6 +28,7 @@ Git LFSの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. Git LFSのインストール
+
 ```bash
 # macOS
 brew install git-lfs
@@ -40,6 +41,7 @@ choco install git-lfs
 ```
 
 2. Git LFSの初期化
+
 ```bash
 # リポジトリでGit LFSを初期化
 git lfs install
@@ -51,6 +53,7 @@ git lfs track "*.pdf"
 ```
 
 3. ファイルの管理
+
 ```bash
 # 追跡対象のファイルを追加
 git add .gitattributes
@@ -65,6 +68,7 @@ git commit -m "Add large file with Git LFS"
 ### 基本的な手順
 
 1. リポジトリの設定
+
 ```bash
 # Git LFSをインストール
 git lfs install
@@ -80,6 +84,7 @@ git commit -m "Configure Git LFS"
 ```
 
 2. 大きなファイルの追加
+
 ```bash
 # ファイルを追加
 git add large-file.psd
@@ -92,6 +97,7 @@ git push
 ```
 
 3. ファイルの確認
+
 ```bash
 # 追跡中のファイルを確認
 git lfs ls-files
@@ -139,6 +145,7 @@ git lfs ls-files --name-only
 ### よくあるトラブルと解決方法
 
 1. **ファイルが正しく追跡されない場合**
+
 ```bash
 # 追跡設定を確認
 git lfs track
@@ -150,6 +157,7 @@ git commit -m "Update Git LFS tracking"
 ```
 
 2. **プッシュが失敗する場合**
+
 ```bash
 # 認証情報を確認
 git lfs env
@@ -159,6 +167,7 @@ git lfs prune
 ```
 
 3. **ファイルのダウンロードに問題がある場合**
+
 ```bash
 # ファイルの状態を確認
 git lfs ls-files

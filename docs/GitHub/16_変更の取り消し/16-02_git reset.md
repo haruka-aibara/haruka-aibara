@@ -51,16 +51,19 @@ git resetの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. コミットの取り消し（soft）
+
 ```bash
 git reset --soft HEAD~1
 ```
 
 2. ステージングの取り消し（mixed）
+
 ```bash
 git reset HEAD~1
 ```
 
 3. すべての変更の取り消し（hard）
+
 ```bash
 git reset --hard HEAD~1
 ```

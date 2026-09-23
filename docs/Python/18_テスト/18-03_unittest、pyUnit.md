@@ -1,14 +1,17 @@
 # Python unittest フレームワーク：自動テストを簡単に
 
 ## 1. 概要と重要性
+
 Pythonの`unittest`フレームワークはコードが期待通りに動作することを検証する構造化された方法を提供し、バグを早期に発見し、安心してリファクタリングを行うことができます。
 
 ## 2. 主要概念
+
 `unittest`フレームワークは、テストケース（`unittest.TestCase`を継承するクラス）、テストメソッド、アサーション、およびテストフィクスチャ（セットアップ/ティアダウン）を中心に構築されています。
 
 ## 3. ステップバイステップガイド（実例付き）
 
 ### インストール
+
 インストール不要 - `unittest`はPythonの標準ライブラリに含まれています。
 
 ### 最初のテストを作成する
@@ -50,6 +53,7 @@ python test_calculation.py
 ```
 
 期待される出力：
+
 ```
 .
 ----------------------------------------------------------------------
@@ -127,6 +131,7 @@ python test_calculation.py -v
 ```
 
 期待される出力：
+
 ```
 test_add_num_and_double (__main__.CalTest) ... setup
 clean up
@@ -180,6 +185,7 @@ python test_calculation.py -v
 ```
 
 期待される出力：
+
 ```
 test_add_num_and_double (__main__.CalTest) ... skipped 'skip!'
 test_add_num_and_double_raise (__main__.CalTest) ... skipped 'skip!'
@@ -256,6 +262,7 @@ python -m unittest test_calculation.CalTest.test_add_num_and_double
 ## まとめ
 
 `unittest`フレームワークは以下を提供します：
+
 - `TestCase`クラスによるテスト作成の構造化された方法
 - テストの準備とクリーンアップのためのセットアップとティアダウンメソッド
 - 様々な条件を検証するための各種アサーションメソッド

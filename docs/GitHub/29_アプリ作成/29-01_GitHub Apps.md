@@ -28,6 +28,7 @@ GitHub Appsの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. GitHub Appの作成
+
 ```bash
 # 1. GitHubの設定画面に移動
 # 2. Developer settings > GitHub Apps
@@ -36,6 +37,7 @@ GitHub Appsの重要なポイントは以下の3つです：
 ```
 
 2. アプリの設定
+
 ```yaml
 # 基本的な設定
 name: "My GitHub App"
@@ -45,6 +47,7 @@ webhook_url: "https://my-app.example.com/webhook"
 ```
 
 3. 権限の設定
+
 ```yaml
 # 必要な権限を設定
 permissions:
@@ -58,6 +61,7 @@ permissions:
 ### 基本的な手順
 
 1. プロジェクトの作成
+
 ```bash
 # プロジェクトディレクトリの作成
 mkdir my-github-app
@@ -69,6 +73,7 @@ npm install @octokit/app @octokit/rest
 ```
 
 2. アプリの実装
+
 ```javascript
 // app.js
 const { App } = require('@octokit/app');
@@ -100,6 +105,7 @@ app.webhooks.on('issues.opened', async ({ octokit, payload }) => {
 ```
 
 3. Webhookの設定
+
 ```javascript
 // webhook.js
 const express = require('express');
@@ -227,6 +233,7 @@ module.exports = PRReviewer;
 ### よくあるトラブルと解決方法
 
 1. **認証エラーが発生する場合**
+
 ```bash
 # 秘密鍵の確認
 cat private-key.pem
@@ -237,6 +244,7 @@ echo $PRIVATE_KEY
 ```
 
 2. **Webhookが動作しない場合**
+
 ```bash
 # Webhookの設定を確認
 # GitHubの設定画面で確認
@@ -246,6 +254,7 @@ tail -f webhook.log
 ```
 
 3. **権限エラーが発生する場合**
+
 ```yaml
 # 権限の確認
 permissions:

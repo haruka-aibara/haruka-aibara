@@ -12,6 +12,7 @@ GrafanaのStatパネルは、単一の重要な値を目立って表示するた
    - 「Stat」を選択
 
 2. **データソースの設定**
+
    ```promql
    # 例：現在のCPU使用率
    sum(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100
@@ -39,6 +40,7 @@ GrafanaのStatパネルは、単一の重要な値を目立って表示するた
 ### 値の表示設定
 
 1. **値のフォーマット**
+
    ```yaml
    # 表示設定の例
    Display:
@@ -58,6 +60,7 @@ GrafanaのStatパネルは、単一の重要な値を目立って表示するた
 ### 色としきい値
 
 1. **しきい値の設定**
+
    ```yaml
    # しきい値の例
    Thresholds:
@@ -143,4 +146,4 @@ Display:
 - 表示する値の重要性を考慮してください
 - 適切なしきい値を設定してください
 - 更新間隔を適切に設定してください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/stat/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/stat/)を参照してください

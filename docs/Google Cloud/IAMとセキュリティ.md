@@ -13,6 +13,7 @@
 | どのリソースに | Resource（Project・Bucket等） | Resource |
 
 **バインディング:**
+
 ```
 who（誰が） + role（何をできるか） + resource（どこで）
 ```
@@ -32,6 +33,7 @@ who（誰が） + role（何をできるか） + resource（どこで）
 ```
 
 GCP 側の設定:
+
 ```bash
 # Workload Identity Pool の作成
 gcloud iam workload-identity-pools create "github" \
@@ -105,6 +107,7 @@ gcloud scc findings list organizations/123456789 \
 ```
 
 有効にしておくべき検出器:
+
 - **Security Health Analytics**: IAM・ネットワーク設定のミスを検知
 - **Web Security Scanner**: App Engine・GKE の Web 脆弱性スキャン
 - **Container Threat Detection**: GKE のランタイム脅威検知

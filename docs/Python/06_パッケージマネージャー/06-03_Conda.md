@@ -1,9 +1,11 @@
 # Python講義：Conda入門
 
 ## 概要
+
 Condaは、Pythonのパッケージ管理と環境管理を同時に行える強力なツールです。
 
 ## 主要概念
+
 Condaを使うと、プロジェクトごとに独立した環境を作成し、異なるバージョンのPythonやパッケージを簡単に管理できます。
 
 ## Condaの基本的な使い方
@@ -17,6 +19,7 @@ conda --version
 ```
 
 以下のような出力が表示されます：
+
 ```
 conda 23.9.0
 ```
@@ -32,6 +35,7 @@ conda create --name myenv python=3.10
 このコマンドを実行すると、Python 3.10がインストールされた「myenv」という名前の環境が作成されます。コマンド実行時に確認メッセージが表示されるので「y」を入力してEnterキーを押します。
 
 出力例：
+
 ```
 Collecting package metadata (current_repodata.json): done
 Solving environment: done
@@ -71,6 +75,7 @@ conda activate myenv
 ```
 
 コマンドプロンプトやターミナルの表示が変わり、環境名が前に表示されます：
+
 ```
 (myenv) $
 ```
@@ -94,6 +99,7 @@ conda install numpy pandas
 実行すると、パッケージとその依存関係がインストールされます。確認メッセージが表示されたら「y」を入力してEnterキーを押します。
 
 出力例：
+
 ```
 Collecting package metadata (current_repodata.json): done
 Solving environment: done
