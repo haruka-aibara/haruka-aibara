@@ -19,6 +19,6 @@ for pair in AMD64:linux-x64 ARM64:linux-arm64; do
   tgz="$(npm pack --silent --pack-destination "$tmp" "@anthropic-ai/claude-code-${platform}@${version}")"
   tar -xzf "$tmp/$tgz" -C "$tmp" package/claude
   sha="$(sha256sum "$tmp/package/claude" | cut -d' ' -f1)"
-  rm -rf "$tmp/package" "$tmp/$tgz"
+  rm -rf "${tmp:?}/package" "${tmp:?}/${tgz:?}"
   sed -i "s|^ARG CLAUDE_SHA256_${arch}=.*|ARG CLAUDE_SHA256_${arch}=${sha}|" "$dockerfile"
 done

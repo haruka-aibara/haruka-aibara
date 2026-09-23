@@ -22,10 +22,11 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0 # zizmor: ignore[artipacked]
 
       - run: devcontainer-templates/scripts/update-checksums.sh
 
+      # 追いコミットを push するので、認証情報を残す（persist-credentials: false にしない）。
       # このコミットの author は renovate.json の gitIgnoredAuthors に入れてあるので、
       # Renovate は引き続きこのブランチを rebase・更新する。
       - name: Commit and push
