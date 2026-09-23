@@ -37,7 +37,7 @@
       "labels": ["terraform", "infrastructure"]
     },
     {
-      "matchPackagePatterns": ["^hashicorp/aws$"],
+      "matchPackageNames": ["/^hashicorp/aws$/"],
       "groupName": "AWS Provider updates",
       "labels": ["terraform", "aws", "provider"]
     },
