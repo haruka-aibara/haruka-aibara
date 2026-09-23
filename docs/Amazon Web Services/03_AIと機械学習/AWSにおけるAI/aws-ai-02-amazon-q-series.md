@@ -1,11 +1,13 @@
 # Amazon Qシリーズ：生成AIを活用したビジネスソリューション
 
 ## 概要
+
 Amazon Qシリーズは、AWSが提供する生成AIを活用したビジネス向けソリューション群です。Amazon Q Business、Amazon Q in Amazon QuickSight、Amazon Q Developerの3つの主要サービスで構成され、それぞれ異なるユースケースに対応しています。これらのサービスは、企業のデータを安全に活用しながら、生成AIの力をビジネスに取り入れることを可能にします。
 
 ## 詳細
 
 ### Amazon Q Business
+
 - 企業のデータを活用した生成AIアシスタント
 - 主な特徴：
   - 社内データベースやドキュメントとの安全な連携
@@ -17,6 +19,7 @@ Amazon Qシリーズは、AWSが提供する生成AIを活用したビジネス�
   - 従業員の生産性向上
 
 ### Amazon Q in Amazon QuickSight
+
 - データ分析と可視化のためのAIアシスタント
 - 主な特徴：
   - 自然言語でのデータ分析クエリ
@@ -28,6 +31,7 @@ Amazon Qシリーズは、AWSが提供する生成AIを活用したビジネス�
   - データ分析の民主化
 
 ### Amazon Q Developer
+
 - 開発者向けのAIアシスタント
 - 主な特徴：
   - コード生成と最適化
@@ -41,6 +45,7 @@ Amazon Qシリーズは、AWSが提供する生成AIを活用したビジネス�
 ## 具体例
 
 ### Amazon Q Businessの使用例
+
 ```python
 import boto3
 
@@ -62,6 +67,7 @@ query_response = q_client.query(
 ```
 
 ### Amazon Q in QuickSightの使用例
+
 ```python
 import boto3
 
@@ -88,6 +94,7 @@ analysis_response = qs_client.create_analysis(
 ```
 
 ### Amazon Q Developerの使用例
+
 ```python
 import boto3
 
@@ -103,4 +110,5 @@ code_response = q_dev_client.generate_code(
 ```
 
 ## まとめ
-Amazon Qシリーズは、生成AIの力をビジネスに取り入れるための包括的なソリューションを提供します。Amazon Q Businessは企業のナレッジ管理を、Amazon Q in QuickSightはデータ分析を、Amazon Q Developerは開発プロセスをそれぞれ強化します。これらのサービスを組み合わせることで、企業は生成AIの利点を最大限に活用しながら、データの安全性とコンプライアンスを維持することができます。 
+
+Amazon Qシリーズは、生成AIの力をビジネスに取り入れるための包括的なソリューションを提供します。Amazon Q Businessは企業のナレッジ管理を、Amazon Q in QuickSightはデータ分析を、Amazon Q Developerは開発プロセスをそれぞれ強化します。これらのサービスを組み合わせることで、企業は生成AIの利点を最大限に活用しながら、データの安全性とコンプライアンスを維持することができます。

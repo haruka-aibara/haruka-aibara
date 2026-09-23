@@ -272,7 +272,7 @@ duckdb.sql("SELECT region, sum(amount) FROM df GROUP BY region").df()</code></pr
 <p>SQL の書き味にも工夫があります。<code>SELECT * EXCLUDE (password)</code> で列を除いたり、<code>GROUP BY ALL</code> で集計キーの書き写しを省いたりできます。標準 SQL の範囲を超えた便利な構文が用意されているので、試行錯誤の 1 回あたりが短くなります。</p>
 <p>そして、向く場面と向かない場面がはっきりしています。ここが実務でいちばん効く判断材料です。</p>
 <div class="tw"><table>
-<thead><tr><th>場面</th><th>向くか</th><th>理由</th></tr></thead>
+<thead><tr><th scope="col">場面</th><th scope="col">向くか</th><th scope="col">理由</th></tr></thead>
 <tbody>
 <tr><td>手元や S3 の大きなファイルを集計・変換する</td><td>向く</td><td>準備なしで SQL が書ける。ここが本領</td></tr>
 <tr><td>データ処理バッチの前処理、CI でのデータ検証</td><td>向く</td><td>実行環境に入れるものが 1 つで済む</td></tr>

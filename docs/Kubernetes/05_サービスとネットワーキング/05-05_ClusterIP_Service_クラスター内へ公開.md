@@ -1,9 +1,11 @@
 # Kubernetes: ClusterIP Service
 
 ## はじめに
+
 「クラスター内のサービス間通信を管理したい」「内部APIを安全に公開したい」「マイクロサービス間の連携を実現したい」そんな悩みはありませんか？KubernetesのClusterIP Serviceは、これらの問題を解決し、クラスター内のサービス間通信を効率的に管理するための重要なリソースです。この記事では、ClusterIP Serviceの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 ClusterIP Serviceには、以下の3つの重要なポイントがあります：
 
 1. 内部通信
@@ -22,6 +24,7 @@ ClusterIP Serviceには、以下の3つの重要なポイントがあります�
    - ヘルスチェック
 
 ## 実際の使い方
+
 ClusterIP Serviceは様々なシーンで活用できます：
 
 1. マイクロサービス
@@ -40,9 +43,11 @@ ClusterIP Serviceは様々なシーンで活用できます：
    - 分散キャッシュ
 
 ## 手を動かしてみよう
+
 基本的なClusterIP Serviceの設定を説明します：
 
 1. ClusterIP Serviceの作成
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -58,6 +63,7 @@ spec:
 ```
 
 2. アプリケーションのデプロイ
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -81,9 +87,11 @@ spec:
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. マルチポートService
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -103,6 +111,7 @@ spec:
 ```
 
 2. セッションアフィニティの設定
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -121,6 +130,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. サービスにアクセスできない
@@ -139,6 +149,7 @@ spec:
    - ネットワークポリシーを確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. サービスメッシュ
@@ -157,5 +168,6 @@ spec:
    - パフォーマンス監視
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: Services](https://kubernetes.io/docs/concepts/services-networking/service/)
 - [Kubernetes公式ドキュメント: ClusterIP](https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types)

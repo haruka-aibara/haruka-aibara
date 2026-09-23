@@ -58,12 +58,14 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th>方式</th><th>端末に証明書</th><th>位置づけ</th></tr>
+<thead><tr><th scope="col">方式</th><th scope="col">端末に証明書</th><th scope="col">位置づけ</th></tr></thead>
+<tbody>
 <tr><td>EAP-TLS</td><td>必要</td><td>最も強い。配布と失効管理の手間を許容できるなら第一候補</td></tr>
 <tr><td>EAP-TTLS</td><td>不要</td><td>サーバ証明書でトンネルを張り、中で任意の方式を使う</td></tr>
 <tr><td>PEAP</td><td>不要</td><td>TTLS とほぼ同じ発想。企業でよく使われる</td></tr>
 <tr><td>EAP-MD5</td><td>—</td><td>保護がなく無線では使えない。使わない</td></tr>
 <tr><td>EAP-POTP</td><td>—</td><td>ワンタイムパスワードのトークンを使う方式</td></tr>
+</tbody>
 </table>
 
 <div class="note">

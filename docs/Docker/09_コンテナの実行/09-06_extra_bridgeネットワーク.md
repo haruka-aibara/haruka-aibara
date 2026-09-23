@@ -1,14 +1,17 @@
 # Docker講義：bridgeネットワーク
 
 ## 概要
+
 bridgeネットワークはDockerのデフォルトネットワークドライバーであり、コンテナ間の通信と外部ネットワークへの接続を可能にする重要な機能です。
 
 ## 理論的説明
+
 bridgeネットワークはLinuxのブリッジ技術を使用して、独立したネットワーク名前空間を持つDockerコンテナ間の通信を実現します。
 
 ## bridgeネットワークの基本操作
 
 ### docker network ls
+
 現在のホスト上に存在するすべてのネットワークを一覧表示します。
 
 ```bash
@@ -20,6 +23,7 @@ m1n2o3p4q5r6   none      null      local
 ```
 
 ### docker network inspect
+
 指定したネットワークの詳細情報を表示します。
 
 ```bash
@@ -64,6 +68,7 @@ $ docker network inspect bridge
 ```
 
 ### docker network create
+
 カスタムブリッジネットワークを作成します。
 
 ```bash
@@ -77,6 +82,7 @@ $ docker network create --subnet=192.168.100.0/24 --gateway=192.168.100.1 my-cus
 ## コンテナをブリッジネットワークで起動する
 
 ### docker container run --network
+
 特定のネットワークを指定してコンテナを起動します。
 
 ```bash

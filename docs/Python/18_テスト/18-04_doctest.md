@@ -1,9 +1,11 @@
 # Pythonのdoctest入門
 
 ## 概要
+
 doctestはPythonの標準ライブラリに含まれるテストツールで、ドキュメント内にテストコードを埋め込むことができます。
 
 ## 主要概念
+
 doctestはドキュメント文字列（docstring）内にPythonインタラクティブシェルのようなコードと結果を記述し、それを実行してテストする仕組みです。
 
 ## 実践：doctestの基本
@@ -51,6 +53,7 @@ python calculator.py -v
 ```
 
 実行結果：
+
 ```
 Trying:
     c = Cal()
@@ -91,6 +94,7 @@ Test passed.
 doctestを実行するには、以下の方法があります：
 
 1. スクリプトに`if __name__ == '__main__'`ブロックを追加する方法：
+
 ```python
 if __name__ == '__main__':
     import doctest
@@ -98,11 +102,13 @@ if __name__ == '__main__':
 ```
 
 2. コマンドラインから直接実行する方法：
+
 ```
 python -m doctest calculator.py
 ```
 
 3. 詳細な出力を得るには`-v`オプションを追加：
+
 ```
 python -m doctest -v calculator.py
 ```
@@ -146,6 +152,7 @@ if __name__ == '__main__':
 ```
 
 新しく追加したテストケースは：
+
 1. `c.add_num_and_double(2, 3)` が `10` を返すことを確認
 2. `c.add_num_and_double(1, '1')` が `ValueError` を発生させることを確認
 

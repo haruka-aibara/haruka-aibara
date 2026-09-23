@@ -77,10 +77,12 @@ a{color:var(--c1)}
 
 <h2>置き換え先（2024年に NIST が標準化）</h2>
 <table>
-<tr><th>標準</th><th>アルゴリズム</th><th>用途</th></tr>
+<thead><tr><th scope="col">標準</th><th scope="col">アルゴリズム</th><th scope="col">用途</th></tr></thead>
+<tbody>
 <tr><td>FIPS 203</td><td>ML-KEM（旧 CRYSTALS-Kyber）</td><td>鍵交換 — ECDH の置き換え</td></tr>
 <tr><td>FIPS 204</td><td>ML-DSA（旧 CRYSTALS-Dilithium）</td><td>デジタル署名 — ECDSA・RSA 署名の置き換え</td></tr>
 <tr><td>FIPS 205</td><td>SLH-DSA（旧 SPHINCS+）</td><td>デジタル署名 — ハッシュだけを土台にした保険的な選択肢</td></tr>
+</tbody>
 </table>
 
 <h2>移行はハイブリッドから始まる</h2>

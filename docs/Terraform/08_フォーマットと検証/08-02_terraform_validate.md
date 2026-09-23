@@ -13,11 +13,13 @@ terraform validate
 ```
 
 問題がなければ：
+
 ```
 Success! The configuration is valid.
 ```
 
 エラーがあれば：
+
 ```
 ╷
 │ Error: Reference to undeclared resource

@@ -1,9 +1,11 @@
 # AWS Glue DPU (難易度レベル: 100)
 
 ## 概要
+
 AWS GlueのDPU（Data Processing Unit）は、AWS Glueジョブの処理能力を測定する単位です。DPUは、AWS Glueがデータの抽出・変換・読み込み（ETL）処理を実行する際に使用するコンピューティングリソースの量を表します。DPUを理解することで、コスト効率的でパフォーマンスの良いデータ処理パイプラインを構築できます。
 
 DPUを学ぶ意義：
+
 - AWS Glueのコスト構造の理解
 - パフォーマンスとコストの最適化
 - リソース計画の効率化
@@ -14,6 +16,7 @@ DPUを学ぶ意義：
 ### DPUとは
 
 #### 基本的な概念
+
 DPU（Data Processing Unit）は、AWS Glueの処理能力を表す単位です。1つのDPUは以下のリソースを提供します：
 
 - **4 vCPU**: 仮想CPUコア
@@ -21,6 +24,7 @@ DPU（Data Processing Unit）は、AWS Glueの処理能力を表す単位です�
 - **64 GB ディスク**: 一時的なデータ保存用のディスク容量
 
 #### DPUの特徴
+
 - **サーバーレス**: インフラストラクチャの管理が不要
 - **自動スケーリング**: 処理量に応じて自動的にスケール
 - **従量課金**: 実際に使用したDPU時間分のみ課金
@@ -29,6 +33,7 @@ DPU（Data Processing Unit）は、AWS Glueの処理能力を表す単位です�
 ### DPUの計算方法
 
 #### 基本的な計算
+
 ```python
 # DPU時間の計算例
 # 処理時間: 10分
@@ -41,6 +46,7 @@ DPU（Data Processing Unit）は、AWS Glueの処理能力を表す単位です�
 ```
 
 #### 実際の使用例
+
 ```python
 # 小規模なデータ処理（1-2 DPU）
 # 処理時間: 5分
@@ -61,6 +67,7 @@ DPU（Data Processing Unit）は、AWS Glueの処理能力を表す単位です�
 ### DPUの設定方法
 
 #### ジョブ作成時の設定
+
 ```python
 # AWS Glueジョブの作成例
 import boto3
@@ -82,6 +89,7 @@ response = glue_client.create_job(
 ```
 
 #### 動的DPU設定
+
 ```python
 # 動的DPU設定の例
 response = glue_client.create_job(
@@ -101,6 +109,7 @@ response = glue_client.create_job(
 ### DPUの最適化
 
 #### データ量に応じた設定
+
 ```python
 # データ量別の推奨DPU設定
 
@@ -118,6 +127,7 @@ response = glue_client.create_job(
 ```
 
 #### 処理タイプ別の設定
+
 ```python
 # 処理タイプ別のDPU設定例
 
@@ -137,6 +147,7 @@ response = glue_client.create_job(
 ### コスト最適化の実践
 
 #### 効率的なDPU使用
+
 ```python
 # コスト最適化のためのベストプラクティス
 
@@ -159,6 +170,7 @@ optimal_dpu = calculate_optimal_dpu(8, 'medium')  # 4 DPU
 ```
 
 #### 処理時間の最適化
+
 ```python
 # 処理時間を短縮するための設定
 
@@ -188,6 +200,7 @@ def optimize_with_cache(dataframe):
 ### 実際の使用例
 
 #### 小規模ETLジョブ
+
 ```python
 # 小規模なデータ処理の例
 import sys
@@ -229,6 +242,7 @@ job.commit()
 ```
 
 #### 中規模ETLジョブ
+
 ```python
 # 中規模なデータ処理の例
 import sys
@@ -283,6 +297,7 @@ job.commit()
 ### モニタリングと分析
 
 #### DPU使用量の監視
+
 ```python
 # CloudWatchを使用したDPU使用量の監視
 import boto3
@@ -317,6 +332,7 @@ dpu_usage = get_dpu_usage('my_etl_job', start_time, end_time)
 ```
 
 #### コスト分析
+
 ```python
 # コスト分析のための関数
 def calculate_job_cost(dpu_minutes, region='us-east-1'):
@@ -345,6 +361,7 @@ print(f"ジョブコスト: ${job_cost:.2f}")
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **DPU**: AWS Glueの処理能力を表す単位
 - **リソース構成**: 4 vCPU、16 GB メモリ、64 GB ディスク
 - **コスト計算**: DPU時間 × 単価による従量課金
@@ -352,6 +369,7 @@ print(f"ジョブコスト: ${job_cost:.2f}")
 - **モニタリング**: CloudWatchを使用した使用量監視
 
 ### 次のステップへの提案
+
 1. **AWS Glue ETLジョブ**: 実際のETLパイプラインの構築
 2. **Glue DataBrew**: 視覚的なデータ準備とDPU最適化
 3. **Glue Studio**: ノーコードETL開発環境
@@ -359,4 +377,4 @@ print(f"ジョブコスト: ${job_cost:.2f}")
 5. **コスト管理**: 予算設定とアラートの設定
 6. **自動化**: スケジュール実行とワークフロー管理
 
-AWS GlueのDPUを理解することで、コスト効率的でパフォーマンスの良いデータ処理システムを構築できます。基本的な概念を理解した後は、実際のプロジェクトで活用することで、より実践的なスキルを身につけることができます。 
+AWS GlueのDPUを理解することで、コスト効率的でパフォーマンスの良いデータ処理システムを構築できます。基本的な概念を理解した後は、実際のプロジェクトで活用することで、より実践的なスキルを身につけることができます。

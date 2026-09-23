@@ -24,17 +24,20 @@
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - 新規機能の実装
 - テストコードの作成
 - ドキュメントの生成
 - リファクタリング
 
 ### メリット
+
 - 開発速度の向上
 - コード品質の維持
 - 学習のサポート
 
 ### 注意点
+
 - 提案コードの確認
 - セキュリティへの配慮
 - ライセンスの確認
@@ -59,6 +62,7 @@
 ## 実践的なサンプル
 
 ### コメントからの提案
+
 ```python
 # ユーザー情報を取得する関数
 def get_user_info(user_id):
@@ -75,6 +79,7 @@ def get_user_info(user_id):
 ```
 
 ### テストコードの生成
+
 ```python
 # テストケースの例
 def test_get_user_info():
@@ -97,6 +102,7 @@ def test_get_user_info():
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. 提案が不適切
    - コンテキストの確認
    - コメントの修正
@@ -108,6 +114,7 @@ def test_get_user_info():
    - 再起動
 
 ### デバッグの手順
+
 1. エラーメッセージの確認
 2. 設定の見直し
 3. サポートへの連絡
@@ -115,16 +122,19 @@ def test_get_user_info():
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 高度な機能の活用
 - カスタマイズの設定
 - ベストプラクティスの学習
 
 ### おすすめの学習リソース
+
 - [GitHub Copilot 公式ドキュメント](https://docs.github.com/ja/copilot)
 - [VS Code ドキュメント](https://code.visualstudio.com/docs)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Copilot Community
 - Stack Overflow
 - GitHub Discussions

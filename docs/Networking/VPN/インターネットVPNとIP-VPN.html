@@ -133,12 +133,14 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th></th><th>インターネット VPN</th><th>IP-VPN</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">インターネット VPN</th><th scope="col">IP-VPN</th></tr></thead>
+<tbody>
 <tr><td>経路</td><td>公衆インターネット</td><td>事業者の閉域 IP 網</td></tr>
 <tr><td>分離の方法</td><td>暗号化トンネル</td><td>MPLS のラベル</td></tr>
 <tr><td>帯域・遅延</td><td>保証なし</td><td>SLA あり</td></tr>
 <tr><td>コスト</td><td>安い</td><td>高い</td></tr>
 <tr><td>経路上の平文</td><td>ない</td><td>ある（網内は暗号化しない）</td></tr>
+</tbody>
 </table>
 
 <h2>選ぶときの基準</h2>

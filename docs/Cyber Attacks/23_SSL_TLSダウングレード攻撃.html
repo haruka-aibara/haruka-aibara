@@ -101,10 +101,12 @@ a{color:var(--c1)}
 
 <h2>実際に起きた事例</h2>
 <table>
-<tr><th>名称</th><th>落とし先</th><th>背景</th></tr>
+<thead><tr><th scope="col">名称</th><th scope="col">落とし先</th><th scope="col">背景</th></tr></thead>
+<tbody>
 <tr><td>FREAK（2015）</td><td>512 ビットの EXPORT 用 RSA</td><td>1990 年代の米国輸出規制で作られた弱い暗号スイートが、20 年後も実装に残っていた</td></tr>
 <tr><td>Logjam（2015）</td><td>512 ビットの DH 鍵交換</td><td>広く共有された素数が使われていたため、事前計算で効率よく破れた</td></tr>
 <tr><td>DROWN（2016）</td><td>同じ鍵を使う SSLv2 サーバ</td><td>別ポートで動く古いサーバが、TLS の通信を解読する材料になった</td></tr>
+</tbody>
 </table>
 <p>共通しているのは、<strong>「もう使っていないつもりの古い設定が有効なまま残っていた」</strong>こと。攻撃の新しさではなく、消し忘れが原因になっている。</p>
 

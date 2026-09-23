@@ -1,9 +1,11 @@
 # Kubernetes: StatefulSet
 
 ## はじめに
+
 「データベースなどのステートフルアプリケーションをKubernetesで管理したい」「Podの識別子を安定させたい」「永続ストレージを効率的に管理したい」そんな悩みはありませんか？KubernetesのStatefulSetは、これらの問題を解決し、ステートフルなアプリケーションを安全に運用するための重要なコントローラーです。この記事では、StatefulSetの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 StatefulSetは、ステートフルなアプリケーションを管理するためのコントローラーです。以下の3つの重要なポイントを押さえましょう：
 
 1. 安定した識別子
@@ -22,6 +24,7 @@ StatefulSetは、ステートフルなアプリケーションを管理するた
    - 順序付きの更新
 
 ## 実際の使い方
+
 StatefulSetは様々なシーンで活用できます：
 
 1. データベースの運用
@@ -40,9 +43,11 @@ StatefulSetは様々なシーンで活用できます：
    - ZooKeeper
 
 ## 手を動かしてみよう
+
 基本的なStatefulSetの作成手順を説明します：
 
 1. StatefulSetの定義ファイルを作成
+
 ```yaml
 apiVersion: apps/v1
 kind: StatefulSet
@@ -79,6 +84,7 @@ spec:
 ```
 
 2. StatefulSetの作成と確認
+
 ```bash
 kubectl apply -f statefulset.yaml
 kubectl get statefulsets
@@ -86,9 +92,11 @@ kubectl describe statefulset web
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. ヘッドレスサービスの設定
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -106,6 +114,7 @@ spec:
 ```
 
 2. 永続ボリュームの設定
+
 ```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -120,6 +129,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. Podが起動しない
@@ -138,6 +148,7 @@ spec:
    - 同期状態を確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. データベースの運用
@@ -156,5 +167,6 @@ spec:
    - アラート設定
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/)
 - [Kubernetes Best Practices: StatefulSet](https://kubernetes.io/docs/tasks/run-application/run-replicated-stateful-application/)

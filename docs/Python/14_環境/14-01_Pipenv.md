@@ -1,9 +1,11 @@
 # Pipenv 環境管理入門
 
 ## 概要
+
 Pipenvは、Python開発において依存関係管理とパッケージ管理を簡素化するツールで、仮想環境の作成と管理を効率化します。
 
 ## Pipenvの基本概念
+
 Pipenvは`pip`と`virtualenv`の機能を組み合わせ、単一のコマンドラインツールで依存関係管理とプロジェクト分離を実現します。
 
 ## Pipenvのインストールと基本操作
@@ -18,6 +20,7 @@ pip install pipenv
 ```
 
 実行結果：
+
 ```
 Collecting pipenv
   ...（ダウンロードと依存関係のインストール情報）
@@ -38,6 +41,7 @@ pipenv --python 3.9
 ```
 
 実行結果：
+
 ```
 Creating a virtualenv for this project...
 Using /usr/local/bin/python3.9 to create virtualenv...
@@ -56,6 +60,7 @@ pipenv install requests
 ```
 
 実行結果：
+
 ```
 Installing requests...
 Adding requests to Pipfile's [packages]...
@@ -73,6 +78,7 @@ pipenv install pytest --dev
 ```
 
 実行結果：
+
 ```
 Installing pytest...
 Adding pytest to Pipfile's [dev-packages]...
@@ -90,6 +96,7 @@ pipenv run python -c "import requests; print(requests.__version__)"
 ```
 
 実行結果：
+
 ```
 2.31.0  # バージョンは異なる場合があります
 ```
@@ -104,6 +111,7 @@ pipenv shell
 ```
 
 実行結果：
+
 ```
 Launching subshell in virtual environment...
 (pipenv_sample) $
@@ -117,6 +125,7 @@ python -c "import requests; print('requestsのバージョン:', requests.__vers
 ```
 
 実行結果：
+
 ```
 requestsのバージョン: 2.31.0  # バージョンは異なる場合があります
 ```
@@ -131,6 +140,7 @@ pipenv graph
 ```
 
 実行結果：
+
 ```
 requests==2.31.0
   - certifi [required: >=2017.4.17, installed: 2023.7.22]
@@ -150,6 +160,7 @@ cat Pipfile
 ```
 
 実行結果：
+
 ```
 [[source]]
 url = "https://pypi.org/simple"
@@ -176,6 +187,7 @@ pipenv install --ignore-pipfile
 ```
 
 実行結果：
+
 ```
 Installing dependencies from Pipfile.lock...
 ...
@@ -191,6 +203,7 @@ pipenv uninstall requests
 ```
 
 実行結果：
+
 ```
 Uninstalling requests...
 Removing requests from Pipfile...
@@ -242,6 +255,7 @@ pipenv run python scraper.py
 ```
 
 実行結果：
+
 ```
 ステータスコード: 200
 ページタイトル: Welcome to Python.org

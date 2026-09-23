@@ -1,9 +1,11 @@
 # DDL・DML・DCL (難易度レベル: 200)
 
 ## 概要
+
 DDL（Data Definition Language）、DML（Data Manipulation Language）、DCL（Data Control Language）は、リレーショナルデータベース管理システム（RDBMS）におけるSQL言語の3つの主要なカテゴリです。それぞれがデータベースの異なる側面を扱い、データベースの設計、操作、セキュリティを統合的に管理します。
 
 これらの言語を学ぶ意義：
+
 - データベース設計の体系的理解
 - 効率的なデータ操作の実現
 - セキュリティとアクセス制御の実装
@@ -14,11 +16,13 @@ DDL（Data Definition Language）、DML（Data Manipulation Language）、DCL（
 ### DDL（Data Definition Language）
 
 #### DDLとは
+
 データベースの構造を定義・変更・削除するための言語です。データベースのスキーマ（構造）を管理する役割を担います。
 
 #### 主要なDDLコマンド
 
 ##### CREATE
+
 データベースオブジェクトを作成します。
 
 ```sql
@@ -45,6 +49,7 @@ WHERE status = 'active';
 ```
 
 ##### ALTER
+
 既存のデータベースオブジェクトを変更します。
 
 ```sql
@@ -62,6 +67,7 @@ ALTER TABLE customers ADD CONSTRAINT chk_email CHECK (email LIKE '%@%');
 ```
 
 ##### DROP
+
 データベースオブジェクトを削除します。
 
 ```sql
@@ -79,6 +85,7 @@ DROP DATABASE sales_db;
 ```
 
 ##### TRUNCATE
+
 テーブルの全データを削除し、テーブル構造は保持します。
 
 ```sql
@@ -89,11 +96,13 @@ TRUNCATE TABLE customers;
 ### DML（Data Manipulation Language）
 
 #### DMLとは
+
 データベース内のデータを操作（挿入、更新、削除、検索）するための言語です。実際のデータの処理を担当します。
 
 #### 主要なDMLコマンド
 
 ##### SELECT
+
 データを検索・取得します。
 
 ```sql
@@ -127,6 +136,7 @@ WHERE customer_id IN (
 ```
 
 ##### INSERT
+
 新しいデータを挿入します。
 
 ```sql
@@ -148,6 +158,7 @@ WHERE status = 'active';
 ```
 
 ##### UPDATE
+
 既存のデータを更新します。
 
 ```sql
@@ -171,6 +182,7 @@ WHERE o.order_date >= '2024-01-01';
 ```
 
 ##### DELETE
+
 データを削除します。
 
 ```sql
@@ -192,11 +204,13 @@ WHERE o.order_date < '2020-01-01';
 ### DCL（Data Control Language）
 
 #### DCLとは
+
 データベースのセキュリティとアクセス制御を管理するための言語です。ユーザーの権限とアクセス権を制御します。
 
 #### 主要なDCLコマンド
 
 ##### GRANT
+
 ユーザーやロールに権限を付与します。
 
 ```sql
@@ -217,6 +231,7 @@ GRANT SELECT ON customers TO role_analyst;
 ```
 
 ##### REVOKE
+
 ユーザーやロールから権限を削除します。
 
 ```sql
@@ -234,6 +249,7 @@ REVOKE SELECT ON customers FROM role_analyst;
 ```
 
 ##### DENY
+
 特定の権限を明示的に拒否します（SQL Serverなど）。
 
 ```sql
@@ -398,6 +414,7 @@ GRANT SELECT ON online_shop.customer_summary TO analyst_role;
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **DDL**: データベース構造の定義・変更・削除を担当
 - **DML**: データの挿入・更新・削除・検索を担当
 - **DCL**: セキュリティとアクセス制御を担当
@@ -405,6 +422,7 @@ GRANT SELECT ON online_shop.customer_summary TO analyst_role;
 - 実践的なプロジェクトでは、適切な権限設計が重要
 
 ### 次のステップへの提案
+
 1. **トランザクション管理**: COMMIT、ROLLBACK、SAVEPOINTの理解
 2. **ストアドプロシージャ**: 複雑な処理の自動化
 3. **トリガー**: データ変更時の自動処理
@@ -412,4 +430,4 @@ GRANT SELECT ON online_shop.customer_summary TO analyst_role;
 5. **データベース設計**: 正規化と非正規化の実践
 6. **セキュリティ強化**: 暗号化、監査ログ、バックアップ戦略
 
-DDL・DML・DCLの理解は、データベース管理の基盤となる重要なスキルです。これらの言語を適切に組み合わせることで、効率的で安全なデータベースシステムを構築・運用することができます。 
+DDL・DML・DCLの理解は、データベース管理の基盤となる重要なスキルです。これらの言語を適切に組み合わせることで、効率的で安全なデータベースシステムを構築・運用することができます。

@@ -135,6 +135,7 @@ from my_package import hello_world, calculate_sum
 print(hello_world())
 print(calculate_sum(5, 3))
 ```
+
 ```
 
 このコードを入力して実行してみましょう。`README.md`にコードを追加したら、次のステップに進みます。
@@ -170,6 +171,7 @@ python test_package.py
 ```
 
 実行結果：
+
 ```
 Hello, World!
 15

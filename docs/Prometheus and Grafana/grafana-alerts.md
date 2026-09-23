@@ -13,6 +13,7 @@ Grafanaのアラート機能は、監視対象のメトリクスが閾値を超�
    - アラートの条件を設定
 
 2. **アラートの条件設定**
+
    ```yaml
    # 例：CPU使用率が80%を超えた場合
    Condition: WHEN avg() OF query(A, 5m, now) IS ABOVE 80
@@ -123,4 +124,4 @@ Notifications:
 - アラートの閾値は慎重に設定してください
 - 通知の頻度が高すぎないように注意してください
 - アラートのテストを定期的に行ってください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/alerting/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/alerting/)を参照してください

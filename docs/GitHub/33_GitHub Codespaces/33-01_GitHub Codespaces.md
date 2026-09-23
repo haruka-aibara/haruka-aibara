@@ -24,17 +24,20 @@
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - 新規プロジェクトの開始
 - チーム開発
 - コードレビュー
 - 学習環境の構築
 
 ### メリット
+
 - 環境構築の時間削減
 - 一貫した開発環境
 - リソースの効率的な利用
 
 ### 注意点
+
 - コスト管理
 - ネットワーク依存
 - リソース制限
@@ -59,6 +62,7 @@
 ## 実践的なサンプル
 
 ### devcontainer.jsonの例
+
 ```json
 {
   "name": "Node.js Development",
@@ -77,6 +81,7 @@
 ```
 
 ### 環境変数の設定
+
 ```bash
 # .envファイルの例
 DATABASE_URL=postgresql://user:password@localhost:5432/db
@@ -86,6 +91,7 @@ API_KEY=your-api-key
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. 接続エラー
    - ネットワークの確認
    - ブラウザの更新
@@ -97,6 +103,7 @@ API_KEY=your-api-key
    - 設定の最適化
 
 ### デバッグの手順
+
 1. ログの確認
 2. 設定の見直し
 3. 必要に応じて再作成
@@ -104,16 +111,19 @@ API_KEY=your-api-key
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 高度な設定の活用
 - チーム開発の最適化
 - 自動化の導入
 
 ### おすすめの学習リソース
+
 - [GitHub Codespaces 公式ドキュメント](https://docs.github.com/ja/codespaces)
 - [VS Code Remote Development](https://code.visualstudio.com/docs/remote/remote-overview)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Community Forum
 - Stack Overflow
 - GitHub Discussions

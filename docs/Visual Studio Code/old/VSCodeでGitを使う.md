@@ -2,11 +2,13 @@
 
 git インストール
 https://learn.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-git
+
 ```bash
 sudo apt-get install git
 ```
 
 https://learn.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-git#git-config-file-setup
+
 ```bash
 git config --global user.name "Your Name"
 git config --global user.email "youremail@domain.com"
@@ -14,7 +16,6 @@ git config --global user.email "youremail@domain.com"
 
 git の branch を表示する
 https://qiita.com/m-tmatma/items/d9ceba9118d5f6c1be83
-
 
 1. .bashrc に以下の記述を追加する。
 
@@ -27,6 +28,7 @@ fi
 ```
 
 2. 以下のコマンドを入力する。
+
 ```bash
 source .bashrc
 ```
@@ -55,17 +57,14 @@ https://github.com/cli/cli/blob/trunk/docs/install_linux.md
 	&& sudo apt install gh -y
 ```
 
-
 ```
 sudo apt update
 sudo apt install gh
 ```
 
-
 ```
 gh auth login
 ```
-
 
 ```
 ? What account do you want to log into? GitHub.com
@@ -94,15 +93,16 @@ https://learn.microsoft.com/ja-jp/windows/wsl/tutorials/wsl-git#git-credential-m
 https://code.visualstudio.com/docs/remote/troubleshooting#_sharing-git-credentials-between-windows-and-wsl
 
 1. ubuntu でコマンドを入力する。
+
 ```
 git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager.exe"
 ```
 
 2. Windows で PowerShell を起動し以下のコマンドを入力する。
+
 ```
 git config --global credential.helper "/mnt/c/Program\ Files/Git/mingw64/bin/git-credential-manager-core.exe"
 ```
-
 
 おまけ：その他 git 参考情報
 https://code.visualstudio.com/docs/sourcecontrol/overview#_working-in-a-git-repository

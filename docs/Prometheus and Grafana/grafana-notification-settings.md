@@ -7,6 +7,7 @@ Grafanaの通知設定は、アラートの発生時に適切なチャネルを�
 ### メール通知の設定
 
 1. **SMTPサーバーの設定**
+
    ```yaml
    # grafana.ini
    [smtp]
@@ -66,6 +67,7 @@ Grafanaの通知設定は、アラートの発生時に適切なチャネルを�
 ### 基本ポリシーの設定
 
 1. **デフォルトポリシー**
+
    ```yaml
    # デフォルトポリシーの例
    - name: Default Policy
@@ -88,6 +90,7 @@ Grafanaの通知設定は、アラートの発生時に適切なチャネルを�
 ### 高度なポリシー設定
 
 1. **グループ化設定**
+
    ```yaml
    # グループ化の例
    group_by:
@@ -190,4 +193,4 @@ blocks:
 - 通知の頻度を適切に設定してください
 - 重要なアラートは複数のチャネルで通知することを検討してください
 - テンプレートは環境に合わせてカスタマイズしてください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/alerting/notifications/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/alerting/notifications/)を参照してください

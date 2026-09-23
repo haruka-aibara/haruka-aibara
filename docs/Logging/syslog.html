@@ -151,7 +151,8 @@ a{color:var(--c1)}
 <p>プライオリティ（＝severity）は 8 段階。設定で <code>.warning</code> と書くと<strong>「warning 以上」</strong>、つまり数値の小さい側すべてが対象になる。</p>
 
 <table>
-<tr><th>値</th><th>名前</th><th>だいたいの意味</th></tr>
+<thead><tr><th scope="col">値</th><th scope="col">名前</th><th scope="col">だいたいの意味</th></tr></thead>
+<tbody>
 <tr><td>0</td><td>emerg</td><td>システムが使用不能</td></tr>
 <tr><td>1</td><td>alert</td><td>即座に対応が必要</td></tr>
 <tr><td>2</td><td>crit</td><td>致命的</td></tr>
@@ -160,6 +161,7 @@ a{color:var(--c1)}
 <tr><td>5</td><td>notice</td><td>正常だが注意すべき事象</td></tr>
 <tr><td>6</td><td>info</td><td>通常の情報</td></tr>
 <tr><td>7</td><td>debug</td><td>デバッグ用</td></tr>
+</tbody>
 </table>
 
 <h2>いまのメッセージの通り道</h2>
@@ -270,10 +272,12 @@ log { source(s_net); destination(d_perhost); };</code></pre>
 <p>構文チェックは <code>syslog-ng --syntax-only</code>。</p>
 
 <table>
-<tr><th></th><th>rsyslog</th><th>syslog-ng</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">rsyslog</th><th scope="col">syslog-ng</th></tr></thead>
+<tbody>
 <tr><td>既定採用</td><td>RHEL 系・Ubuntu の多く</td><td>SUSE 系ほか。他は追加インストール</td></tr>
 <tr><td>設定の形</td><td>1 行 1 ルール（＋<code>action()</code> 形式）</td><td>source / filter / destination の組み合わせ</td></tr>
 <tr><td>向いている場面</td><td>既定のまま少し足す</td><td>経路や加工が多く、構造化して管理したい</td></tr>
+</tbody>
 </table>
 <p>どちらも UDP/TCP/TLS 転送・ディスクキュー・ファイル分割はできる。入っているほうを使えばよく、乗り換える理由になるほどの機能差は普通の用途では出ない。</p>
 

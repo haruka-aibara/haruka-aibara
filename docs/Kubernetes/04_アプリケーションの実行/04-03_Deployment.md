@@ -1,9 +1,11 @@
 # Kubernetes: Deployment
 
 ## はじめに
+
 「アプリケーションの更新時にダウンタイムが発生する」「更新失敗時のロールバックが大変」「手動での更新作業が煩雑」そんな悩みはありませんか？KubernetesのDeploymentは、これらの問題を解決し、アプリケーションのデプロイと更新を効率的に管理するための中心的なリソースです。この記事では、Deploymentの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 Deploymentは、アプリケーションのデプロイと更新を管理するコントローラーです。以下の3つの重要なポイントを押さえましょう：
 
 1. 無停止更新
@@ -22,6 +24,7 @@ Deploymentは、アプリケーションのデプロイと更新を管理する�
    - リソースの効率的な利用
 
 ## 実際の使い方
+
 Deploymentは様々なシーンで活用できます：
 
 1. アプリケーションのデプロイ
@@ -40,9 +43,11 @@ Deploymentは様々なシーンで活用できます：
    - ブルー/グリーンデプロイ
 
 ## 手を動かしてみよう
+
 基本的なDeploymentの作成手順を説明します：
 
 1. Deploymentの定義ファイルを作成
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -80,6 +85,7 @@ spec:
 ```
 
 2. Deploymentの作成と確認
+
 ```bash
 kubectl apply -f deployment.yaml
 kubectl get deployments
@@ -87,9 +93,11 @@ kubectl describe deployment nginx-deployment
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. 更新戦略の設定
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -105,6 +113,7 @@ spec:
 ```
 
 2. ヘルスチェックの設定
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -126,6 +135,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. 更新が失敗する
@@ -144,6 +154,7 @@ spec:
    - スケーリングポリシーを確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. 高度な更新戦略
@@ -162,35 +173,42 @@ spec:
    - ELK Stack
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/)
 - [Kubernetes Best Practices: Deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment)
 
 ## Deploymentの主な特徴
 
 ### 1. レプリカ管理
+
 - 指定した数のPodレプリカを維持
 - スケーリング（水平スケーリング）機能を提供
 - Pod障害時の自動再起動
 
 ### 2. 更新戦略
+
 - **ローリングアップデート**: デフォルトの更新戦略で、古いPodを徐々に新しいPodに置き換える
 - **Recreate**: 全ての古いPodを削除してから新しいPodを作成する方法
 
 ### 3. ロールバック機能
+
 - 問題があった場合に以前のバージョンに戻せる
 - リビジョン履歴の管理
 
 ### 4. Deployment Statusの管理
+
 - 進行中・完了・失敗などのステータス監視
 - 更新の進捗確認や問題の特定
 
 ## フィールドの説明
 
 ### 1. metadata
+
 - **name**: Deploymentの名前
 - **labels**: Deploymentを識別するためのラベル
 
 ### 2. spec
+
 - **replicas**: 作成・維持するPodの数
 - **selector**: どのPodがこのDeploymentに属するかを定義するラベルセレクタ
 - **strategy**: 更新戦略を指定
@@ -203,41 +221,49 @@ spec:
 ## よく使うコマンド
 
 ### Deploymentの作成
+
 ```bash
 kubectl apply -f deployment.yaml
 ```
 
 ### Deploymentの一覧表示
+
 ```bash
 kubectl get deployments
 ```
 
 ### Deploymentの詳細表示
+
 ```bash
 kubectl describe deployment <deployment-name>
 ```
 
 ### スケーリング
+
 ```bash
 kubectl scale deployment <deployment-name> --replicas=5
 ```
 
 ### イメージ更新
+
 ```bash
 kubectl set image deployment/<deployment-name> <container-name>=<new-image>
 ```
 
 ### ロールバック
+
 ```bash
 kubectl rollout undo deployment/<deployment-name>
 ```
 
 ### 更新履歴の確認
+
 ```bash
 kubectl rollout history deployment/<deployment-name>
 ```
 
 ### 更新状況の確認
+
 ```bash
 kubectl rollout status deployment/<deployment-name>
 ```

@@ -77,10 +77,12 @@ a{color:var(--c1)}
 <h2>3 つの仕組みで裏を取る</h2>
 <p>送信ドメイン認証は、受信サーバが DNS を使って差出人の裏を取る仕組みで、役割の違う 3 つを組み合わせる。</p>
 <table>
-<tr><th>仕組み</th><th>確かめること</th><th>方法</th></tr>
+<thead><tr><th scope="col">仕組み</th><th scope="col">確かめること</th><th scope="col">方法</th></tr></thead>
+<tbody>
 <tr><td><a href="SPF.html">SPF</a></td><td>正規のサーバ（IP）から送られたか</td><td>送信元 IP を DNS の申告と照合</td></tr>
 <tr><td><a href="DKIM.html">DKIM</a></td><td>正規の送信者が署名し、改ざんされていないか</td><td>電子署名を DNS の公開鍵で検証</td></tr>
 <tr><td><a href="DMARC.html">DMARC</a></td><td>表示されるヘッダ From と整合するか・失格をどう扱うか</td><td>ポリシーを DNS で公開</td></tr>
+</tbody>
 </table>
 <p>SPF と DKIM が個別の検証手段、DMARC がそれらを「受信者に見えるヘッダ From」に結び付けて全体を束ねる、という関係になっている。</p>
 

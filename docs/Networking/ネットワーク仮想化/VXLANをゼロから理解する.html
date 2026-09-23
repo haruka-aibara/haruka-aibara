@@ -229,12 +229,14 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th></th><th>MAC アドレス</th><th>IP アドレス</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">MAC アドレス</th><th scope="col">IP アドレス</th></tr></thead>
+<tbody>
 <tr><td>たとえると</td><td>名前</td><td>住所</td></tr>
 <tr><td>例</td><td><code>00:1A:2B:3C:4D:5E</code></td><td><code>192.168.1.10</code></td></tr>
 <tr><td>誰が決める</td><td>工場（製造時に焼き込む）</td><td>後から設定する</td></tr>
 <tr><td>変わるか</td><td>基本的に変わらない</td><td>繋ぐ場所が変われば変わる</td></tr>
 <tr><td>役割</td><td>最後に本人へ渡す</td><td>遠くまでざっくり運ぶ</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -289,11 +291,13 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th>MAC アドレス（名前）</th><th>ポート番号（どの口にいるか）</th></tr>
+<thead><tr><th scope="col">MAC アドレス（名前）</th><th scope="col">ポート番号（どの口にいるか）</th></tr></thead>
+<tbody>
 <tr><td><code>00:1A:2B:3C:4D:5E</code>（PC-A）</td><td>ポート 1</td></tr>
 <tr><td><code>00:1A:2B:3C:4D:5F</code>（PC-B）</td><td>ポート 2</td></tr>
 <tr><td><code>00:1A:2B:3C:4D:60</code>（PC-C）</td><td>ポート 3</td></tr>
 <tr><td><code>00:1A:2B:3C:4D:61</code>（PC-D）</td><td>ポート 4</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -329,11 +333,13 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th></th><th>スイッチ</th><th>ルータ</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">スイッチ</th><th scope="col">ルータ</th></tr></thead>
+<tbody>
 <tr><td>何を見るか</td><td>MAC アドレス（名前）</td><td>IP アドレス（住所）</td></tr>
 <tr><td>どこへ届けるか</td><td>同じグループの中</td><td>グループをまたいで</td></tr>
 <tr><td>たとえると</td><td>社内のメール便</td><td>郵便局</td></tr>
 <tr><td>知っている範囲</td><td>自分に繋がっている相手だけ</td><td>他のグループへの行き方</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -596,9 +602,11 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th>用語</th><th>正体</th></tr>
+<thead><tr><th scope="col">用語</th><th scope="col">正体</th></tr></thead>
+<tbody>
 <tr><td><strong>VTEP</strong></td><td>封をする人 / 開ける人。VXLAN の入口と出口にあたる装置（上の図の「東京のスイッチ」「大阪のスイッチ」）</td></tr>
 <tr><td><strong>VNI</strong></td><td>島の番号。VLAN ID の VXLAN 版</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -608,10 +616,12 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th>これまでの悩み</th><th>VXLAN の答え</th></tr>
+<thead><tr><th scope="col">これまでの悩み</th><th scope="col">VXLAN の答え</th></tr></thead>
+<tbody>
 <tr><td>ケーブルが繋がった範囲しか島を広げられない（STEP 4）</td><td>IP で届く場所ならどこへでも。東京 ↔ 大阪も可能</td></tr>
 <tr><td>VLAN ID は 4094 個しかない（STEP 4）</td><td>VNI は 24 ビットで約 1677 万個。事実上、数を気にしなくてよい</td></tr>
 <tr><td>島を大きくすると叫び声で大混乱（STEP 3）</td><td>島は VNI ごとに完全に分離されたまま。広げても混ざらない</td></tr>
+</tbody>
 </table>
 </div>
 

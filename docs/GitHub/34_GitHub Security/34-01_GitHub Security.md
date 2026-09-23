@@ -24,17 +24,20 @@
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - セキュリティ脆弱性の検出
 - セキュリティポリシーの管理
 - アクセス制御の設定
 - コンプライアンス対応
 
 ### メリット
+
 - セキュリティの自動化
 - リスクの早期発見
 - コンプライアンスの確保
 
 ### 注意点
+
 - 誤検知への対応
 - セキュリティ更新の管理
 - アクセス権限の適切な設定
@@ -59,6 +62,7 @@
 ## 実践的なサンプル
 
 ### セキュリティポリシーの例
+
 ```markdown
 # セキュリティポリシー
 
@@ -73,6 +77,7 @@
 ```
 
 ### セキュリティ設定の例
+
 ```yaml
 # .github/workflows/security.yml
 name: Security Scan
@@ -91,6 +96,7 @@ jobs:
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. セキュリティアラート
    - アラートの確認
    - 影響範囲の特定
@@ -102,6 +108,7 @@ jobs:
    - ログの確認
 
 ### デバッグの手順
+
 1. セキュリティログの確認
 2. 設定の見直し
 3. 必要に応じてサポートに連絡
@@ -109,16 +116,19 @@ jobs:
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 高度なセキュリティ設定
 - 自動化の導入
 - コンプライアンス対応
 
 ### おすすめの学習リソース
+
 - [GitHub Security 公式ドキュメント](https://docs.github.com/ja/security)
 - [GitHub Security Lab](https://securitylab.github.com/)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Security Community
 - Stack Overflow
 - GitHub Discussions

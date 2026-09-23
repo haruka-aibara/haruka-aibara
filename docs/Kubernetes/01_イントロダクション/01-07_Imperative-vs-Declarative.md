@@ -1,7 +1,9 @@
 # Kubernetesにおける命令型(Imperative)と宣言型(Declarative)アプローチ
 
 ## はじめに
+
 Kubernetesのリソース管理で、こんな悩みはありませんか？
+
 - 手動操作による設定の不一致が発生する
 - 環境ごとの設定の違いで予期せぬ動作が起きる
 - 変更履歴の追跡が困難
@@ -9,6 +11,7 @@ Kubernetesのリソース管理で、こんな悩みはありませんか？
 これらの課題を解決するために、Kubernetesでは2つの異なるアプローチを提供しています。この記事では、命令型と宣言型の違いを理解し、適切な使い分けを学んでいきましょう。
 
 ## ざっくり理解しよう
+
 Kubernetesのリソース管理における重要なポイントは以下の3つです：
 
 1. **命令型アプローチ**
@@ -27,7 +30,9 @@ Kubernetesのリソース管理における重要なポイントは以下の3つ
    - 段階的な移行が重要
 
 ## 実際の使い方
+
 ### よくある使用シーン
+
 1. **開発環境**
    - クイックなテスト
    - 設定の試行錯誤
@@ -39,12 +44,15 @@ Kubernetesのリソース管理における重要なポイントは以下の3つ
    - 自動化との連携
 
 ### 実践的なTips
+
 - 開発時は命令型で素早く試す
 - 本番環境は宣言型で管理
 - マニフェストのバージョン管理
 
 ## 手を動かしてみよう
+
 1. **命令型アプローチ**
+
 ```bash
 # Podの作成
 kubectl run nginx --image=nginx
@@ -57,6 +65,7 @@ kubectl scale deployment nginx-deployment --replicas=5
 ```
 
 2. **宣言型アプローチ**
+
 ```yaml
 # deployment.yaml
 apiVersion: apps/v1
@@ -84,8 +93,11 @@ kubectl apply -f deployment.yaml
 ```
 
 ## 実践的なサンプル
+
 ### 基本的な設定
+
 1. **命令型での設定**
+
 ```bash
 # 環境変数の設定
 kubectl run nginx --image=nginx --env="DB_HOST=mysql"
@@ -95,6 +107,7 @@ kubectl run nginx --image=nginx --limits="cpu=200m,memory=256Mi"
 ```
 
 2. **宣言型での設定**
+
 ```yaml
 # config.yaml
 apiVersion: v1
@@ -115,7 +128,9 @@ spec:
 ```
 
 ## 困ったときは
+
 ### よくあるトラブルと解決方法
+
 1. **命令型での問題**
    - 操作の履歴が残らない
    - 環境の再現が困難
@@ -127,23 +142,28 @@ spec:
    - 即時の変更が難しい
 
 ### デバッグの手順
+
 1. 現在の状態の確認
 2. マニフェストの検証
 3. 差分の確認
 4. 変更の適用
 
 ## もっと知りたい人へ
+
 ### 次のステップ
+
 - GitOpsの理解
 - マニフェストの最適化
 - 自動化の実装
 
 ### おすすめの学習リソース
+
 - [Kubernetes公式ドキュメント - 宣言型の設定](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/declarative-config/)
 - [Kubernetes公式ドキュメント - 命令型の設定](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/imperative-config/)
 - [Kubernetes GitHubリポジトリ](https://github.com/kubernetes/kubernetes)
 
 ### コミュニティ情報
+
 - Kubernetes Slack (#kubernetes-users)
 - Stack Overflow (kubernetesタグ)
 - GitHub Discussions

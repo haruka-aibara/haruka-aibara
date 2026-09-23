@@ -1,9 +1,11 @@
 # Kubernetes: ネットワーキング
 
 ## はじめに
+
 「コンテナ間の通信を効率的に管理したい」「異なるネットワークドライバーの特徴を理解したい」「セキュアなネットワーク構成を実現したい」そんな悩みはありませんか？Kubernetesのネットワーキングは、これらの問題を解決し、コンテナ間の通信を柔軟に管理する重要な機能です。この記事では、ネットワーキングの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 Kubernetesのネットワーキングには、以下の3つの重要なポイントがあります：
 
 1. ネットワークモデル
@@ -23,6 +25,7 @@ Kubernetesのネットワーキングには、以下の3つの重要なポイン
    - トラフィック暗号化
 
 ## 実際の使い方
+
 ネットワーキングは様々なシーンで活用できます：
 
 1. コンテナ通信
@@ -41,9 +44,11 @@ Kubernetesのネットワーキングには、以下の3つの重要なポイン
    - サービスメッシュ
 
 ## 手を動かしてみよう
+
 基本的なネットワーク設定を説明します：
 
 1. Bridgeネットワーク
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -59,6 +64,7 @@ spec:
 ```
 
 2. Hostネットワーク
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -74,9 +80,11 @@ spec:
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. Overlayネットワーク
+
 ```yaml
 apiVersion: v1
 kind: Service
@@ -92,6 +100,7 @@ spec:
 ```
 
 2. ネットワークポリシー
+
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -115,6 +124,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. 通信ができない
@@ -133,6 +143,7 @@ spec:
    - 監査ログを確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. 高度なネットワーキング
@@ -151,5 +162,6 @@ spec:
    - セキュリティ監査
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: ネットワーキング](https://kubernetes.io/docs/concepts/cluster-administration/networking/)
 - [Kubernetes公式ドキュメント: ネットワークポリシー](https://kubernetes.io/docs/concepts/services-networking/network-policies/)

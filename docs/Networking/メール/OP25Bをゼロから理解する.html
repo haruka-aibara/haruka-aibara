@@ -415,7 +415,7 @@ svg .do{stroke:var(--c3)}
 
 <div class="tw">
 <table>
-<thead><tr><th>場面</th><th>起きること</th><th>対処</th></tr></thead>
+<thead><tr><th scope="col">場面</th><th scope="col">起きること</th><th scope="col">対処</th></tr></thead>
 <tbody>
 <tr><td>社内の機器やバッチが外部サーバの 25 番へ送っている</td><td>回線や拠点を変えた途端に送信が失敗する</td><td>送信先を 587＋認証に変える。機器が対応していなければ社内にリレー用の MTA を置く</td></tr>
 <tr><td>オフィスや自宅の回線で自前の MTA を運用したい</td><td>外向き 25 番が出られず、他社サーバへ転送できない</td><td>法人向けの固定 IP 契約に変える、または ISP に OP25B の解除を申請する</td></tr>

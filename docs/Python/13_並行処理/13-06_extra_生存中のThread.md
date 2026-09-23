@@ -1,9 +1,11 @@
 # Pythonで生存中のThreadオブジェクトリスト取得
 
 ## 概要
+
 マルチスレッドプログラミングでは、実行中のスレッドを管理・監視する必要があります。`threading.enumerate()`関数を使うと、現在生存中のすべてのThreadオブジェクトのリストを取得できます。
 
 ## 基本概念
+
 Pythonのスレッドは`threading`モジュールで管理され、`threading.enumerate()`関数を使用することで現在アクティブなスレッドのリストを取得できます。
 
 ## 実践コード例
@@ -44,6 +46,7 @@ if __name__ == "__main__":
 ```
 
 **実行結果**:
+
 ```
 MainThread: 現在生存中のスレッド一覧:
 MainThread: - MainThread (デーモン: False)
@@ -116,6 +119,7 @@ if __name__ == "__main__":
 ```
 
 **実行結果**:
+
 ```
 MainThread: 現在生存中のスレッド一覧:
 MainThread: - MainThread (デーモン: False)
@@ -192,6 +196,7 @@ if __name__ == "__main__":
 ```
 
 **実行結果**:
+
 ```
 MainThread: プログラム開始
 MainThread: スレッド DaemonThread-0 を開始しました

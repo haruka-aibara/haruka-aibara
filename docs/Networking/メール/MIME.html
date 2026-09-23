@@ -79,9 +79,11 @@ a{color:var(--c1)}
 
 <h2>2つのヘッダを覚えれば足りる</h2>
 <table>
-<tr><th>ヘッダ</th><th>何を言っているか</th><th>値の例</th></tr>
+<thead><tr><th scope="col">ヘッダ</th><th scope="col">何を言っているか</th><th scope="col">値の例</th></tr></thead>
+<tbody>
 <tr><td><code>Content-Type</code></td><td>これは何のデータか（種類／サブ種類）</td><td><code>text/plain</code>、<code>image/png</code>、<code>application/pdf</code></td></tr>
 <tr><td><code>Content-Transfer-Encoding</code></td><td>7ビットに収めるためにどう変換したか</td><td><code>base64</code>、<code>quoted-printable</code>、<code>7bit</code></td></tr>
+</tbody>
 </table>
 <p>変換の方式は主に2つ。バイナリには <a href="Base64.html">Base64</a>、大部分が英数字で一部だけ非 ASCII が混じるテキストには quoted-printable（該当文字だけを <code>=E3</code> のような形に置き換える）が使われる。</p>
 

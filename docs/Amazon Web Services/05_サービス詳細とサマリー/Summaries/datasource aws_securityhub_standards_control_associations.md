@@ -3,6 +3,7 @@
 # AWS Security Hub CSPM Standards Control Associationsデータソースの活用法
 
 ## 疑問
+
 AWS Security Hub CSPMのStandards Control Associationsデータソースの使い方と高度な活用例を教えてください。
 
 ## 回答

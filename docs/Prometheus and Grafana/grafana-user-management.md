@@ -120,4 +120,4 @@ Grafanaのユーザー管理と権限設定は、システムのセキュリテ�
 - 権限は必要最小限に設定してください
 - 定期的なユーザー権限の見直しを行ってください
 - セキュリティポリシーに従って設定してください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/administration/user-management/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/administration/user-management/)を参照してください

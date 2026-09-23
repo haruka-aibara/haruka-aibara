@@ -84,13 +84,15 @@ a{color:var(--c1)}
 <h2>PKI を構成するもの</h2>
 <p>PKI は製品ではなく、次の要素をまとめた枠組みを指す。技術より<strong>手続きと運用規程</strong>の比重が大きい。</p>
 <table>
-<tr><th>要素</th><th>役割</th></tr>
+<thead><tr><th scope="col">要素</th><th scope="col">役割</th></tr></thead>
+<tbody>
 <tr><td>認証局（CA）</td><td>証明書を発行・失効させる。実務では<a href="CA_RA_IA_VA.html">RA・IA・VA</a> に役割が分かれる</td></tr>
 <tr><td>デジタル証明書</td><td>「この公開鍵はこの主体のもの」を CA が署名した文書（<a href="X.509証明書とは.md">X.509</a>）</td></tr>
 <tr><td>失効情報</td><td>期限前に無効にした証明書の一覧（<a href="証明書の失効確認_CRLとOCSP.html">CRL・OCSP</a>）</td></tr>
 <tr><td>リポジトリ</td><td>証明書と失効情報を誰でも取得できる場所</td></tr>
 <tr><td>CP / CPS</td><td>認証局の運用規程。どこまで本人確認するか、鍵をどう守るかを文書化したもの</td></tr>
 <tr><td>利用者・検証者</td><td>証明書を使う側。検証を正しく行う責任はこちらにある</td></tr>
+</tbody>
 </table>
 
 <h2>信頼はどこから来るのか</h2>

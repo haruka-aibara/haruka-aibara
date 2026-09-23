@@ -1,9 +1,11 @@
 # Sphinxを使ったドキュメント作成入門
 
 ## 概要
+
 Sphinxは、特にPythonプロジェクトのドキュメント作成に適した強力な文書生成ツールです。
 
 ## 基本概念
+
 Sphinxは、reStructuredTextやMarkdownで書かれたソースファイルから、HTML、PDF、ePubなど様々な形式のドキュメントを生成します。
 
 ## Sphinxの使い方（ステップバイステップ）
@@ -103,6 +105,7 @@ elif temperature > 20:
 else:
     print("少し肌寒いです")
 ```
+
 ```
 
 ### 5. インデックスページの編集

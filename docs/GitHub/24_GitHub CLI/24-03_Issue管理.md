@@ -1,9 +1,11 @@
 # GitHub CLIでのIssue管理
 
 ## はじめに
+
 GitHub CLIを使用すると、コマンドラインからIssueの作成、管理、操作を効率的に行うことができます。ブラウザを使わずに、ターミナルからGitHubのIssueを管理できます。
 
 ## ざっくり理解しよう
+
 1. **Issueの基本操作**
    - Issueの作成
    - Issueの一覧表示
@@ -20,7 +22,9 @@ GitHub CLIを使用すると、コマンドラインからIssueの作成、管�
    - 一貫性のある管理
 
 ## 実際の使い方
+
 ### Issueの作成
+
 ```bash
 # 新しいIssueの作成
 gh issue create [オプション]
@@ -33,6 +37,7 @@ gh issue create --label "bug" --label "high-priority"
 ```
 
 ### Issueの一覧表示
+
 ```bash
 # Issueの一覧表示
 gh issue list
@@ -45,7 +50,9 @@ gh issue list --state "open"
 ```
 
 ## 手を動かしてみよう
+
 ### Issueの管理
+
 ```bash
 # Issueの詳細表示
 gh issue view <番号>
@@ -58,6 +65,7 @@ gh issue close <番号>
 ```
 
 ### Issueのコメント
+
 ```bash
 # コメントの追加
 gh issue comment <番号> --body "コメント内容"
@@ -67,7 +75,9 @@ gh issue view <番号> --comments
 ```
 
 ## 実践的なサンプル
+
 ### Issueの作成と設定
+
 ```bash
 # テンプレートを使用したIssueの作成
 gh issue create \
@@ -86,6 +96,7 @@ done
 ```
 
 ### Issueの検索と操作
+
 ```bash
 # 特定の条件でIssueを検索
 gh issue list --search "is:open label:bug"
@@ -98,7 +109,9 @@ done
 ```
 
 ## 困ったときは
+
 ### よくあるトラブル
+
 1. **Issueの作成に失敗**
    - 権限の確認
    - リポジトリの確認
@@ -115,12 +128,15 @@ done
    - リポジトリの設定確認
 
 ## もっと知りたい人へ
+
 ### 次のステップ
+
 - 高度なIssue管理
 - 自動化スクリプトの作成
 - チーム開発での活用
 
 ### おすすめの学習リソース
+
 - [GitHub CLI公式ドキュメント](https://cli.github.com/manual/gh_issue)
 - [GitHub CLI Examples](https://github.com/cli/cli#examples)
 - [GitHub Issues API](https://docs.github.com/ja/rest/issues)

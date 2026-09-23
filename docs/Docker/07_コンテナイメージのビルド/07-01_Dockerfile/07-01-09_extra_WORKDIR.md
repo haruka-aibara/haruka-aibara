@@ -1,19 +1,23 @@
 # Docker講義: WORKDIR
 
 ## 概要
+
 WORKDIRはDockerfile内でコンテナの作業ディレクトリを設定するための命令で、コンテナ内のファイル操作の基準点となります。
 
 ## 理論的説明
+
 WORKDIRはコンテナ内の現在の作業ディレクトリを指定し、後続のRUN、CMD、ENTRYPOINT、COPY、ADDなどの命令の実行場所に影響します。
 
 ## WORKDIRの基本
 
 ### 構文
+
 ```dockerfile
 WORKDIR /path/to/directory
 ```
 
 ### 主な用途
+
 - コンテナ内での作業ディレクトリの設定
 - 後続命令の実行場所の指定
 - ファイルパスの基準点の設定
@@ -21,6 +25,7 @@ WORKDIR /path/to/directory
 ### 使用例
 
 **基本的な使用方法:**
+
 ```dockerfile
 FROM ubuntu:20.04
 WORKDIR /app
@@ -62,6 +67,7 @@ WORKDIRを使用せずに絶対パスを多用すると以下の問題が発生�
 1. **絶対パスを使用する**: 予測可能な結果を得るため、WORKDIRでは絶対パスを使用しましょう
 2. **自動ディレクトリ作成**: 指定したディレクトリが存在しない場合は自動的に作成されます
 3. **環境変数の活用**: WORKDIRでは環境変数も使用できます
+
    ```dockerfile
    ENV APP_HOME /app
    WORKDIR $APP_HOME
@@ -69,7 +75,8 @@ WORKDIRを使用せずに絶対パスを多用すると以下の問題が発生�
 
 ### よくある間違い
 
-1. **存在しないユーザーのホームディレクトリ指定**: 
+1. **存在しないユーザーのホームディレクトリ指定**:
+
    ```dockerfile
    # 間違い例
    WORKDIR ~/app  # コンテナ内では "~" が展開されない場合がある
@@ -78,7 +85,8 @@ WORKDIRを使用せずに絶対パスを多用すると以下の問題が発生�
    WORKDIR /home/user/app  # 絶対パスを使用する
    ```
 
-2. **WORKDIRとCDの混同**: 
+2. **WORKDIRとCDの混同**:
+
    ```dockerfile
    # 間違い例
    RUN cd /app && npm install  # 一時的な変更のみ

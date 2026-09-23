@@ -55,4 +55,4 @@ GrafanaのStarred機能は、よく使用するダッシュボードやフォル
 - お気に入りの数が多すぎると、管理が難しくなる可能性があります
 - 定期的にお気に入りの見直しを行うことをお勧めします
 - チームで共有する場合は、共通の命名規則を決めることをお勧めします
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/dashboard-list/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/dashboard-list/)を参照してください

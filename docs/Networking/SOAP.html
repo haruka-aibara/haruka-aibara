@@ -88,11 +88,13 @@ a{color:var(--c1)}
 
 <h2>なぜ REST に置き換わったのか</h2>
 <table>
-<tr><th></th><th>SOAP</th><th>REST（JSON）</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">SOAP</th><th scope="col">REST（JSON）</th></tr></thead>
+<tbody>
 <tr><td>メッセージ</td><td>XML。冗長で人手では読みにくい</td><td>JSON。軽く、そのまま読める</td></tr>
 <tr><td>定義</td><td>WSDL で厳密に決める</td><td>OpenAPI などで記述するが、必須ではない</td></tr>
 <tr><td>実装の手軽さ</td><td>専用のライブラリと生成ツールが要る</td><td><code>curl</code>1行で試せる</td></tr>
 <tr><td>向く場面</td><td>組織をまたぐ厳密な契約、多段経由、トランザクション</td><td>Web・モバイル向けの一般的な API</td></tr>
+</tbody>
 </table>
 <p>Web とモバイルの世界では「軽くてすぐ試せる」ことの価値が圧倒的に大きく、REST が主流になった。一方で<strong>相手が数年変わらず、仕様の食い違いが金銭事故に直結する</strong>領域——決済ネットワーク、保険、行政システム、EDI——では、いまも SOAP が動いている。レガシー統合の案件でこれに出会うことは今後もある。</p>
 

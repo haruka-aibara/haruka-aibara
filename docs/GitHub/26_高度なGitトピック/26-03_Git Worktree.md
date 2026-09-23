@@ -28,6 +28,7 @@ Git Worktreeの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. 作業ディレクトリの追加
+
 ```bash
 # 新しい作業ディレクトリを作成
 git worktree add ../feature-branch feature-branch
@@ -37,6 +38,7 @@ git worktree add ../hotfix hotfix-branch
 ```
 
 2. 作業ディレクトリの一覧表示
+
 ```bash
 # 現在の作業ディレクトリを表示
 git worktree list
@@ -46,6 +48,7 @@ git worktree list --porcelain
 ```
 
 3. 作業ディレクトリの削除
+
 ```bash
 # 作業ディレクトリを削除
 git worktree remove ../feature-branch
@@ -59,6 +62,7 @@ git worktree remove -f ../feature-branch
 ### 基本的な手順
 
 1. 作業ディレクトリの作成
+
 ```bash
 # メインディレクトリに移動
 cd /path/to/repository
@@ -68,6 +72,7 @@ git worktree add ../feature-1 feature-1
 ```
 
 2. 作業ディレクトリでの作業
+
 ```bash
 # 新しい作業ディレクトリに移動
 cd ../feature-1
@@ -79,6 +84,7 @@ git commit -m "作業内容"
 ```
 
 3. 作業ディレクトリの管理
+
 ```bash
 # 作業ディレクトリの一覧を確認
 git worktree list
@@ -132,6 +138,7 @@ git worktree add ../review pr-123
 ### よくあるトラブルと解決方法
 
 1. **作業ディレクトリが削除できない場合**
+
 ```bash
 # 作業ディレクトリが存在するか確認
 git worktree list
@@ -141,6 +148,7 @@ git worktree remove -f ../worktree-name
 ```
 
 2. **作業ディレクトリが壊れた場合**
+
 ```bash
 # 作業ディレクトリを修復
 git worktree repair
@@ -150,6 +158,7 @@ git worktree repair ../worktree-name
 ```
 
 3. **作業ディレクトリの競合が発生した場合**
+
 ```bash
 # 作業ディレクトリの状態を確認
 git worktree list --porcelain

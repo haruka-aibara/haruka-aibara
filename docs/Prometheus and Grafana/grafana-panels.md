@@ -41,6 +41,7 @@ Grafanaのダッシュボードは、複数のパネルで構成されていま�
    - リンクの設定
 
 2. **クエリの設定**
+
    ```promql
    # Prometheusの例
    node_memory_MemTotal_bytes
@@ -158,4 +159,4 @@ Orientation: horizontal
 - パネルの数が多すぎると、パフォーマンスに影響を与える可能性があります
 - 適切な更新間隔を設定してください
 - データソースの設定を確認してください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/)を参照してください

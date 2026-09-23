@@ -201,7 +201,7 @@ blockquote p{margin:.4rem 0}
 <g stroke="var(--c1)" stroke-width="2.5" marker-end="url(#a2)"><line x1="266" y1="59" x2="435" y2="110"/><line x1="266" y1="134" x2="435" y2="134"/><line x1="266" y1="209" x2="435" y2="158"/></g>
 <rect x="445" y="80" width="300" height="108" rx="12" fill="var(--lane)" stroke="var(--c1)" stroke-width="2"/><text x="595" y="116" text-anchor="middle" fill="var(--ink)" font-weight="700">すべて同じ脆弱性</text><text x="595" y="152" text-anchor="middle" fill="var(--c1)" font-weight="700" font-size="19">CVE-2021-44228</text>
 <text x="595" y="225" text-anchor="middle" fill="var(--muted)">製品名は CPE、設定項目は CCE で</text><text x="595" y="250" text-anchor="middle" fill="var(--muted)">同じように呼び名をそろえる</text></svg><figcaption>識別子は意味を説明しません。「どれを指しているか」だけを決めます。説明は各ベンダーの告知に任せ、突き合わせは番号でやる、という分担です。</figcaption></figure>
-<div class="tw"><table><thead><tr><th>そろえたいもの</th><th>識別子</th><th>例</th></tr></thead><tbody>
+<div class="tw"><table><thead><tr><th scope="col">そろえたいもの</th><th scope="col">識別子</th><th scope="col">例</th></tr></thead><tbody>
 <tr><td>脆弱性</td><td><strong>CVE</strong></td><td><code>CVE-2021-44228</code></td></tr>
 <tr><td>製品・プラットフォーム</td><td><strong>CPE</strong></td><td><code>cpe:2.3:a:apache:http_server:2.4.58:*:*:*:*:*:*:*</code></td></tr>
 <tr><td>設定項目</td><td><strong>CCE</strong></td><td><code>CCE-80901-2</code>（「root の SSH ログインを禁止する」など）</td></tr>
@@ -238,7 +238,7 @@ blockquote p{margin:.4rem 0}
 <h2>STEP 5：SCAP として組み立てる</h2>
 <nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>一台ずつ人が確かめる限界</li><li class="done"><span class="n">STEP 2 ✓</span>呼び名をそろえる</li><li class="done"><span class="n">STEP 3 ✓</span>深刻度を同じものさしで測る</li><li class="done"><span class="n">STEP 4 ✓</span>点検手順を機械に読ませる</li><li class="now"><span class="n">STEP 5</span>SCAP として組み立てる</li></ol></nav>
 <p>ここまでの部品を、ひとつの仕様としてまとめたものが <strong>SCAP（Security Content Automation Protocol、セキュリティ設定共通化手順）</strong> です。米国の NIST が策定しています。STEP 2〜4 で出てきた道具は、SCAP では次の位置づけになります。</p>
-<div class="tw"><table><thead><tr><th>ここまでの呼び方</th><th>SCAP の構成要素</th><th>分類</th></tr></thead><tbody>
+<div class="tw"><table><thead><tr><th scope="col">ここまでの呼び方</th><th scope="col">SCAP の構成要素</th><th scope="col">分類</th></tr></thead><tbody>
 <tr><td>脆弱性の共通名</td><td><strong>CVE</strong></td><td rowspan="3">識別（名前をそろえる）</td></tr>
 <tr><td>製品の共通名</td><td><strong>CPE</strong></td></tr>
 <tr><td>設定項目の共通名</td><td><strong>CCE</strong></td></tr>
@@ -260,7 +260,7 @@ blockquote p{margin:.4rem 0}
 <line x1="400" y1="192" x2="400" y2="238" stroke="var(--wire)" stroke-width="3" marker-end="url(#a5)"/>
 <rect x="250" y="242" width="300" height="72" rx="12" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/><text x="400" y="272" text-anchor="middle" fill="var(--ink)" font-weight="700">点検結果</text><text x="400" y="298" text-anchor="middle" fill="var(--muted)">ルールごとの pass / fail・CVE / CCE 付き</text></svg><figcaption>コンテンツとツールが分離しているのが要点です。CIS が作った基準を別ベンダーのスキャナで実行し、結果をさらに別の管理システムへ取り込む、という組み合わせが成り立ちます。</figcaption></figure>
 <p>つまり SCAP は「スキャンする道具」ではなく、<strong>道具と点検内容が噛み合うための共通仕様</strong>です。実務で目にするのは、Linux 向けのオープンソーススキャナ <a href="https://www.open-scap.org/">OpenSCAP</a>、SCAP 形式で配布される CIS Benchmark や DISA STIG、そして CVE・CVSS を共通言語として使う各種の脆弱性管理ツールです。</p>
-<div class="tw"><table><thead><tr><th>技術的な言い方</th><th>ビジネス側に刺さる言い方</th></tr></thead><tbody>
+<div class="tw"><table><thead><tr><th scope="col">技術的な言い方</th><th scope="col">ビジネス側に刺さる言い方</th></tr></thead><tbody>
 <tr><td>SCAP 形式のコンテンツで設定点検を自動化する</td><td>「基準どおり設定されているか」の確認を人の手作業から外し、毎日回せる状態にする</td></tr>
 <tr><td>CVE と CVSS で脆弱性を管理する</td><td>監査や取引先からの照会に、その都度調べ直さずに答えられる</td></tr>
 </tbody></table></div>

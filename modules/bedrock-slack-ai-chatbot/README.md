@@ -10,7 +10,7 @@ Functions as an HTTP API server using API Gateway.
 This Project was created with reference to the following:
 [Amazon BedrockとSlackで生成AIチャットボットアプリを作る (その2：Lambda＋API Gatewayで動かす)](https://dev.classmethod.jp/articles/amazon-bedrock-slack-chat-bot-part2/)
 
-### Architecture Diagram
+## Architecture Diagram
 
 ```mermaid
 flowchart TD
@@ -38,6 +38,7 @@ flowchart TD
 ```
 
 ***
+
 ### Resources Created
 
 `terraform apply` creates everything inside the `AWS` box above:
@@ -53,6 +54,7 @@ flowchart TD
 | CloudWatch log groups | one per Lambda plus one for API Gateway |
 
 ***
+
 ## How To Use
 
 **Mention @app_name and it replies in the thread.**
@@ -79,6 +81,7 @@ bot     08:13  [スレッドの内容を踏まえて回答]
 ```
 
 ***
+
 ## Where conversation state lives
 
 **In Slack, and nowhere else.** Context is read back from the thread with
@@ -117,6 +120,7 @@ Note that this sends the whole thread to Bedrock, including messages that were n
 addressed to the bot.
 
 ***
+
 ## Why the queue
 
 Slack gives an event endpoint 3 seconds to respond, and a Bedrock call takes far longer,
@@ -167,9 +171,11 @@ Two mentions racing in the same thread need no coordination at all, because neit
 writes conversation state — each reads the thread as it stands and answers.
 
 ***
+
 ## Installation Guide
 
 ### Prerequisites
+
 - Terraform installed on your local machine
 - AWS CLI configured with appropriate credentials
 - A Slack app created with bot token and signing secret
@@ -212,13 +218,15 @@ model that simply gave a poor answer.
 2. Navigate to the project directory.
 
 3. Set up Terraform variables:
- - Option A: set variable in HCP Terraform
+
+- Option A: set variable in HCP Terraform
 
    ```hcl
    slack_bot_token      = "your-slack-bot-token"
    slack_signing_secret = "your-slack-signing-secret"
    ```
- - Option B: Local environment, e.g., Ubuntu
+
+- Option B: Local environment, e.g., Ubuntu
 
    first, Open variables.tf and change the variable names to uppercase
 
@@ -232,11 +240,13 @@ model that simply gave a poor answer.
     Replace your-slack-bot-token and your-slack-signing-secret with your actual Slack App values.
 
 4. Initialize Terraform:
+
    ```
    terraform init
    ```
 
 5. Apply the Terraform configuration:
+
    ```
    terraform apply
    ```
@@ -264,6 +274,7 @@ model that simply gave a poor answer.
 Your Slack AI chatbot should now be ready to use!
 
 ***
+
 ## Tuning
 
 These live as module constants in `lambda_function_bedrock_backend/lambda_function.py`,
@@ -283,6 +294,7 @@ must match `visibility_timeout_seconds` on the queue. A test asserts the first
 relationship so the pair cannot silently drift apart.
 
 ***
+
 ## Development
 
 Dependencies are managed with [uv](https://docs.astral.sh/uv/).

@@ -1,9 +1,11 @@
 # AWS Glue DataFrame (難易度レベル: 100)
 
 ## 概要
+
 AWS GlueのDataFrameは、AWSが提供するサーバーレスデータ統合サービス「AWS Glue」において、データの処理・変換・分析を行うための主要なデータ構造です。Apache SparkのDataFrameをベースにしており、大規模データの効率的な処理を可能にします。
 
 AWS Glue DataFrameを学ぶ意義：
+
 - サーバーレスデータ処理の理解
 - ETL（Extract, Transform, Load）パイプラインの構築
 - 大規模データの効率的な処理
@@ -14,6 +16,7 @@ AWS Glue DataFrameを学ぶ意義：
 ### AWS Glue DataFrameとは
 
 #### 基本的な概念
+
 AWS Glue DataFrameは、構造化データを扱うための2次元の表形式データ構造です。以下の特徴があります：
 
 - **スキーマ付きデータ**: 列名とデータ型が定義された構造化データ
@@ -22,6 +25,7 @@ AWS Glue DataFrameは、構造化データを扱うための2次元の表形式�
 - **最適化**: Sparkエンジンによる自動的な最適化
 
 #### AWS Glueの役割
+
 AWS Glueは、以下の機能を提供します：
 
 - **データカタログ**: メタデータの中央管理
@@ -32,6 +36,7 @@ AWS Glueは、以下の機能を提供します：
 ### DataFrameの基本操作
 
 #### DataFrameの作成
+
 ```python
 # AWS Glueコンテキストの取得
 from awsglue.context import GlueContext
@@ -56,6 +61,7 @@ df.show()
 ```
 
 #### データの読み込み
+
 ```python
 # CSVファイルの読み込み
 df_csv = spark.read.csv("s3://bucket-name/data.csv", header=True, inferSchema=True)
@@ -74,6 +80,7 @@ df_catalog = glueContext.create_dynamic_frame.from_catalog(
 ```
 
 #### 基本的なデータ操作
+
 ```python
 # データの表示
 df.show()  # 最初の20行を表示
@@ -99,6 +106,7 @@ df.dropDuplicates(["name"]).show()
 ### データ変換と処理
 
 #### 列の操作
+
 ```python
 # 新しい列の追加
 from pyspark.sql.functions import col, when
@@ -124,6 +132,7 @@ df_updated = df.withColumn(
 ```
 
 #### 集計操作
+
 ```python
 from pyspark.sql.functions import count, avg, sum, max, min
 
@@ -150,6 +159,7 @@ df_with_rank = df.withColumn(
 ```
 
 #### データの結合
+
 ```python
 # 別のDataFrameの作成
 data2 = [
@@ -173,6 +183,7 @@ df_complex_join = df.join(df2, ["name", "city"], "inner")
 ### AWS Glue特有の機能
 
 #### DynamicFrameの活用
+
 ```python
 # DynamicFrameの作成
 dynamic_frame = glueContext.create_dynamic_frame.from_catalog(
@@ -201,6 +212,7 @@ dynamic_frame_cleaned = dynamic_frame.apply_mapping([
 ```
 
 #### データカタログとの連携
+
 ```python
 # テーブルの作成
 glueContext.write_dynamic_frame.from_catalog(
@@ -221,6 +233,7 @@ glueContext.write_dynamic_frame.from_catalog(
 ### 実践的な使用例
 
 #### データクリーニング
+
 ```python
 # 欠損値の処理
 df_cleaned = df.na.fill({
@@ -241,6 +254,7 @@ df_converted = df.withColumn(
 ```
 
 #### データ分析
+
 ```python
 # 年齢分布の分析
 age_distribution = df.groupBy("city").agg(
@@ -267,6 +281,7 @@ age_group_summary.show()
 ```
 
 #### データの保存
+
 ```python
 # CSVファイルとして保存
 df.write.mode("overwrite").csv("s3://bucket-name/output/")
@@ -284,6 +299,7 @@ df.write.partitionBy("city").mode("overwrite").parquet("s3://bucket-name/output/
 ### パフォーマンス最適化
 
 #### キャッシュの活用
+
 ```python
 # 頻繁に使用するDataFrameをキャッシュ
 df.cache()
@@ -297,6 +313,7 @@ df.unpersist()
 ```
 
 #### パーティショニング
+
 ```python
 # パーティション数の調整
 df.repartition(10).write.parquet("s3://bucket-name/output/")
@@ -309,6 +326,7 @@ df.coalesce(5).write.parquet("s3://bucket-name/output/")
 ```
 
 #### ブロードキャスト結合
+
 ```python
 # 小さいDataFrameをブロードキャスト
 from pyspark.sql.functions import broadcast
@@ -323,6 +341,7 @@ df_joined = df_large.join(broadcast(df_small), "id")
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **AWS Glue DataFrame**: 構造化データ処理の基本
 - **基本操作**: データの読み込み、表示、変換
 - **データ処理**: フィルタリング、集計、結合
@@ -330,6 +349,7 @@ df_joined = df_large.join(broadcast(df_small), "id")
 - **実践的活用**: データクリーニング、分析、保存
 
 ### 次のステップへの提案
+
 1. **AWS Glue ETLジョブ**: 自動化されたデータ処理パイプライン
 2. **データカタログ**: メタデータ管理とテーブル定義
 3. **Glue DataBrew**: 視覚的なデータ準備ツール
@@ -337,4 +357,4 @@ df_joined = df_large.join(broadcast(df_small), "id")
 5. **パフォーマンス最適化**: 大規模データの効率的な処理
 6. **データ品質**: データ検証とモニタリング
 
-AWS Glue DataFrameは、クラウド上での大規模データ処理を効率的に行うための重要な技術です。基本的な概念を理解した後は、実際のプロジェクトで活用することで、より実践的なスキルを身につけることができます。 
+AWS Glue DataFrameは、クラウド上での大規模データ処理を効率的に行うための重要な技術です。基本的な概念を理解した後は、実際のプロジェクトで活用することで、より実践的なスキルを身につけることができます。

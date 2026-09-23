@@ -28,6 +28,7 @@ GitHub GraphQL APIの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. 認証の設定
+
 ```bash
 # 個人アクセストークンの生成
 # GitHubの設定画面から生成
@@ -37,6 +38,7 @@ export GITHUB_TOKEN='your-token-here'
 ```
 
 2. 基本的なクエリ
+
 ```graphql
 # リポジトリ情報の取得
 query {
@@ -55,6 +57,7 @@ query {
 ```
 
 3. ミューテーション
+
 ```graphql
 # イシューの作成
 mutation {
@@ -77,12 +80,14 @@ mutation {
 ### 基本的な手順
 
 1. GraphQL Explorerの使用
+
 ```bash
 # GraphQL Explorerにアクセス
 # https://docs.github.com/ja/graphql/overview/explorer
 ```
 
 2. クエリの実行
+
 ```graphql
 # ユーザー情報の取得
 query {
@@ -100,6 +105,7 @@ query {
 ```
 
 3. 変数の使用
+
 ```graphql
 # 変数を使用したクエリ
 query($owner: String!, $name: String!) {
@@ -225,6 +231,7 @@ async function main() {
 ### よくあるトラブルと解決方法
 
 1. **認証エラーが発生する場合**
+
 ```bash
 # トークンの権限を確認
 # GitHubの設定画面で確認
@@ -236,6 +243,7 @@ async function main() {
 ```
 
 2. **クエリが失敗する場合**
+
 ```graphql
 # スキーマを確認
 query {
@@ -257,6 +265,7 @@ query {
 ```
 
 3. **レート制限に達した場合**
+
 ```graphql
 # レート制限情報の取得
 query {

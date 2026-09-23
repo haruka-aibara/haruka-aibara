@@ -1,0 +1,9 @@
+# zizmor（GitHub Actions のセキュリティ検査）の設定。
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        # 自分の共通ワークフロー（ci/ から配布）は main を追う運用なので、ブランチ参照を許す。
+        "haruka-aibara/*": ref-pin
+        # それ以外の action はコミットハッシュで固定する。
+        "*": hash-pin

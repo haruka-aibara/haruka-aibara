@@ -30,6 +30,7 @@ aws securityhub enable-organization-admin-account \
 ### Week 1：検知の基盤を作る
 
 #### ① 管理アカウントのルート MFA を設定する
+
 最初にやること。クレデンシャルが漏洩したときの被害が最大になるのが管理アカウントのルート。
 
 - [ ] 管理アカウントのルートアカウントに MFA デバイスを登録（ハードウェアキー推奨）
@@ -60,6 +61,7 @@ aws cloudtrail start-logging --name org-cloudtrail
 ```
 
 CloudTrail の S3 バケットには以下を設定する：
+
 - バケットポリシー：CloudTrail サービスプリンシパルからのみ書き込み可
 - S3 パブリックアクセスブロック：全項目 ON
 - バケット削除保護：オブジェクトロック（WORM）推奨

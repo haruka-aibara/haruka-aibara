@@ -110,4 +110,4 @@ Password: your_password
 - データソースの設定は、Grafanaの設定ファイル（grafana.ini）でも管理できます
 - 本番環境では、適切な認証設定とセキュリティ設定を行うことをお勧めします
 - データソースの接続テストは、設定保存前に必ず行ってください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/datasources/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/datasources/)を参照してください

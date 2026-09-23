@@ -112,9 +112,11 @@ a{color:var(--c1)}
 <h2>対応表をどうやって埋めるか</h2>
 <p>宛先 VM がどの VTEP の配下にいるかを、VTEP は最初は知らない。埋め方に 2 通りある。</p>
 <table>
-<tr><th>方式</th><th>やり方</th><th>特徴</th></tr>
+<thead><tr><th scope="col">方式</th><th scope="col">やり方</th><th scope="col">特徴</th></tr></thead>
+<tbody>
 <tr><td>マルチキャスト（フラッド&amp;ラーン）</td><td>宛先不明のフレームを全 VTEP に配り、応答から学習する</td><td>設定は単純だが、物理ネットワークがマルチキャスト対応である必要がある</td></tr>
 <tr><td>コントロールプレーン（EVPN）</td><td>BGP EVPN で VTEP どうしが MAC 情報を事前に交換する</td><td>フラッディングが不要。現在の主流</td></tr>
+</tbody>
 </table>
 <p>クラウドや大規模データセンタでは後者が使われる。マルチキャストは <a href="../IP/IGMP.html">IGMP</a> の設定が要り、そもそもクラウドでは使えないことが多いため。</p>
 

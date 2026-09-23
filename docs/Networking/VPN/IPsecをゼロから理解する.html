@@ -107,12 +107,14 @@ figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 
 <div class="tw">
 <table>
-<tr><th>問い</th><th>答えにあたる用語</th></tr>
+<thead><tr><th scope="col">問い</th><th scope="col">答えにあたる用語</th></tr></thead>
+<tbody>
 <tr><td>① どうやって守るのか</td><td>AH / ESP</td></tr>
 <tr><td>② どこまで包むのか</td><td>トランスポートモード / トンネルモード</td></tr>
 <tr><td>③ 守るための取り決めをどう持つのか</td><td>SA / SPI / SAD</td></tr>
 <tr><td>④ その取り決めをどう作るのか</td><td>IKE / フェーズ 1・2 / ISAKMP SA / メイン・アグレッシブ・クイックモード</td></tr>
 <tr><td>（最後に）そもそもどの通信を IPsec に流すのか</td><td>SPD</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -202,11 +204,13 @@ figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 
 <div class="tw">
 <table>
-<tr><th></th><th>AH</th><th>ESP</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">AH</th><th scope="col">ESP</th></tr></thead>
+<tbody>
 <tr><td>暗号化</td><td>しない</td><td>する</td></tr>
 <tr><td>改ざん検知</td><td>する（IP ヘッダも含む）</td><td>する（IP ヘッダは除く）</td></tr>
 <tr><td>NAT の下で使えるか</td><td>使えない</td><td>使える</td></tr>
 <tr><td>実務では</td><td>使わない</td><td>これを使う</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -519,13 +523,15 @@ figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 
 <div class="tw">
 <table>
-<tr><th></th><th>第 1 段階</th><th>第 2 段階</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">第 1 段階</th><th scope="col">第 2 段階</th></tr></thead>
+<tbody>
 <tr><td>番号での呼び方</td><td>フェーズ 1</td><td>フェーズ 2</td></tr>
 <tr><td>役割での呼び方</td><td><strong>IKE フェーズ</strong>（IKE 自身の SA を作るから）</td><td><strong>IPsec フェーズ</strong>（IPsec 用の SA を作るから）</td></tr>
 <tr><td>できる SA の名前</td><td>ISAKMP SA ／ IKE SA</td><td>IPsec SA（IKEv2 では Child SA）</td></tr>
 <tr><td>SA の本数</td><td>双方向で 1 本</td><td>片方向 1 本ずつ、計 2 本</td></tr>
 <tr><td>やりとりの手順の名前</td><td>メインモード or アグレッシブモード</td><td>クイックモード</td></tr>
 <tr><td>何のためにあるか</td><td>交渉を守る通信路を作る</td><td>実データを守る鍵を決める</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -765,7 +771,8 @@ figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 
 <div class="tw">
 <table>
-<tr><th>用語</th><th>正体</th></tr>
+<thead><tr><th scope="col">用語</th><th scope="col">正体</th></tr></thead>
+<tbody>
 <tr><td>AH</td><td>改ざん検知だけをする方式。NAT を越えられず、実務では使わない</td></tr>
 <tr><td>ESP</td><td>暗号化＋改ざん検知。実務はこちら</td></tr>
 <tr><td>トランスポートモード</td><td>元の IP ヘッダを残して中身だけ守る。端点自身が IPsec を喋る構成</td></tr>
@@ -782,6 +789,7 @@ figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 <tr><td>フェーズ 2 ／ IPsec フェーズ</td><td>実データ用の鍵を決める段階</td></tr>
 <tr><td>クイックモード</td><td>フェーズ 2 の手順、3 メッセージ。選択肢はこれだけ</td></tr>
 <tr><td>IPsec SA</td><td>フェーズ 2 でできる SA。片方向 1 本ずつ、計 2 本</td></tr>
+</tbody>
 </table>
 </div>
 

@@ -104,9 +104,11 @@ a{color:var(--c1)}
 <p>被害は権威サーバ側だけではない。踏み台にされたキャッシュ DNS も、応答が返らない未解決クエリを大量に抱え込み、そのリゾルバを使う<strong>無関係な利用者の名前解決まで遅くなる／失敗する</strong>。両側がじわじわ溺れるので「水責め」と呼ばれる。</p>
 
 <table>
-<tr><th>立場</th><th>やること</th></tr>
+<thead><tr><th scope="col">立場</th><th scope="col">やること</th></tr></thead>
+<tbody>
 <tr><td>権威 DNS を運用する側</td><td>Anycast で受け口を分散する。マネージド DNS（Amazon Route 53 など）に寄せて規模で吸収させるのが現実的。自前運用なら RRL（Response Rate Limiting）を設定</td></tr>
 <tr><td>キャッシュ DNS を運用する側</td><td><strong>オープンリゾルバにしない</strong>（問い合わせ元を自組織内に限定）。同一ドメイン宛の未解決クエリ数に上限を設ける</td></tr>
+</tbody>
 </table>
 
 <h2>マルチベクトル型 DDoS</h2>

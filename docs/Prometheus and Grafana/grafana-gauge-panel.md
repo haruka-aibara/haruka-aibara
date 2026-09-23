@@ -12,6 +12,7 @@ GrafanaのGaugeパネルは、単一の値を視覚的に表示するための�
    - 「Gauge」を選択
 
 2. **データソースの設定**
+
    ```promql
    # 例：CPU使用率
    100 - (avg by (instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)
@@ -39,6 +40,7 @@ GrafanaのGaugeパネルは、単一の値を視覚的に表示するための�
 ### しきい値の設定
 
 1. **警告レベル**
+
    ```yaml
    # しきい値の例
    Thresholds:
@@ -137,4 +139,4 @@ Display:
 - しきい値は適切に設定してください
 - 表示する値の範囲を考慮してください
 - 更新間隔を適切に設定してください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/gauge/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/gauge/)を参照してください

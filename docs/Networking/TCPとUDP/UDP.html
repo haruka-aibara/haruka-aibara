@@ -86,13 +86,15 @@ a{color:var(--c1)}
 
 <h2>使い分けの基準</h2>
 <table>
-<tr><th></th><th>TCP</th><th>UDP</th></tr>
-<tr><th>接続確立</th><td>3 ウェイハンドシェイク</td><td>なし（いきなり送る）</td></tr>
-<tr><th>到達保証</th><td>確認応答と再送で保証</td><td>なし</td></tr>
-<tr><th>順序保証</th><td>並べ直す</td><td>なし</td></tr>
-<tr><th>ヘッダ</th><td>20 バイト</td><td>8 バイト</td></tr>
-<tr><th>1 対多</th><td>できない</td><td>ブロードキャスト・マルチキャストが使える</td></tr>
-<tr><th>主な用途</th><td>Web・メール・ファイル転送・SSH</td><td>DNS・DHCP・音声/映像・SNMP・syslog・QUIC</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">TCP</th><th scope="col">UDP</th></tr></thead>
+<tbody>
+<tr><th scope="row">接続確立</th><td>3 ウェイハンドシェイク</td><td>なし（いきなり送る）</td></tr>
+<tr><th scope="row">到達保証</th><td>確認応答と再送で保証</td><td>なし</td></tr>
+<tr><th scope="row">順序保証</th><td>並べ直す</td><td>なし</td></tr>
+<tr><th scope="row">ヘッダ</th><td>20 バイト</td><td>8 バイト</td></tr>
+<tr><th scope="row">1 対多</th><td>できない</td><td>ブロードキャスト・マルチキャストが使える</td></tr>
+<tr><th scope="row">主な用途</th><td>Web・メール・ファイル転送・SSH</td><td>DNS・DHCP・音声/映像・SNMP・syslog・QUIC</td></tr>
+</tbody>
 </table>
 <p>選ぶ基準は「欠けたら困るか」ではなく、<strong>「欠けたときに再送が間に合うか」</strong>。ライブ映像は欠けても困るが、再送が届くころには再生時刻を過ぎているので意味がない。だから UDP を選ぶ。</p>
 

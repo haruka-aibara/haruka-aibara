@@ -26,6 +26,7 @@
 ## .ebextensionsの構造と使用方法
 
 1. ディレクトリ構造
+
    ```
    your-application/
    ├── .ebextensions/
@@ -49,6 +50,7 @@
 ## 具体的な使用例
 
 1. 環境変数の設定
+
    ```yaml
    option_settings:
      aws:elasticbeanstalk:application:environment:
@@ -57,6 +59,7 @@
    ```
 
 2. パッケージのインストール
+
    ```yaml
    packages:
      yum:
@@ -65,6 +68,7 @@
    ```
 
 3. ファイルの作成
+
    ```yaml
    files:
      "/etc/nginx/conf.d/proxy.conf":
@@ -79,6 +83,7 @@
    ```
 
 4. コマンドの実行
+
    ```yaml
    commands:
      01_install_node:
@@ -90,11 +95,13 @@
 ## .ebextensionsの利点と注意点
 
 利点:
+
 - 環境のカスタマイズが容易になる
 - インフラストラクチャをコードとして管理できる
 - 再現性の高いデプロイメントが可能になる
 
 注意点:
+
 - 設定ファイルの構文エラーがデプロイメント失敗の原因になる可能性がある
 - 複雑な設定は管理が難しくなる場合がある
 - セキュリティ上重要な情報は別の方法（例：AWS Systems Manager Parameter Store）で管理することが推奨される

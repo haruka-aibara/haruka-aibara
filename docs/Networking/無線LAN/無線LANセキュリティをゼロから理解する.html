@@ -196,10 +196,12 @@ svg .arc{stroke:var(--c2);stroke-width:1.2;fill:none;opacity:.75}
 
 <div class="tw">
 <table>
-<tr><th>柱</th><th>解きたい問題</th><th>この記事で出てくる用語</th></tr>
+<thead><tr><th scope="col">柱</th><th scope="col">解きたい問題</th><th scope="col">この記事で出てくる用語</th></tr></thead>
+<tbody>
 <tr><td>暗号化</td><td>受信されても読まれない・書き換えられない</td><td>WEP／IV／TKIP／CCMP／MIC</td></tr>
 <tr><td>認証</td><td>入っていい人だけ入れる</td><td>PSK／パーソナル／エンタープライズ／802.1X／EAPOL／EAP</td></tr>
 <tr><td>世代の名前</td><td>上の 2 つを「この組み合わせで使う」と決めたパッケージ</td><td>WPA／WPA2／WPA3／Enhanced Open</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -366,11 +368,13 @@ svg .arc{stroke:var(--c2);stroke-width:1.2;fill:none;opacity:.75}
 
 <div class="tw">
 <table>
-<tr><th></th><th>WPA</th><th>WPA2</th><th>WPA3</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">WPA</th><th scope="col">WPA2</th><th scope="col">WPA3</th></tr></thead>
+<tbody>
 <tr><td>登場</td><td>2003 年</td><td>2004 年</td><td>2018 年</td></tr>
 <tr><td>位置づけ</td><td>IEEE 802.11i の完成を待たずに前倒しした暫定版</td><td>802.11i の完成版に対応</td><td>WPA2 の弱点を塞いだ現行世代</td></tr>
 <tr><td>暗号</td><td>TKIP</td><td>CCMP（必須）／TKIP（互換のため許容）</td><td>CCMP 以上</td></tr>
 <tr><td>接続の入口</td><td colspan="2">パーソナル（共有パスワード）／エンタープライズ（802.1X）</td><td>SAE ／ エンタープライズ</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -565,12 +569,14 @@ svg .arc{stroke:var(--c2);stroke-width:1.2;fill:none;opacity:.75}
 
 <div class="tw">
 <table>
-<tr><th>方式</th><th>端末に証明書</th><th>位置づけ</th></tr>
+<thead><tr><th scope="col">方式</th><th scope="col">端末に証明書</th><th scope="col">位置づけ</th></tr></thead>
+<tbody>
 <tr><td>EAP-TLS</td><td>必要</td><td>最も強い。配布・失効管理の手間を許容できるなら第一候補</td></tr>
 <tr><td>EAP-TTLS</td><td>不要</td><td>サーバ証明書でトンネルを張り、中は任意の方式が使える</td></tr>
 <tr><td>PEAP</td><td>不要</td><td>TTLS とほぼ同じ発想。中身は MSCHAPv2 が定番で、企業でよく使われる</td></tr>
 <tr><td>EAP-MD5</td><td>—</td><td>トンネルも相互認証もない。無線では使わない</td></tr>
 <tr><td>EAP-POTP</td><td>—</td><td>ワンタイムパスワードのトークンを使う方式</td></tr>
+</tbody>
 </table>
 </div>
 

@@ -1,9 +1,11 @@
 # Pythonパッケージマネージャ：Poetry入門
 
 ## 概要
+
 Poetryは依存関係管理と仮想環境を統合したPythonパッケージマネージャで、プロジェクト管理を効率化します。
 
 ## 主要概念
+
 Poetryはプロジェクトの依存関係をpyproject.tomlファイルで一元管理し、環境の再現性と整合性を保証します。
 
 ## 実践：Poetry入門
@@ -21,6 +23,7 @@ curl -sSL https://install.python-poetry.org | python3 -
 ```
 
 実行結果：
+
 ```
 Poetryがインストールされました。
 ```
@@ -35,11 +38,13 @@ cd my-python-project
 ```
 
 実行結果：
+
 ```
 Created package my_python_project in my-python-project
 ```
 
 生成されるプロジェクト構造：
+
 ```
 my-python-project/
 ├── pyproject.toml
@@ -59,6 +64,7 @@ cat pyproject.toml
 ```
 
 実行結果（例）：
+
 ```toml
 [tool.poetry]
 name = "my-python-project"
@@ -91,6 +97,7 @@ poetry add --group dev black
 ```
 
 実行結果：
+
 ```
 Creating virtualenv my-python-project in .../my-python-project/.venv
 Using version ^2.28.2 for requests
@@ -122,6 +129,7 @@ poetry run python -c "import requests; print(requests.__version__)"
 ```
 
 実行結果：
+
 ```
 2.28.2
 ```
@@ -206,6 +214,7 @@ poetry run python main.py
 ```
 
 実行結果：
+
 ```
 Hello from my_python_project!
 東京の現在の気温は22℃、晴れです。
@@ -241,6 +250,7 @@ poetry build
 ```
 
 実行結果：
+
 ```
 Building my-python-project (0.1.0)
   - Building sdist

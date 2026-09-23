@@ -111,12 +111,14 @@ git filter-branch --force --env-filter '
 ### よくあるトラブルと解決方法
 
 1. **変更が反映されない場合**
+
 ```bash
 # 強制的に実行
 git filter-branch --force --env-filter '...' -- --all
 ```
 
 2. **変更を取り消したい場合**
+
 ```bash
 # リファレンスログから復元
 git reflog
@@ -124,6 +126,7 @@ git reset --hard HEAD@{1}
 ```
 
 ### 予防するためのコツ
+
 - 実行前に必ずバックアップを取る
 - 変更内容を小さな単位でテスト
 - チーム開発の場合は事前に周知する
@@ -132,17 +135,20 @@ git reset --hard HEAD@{1}
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - より高度なフィルタリング条件の設定
 - サブモジュールを含むリポジトリの処理
 - 大規模リポジトリでの最適な使用方法
 - git filter-repoへの移行を検討
 
 ### おすすめの学習リソース
+
 - [Git公式ドキュメント](https://git-scm.com/docs/git-filter-branch)
 - [GitHub Docs - センシティブなデータの削除](https://docs.github.com/ja/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository)
 - [git filter-repo公式リポジトリ](https://github.com/newren/git-filter-repo)
 
 ### コミュニティ情報
+
 - Stack Overflowの`git-filter-branch`タグ
 - GitHub Discussionsでの履歴書き換え関連の議論
 - git filter-repoのGitHub Issues

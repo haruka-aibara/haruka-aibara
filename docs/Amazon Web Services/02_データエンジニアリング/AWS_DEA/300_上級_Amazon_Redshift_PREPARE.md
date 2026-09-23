@@ -1,9 +1,11 @@
 # Amazon Redshift PREPARE (難易度レベル: 300)
 
 ## 概要
+
 Amazon Redshiftの`PREPARE`コマンドは、SQLステートメントを事前に準備し、パラメータ化されたクエリを効率的に実行するための機能です。この機能は、同じ構造のクエリを異なるパラメータで繰り返し実行する際のパフォーマンス向上とセキュリティ強化において重要な役割を果たします。
 
 PREPAREコマンドを学ぶ意義：
+
 - クエリパフォーマンスの最適化
 - SQLインジェクション攻撃の防止
 - アプリケーション開発の効率化
@@ -14,6 +16,7 @@ PREPAREコマンドを学ぶ意義：
 ### PREPAREコマンドとは
 
 #### 基本的な概念
+
 `PREPARE`コマンドは、SQLステートメントを事前に解析・最適化し、実行時にパラメータをバインドできるようにする機能です。これにより以下の利点があります：
 
 - **パフォーマンス向上**: クエリの解析・最適化を事前に実行
@@ -22,11 +25,13 @@ PREPAREコマンドを学ぶ意義：
 - **メモリ効率**: 準備されたステートメントの再利用
 
 #### 基本的な構文
+
 ```sql
 PREPARE statement_name (parameter_types) AS statement;
 ```
 
 #### パラメータの型指定
+
 Redshiftで使用可能なパラメータ型：
 
 - **文字列型**: `VARCHAR`, `CHAR`, `TEXT`
@@ -38,6 +43,7 @@ Redshiftで使用可能なパラメータ型：
 ### 基本的な使用方法
 
 #### 単純なPREPARE文
+
 ```sql
 -- 基本的なSELECT文の準備
 PREPARE get_customer (INTEGER) AS
@@ -50,6 +56,7 @@ EXECUTE get_customer(123);
 ```
 
 #### 複数パラメータの使用
+
 ```sql
 -- 複数パラメータを持つクエリの準備
 PREPARE find_customers (VARCHAR, DATE, DECIMAL) AS
@@ -65,6 +72,7 @@ EXECUTE find_customers('APAC', '2024-01-01', 1000.00);
 ```
 
 #### 異なるデータ型の組み合わせ
+
 ```sql
 -- 様々なデータ型を組み合わせたクエリ
 PREPARE complex_query (VARCHAR, INTEGER, BOOLEAN, DATE) AS
@@ -88,6 +96,7 @@ EXECUTE complex_query('North America', 1000, true, '2024-01-01');
 ### 高度な使用方法
 
 #### 動的クエリの構築
+
 ```sql
 -- 条件付きクエリの準備
 PREPARE dynamic_search (VARCHAR, VARCHAR, INTEGER) AS
@@ -105,6 +114,7 @@ EXECUTE dynamic_search('APAC', 'Tanaka', 1000);  -- 全条件指定
 ```
 
 #### 集計クエリの準備
+
 ```sql
 -- 売上集計クエリの準備
 PREPARE sales_summary (VARCHAR, DATE, DATE) AS
@@ -126,6 +136,7 @@ EXECUTE sales_summary('Electronics', '2024-01-01', '2024-12-31');
 ```
 
 #### データ更新クエリの準備
+
 ```sql
 -- 顧客情報更新クエリの準備
 PREPARE update_customer (VARCHAR, VARCHAR, INTEGER) AS
@@ -152,6 +163,7 @@ EXECUTE bulk_update_status('APAC', '2023-01-01');
 ### 実践的なアプリケーション例
 
 #### レポート生成システム
+
 ```sql
 -- 月次売上レポートの準備
 PREPARE monthly_sales_report (INTEGER, INTEGER) AS
@@ -174,6 +186,7 @@ EXECUTE monthly_sales_report(2024, 1);
 ```
 
 #### ダッシュボード用クエリ
+
 ```sql
 -- リアルタイムダッシュボード用クエリの準備
 PREPARE dashboard_metrics (VARCHAR, INTEGER) AS
@@ -202,6 +215,7 @@ EXECUTE dashboard_metrics('APAC', 30);  -- 過去30日間
 ```
 
 #### データ検証クエリ
+
 ```sql
 -- データ品質チェッククエリの準備
 PREPARE data_quality_check (VARCHAR, DATE) AS
@@ -238,6 +252,7 @@ EXECUTE data_quality_check('APAC', '2023-01-01');
 ### セキュリティとベストプラクティス
 
 #### SQLインジェクション対策
+
 ```sql
 -- 危険な例（PREPAREを使用しない）
 -- ユーザー入力: "'; DROP TABLE customers; --"
@@ -252,6 +267,7 @@ EXECUTE safe_query('user_input');
 ```
 
 #### エラーハンドリング
+
 ```sql
 -- エラーハンドリングを含むPREPARE文
 PREPARE safe_update (VARCHAR, INTEGER) AS
@@ -279,6 +295,7 @@ END $$;
 ```
 
 #### パフォーマンス最適化
+
 ```sql
 -- インデックスを活用したPREPARE文
 PREPARE optimized_query (VARCHAR, DATE) AS
@@ -295,6 +312,7 @@ EXPLAIN EXECUTE optimized_query('APAC', '2024-01-01');
 ### 管理とメンテナンス
 
 #### 準備されたステートメントの管理
+
 ```sql
 -- 準備されたステートメントの一覧表示
 SELECT 
@@ -312,6 +330,7 @@ DEALLOCATE ALL;
 ```
 
 #### セッション管理
+
 ```sql
 -- セッション固有のPREPARE文
 PREPARE session_specific (VARCHAR) AS
@@ -326,6 +345,7 @@ EXECUTE session_specific('APAC');
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **PREPAREコマンド**: クエリの事前準備とパラメータ化
 - **パフォーマンス向上**: 解析・最適化の事前実行
 - **セキュリティ強化**: SQLインジェクション攻撃の防止
@@ -333,6 +353,7 @@ EXECUTE session_specific('APAC');
 - **実践的活用**: レポート生成、ダッシュボード、データ検証
 
 ### 次のステップへの提案
+
 1. **ストアドプロシージャ**: より複雑なロジックの実装
 2. **トリガー**: データ変更時の自動処理
 3. **ビュー**: 複雑なクエリの抽象化
@@ -340,4 +361,4 @@ EXECUTE session_specific('APAC');
 5. **パーティショニング**: 大規模データの効率的な管理
 6. **ワークロード管理**: クエリ優先度とリソース制御
 
-Amazon Redshiftの`PREPARE`コマンドは、高性能で安全なデータベースアプリケーションを構築するための重要な技術です。適切に活用することで、パフォーマンスとセキュリティの両方を向上させることができます。 
+Amazon Redshiftの`PREPARE`コマンドは、高性能で安全なデータベースアプリケーションを構築するための重要な技術です。適切に活用することで、パフォーマンスとセキュリティの両方を向上させることができます。
