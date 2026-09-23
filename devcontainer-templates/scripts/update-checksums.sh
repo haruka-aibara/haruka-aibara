@@ -1,23 +1,24 @@
 #!/usr/bin/env bash
-# Dockerfile の *_VERSION に合わせて *_SHA256_{AMD64,ARM64} を書き換える。
+# Dockerfile の CLAUDE_VERSION に合わせて CLAUDE_SHA256_{AMD64,ARM64} を書き換える。
+# downloads.claude.ai の配布物と中身が同じ npm のプラットフォーム別パッケージ
+# （@anthropic-ai/claude-code-linux-*）を npm pack で取得し、同梱の claude バイナリのハッシュを取る。
+# npm pack はレジストリの integrity で tarball を検証する。
 # Renovate はバージョンしか上げられないので、.github/workflows/devcontainer-checksums.yaml が
 # renovate/** ブランチでこれを実行する。手元で実行してもよい。
 set -euo pipefail
 
 dockerfile="${1:-$(dirname "$0")/../src/haruka-aibara-dev-env/.devcontainer/Dockerfile}"
+version="$(sed -n 's/^ARG CLAUDE_VERSION=//p' "$dockerfile")"
 
-arg() { sed -n "s/^ARG $1=//p" "$dockerfile"; }
-set_arg() { sed -i "s|^ARG $1=.*|ARG $1=$2|" "$dockerfile"; }
-sha_of() { curl -fsSL "$1" | sha256sum | cut -d' ' -f1; }
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
 
-v="$(arg TENV_VERSION)"
-set_arg TENV_SHA256_AMD64 "$(sha_of "https://github.com/tofuutils/tenv/releases/download/${v}/tenv_${v}_amd64.deb")"
-set_arg TENV_SHA256_ARM64 "$(sha_of "https://github.com/tofuutils/tenv/releases/download/${v}/tenv_${v}_arm64.deb")"
-
-v="$(arg UV_VERSION)"
-set_arg UV_SHA256_AMD64 "$(sha_of "https://github.com/astral-sh/uv/releases/download/${v}/uv-x86_64-unknown-linux-gnu.tar.gz")"
-set_arg UV_SHA256_ARM64 "$(sha_of "https://github.com/astral-sh/uv/releases/download/${v}/uv-aarch64-unknown-linux-gnu.tar.gz")"
-
-v="$(arg CLAUDE_VERSION)"
-set_arg CLAUDE_SHA256_AMD64 "$(sha_of "https://downloads.claude.ai/claude-code-releases/${v}/linux-x64/claude")"
-set_arg CLAUDE_SHA256_ARM64 "$(sha_of "https://downloads.claude.ai/claude-code-releases/${v}/linux-arm64/claude")"
+for pair in AMD64:linux-x64 ARM64:linux-arm64; do
+  arch="${pair%%:*}"
+  platform="${pair#*:}"
+  tgz="$(npm pack --silent --pack-destination "$tmp" "@anthropic-ai/claude-code-${platform}@${version}")"
+  tar -xzf "$tmp/$tgz" -C "$tmp" package/claude
+  sha="$(sha256sum "$tmp/package/claude" | cut -d' ' -f1)"
+  rm -rf "$tmp/package" "$tmp/$tgz"
+  sed -i "s|^ARG CLAUDE_SHA256_${arch}=.*|ARG CLAUDE_SHA256_${arch}=${sha}|" "$dockerfile"
+done
