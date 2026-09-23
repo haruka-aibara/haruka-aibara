@@ -93,9 +93,11 @@ a{color:var(--c1)}
 <h2>転送方式の違い</h2>
 <p>フレームを「どこまで受け取ってから転送するか」に方式がある。</p>
 <table>
-<tr><th>方式</th><th>動作</th><th>特徴</th></tr>
+<thead><tr><th scope="col">方式</th><th scope="col">動作</th><th scope="col">特徴</th></tr></thead>
+<tbody>
 <tr><td>ストア&amp;フォワード</td><td>フレーム全体を受信し、FCS で誤りを確認してから転送</td><td>壊れたフレームを流さない。遅延はやや大きい。現在の主流</td></tr>
 <tr><td>カットスルー</td><td>宛先 MAC（先頭 6 バイト）を読んだ時点で転送開始</td><td>低遅延だが、壊れたフレームもそのまま流す</td></tr>
+</tbody>
 </table>
 
 <div class="note">

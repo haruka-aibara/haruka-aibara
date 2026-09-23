@@ -59,9 +59,11 @@ a{color:var(--c1)}
 
 <h2>始め方が 2 通りある</h2>
 <table>
-<tr><th>方式</th><th>始まり方</th></tr>
+<thead><tr><th scope="col">方式</th><th scope="col">始まり方</th></tr></thead>
+<tbody>
 <tr><td>明示的（FTPES）</td><td>21 番に普通の FTP でつないでから <code>AUTH TLS</code> で暗号化に切り替える。現在の主流</td></tr>
 <tr><td>暗黙的</td><td>専用ポート（990 番）で最初から TLS。古い方式</td></tr>
+</tbody>
 </table>
 
 <h2>参考</h2>

@@ -149,4 +149,4 @@ irate(node_network_receive_bytes_total[5m])
 
 - クエリの結果は、選択した時間範囲によって異なります
 - 集約関数を使用する際は、適切なラベルでグループ化することをお勧めします
-- より詳細な情報や高度なクエリについては、[公式ドキュメント](https://prometheus.io/docs/prometheus/latest/querying/basics/)を参照してください 
+- より詳細な情報や高度なクエリについては、[公式ドキュメント](https://prometheus.io/docs/prometheus/latest/querying/basics/)を参照してください

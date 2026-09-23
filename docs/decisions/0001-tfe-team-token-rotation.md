@@ -1,9 +1,11 @@
 # ADR-0001: TFE_TOKEN は workspace 自身が blue / green の team token で回す
 
 ## ステータス
+
 採用 (2026-09-22)
 
 ## コンテキスト
+
 workspace `works` の tfe provider は workspace 変数 `TFE_TOKEN` で認証している。元は手で入れた user token で、個人に紐づき、期限が無く、誰かが手で替えない限り同じ値が使われ続ける。
 
 tfe provider では team token を発行できる。発行したトークンを `TFE_TOKEN` に書き戻せば、workspace が自分の次の認証情報を用意できる。ただし次の制約がある。
@@ -13,6 +15,7 @@ tfe provider では team token を発行できる。発行したトークンを 
 - 定期実行の仕組みは持たない。run が起きるのは merge か手動の Plan & Apply のときだけ。
 
 ## 決定
+
 `modules/tfe-team-token-rotation/` に次の仕組みを置き、ルートの `main.tf` から `module "tfe_team_token_rotation"` として呼ぶ。
 
 - **トークンは2本（blue / green）を半周期ずらして持つ。** run が作り直すのは、認証に使っていない側だけにする。現役は基準時刻が新しいほうとし、それを `TFE_TOKEN` に書き戻す。
@@ -26,11 +29,13 @@ tfe provider では team token を発行できる。発行したトークンを 
 - **モジュール化するときは `moved` でアドレスを引き継ぐ。** 作り直しが起きると使用中のトークンまで巻き込まれるため。`tfe_variable.tfe_token` の description は旧ファイル名のまま据え置く。書き換えると、コメントのためだけに実変数の in-place update が走る。
 
 ## 検討した代替案
+
 - **トークン1本を回す:** 作り直す apply の中で、自分の認証を消すことになる。
 - **organization token:** organization に有効な token は1本だけで、再生成すると既存の token が置き換わる。2本持てないので、1本を回す場合と同じ問題が起きる。
 - **外部スケジューラ（GitHub Actions の cron など）で API から回す:** 発行した値を別のシークレットとして持ち込むことになり、管理対象が増える。Terraform の外で `TFE_TOKEN` を書き換えると、state との整合も崩れる。
 
 ## トレードオフ
+
 - **権限は縮まない。** owners team の token は owner 相当の権限を持つ。得られるのは、期限が付くこと、人に紐づかないこと、自動で入れ替わることの3点だけ。
 - **トークンが state に載る。** この構成が発行する値なので避けられない。
 - **run が定期的に回ることが前提。** 半周期 + 猶予（既定値なら 83 日）の間に run が1度も無いと、全トークンが失効する。差分が出たことを知らせる仕組みも無い。

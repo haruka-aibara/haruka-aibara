@@ -51,16 +51,19 @@ git revertの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. 単一のコミットを取り消す
+
 ```bash
 git revert <commit-hash>
 ```
 
 2. 複数のコミットを取り消す
+
 ```bash
 git revert <commit-hash-1> <commit-hash-2>
 ```
 
 3. マージコミットを取り消す
+
 ```bash
 git revert -m 1 <merge-commit-hash>
 ```

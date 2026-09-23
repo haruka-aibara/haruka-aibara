@@ -417,10 +417,12 @@ svg .do{stroke:var(--c3)}
 
 <div class="tw">
 <table>
-<tr><th>どこに出てくるか</th><th>誰が見ているか</th></tr>
+<thead><tr><th scope="col">どこに出てくるか</th><th scope="col">誰が見ているか</th></tr></thead>
+<tbody>
 <tr><td>エンベロープ From のドメイン</td><td>SPF が照合する</td></tr>
 <tr><td>DKIM 署名のドメイン（<code>d=</code>）</td><td>DKIM が検証する</td></tr>
 <tr><td>ヘッダ From のドメイン</td><td><strong>利用者が見る</strong></td></tr>
+</tbody>
 </table>
 </div>
 
@@ -470,11 +472,13 @@ svg .do{stroke:var(--c3)}
 
 <div class="tw">
 <table>
-<tr><th>場面</th><th>SPF</th><th>DKIM</th><th>アライメント</th><th>DMARC</th></tr>
+<thead><tr><th scope="col">場面</th><th scope="col">SPF</th><th scope="col">DKIM</th><th scope="col">アライメント</th><th scope="col">DMARC</th></tr></thead>
+<tbody>
 <tr><td>自社サーバから直接送信</td><td>pass</td><td>pass</td><td>OK</td><td>pass</td></tr>
 <tr><td>メーリングリストで転送された正規メール</td><td>fail</td><td>pass</td><td>DKIM 側 OK</td><td>pass</td></tr>
 <tr><td>攻撃者が自分のドメインで署名し From だけ詐称</td><td>pass</td><td>pass</td><td>両方 NG</td><td><strong>fail</strong></td></tr>
 <tr><td>攻撃者が何も設定せず From を詐称</td><td>fail</td><td>なし</td><td>—</td><td><strong>fail</strong></td></tr>
+</tbody>
 </table>
 </div>
 

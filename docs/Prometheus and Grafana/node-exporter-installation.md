@@ -75,4 +75,4 @@ http://localhost:9100/metrics
 
 - ファイアウォールを使用している場合は、ポート9100を開放する必要があります
 - 本番環境では、セキュリティ設定を適切に行ってください
-- 詳細な設定や使用方法については、[公式ドキュメント](https://prometheus.io/docs/guides/node-exporter/)を参照してください 
+- 詳細な設定や使用方法については、[公式ドキュメント](https://prometheus.io/docs/guides/node-exporter/)を参照してください

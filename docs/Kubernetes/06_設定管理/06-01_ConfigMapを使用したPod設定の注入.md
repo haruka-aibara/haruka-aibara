@@ -1,9 +1,11 @@
 # Kubernetes: ConfigMap
 
 ## はじめに
+
 「アプリケーションの設定を柔軟に管理したい」「環境ごとに異なる設定を使い分けたい」「設定変更を再デプロイせずに反映したい」そんな悩みはありませんか？KubernetesのConfigMapは、これらの問題を解決し、アプリケーションの設定を効率的に管理する重要なリソースです。この記事では、ConfigMapの基本概念から実践的な使い方まで、わかりやすく解説します。
 
 ## ざっくり理解しよう
+
 ConfigMapには、以下の3つの重要なポイントがあります：
 
 1. 設定管理
@@ -22,6 +24,7 @@ ConfigMapには、以下の3つの重要なポイントがあります：
    - バージョン管理
 
 ## 実際の使い方
+
 ConfigMapは様々なシーンで活用できます：
 
 1. アプリケーション設定
@@ -40,9 +43,11 @@ ConfigMapは様々なシーンで活用できます：
    - セキュリティ設定
 
 ## 手を動かしてみよう
+
 基本的なConfigMapの設定を説明します：
 
 1. ConfigMapの作成
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -55,6 +60,7 @@ data:
 ```
 
 2. Podでの使用
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -70,9 +76,11 @@ spec:
 ```
 
 ## 実践的なサンプル
+
 よく使う設定パターンを紹介します：
 
 1. 設定ファイルの注入
+
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -109,6 +117,7 @@ spec:
 ```
 
 2. 環境変数の個別指定
+
 ```yaml
 apiVersion: v1
 kind: Pod
@@ -132,6 +141,7 @@ spec:
 ```
 
 ## 困ったときは
+
 よくあるトラブルと解決方法を紹介します：
 
 1. 設定が反映されない
@@ -150,6 +160,7 @@ spec:
    - 暗号化の必要性を確認
 
 ## もっと知りたい人へ
+
 次のステップとして以下の学習をお勧めします：
 
 1. 高度な設定管理
@@ -168,5 +179,6 @@ spec:
    - バックアップ
 
 ## 参考資料
+
 - [Kubernetes公式ドキュメント: ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/)
 - [Kubernetes公式ドキュメント: 設定の管理](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/)

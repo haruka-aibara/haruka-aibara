@@ -88,11 +88,13 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th>方式</th><th>暗号</th><th>状況</th></tr>
+<thead><tr><th scope="col">方式</th><th scope="col">暗号</th><th scope="col">状況</th></tr></thead>
+<tbody>
 <tr><td>WEP</td><td>RC4 + 24 ビットの IV</td><td>短い IV が使い回されるため、通信量さえあれば鍵を復元できる。使ってはいけない</td></tr>
 <tr><td>WPA</td><td>TKIP（RC4 のまま鍵を都度変える）</td><td>WEP 世代の機器をファーム更新で救うための暫定策。現在は非推奨</td></tr>
 <tr><td>WPA2</td><td>CCMP（AES）</td><td>長く実質標準。ただし個人モードは接続時のやりとりを捕まえるとオフラインで総当たりできるため、合言葉を長くする必要がある</td></tr>
 <tr><td>WPA3</td><td>SAE</td><td>合言葉が弱くてもオフラインでの総当たりが成立しないよう作り直された世代</td></tr>
+</tbody>
 </table>
 
 <h2>ESSID を隠しても対策にはならない</h2>

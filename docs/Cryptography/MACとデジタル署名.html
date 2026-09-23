@@ -99,12 +99,14 @@ a{color:var(--c1)}
 
 <h2>使い分け</h2>
 <table>
-<tr><th></th><th>MAC（HMAC など）</th><th>デジタル署名</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">MAC（HMAC など）</th><th scope="col">デジタル署名</th></tr></thead>
+<tbody>
 <tr><td>鍵</td><td>共通鍵を事前に共有</td><td>秘密鍵と公開鍵のペア</td></tr>
 <tr><td>できること</td><td>改ざん検知＋相手の確認</td><td>改ざん検知＋相手の確認＋否認防止</td></tr>
 <tr><td>第三者への証明</td><td class="dead">できない</td><td>できる</td></tr>
 <tr><td>処理コスト</td><td>ハッシュ1回ぶん（非常に軽い）</td><td>公開鍵演算が必要（重い）</td></tr>
 <tr><td>向く場面</td><td>通信路の保護、API リクエストの署名、セッションの完全性</td><td>契約書、コード署名、証明書、ログの真正性</td></tr>
+</tbody>
 </table>
 
 <h2>実際は組み合わせて使う</h2>

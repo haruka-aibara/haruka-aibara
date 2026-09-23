@@ -34,7 +34,8 @@ jobs:
       packages: write
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      # bump コミットを push するので認証情報は残す。
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0 # zizmor: ignore[artipacked]
         with:
           # bump コミットを main に rebase して push するため、浅いクローンでは足りない。
           fetch-depth: 0
@@ -68,7 +69,7 @@ jobs:
           git push origin HEAD:main
 
       - name: "Publish Templates"
-        uses: devcontainers/action@v1
+        uses: devcontainers/action@1082abd5d2bf3a11abccba70eef98df068277772 # v1.4.3
         with:
           publish-templates: "true"
           base-path-to-templates: "./devcontainer-templates/src"

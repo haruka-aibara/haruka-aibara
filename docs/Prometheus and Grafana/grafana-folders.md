@@ -86,4 +86,4 @@ Grafanaのフォルダ機能は、ダッシュボードを整理・管理する�
 - フォルダの階層が深すぎると、管理が難しくなる可能性があります
 - 適切なアクセス権限の設定が重要です
 - 定期的なフォルダ構造の見直しをお勧めします
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/manage-dashboards/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/manage-dashboards/)を参照してください

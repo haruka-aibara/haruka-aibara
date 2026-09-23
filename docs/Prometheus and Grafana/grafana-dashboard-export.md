@@ -91,6 +91,7 @@ Grafanaのダッシュボードは、JSON形式でエクスポートすること
    - 「Import」をクリック
 
 2. **APIを使用したインポート**
+
    ```bash
    curl -X POST \
      -H "Content-Type: application/json" \
@@ -103,4 +104,4 @@ Grafanaのダッシュボードは、JSON形式でエクスポートすること
 - エクスポート前にデータソースの設定を確認してください
 - 機密情報が含まれていないか確認してください
 - インポート時にデータソースの設定を適切に行ってください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/export-import/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/dashboards/export-import/)を参照してください

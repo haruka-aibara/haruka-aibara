@@ -1,11 +1,13 @@
 # Amazon BedrockのKnowledge Bases
 
 ## 概要
+
 Amazon BedrockのKnowledge Basesは、企業のデータやドキュメントを効率的に管理し、生成AIモデルと統合するための機能です。これにより、企業固有の知識を活用した正確で関連性の高い応答を生成することができます。
 
 ## 詳細
 
 ### Knowledge Basesの主な機能
+
 - データソースの統合
   - S3バケット
   - Amazon OpenSearch Service
@@ -24,6 +26,7 @@ Amazon BedrockのKnowledge Basesは、企業のデータやドキュメントを
   - コンプライアンス対応
 
 ### 使用シーン
+
 - 社内ナレッジベースの構築
 - カスタマーサポートの自動化
 - ドキュメント管理システム
@@ -33,6 +36,7 @@ Amazon BedrockのKnowledge Basesは、企業のデータやドキュメントを
 ## 具体例
 
 ### Knowledge Baseの作成と設定
+
 ```python
 import boto3
 import json
@@ -115,6 +119,7 @@ data_source = manager.add_data_source(knowledge_base['knowledgeBaseId'], data_so
 ```
 
 ### Knowledge Baseの検索と利用
+
 ```python
 import boto3
 import json
@@ -181,6 +186,7 @@ response = searcher.generate_response(
 ```
 
 ### Knowledge Baseの管理と監視
+
 ```python
 import boto3
 import json
@@ -253,4 +259,5 @@ updated_source = monitor.update_data_source(
 ```
 
 ## まとめ
-Amazon BedrockのKnowledge Basesは、企業のデータを効率的に管理し、生成AIモデルと統合するための強力な機能を提供します。データソースの統合、自動インデックス作成、セマンティック検索などの機能により、企業固有の知識を活用した正確で関連性の高い応答を生成することができます。また、セキュリティとコンプライアンスの機能も備えており、企業の要件に合わせた安全な運用が可能です。Knowledge Basesを活用することで、社内ナレッジベースの構築、カスタマーサポートの自動化、ドキュメント管理システムの実装など、様々なユースケースに対応できます。 
+
+Amazon BedrockのKnowledge Basesは、企業のデータを効率的に管理し、生成AIモデルと統合するための強力な機能を提供します。データソースの統合、自動インデックス作成、セマンティック検索などの機能により、企業固有の知識を活用した正確で関連性の高い応答を生成することができます。また、セキュリティとコンプライアンスの機能も備えており、企業の要件に合わせた安全な運用が可能です。Knowledge Basesを活用することで、社内ナレッジベースの構築、カスタマーサポートの自動化、ドキュメント管理システムの実装など、様々なユースケースに対応できます。

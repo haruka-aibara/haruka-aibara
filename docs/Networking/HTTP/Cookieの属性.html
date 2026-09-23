@@ -85,12 +85,14 @@ a{color:var(--c1)}
 
 <h2>属性の一覧</h2>
 <table>
-<tr><th>属性</th><th>絞るもの</th><th>意味</th></tr>
+<thead><tr><th scope="col">属性</th><th scope="col">絞るもの</th><th scope="col">意味</th></tr></thead>
+<tbody>
 <tr><td><code>Secure</code></td><td>経路</td><td>HTTPS のときだけ送る</td></tr>
 <tr><td><code>HttpOnly</code></td><td>読み手</td><td>JavaScript（<code>document.cookie</code>）から読めなくする</td></tr>
 <tr><td><code>SameSite</code></td><td>発信元</td><td>他サイト起点のリクエストに付けるかどうか（<code>Strict</code> / <code>Lax</code> / <code>None</code>）。CSRF の緩和策</td></tr>
 <tr><td><code>Domain</code> / <code>Path</code></td><td>宛先</td><td>どのドメイン・パスへのリクエストに付けるか</td></tr>
 <tr><td><code>Expires</code> / <code>Max-Age</code></td><td>期間</td><td>いつまで保持するか。指定なしはブラウザを閉じるまでのセッション Cookie</td></tr>
+</tbody>
 </table>
 
 <h2>参考</h2>

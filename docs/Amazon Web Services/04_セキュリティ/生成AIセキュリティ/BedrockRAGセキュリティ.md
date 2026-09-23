@@ -37,6 +37,7 @@ s3://my-kb-bucket/
 ```
 
 `hr/salary-table.pdf.metadata.json`：
+
 ```json
 {
   "metadataAttributes": {
@@ -48,6 +49,7 @@ s3://my-kb-bucket/
 ```
 
 `sales/product-catalog.pdf.metadata.json`：
+
 ```json
 {
   "metadataAttributes": {

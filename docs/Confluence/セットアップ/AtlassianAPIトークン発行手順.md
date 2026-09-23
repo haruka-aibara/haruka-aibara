@@ -18,6 +18,7 @@ https://api.atlassian.com/ex/confluence/<Cloud_ID>/wiki
 ```
 
 > **情報源**: mark の GitHub Issues での実際の動作報告より。通常 URL でスコープ付きトークンを使うと 401/403 になることが複数のユーザーから報告されており、API Gateway URL への変更で解決している。
+>
 > - https://github.com/kovetskiy/mark/issues/259
 > - https://github.com/kovetskiy/mark/issues/493
 

@@ -202,10 +202,12 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th></th><th>RSA 鍵交換（古い方式）</th><th>ECDHE（現在）</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">RSA 鍵交換（古い方式）</th><th scope="col">ECDHE（現在）</th></tr></thead>
+<tbody>
 <tr><td>やっていること</td><td>クライアントが乱数を 1 つ選び、それを<strong>渡す</strong></td><td>互いに公開値を送り合い、各自の手元で同じ値を<strong>計算して作り出す</strong></td></tr>
 <tr><td>渡し方</td><td>サーバの公開鍵で暗号化して送る</td><td>秘密そのものは経路を流れない</td></tr>
 <tr><td>サーバの秘密鍵が後から漏れたら</td><td class="dead">記録された過去の通信が全部復号できる</td><td>過去の通信は復号できない</td></tr>
+</tbody>
 </table>
 </div>
 

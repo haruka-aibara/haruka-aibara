@@ -1,21 +1,25 @@
 # act - GitHub Actionsのローカルテストツール
 
 ## 概要
+
 actはGitHub Actionsのワークフローをローカル環境で実行できるツールです。CIのテストをローカルで行うことで、開発効率を向上させることができます。
 
 ## インストール方法
 
 ### macOS
+
 ```bash
 brew install act
 ```
 
 ### Linux
+
 ```bash
 curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 ```
 
 ### Windows
+
 ```bash
 choco install act-cli
 ```
@@ -23,6 +27,7 @@ choco install act-cli
 ## 基本的な使い方
 
 1. ワークフローの実行
+
 ```bash
 # デフォルトのワークフローを実行
 act
@@ -36,6 +41,7 @@ act pull_request
 ```
 
 2. ジョブの指定
+
 ```bash
 # 特定のジョブのみを実行
 act -j build
@@ -63,6 +69,7 @@ act -j build
 ## 便利な設定
 
 ### .actrcファイル
+
 プロジェクトのルートディレクトリに`.actrc`ファイルを作成することで、デフォルトのオプションを設定できます：
 
 ```
@@ -73,12 +80,14 @@ act -j build
 ## トラブルシューティング
 
 1. パーミッションエラー
+
 ```bash
 # Dockerのパーミッションを修正
 sudo chmod 666 /var/run/docker.sock
 ```
 
 2. イメージのダウンロードエラー
+
 ```bash
 # イメージを手動でプル
 docker pull nektos/act-environments-ubuntu:18.04

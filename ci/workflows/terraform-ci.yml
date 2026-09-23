@@ -17,18 +17,23 @@ jobs:
     name: terraform fmt
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: Resolve Terraform version
         id: tfver
+        env:
+          TF_VERSION_INPUT: ${{ inputs.terraform-version }}
+          WORKING_DIRECTORY: ${{ inputs.working-directory }}
         run: |
-          if [ -n "${{ inputs.terraform-version }}" ]; then
-            echo "version=${{ inputs.terraform-version }}" >> "$GITHUB_OUTPUT"
-          elif [ -f "${{ inputs.working-directory }}/.terraform-version" ]; then
-            echo "version=$(cat "${{ inputs.working-directory }}/.terraform-version")" >> "$GITHUB_OUTPUT"
+          if [ -n "$TF_VERSION_INPUT" ]; then
+            echo "version=$TF_VERSION_INPUT" >> "$GITHUB_OUTPUT"
+          elif [ -f "$WORKING_DIRECTORY/.terraform-version" ]; then
+            echo "version=$(cat "$WORKING_DIRECTORY/.terraform-version")" >> "$GITHUB_OUTPUT"
           else
             echo "version=latest" >> "$GITHUB_OUTPUT"
           fi
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: ${{ steps.tfver.outputs.version }}
       - name: terraform fmt -check
@@ -39,8 +44,10 @@ jobs:
     name: tflint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: terraform-linters/setup-tflint@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: terraform-linters/setup-tflint@90f302c255ef959cbfb4bd10581afecdb7ece3e6 # v4.1.1
       - name: tflint --init
         working-directory: ${{ inputs.working-directory }}
         run: tflint --init
@@ -52,9 +59,11 @@ jobs:
     name: trivy (IaC misconfig)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
       - name: Trivy config scan
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           scan-type: config
           scan-ref: ${{ inputs.working-directory }}

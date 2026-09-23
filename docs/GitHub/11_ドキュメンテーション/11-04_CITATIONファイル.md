@@ -1,28 +1,36 @@
 # CITATIONファイルの作成と管理
 
 ## はじめに
+
 CITATIONファイルは、研究成果やソフトウェアの引用方法を標準化するための重要なファイルです。この記事では、効果的なCITATIONファイルの作成方法と活用について解説します。
 
 ## ざっくり理解しよう
+
 1. **標準化**: 引用形式の統一
 2. **自動化**: 引用情報の自動生成
 3. **追跡性**: 研究成果の追跡が容易
 
 ## 実際の使い方
+
 ### よくある使用シーン
+
 - 学術論文の引用
 - ソフトウェアの引用
 - データセットの引用
 - 研究成果の追跡
 
 ### メリット
+
 - 引用の一貫性確保
 - 研究成果の可視化
 - 貢献の適切な評価
 
 ## 手を動かしてみよう
+
 ### 基本的な形式
+
 1. CITATION.cff
+
    ```yaml
    cff-version: 1.2.0
    message: "このソフトウェアを引用する場合は、以下の情報を使用してください。"
@@ -37,6 +45,7 @@ CITATIONファイルは、研究成果やソフトウェアの引用方法を標
    ```
 
 2. CITATION.bib
+
    ```bibtex
    @software{project_name,
      author = {山田 太郎},
@@ -48,6 +57,7 @@ CITATIONファイルは、研究成果やソフトウェアの引用方法を標
    ```
 
 ## 実践的なサンプル
+
 ```yaml
 # CITATION.cffの完全な例
 cff-version: 1.2.0
@@ -73,7 +83,9 @@ license: "MIT"
 ```
 
 ## 困ったときは
+
 ### よくある問題
+
 1. 引用形式の選択
    - 解決策: 分野の標準に従う
    - 解決策: 複数形式の提供
@@ -87,6 +99,7 @@ license: "MIT"
    - 解決策: 標準的な識別子の使用
 
 ## もっと知りたい人へ
+
 - [CITATIONファイルの仕様](https://citation-file-format.github.io/)
 - [GitHubの引用機能](https://docs.github.com/ja/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files)
 - [DOIの取得方法](https://www.doi.org/)

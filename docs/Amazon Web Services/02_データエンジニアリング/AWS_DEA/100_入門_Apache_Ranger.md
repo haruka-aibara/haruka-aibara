@@ -1,9 +1,11 @@
 # Apache Ranger (難易度レベル: 100)
 
 ## 概要
+
 Apache Rangerは、Hadoopエコシステムにおける包括的なセキュリティ管理プラットフォームです。データアクセス制御、認証、認可、監査機能を統合的に提供し、大規模なデータ環境でのセキュリティを確保します。
 
 Rangerを学ぶ意義：
+
 - Hadoopクラスターのセキュリティ管理の理解
 - データガバナンスの基盤知識
 - 企業レベルのセキュリティ要件への対応
@@ -14,6 +16,7 @@ Rangerを学ぶ意義：
 ### Apache Rangerとは
 
 #### 基本的な概念
+
 Apache Rangerは、Hadoopエコシステムのセキュリティ管理を統合的に行うプラットフォームです。以下の特徴があります：
 
 - **統合セキュリティ管理**: 複数のHadoopコンポーネントのセキュリティを一元管理
@@ -23,6 +26,7 @@ Apache Rangerは、Hadoopエコシステムのセキュリティ管理を統合�
 - **Web UI**: 直感的な管理インターフェース
 
 #### Rangerの主要機能
+
 ```bash
 # Apache Rangerの主要機能
 1. 認証（Authentication）    # ユーザーの身元確認
@@ -35,6 +39,7 @@ Apache Rangerは、Hadoopエコシステムのセキュリティ管理を統合�
 ### Rangerのアーキテクチャ
 
 #### 基本構成
+
 Rangerは以下の主要コンポーネントで構成されています：
 
 ```bash
@@ -52,6 +57,7 @@ Ranger Admin Server    # 管理サーバー（ポリシー管理）
 #### 各コンポーネントの役割
 
 ##### Ranger Admin Server
+
 ```bash
 # Ranger Admin Serverの機能
 - セキュリティポリシーの管理
@@ -62,6 +68,7 @@ Ranger Admin Server    # 管理サーバー（ポリシー管理）
 ```
 
 ##### Ranger UserSync
+
 ```bash
 # Ranger UserSyncの機能
 - LDAP/ADからのユーザー情報同期
@@ -71,6 +78,7 @@ Ranger Admin Server    # 管理サーバー（ポリシー管理）
 ```
 
 ##### Ranger Plugins
+
 ```bash
 # Ranger Pluginsの機能
 - 各Hadoopコンポーネントとの連携
@@ -82,6 +90,7 @@ Ranger Admin Server    # 管理サーバー（ポリシー管理）
 ### Rangerの基本操作
 
 #### インストールとセットアップ
+
 ```bash
 # Rangerのインストール手順
 
@@ -103,6 +112,7 @@ cd apache-ranger-2.3.0
 ```
 
 #### Web UIへのアクセス
+
 ```bash
 # Ranger Web UIのアクセス
 
@@ -118,6 +128,7 @@ http://ranger-server:6080
 ```
 
 #### 基本的なポリシー管理
+
 ```bash
 # Rangerでのポリシー管理の基本
 
@@ -143,6 +154,7 @@ http://ranger-server:6080
 ### Rangerの設定
 
 #### 基本設定ファイル
+
 ```xml
 <!-- ranger-admin-site.xml（Ranger Adminの基本設定） -->
 <configuration>
@@ -187,6 +199,7 @@ http://ranger-server:6080
 ```
 
 #### プラグイン設定
+
 ```xml
 <!-- ranger-hdfs-security.xml（HDFSプラグイン設定） -->
 <configuration>
@@ -222,6 +235,7 @@ http://ranger-server:6080
 ### 実践的な使用例
 
 #### HDFSポリシーの作成
+
 ```bash
 # HDFSポリシーの作成例
 
@@ -250,6 +264,7 @@ http://ranger-server:6080
 ```
 
 #### Hiveポリシーの作成
+
 ```bash
 # Hiveポリシーの作成例
 
@@ -277,6 +292,7 @@ http://ranger-server:6080
 ```
 
 #### HBaseポリシーの作成
+
 ```bash
 # HBaseポリシーの作成例
 
@@ -306,6 +322,7 @@ http://ranger-server:6080
 ### 監査とレポート
 
 #### 監査ログの確認
+
 ```bash
 # 監査ログの確認方法
 
@@ -328,6 +345,7 @@ curl "http://localhost:8983/solr/ranger_audits/select?q=access:denied&rows=50"
 ```
 
 #### レポートの生成
+
 ```bash
 # レポート生成の例
 
@@ -352,6 +370,7 @@ curl "http://localhost:8983/solr/ranger_audits/select?q=access:denied&rows=50"
 ### トラブルシューティング
 
 #### よくある問題と解決方法
+
 ```bash
 # トラブルシューティングの例
 
@@ -385,6 +404,7 @@ curl "http://localhost:8983/solr/ranger_audits/select?q=access:denied&rows=50"
 ```
 
 #### ログファイルの確認
+
 ```bash
 # ログファイルの確認方法
 
@@ -406,6 +426,7 @@ grep "john.doe" /var/log/ranger/admin/ranger-admin-*.log
 ### セキュリティベストプラクティス
 
 #### ポリシー設計の原則
+
 ```bash
 # セキュリティポリシー設計のベストプラクティス
 
@@ -431,6 +452,7 @@ grep "john.doe" /var/log/ranger/admin/ranger-admin-*.log
 ```
 
 #### 監視とアラート
+
 ```bash
 # 監視とアラートの設定
 
@@ -456,6 +478,7 @@ grep "john.doe" /var/log/ranger/admin/ranger-admin-*.log
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **Apache Ranger**: Hadoopエコシステムの統合セキュリティ管理プラットフォーム
 - **アーキテクチャ**: Admin Server、UserSync、Pluginsの役割
 - **基本操作**: ポリシー管理、Web UI操作
@@ -466,6 +489,7 @@ grep "john.doe" /var/log/ranger/admin/ranger-admin-*.log
 - **ベストプラクティス**: セキュリティ設計、監視設定
 
 ### 次のステップへの提案
+
 1. **Apache Atlas**: データガバナンスとメタデータ管理
 2. **Apache Knox**: Hadoopクラスターのゲートウェイ
 3. **Apache Sentry**: より詳細なアクセス制御
@@ -474,4 +498,4 @@ grep "john.doe" /var/log/ranger/admin/ranger-admin-*.log
 6. **コンプライアンス**: GDPR、SOX、HIPAA対応
 7. **クラウドセキュリティ**: AWS EMR、Azure HDInsightでのRanger活用
 
-Apache Rangerは、Hadoopエコシステムのセキュリティを確保する重要なコンポーネントです。基本的な概念を理解した後は、実際のクラスターでポリシーを設計・実装することで、より実践的なセキュリティ管理スキルを身につけることができます。 
+Apache Rangerは、Hadoopエコシステムのセキュリティを確保する重要なコンポーネントです。基本的な概念を理解した後は、実際のクラスターでポリシーを設計・実装することで、より実践的なセキュリティ管理スキルを身につけることができます。

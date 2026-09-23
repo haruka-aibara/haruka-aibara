@@ -95,11 +95,13 @@ a{color:var(--c1)}
 
 <h2>関連する基盤の呼び分け</h2>
 <table>
-<tr><th>名称</th><th>対象</th></tr>
+<thead><tr><th scope="col">名称</th><th scope="col">対象</th></tr></thead>
+<tbody>
 <tr><td>GPKI（政府認証基盤）</td><td>国の府省庁。職員・組織の証明書と、ブリッジ認証局</td></tr>
 <tr><td>LGPKI（組織認証基盤）</td><td>地方公共団体。都道府県・市区町村の職員・組織</td></tr>
 <tr><td>JPKI（公的個人認証サービス）</td><td>個人。マイナンバーカードに入っている署名用・利用者証明用の証明書</td></tr>
 <tr><td>商業登記に基づく電子認証制度</td><td>法人。登記所が発行する法人代表者の電子証明書</td></tr>
+</tbody>
 </table>
 <p>電子申請の実務では、<strong>申請する側が JPKI や商業登記の証明書で自分を証明し、受ける側の府省庁が GPKI の証明書で正体を示す</strong>という組み合わせになる。</p>
 

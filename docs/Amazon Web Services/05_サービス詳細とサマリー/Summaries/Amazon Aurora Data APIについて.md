@@ -3,6 +3,7 @@
 # Amazon Aurora Data APIについて
 
 ## 疑問
+
 Amazon Aurora Data APIとは何か、どのような特徴があり、どのような場合に使用すると効果的なのでしょうか？
 
 ## 回答

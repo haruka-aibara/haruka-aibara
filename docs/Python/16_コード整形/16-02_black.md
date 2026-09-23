@@ -41,6 +41,7 @@ black example.py
 ```
 
 実行結果:
+
 ```
 reformatted example.py
 All done! ✨ 🍰 ✨
@@ -82,6 +83,7 @@ black --check example.py
 ```
 
 実行結果（フォーマットが必要な場合）:
+
 ```
 would reformat example.py
 Oh no! 💥 💔 💥
@@ -140,6 +142,7 @@ VS Code を使用している場合、以下の設定をして自動フォーマ
 ## まとめ
 
 Black を使うことで:
+
 - コードスタイルの一貫性が保たれます
 - チーム内でのコードレビューがスタイルではなく内容に集中できます
 - 読みやすく、メンテナンスしやすいコードになります

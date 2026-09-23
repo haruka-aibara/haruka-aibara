@@ -1,9 +1,11 @@
 # Docker講義: イメージの管理（pull、ls、rm）
 
 ## 概要
+
 Dockerイメージはコンテナの実行に必要な全てのファイルとメタデータが含まれたパッケージであり、効率的に管理することが重要です。
 
 ## イメージの基本概念
+
 Dockerイメージは読み取り専用のテンプレートで、アプリケーションの実行環境をカプセル化したものです。
 
 ## イメージのダウンロード（docker image pull）
@@ -16,6 +18,7 @@ docker image pull イメージ名
 ```
 
 例：
+
 ```bash
 # Ubuntuの最新イメージをダウンロード
 docker image pull ubuntu
@@ -31,6 +34,7 @@ docker image pull イメージ名:タグ
 ```
 
 例：
+
 ```bash
 # バージョン20.04のUbuntuイメージをダウンロード
 docker image pull ubuntu:20.04
@@ -49,6 +53,7 @@ docker image ls
 ```
 
 出力例：
+
 ```
 REPOSITORY    TAG       IMAGE ID       CREATED        SIZE
 ubuntu        latest    55d4c1c2a5bf   3 weeks ago    72.8MB
@@ -66,6 +71,7 @@ docker image rm イメージ名:タグ
 ```
 
 例：
+
 ```bash
 # タグ付きのイメージを削除
 docker image rm ubuntu:20.04
@@ -81,6 +87,7 @@ docker image rm イメージID
 ```
 
 例：
+
 ```bash
 # イメージIDを指定して削除
 docker image rm 55d4c1c2a5bf

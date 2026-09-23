@@ -281,10 +281,12 @@ blockquote p{margin:.4rem 0}
 
 <div class="tw">
 <table>
-<tr><th></th><th>セッションハイジャック</th><th>セッションフィクセーション</th></tr>
-<tr><th>攻撃者に必要なこと</th><td>被害者の ID を<strong>知る</strong>（盗聴・XSS・Referer やログからの漏えい）</td><td>知る必要はない。自分の ID を<strong>使わせる</strong>だけ</td></tr>
-<tr><th>アプリ側の欠陥</th><td>ID が漏れる経路がある／ID が推測できる</td><td>ログイン前後で ID を変えていない</td></tr>
-<tr><th>効く対策</th><td>推測不能な ID、<code>Secure</code>、<code>HttpOnly</code>、TLS 全面化</td><td>ログイン成功時の ID 再発行</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">セッションハイジャック</th><th scope="col">セッションフィクセーション</th></tr></thead>
+<tbody>
+<tr><th scope="row">攻撃者に必要なこと</th><td>被害者の ID を<strong>知る</strong>（盗聴・XSS・Referer やログからの漏えい）</td><td>知る必要はない。自分の ID を<strong>使わせる</strong>だけ</td></tr>
+<tr><th scope="row">アプリ側の欠陥</th><td>ID が漏れる経路がある／ID が推測できる</td><td>ログイン前後で ID を変えていない</td></tr>
+<tr><th scope="row">効く対策</th><td>推測不能な ID、<code>Secure</code>、<code>HttpOnly</code>、TLS 全面化</td><td>ログイン成功時の ID 再発行</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -447,9 +449,11 @@ cur.execute("SELECT * FROM users WHERE name = %s", (name,))</code></pre>
 
 <div class="tw">
 <table>
-<tr><th></th><th>どこで値を差し込むか</th><th>安全性の根拠と、残る穴</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">どこで値を差し込むか</th><th scope="col">安全性の根拠と、残る穴</th></tr></thead>
+<tbody>
 <tr><td>静的プレースホルダ</td><td><strong>DB サーバ側</strong>。<code>?</code> 付きの SQL を先に送り、構文解析を済ませてから値を送る</td><td>構文が確定した後に値が届くので、原理的に値は構文になれない</td></tr>
 <tr><td>動的プレースホルダ</td><td><strong>ドライバやライブラリ側</strong>。内部でエスケープして 1 本の SQL を組み立て、DB へ送る</td><td class="hole">最終的に文字列連結をしているのは同じ。文字エンコーディングの扱いを誤ると引用符を作れる組合せが残り、実装依存の穴になる</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -463,11 +467,13 @@ cur.execute("SELECT * FROM users WHERE name = %s", (name,))</code></pre>
 
 <div class="tw">
 <table>
-<tr><th>埋め込む場所</th><th>必要な処理（なぜ）</th><th>破られる条件</th></tr>
+<thead><tr><th scope="col">埋め込む場所</th><th scope="col">必要な処理（なぜ）</th><th scope="col">破られる条件</th></tr></thead>
+<tbody>
 <tr><td>HTML の本文</td><td><code>&lt; &gt; &amp; " '</code> を文字参照へ。タグの開始として読まれなくなる</td><td>この処理だけを全文脈に使い回すこと</td></tr>
 <tr><td>属性値</td><td>必ず引用符で囲んだうえでエスケープ。囲まないと空白で属性を継ぎ足せる</td><td>引用符なしの <code>&lt;img src=…&gt;</code> に <code>onerror=</code> を足される</td></tr>
 <tr><td><code>&lt;script&gt;</code> 内</td><td>HTML エスケープでは不十分。JS の文字列リテラルに値を直書きせず、JSON として渡す</td><td>文字列を閉じずともテンプレートリテラルやコメントで脱出されうる</td></tr>
 <tr><td><code>href</code> / <code>src</code></td><td>エスケープでは足りない。スキームを <code>http</code> / <code>https</code> の許可リストで確認する</td><td><code>javascript:</code> は文字としては無害なので、エスケープを素通りする</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -503,13 +509,15 @@ cur.execute("SELECT * FROM users WHERE name = %s", (name,))</code></pre>
 
 <div class="tw">
 <table>
-<tr><th>属性</th><th>何を防ぐのか（なぜ）</th><th>それでも破られる条件</th></tr>
+<thead><tr><th scope="col">属性</th><th scope="col">何を防ぐのか（なぜ）</th><th scope="col">それでも破られる条件</th></tr></thead>
+<tbody>
 <tr><td><code>Secure</code></td><td>HTTPS のリクエストにしか Cookie を載せない。平文で流れないので、経路上の盗聴で ID を拾われない</td><td>HSTS がないと最初の 1 回が HTTP になりうる。TLS を張る前の段階で剥がされれば意味がない</td></tr>
 <tr><td><code>HttpOnly</code></td><td>JavaScript の <code>document.cookie</code> から読めなくする。XSS が起きても ID を外部サーバへ送り出せない</td><td>XSS 自体は止まらない。スクリプトは被害者のブラウザ内で、Cookie が自動付与された状態のまま送金や設定変更を実行できる</td></tr>
 <tr><td><code>SameSite</code></td><td>他サイト起点のリクエストに Cookie を付けない。攻撃者のページから勝手に投げられたリクエストが認証済み扱いにならない（CSRF）</td><td><code>Lax</code> はトップレベルの GET には付くので、GET で状態を変える実装は守られない。同一サイト内の別サブドメインからは付く</td></tr>
 <tr><td><code>Domain</code></td><td>送信先ドメインを絞る。無関係なホストへ ID が飛ばない</td><td>指定すると<strong>サブドメイン全体</strong>に送られる。脆弱なサブドメインが 1 つあれば、そこから ID を回収できる。狭くしたいなら指定しないほうが狭い</td></tr>
 <tr><td><code>Path</code></td><td>特定パス配下のリクエストにだけ付ける。アプリ間の混線を減らす</td><td>同一オリジンの JavaScript は Path を越えて読み書きできる。セキュリティ境界としては当てにしない</td></tr>
 <tr><td>有効期限<br>（<code>Expires</code> / <code>Max-Age</code>）</td><td>指定しなければブラウザを閉じた時点で消えるセッション Cookie になり、共用端末に残らない</td><td>消えるのはブラウザ側だけ。サーバのセッションが生きていれば、盗まれた ID はまだ使える。ログアウトは<strong>サーバ側の破棄</strong>で行う</td></tr>
+</tbody>
 </table>
 </div>
 
@@ -625,12 +633,14 @@ cur.execute("SELECT * FROM users WHERE name = %s", (name,))</code></pre>
 
 <div class="tw">
 <table>
-<tr><th>何を</th><th>どこで</th><th>なぜ</th></tr>
+<thead><tr><th scope="col">何を</th><th scope="col">どこで</th><th scope="col">なぜ</th></tr></thead>
+<tbody>
 <tr><td>セッション ID を再発行する</td><td>認証に成功した直後</td><td>攻撃者が事前に固定した ID が、認証済み状態と結びつかないようにするため</td></tr>
 <tr><td>セッションを破棄する</td><td>サーバ側のログアウト処理</td><td>Cookie を消しても、サーバ側に残っていれば盗まれた ID がまだ使えるため</td></tr>
 <tr><td><code>HttpOnly</code> を付ける</td><td>Cookie を発行する <code>Set-Cookie</code></td><td>XSS が起きても、スクリプトからセッション ID を読み出せないようにするため</td></tr>
 <tr><td>静的プレースホルダを使う</td><td>SQL を組み立てるアプリ側</td><td>構文を先に確定させ、入力値が構文として解釈されないようにするため</td></tr>
 <tr><td>出力時にエスケープする</td><td>値を HTML に埋め込む直前</td><td>埋め込み先の文脈で、値がタグやスクリプトとして解釈されないようにするため</td></tr>
+</tbody>
 </table>
 </div>
 

@@ -96,11 +96,13 @@ a{color:var(--c1)}
 <h2>NDP は 4 つの仕事をまとめて持っている</h2>
 <p>ARP の置き換えだけではない。IPv4 では別々のプロトコルに分かれていた機能が NDP に統合されている。</p>
 <table>
-<tr><th>機能</th><th>やること</th><th>IPv4 での対応物</th></tr>
+<thead><tr><th scope="col">機能</th><th scope="col">やること</th><th scope="col">IPv4 での対応物</th></tr></thead>
+<tbody>
 <tr><td>近隣探索</td><td>IPv6 アドレスから MAC アドレスを調べる</td><td>ARP</td></tr>
 <tr><td>ルータ探索</td><td>デフォルトゲートウェイとプレフィックスを知る</td><td>DHCP・手動設定</td></tr>
 <tr><td>重複アドレス検出（DAD）</td><td>そのアドレスを既に誰か使っていないか確認する</td><td>（相当するものがない）</td></tr>
 <tr><td>リダイレクト</td><td>「その宛先ならもっと良い経路がある」と教える</td><td>ICMP リダイレクト</td></tr>
+</tbody>
 </table>
 <p>アドレスを自動で決められる（SLAAC）のは、ルータ探索でプレフィックスを受け取り、DAD で重複がないことを確認する、この 2 つが NDP にあるから。</p>
 

@@ -1,0 +1,11 @@
+extends: default
+
+rules:
+  # 長い run: やURLを折り返すと読みにくくなるだけなので見ない。
+  line-length: disable
+  document-start: disable
+  # GitHub Actions の `on:` を truthy と誤検知するため。
+  truthy:
+    check-keys: false
+  comments:
+    min-spaces-from-content: 1

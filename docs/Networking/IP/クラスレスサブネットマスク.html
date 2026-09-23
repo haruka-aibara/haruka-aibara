@@ -101,12 +101,14 @@ a{color:var(--c1)}
 
 <h2>覚えておくと計算が速い対応表</h2>
 <table>
-<tr><th>CIDR</th><th>サブネットマスク</th><th>アドレス総数</th><th>使えるホスト数</th></tr>
+<thead><tr><th scope="col">CIDR</th><th scope="col">サブネットマスク</th><th scope="col">アドレス総数</th><th scope="col">使えるホスト数</th></tr></thead>
+<tbody>
 <tr><td>/24</td><td>255.255.255.0</td><td>256</td><td>254</td></tr>
 <tr><td>/25</td><td>255.255.255.128</td><td>128</td><td>126</td></tr>
 <tr><td>/26</td><td>255.255.255.192</td><td>64</td><td>62</td></tr>
 <tr><td>/27</td><td>255.255.255.224</td><td>32</td><td>30</td></tr>
 <tr><td>/28</td><td>255.255.255.240</td><td>16</td><td>14</td></tr>
+</tbody>
 </table>
 <p>「/24 から 1 増えるごとに半分」と覚えておけば、表がなくても導ける。</p>
 

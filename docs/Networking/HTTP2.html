@@ -167,9 +167,11 @@ a{color:var(--c1)}
 
 <h2>実質使われなくなった機能</h2>
 <table>
-<tr><th>機能</th><th>意図</th><th>現状</th></tr>
+<thead><tr><th scope="col">機能</th><th scope="col">意図</th><th scope="col">現状</th></tr></thead>
+<tbody>
 <tr><td>ストリーム優先度</td><td>「CSS を画像より先に」と重み付けする</td><td class="dead">実装差が大きく、RFC 9113 で非推奨扱い</td></tr>
 <tr><td>サーバプッシュ</td><td>HTML を返すついでに CSS も送る</td><td class="dead">キャッシュ済みでも送るため無駄が多く、Chrome が 2022 年に既定で無効化。代替は <code>103 Early Hints</code></td></tr>
+</tbody>
 </table>
 <p>つまり実務で効いているのは<strong>多重化とヘッダ圧縮の2つ</strong>と考えてよい。</p>
 

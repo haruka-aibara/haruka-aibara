@@ -28,12 +28,14 @@ Git Attributesの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. `.gitattributes`ファイルの作成
+
 ```bash
 # プロジェクトのルートディレクトリに作成
 touch .gitattributes
 ```
 
 2. 基本的な属性の設定
+
 ```gitattributes
 # テキストファイルの改行コードを統一
 *.txt text eol=lf
@@ -47,6 +49,7 @@ touch .gitattributes
 ```
 
 3. パターンベースの設定
+
 ```gitattributes
 # すべてのテキストファイル
 * text=auto
@@ -64,6 +67,7 @@ src/*.js text eol=lf
 ### 基本的な手順
 
 1. プロジェクトの設定
+
 ```bash
 # .gitattributesファイルを作成
 echo "* text=auto" > .gitattributes
@@ -73,6 +77,7 @@ git check-attr -a file.txt
 ```
 
 2. 特定のファイルの設定
+
 ```bash
 # 改行コードの設定
 echo "*.txt text eol=lf" >> .gitattributes
@@ -82,6 +87,7 @@ echo "*.png binary" >> .gitattributes
 ```
 
 3. 設定の適用
+
 ```bash
 # 設定をリポジトリに追加
 git add .gitattributes
@@ -154,6 +160,7 @@ assets/fonts/* binary
 ### よくあるトラブルと解決方法
 
 1. **改行コードが正しく変換されない場合**
+
 ```bash
 # 設定を確認
 git check-attr -a file.txt
@@ -163,6 +170,7 @@ git add --renormalize .
 ```
 
 2. **バイナリファイルが正しく扱われない場合**
+
 ```bash
 # ファイルの属性を確認
 git check-attr -a file.png
@@ -172,6 +180,7 @@ git add --renormalize .
 ```
 
 3. **設定が反映されない場合**
+
 ```bash
 # キャッシュをクリア
 git rm --cached -r .

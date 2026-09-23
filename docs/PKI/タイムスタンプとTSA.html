@@ -88,9 +88,11 @@ a{color:var(--c1)}
 
 <h2>タイムスタンプが証明すること／しないこと</h2>
 <table>
-<tr><th>証明する</th><th>証明しない</th></tr>
+<thead><tr><th scope="col">証明する</th><th scope="col">証明しない</th></tr></thead>
+<tbody>
 <tr><td>そのデータがその時刻に<strong>存在していた</strong>こと（存在証明）</td><td>そのデータを誰が作ったか</td></tr>
 <tr><td>その時刻以降<strong>変更されていない</strong>こと（完全性）</td><td>内容が正しいこと・有効であること</td></tr>
+</tbody>
 </table>
 <p>「誰が」はデジタル署名の役目。<strong>署名とタイムスタンプはセットで使う</strong>もので、署名に対してタイムスタンプを掛けることで「この人が、この時刻に署名した」が成立する。</p>
 

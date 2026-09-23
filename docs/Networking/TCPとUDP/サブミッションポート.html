@@ -108,10 +108,12 @@ a{color:var(--c1)}
 
 <h2>587 と 465 の使い分け</h2>
 <table>
-<tr><th>ポート</th><th>用途</th><th>暗号化</th></tr>
+<thead><tr><th scope="col">ポート</th><th scope="col">用途</th><th scope="col">暗号化</th></tr></thead>
+<tbody>
 <tr><td>25</td><td>サーバ間の転送</td><td>STARTTLS（任意）</td></tr>
 <tr><td>587</td><td>利用者からの送信（サブミッション）</td><td>接続後に STARTTLS で暗号化</td></tr>
 <tr><td>465</td><td>同上</td><td>最初から TLS（<a href="../メール/SMTPS.html">SMTPS</a>）</td></tr>
+</tbody>
 </table>
 <p>587 は「平文で接続してから暗号化に切り替える」方式なので、切り替えを省略される余地がある。最初から暗号化する 465 を使うほうが確実で、現在は 465 が推奨される場面が増えている。</p>
 

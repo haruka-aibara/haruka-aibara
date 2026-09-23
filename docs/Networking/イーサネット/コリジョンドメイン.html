@@ -105,9 +105,11 @@ a{color:var(--c1)}
 <h2>ブロードキャストドメインとは別物</h2>
 <p>よく混同されるが、切れる範囲が違う。</p>
 <table>
-<tr><th></th><th>コリジョンドメイン</th><th>ブロードキャストドメイン</th></tr>
-<tr><th>何が及ぶ範囲か</th><td>信号の衝突</td><td>全員宛てフレーム</td></tr>
-<tr><th>分割する機器</th><td>ブリッジ・スイッチ（L2）</td><td>ルータ・VLAN（L3）</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">コリジョンドメイン</th><th scope="col">ブロードキャストドメイン</th></tr></thead>
+<tbody>
+<tr><th scope="row">何が及ぶ範囲か</th><td>信号の衝突</td><td>全員宛てフレーム</td></tr>
+<tr><th scope="row">分割する機器</th><td>ブリッジ・スイッチ（L2）</td><td>ルータ・VLAN（L3）</td></tr>
+</tbody>
 </table>
 <p>つまり<strong>スイッチはコリジョンドメインを分けるが、ブロードキャストドメインは分けない</strong>。ブロードキャストは全ポートに転送される。詳しくは <code>ブロードキャストドメイン</code> の記事を参照。</p>
 

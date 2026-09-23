@@ -1,11 +1,13 @@
 # Amazon BedrockのGuardrails
 
 ## 概要
+
 Amazon BedrockのGuardrailsは、生成AIモデルの出力を制御し、安全で適切な応答を確保するための機能です。この機能により、有害なコンテンツの生成を防止し、プライバシーを保護し、ビジネスルールやコンプライアンス要件に準拠した応答を生成することができます。Guardrailsは、生成AIの安全な利用を促進し、企業のリスク管理を強化する重要なツールです。
 
 ## 詳細
 
 ### Guardrailsの主な機能
+
 - コンテンツフィルタリング
   - 有害コンテンツの検出
   - 不適切な表現の制御
@@ -20,6 +22,7 @@ Amazon BedrockのGuardrailsは、生成AIモデルの出力を制御し、安全
   - 監査ログの記録
 
 ### 使用シーン
+
 - カスタマーサポートの自動化
 - コンテンツ生成の品質管理
 - データプライバシーの保護
@@ -29,6 +32,7 @@ Amazon BedrockのGuardrailsは、生成AIモデルの出力を制御し、安全
 ## 具体例
 
 ### Guardrailsの設定と管理
+
 ```python
 import boto3
 import json
@@ -126,6 +130,7 @@ guardrail = guardrails_manager.create_guardrail(
 ```
 
 ### Guardrailsの適用と監視
+
 ```python
 import boto3
 import json
@@ -185,6 +190,7 @@ if violations:
 ```
 
 ### Guardrailsの監査とレポート
+
 ```python
 import boto3
 import json
@@ -255,4 +261,5 @@ for violation_type, count in analysis['violation_types'].items():
 ```
 
 ## まとめ
-Amazon BedrockのGuardrailsは、生成AIモデルの安全で適切な利用を確保するための重要な機能を提供します。コンテンツフィルタリング、プライバシー保護、コンプライアンス管理などの機能により、企業のリスク管理を強化し、生成AIの安全な利用を促進します。また、監査ログの記録やレポート生成機能により、Guardrailsの効果を継続的にモニタリングし、必要に応じて設定を最適化することができます。Guardrailsを活用することで、カスタマーサポートの自動化、コンテンツ生成の品質管理、データプライバシーの保護など、様々なユースケースで安全なAIの利用を実現できます。 
+
+Amazon BedrockのGuardrailsは、生成AIモデルの安全で適切な利用を確保するための重要な機能を提供します。コンテンツフィルタリング、プライバシー保護、コンプライアンス管理などの機能により、企業のリスク管理を強化し、生成AIの安全な利用を促進します。また、監査ログの記録やレポート生成機能により、Guardrailsの効果を継続的にモニタリングし、必要に応じて設定を最適化することができます。Guardrailsを活用することで、カスタマーサポートの自動化、コンテンツ生成の品質管理、データプライバシーの保護など、様々なユースケースで安全なAIの利用を実現できます。

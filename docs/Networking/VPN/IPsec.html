@@ -86,11 +86,13 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th></th><th>AH</th><th>ESP</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">AH</th><th scope="col">ESP</th></tr></thead>
+<tbody>
 <tr><td>暗号化</td><td>しない</td><td>する</td></tr>
 <tr><td>改ざん検知</td><td>する（IP ヘッダ含む）</td><td>する（IP ヘッダ除く）</td></tr>
 <tr><td>NAT 越え</td><td>できない</td><td>できる（後述の NAT-T が要る）</td></tr>
 <tr><td>実務</td><td>使わない</td><td>これを使う</td></tr>
+</tbody>
 </table>
 
 <h2>SA — 合意は片方向ごとに1本</h2>

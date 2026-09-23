@@ -128,10 +128,12 @@ a{color:var(--c1)}
 </figure>
 
 <table>
-<tr><th>方式</th><th>端末に要るもの</th><th>使えるもの</th></tr>
+<thead><tr><th scope="col">方式</th><th scope="col">端末に要るもの</th><th scope="col">使えるもの</th></tr></thead>
+<tbody>
 <tr><td>リバースプロキシ</td><td>ブラウザだけ</td><td>社内 Web アプリのみ</td></tr>
 <tr><td>ポートフォワーディング</td><td>小さなエージェント</td><td>指定した TCP アプリ</td></tr>
 <tr><td>L2 フォワーディング</td><td>クライアントソフト</td><td>ほぼ全部（IPsec に近い）</td></tr>
+</tbody>
 </table>
 
 <h2>セキュリティ視点 — 装置そのものが標的になる</h2>

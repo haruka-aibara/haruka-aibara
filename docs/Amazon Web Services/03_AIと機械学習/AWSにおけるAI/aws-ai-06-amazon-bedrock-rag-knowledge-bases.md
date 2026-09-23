@@ -1,11 +1,13 @@
 # Amazon BedrockのRAGとKnowledge Bases
 
 ## 概要
+
 Amazon BedrockのRAG（Retrieval Augmented Generation）とKnowledge Basesは、生成AIモデルに外部知識を組み込むための機能です。これにより、モデルは最新の情報や特定のドメイン知識に基づいた、より正確で関連性の高い応答を生成することができます。
 
 ## 詳細
 
 ### RAG（Retrieval Augmented Generation）
+
 - 外部知識を検索して生成AIの応答を強化する手法
 - 主な特徴：
   - リアルタイムの情報アクセス
@@ -17,6 +19,7 @@ Amazon BedrockのRAG（Retrieval Augmented Generation）とKnowledge Basesは、
   - 正確性が重要な応答
 
 ### Knowledge Bases
+
 - 構造化された知識リポジトリ
 - 主な特徴：
   - 複数のデータソースの統合
@@ -30,6 +33,7 @@ Amazon BedrockのRAG（Retrieval Augmented Generation）とKnowledge Basesは、
 ## 具体例
 
 ### Knowledge Baseの作成と設定
+
 ```python
 import boto3
 import json
@@ -76,6 +80,7 @@ data_source = bedrock.create_data_source(
 ```
 
 ### RAGを使用した推論
+
 ```python
 import boto3
 import json
@@ -111,6 +116,7 @@ generated_text = response_body['completion']
 ```
 
 ### カスタムRAGパイプラインの実装
+
 ```python
 import boto3
 import json
@@ -171,4 +177,5 @@ response = rag_pipeline.process_query("当社の新製品の特徴は何です�
 ```
 
 ## まとめ
-Amazon BedrockのRAGとKnowledge Basesは、生成AIの応答品質を大幅に向上させる重要な機能です。Knowledge Basesを使用することで、企業のナレッジを効果的に管理し、RAGを活用することで、その知識を生成AIの応答に組み込むことができます。これにより、より正確で、関連性の高い、そして最新の情報に基づいた応答を生成することが可能になります。また、これらの機能はカスタマイズ可能で、様々なユースケースに合わせて最適化することができます。 
+
+Amazon BedrockのRAGとKnowledge Basesは、生成AIの応答品質を大幅に向上させる重要な機能です。Knowledge Basesを使用することで、企業のナレッジを効果的に管理し、RAGを活用することで、その知識を生成AIの応答に組み込むことができます。これにより、より正確で、関連性の高い、そして最新の情報に基づいた応答を生成することが可能になります。また、これらの機能はカスタマイズ可能で、様々なユースケースに合わせて最適化することができます。

@@ -100,11 +100,13 @@ a{color:var(--c1)}
 
 <h2>知っておくと役に立つプレフィックス</h2>
 <table>
-<tr><th>プレフィックス</th><th>意味</th></tr>
+<thead><tr><th scope="col">プレフィックス</th><th scope="col">意味</th></tr></thead>
+<tbody>
 <tr><td><code>2000::/3</code></td><td>グローバルユニキャスト（インターネットで使える普通のアドレス）</td></tr>
 <tr><td><code>fe80::/10</code></td><td>リンクローカル。同一セグメント内でのみ有効。自動で必ず付く</td></tr>
 <tr><td><code>fc00::/7</code></td><td>ユニークローカル。IPv4 のプライベートアドレスに相当</td></tr>
 <tr><td><code>2001:db8::/32</code></td><td>ドキュメント用に予約。設計書やサンプルで使ってよい</td></tr>
+</tbody>
 </table>
 <p>ログに <code>fe80::</code> で始まるアドレスが出てきたら、それは自動生成されたリンクローカルアドレスで、外部と通信しているものではない。</p>
 

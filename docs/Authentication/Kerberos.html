@@ -54,13 +54,15 @@ a{color:var(--c1)}
 
 <h2>登場人物</h2>
 <table>
-<tr><th>用語</th><th>意味</th></tr>
+<thead><tr><th scope="col">用語</th><th scope="col">意味</th></tr></thead>
+<tbody>
 <tr><td>realm（レルム）</td><td>1つの KDC が管理する範囲。Active Directory のドメインにあたる。慣習として大文字で書く</td></tr>
 <tr><td>プリンシパル</td><td>認証の対象となる主体の名前。利用者だけでなくサービスにも付く（<code>host/fs01.example.com</code> など）</td></tr>
 <tr><td>KDC（鍵配布センター）</td><td>チケットを発行する中心。AS と TGS の2つの機能を持つ</td></tr>
 <tr><td>AS（認証サーバ）</td><td>最初の認証を行い、TGT（チケットを貰うためのチケット）を渡す</td></tr>
 <tr><td>TGS（チケット発行サーバ）</td><td>TGT と引き換えに、個別のサービス用チケットを発行する</td></tr>
 <tr><td>KDB（鍵データベース）</td><td>全プリンシパルの鍵を保管する。ここが漏れると realm 全体が終わる</td></tr>
+</tbody>
 </table>
 
 <figure>

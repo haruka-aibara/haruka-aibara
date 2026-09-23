@@ -98,10 +98,12 @@ a{color:var(--c1)}
 
 <h2>役割が分かれているから、対策も分かれる</h2>
 <table>
-<tr><th></th><th>持っているもの</th><th>どこにある</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">持っているもの</th><th scope="col">どこにある</th></tr></thead>
+<tbody>
 <tr><td>スタブリゾルバ</td><td>問い合わせ先の設定だけ</td><td>端末の OS 内</td></tr>
 <tr><td>キャッシュサーバ</td><td>調べた結果のキャッシュ</td><td>社内・ISP・パブリック DNS（8.8.8.8 など）</td></tr>
 <tr><td>権威サーバ</td><td>ゾーンの原本</td><td>ドメインの管理者側</td></tr>
+</tbody>
 </table>
 <p>攻撃も役割ごとに違う。キャッシュサーバには偽の答えを覚え込ませるキャッシュポイズニング（<a href="../../Cyber Attacks/19_カミンスキーアタックとDNSSEC.html">カミンスキーアタックと DNSSEC</a>）、外に開きっぱなしのキャッシュサーバは<a href="オープンリゾルバ.html">オープンリゾルバ</a>として踏み台になる。</p>
 

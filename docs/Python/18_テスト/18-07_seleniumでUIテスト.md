@@ -45,6 +45,7 @@ selenium-automation/
 各ファイルを以下の内容で作成します。
 
 ### requirements.txt
+
 ```
 selenium==4.17.2
 webdriver-manager==4.0.1
@@ -52,6 +53,7 @@ pytest==7.4.0
 ```
 
 ### config/settings.py
+
 ```python
 # ブラウザ設定
 BROWSER_OPTIONS = {
@@ -66,6 +68,7 @@ TIMEOUT = 10
 ```
 
 ### src/browser.py
+
 ```python
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
@@ -105,6 +108,7 @@ class Browser:
 ```
 
 ### src/page_objects/base_page.py
+
 ```python
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -142,6 +146,7 @@ class BasePage:
 ```
 
 ### tests/conftest.py
+
 ```python
 import pytest
 from src.browser import Browser
@@ -160,6 +165,7 @@ def browser():
 ```
 
 ### tests/test_example.py
+
 ```python
 from selenium.webdriver.common.by import By
 from config.settings import BASE_URL
@@ -190,6 +196,7 @@ pytest tests/
 ```
 
 期待される出力：
+
 ```
 collected 1 item
 
@@ -205,6 +212,7 @@ pytest -v tests/
 ```
 
 期待される出力：
+
 ```
 collected 1 item
 
@@ -220,11 +228,13 @@ tests/test_example.py::test_edge_example PASSED  [100%]
 Edge ブラウザがないというエラーが出た場合は、以下の手順で対応します：
 
 #### 1. 依存パッケージのインストール
+
 ```bash
 sudo apt install libnss3-dev
 ```
 
 #### 2. Microsoft Edgeをインストール
+
 ```bash
 # Microsoftの署名キーを追加
 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
@@ -241,6 +251,7 @@ sudo apt install microsoft-edge-stable
 ここでは、Googleで検索を行う例を示します：
 
 ### google_search_test.py
+
 ```python
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys

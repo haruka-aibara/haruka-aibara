@@ -66,7 +66,7 @@ https://qiita.com/LaserBit/items/8dfd410ef65c19053ce2
 ```
 
 2. Pylance
-pylance を動作させるため、`python.analysis.typeCheckingMode` で検索し、`off` -> `strict` に変更 
+pylance を動作させるため、`python.analysis.typeCheckingMode` で検索し、`off` -> `strict` に変更
 
 ***
 
@@ -85,6 +85,7 @@ source $HOME/.cargo/env
 ```
 
 2. ツール等
+
 ```bash
 # pip
 sudo apt install python3-pip
@@ -135,6 +136,7 @@ conda install anaconda-navigator
 ```
 
 ### 必要なライブラリのインストール（apt-get）
+
 ```bash
 sudo apt-get update
 sudo apt-get install \
@@ -166,12 +168,14 @@ sudo apt-get install \
 ```
 
 ### Conda関連のインストール
+
 ```bash
 conda install -c anaconda qt qtpy
 conda install -c conda-forge qt
 ```
 
 ### デバッグ用の環境変数設定（必要な場合のみ）
+
 ```bash
 export QT_DEBUG_PLUGINS=1
 ```
@@ -180,5 +184,6 @@ export QT_DEBUG_PLUGINS=1
 anaconda-navigator が起動します。
 
 ### その他
+
 Numba
 Pydantic

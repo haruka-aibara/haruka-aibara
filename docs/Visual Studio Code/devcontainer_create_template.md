@@ -9,11 +9,13 @@ https://zenn.dev/tellernovel_inc/articles/7a14c416d5ddfd#fn-be58-2
 ## 基本ステップ
 
 1. テンプレートスターターをクローン or Fork
+
    ```bash
    git clone https://github.com/devcontainers/template-starter
    ```
 
 2. 最低限必要なファイル構成
+
    ```
    src/
    └── テンプレート名/
@@ -23,6 +25,7 @@ https://zenn.dev/tellernovel_inc/articles/7a14c416d5ddfd#fn-be58-2
    ```
 
 3. devcontainer-template.jsonの最小構成
+
    ```json
    {
      "id": "テンプレート名",

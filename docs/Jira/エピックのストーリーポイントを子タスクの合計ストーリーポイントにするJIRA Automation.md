@@ -87,11 +87,9 @@ https://community.atlassian.com/t5/Automation-questions/How-sum-up-story-point-e
 23. ルールをオンにしたら完了です。
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-42.png>)
 
-
 後はエピックの Story point estimate に子タスクの合計ストーリーポイントが表示されます。
 
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-43.png>)
-
 
 ## 備忘のため、過去の失敗した履歴を下記に残しておきます。
 
@@ -108,6 +106,7 @@ JIRAのプロジェクトタイプについての詳細は、以下のAtlassian�
 https://support.atlassian.com/ja/jira-software-cloud/docs/what-are-team-managed-and-company-managed-projects/
 
 ### 失敗した手順
+
 JIRA Automation を使います。
 
 備忘のための記録として、画像と簡単なメモだけ貼付していきます。
@@ -132,9 +131,7 @@ https://www.ricksoft.jp/blog/articles/001550.html
 4. 次へ
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-3.png>)
 
-
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-4.png>)
-
 
 ![alt text](<assets/エピックのストーリーポイントを子タスクの合計ストーリーポイントにするJIRA Automation/image-5.png>)
 

@@ -4,16 +4,14 @@
 
 ### 参考記事
 
- - https://qiita.com/haveAbook/items/0d0ae20a19214f65e7cd
- - https://docs.docker.com/engine/install/ubuntu/
-
+- https://qiita.com/haveAbook/items/0d0ae20a19214f65e7cd
+- https://docs.docker.com/engine/install/ubuntu/
 
 ### Uninstall old versions
 
 ```bash
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 ```
-
 
 ### Install using the apt repository
 
@@ -42,4 +40,5 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 ### Verify that the installation is successful by running the hello-world image:
 
 ### 拡張機能
+
 https://marketplace.visualstudio.com/items/?itemName=ms-azuretools.vscode-docker

@@ -1,9 +1,11 @@
 # Apache Hadoop (難易度レベル: 200)
 
 ## 概要
+
 Apache Hadoopは、大規模データの分散処理を可能にするオープンソースのフレームワークです。GoogleのMapReduceとGoogle File System（GFS）の論文を基に開発され、複数のコンピュータを連携させて大規模データを効率的に処理するための基盤技術として広く活用されています。
 
 Apache Hadoopを学ぶ意義：
+
 - 大規模データ処理の基盤技術の理解
 - 分散システムの設計原理の習得
 - ビッグデータエコシステムの全体像の把握
@@ -14,6 +16,7 @@ Apache Hadoopを学ぶ意義：
 ### Apache Hadoopとは
 
 #### 基本的な概念
+
 Apache Hadoopは、以下の4つの主要な特徴を持つ分散処理フレームワークです：
 
 - **分散処理**: 複数のノードで並列処理を実行
@@ -22,6 +25,7 @@ Apache Hadoopは、以下の4つの主要な特徴を持つ分散処理フレー
 - **コスト効率**: 汎用ハードウェアでの運用
 
 #### アーキテクチャの構成要素
+
 Hadoopは以下の主要コンポーネントで構成されています：
 
 - **HDFS（Hadoop Distributed File System）**: 分散ファイルシステム
@@ -32,9 +36,11 @@ Hadoopは以下の主要コンポーネントで構成されています：
 ### HDFS（Hadoop Distributed File System）
 
 #### HDFSの基本概念
+
 HDFSは、大規模データを複数のノードに分散して保存するファイルシステムです。
 
 #### アーキテクチャ
+
 ```bash
 # HDFSの構成要素
 NameNode          # メタデータ管理（マスターノード）
@@ -44,6 +50,7 @@ NameNode          # メタデータ管理（マスターノード）
 ```
 
 #### 基本的な操作
+
 ```bash
 # HDFSの基本コマンド
 
@@ -70,6 +77,7 @@ hdfs dfs -cp /user/hadoop/source.txt /user/hadoop/destination.txt
 ```
 
 #### レプリケーション
+
 ```bash
 # レプリケーション数の設定
 hdfs dfs -setrep -w 3 /user/hadoop/file.txt
@@ -81,9 +89,11 @@ hdfs dfs -ls -R /user/hadoop/
 ### YARN（Yet Another Resource Negotiator）
 
 #### YARNの役割
+
 YARNは、Hadoopクラスターのリソース管理とジョブスケジューリングを担当します。
 
 #### アーキテクチャ
+
 ```bash
 # YARNの構成要素
 ResourceManager    # リソース管理（マスターノード）
@@ -93,6 +103,7 @@ ResourceManager    # リソース管理（マスターノード）
 ```
 
 #### リソース管理
+
 ```bash
 # YARNの基本コマンド
 
@@ -115,9 +126,11 @@ yarn queue -status default
 ### MapReduce
 
 #### MapReduceの基本概念
+
 MapReduceは、大規模データの並列処理を行うためのプログラミングモデルです。
 
 #### 処理フロー
+
 ```python
 # MapReduceの処理フロー例
 
@@ -145,6 +158,7 @@ def reduce_function(key, values):
 ```
 
 #### JavaでのMapReduce実装
+
 ```java
 // WordCountのMapReduce実装例
 import java.io.IOException;
@@ -209,6 +223,7 @@ public class WordCount {
 ### 実践的な使用例
 
 #### ログ分析システム
+
 ```python
 # ログ分析のMapReduce例
 
@@ -243,6 +258,7 @@ def log_analyzer_reduce(key, values):
 ```
 
 #### データクリーニング
+
 ```python
 # データクリーニングのMapReduce例
 
@@ -272,6 +288,7 @@ def data_cleaner_reduce(key, values):
 ### Hadoopエコシステム
 
 #### 主要なコンポーネント
+
 ```bash
 # Hadoopエコシステムの構成
 
@@ -297,6 +314,7 @@ Data Ingestion
 ```
 
 #### Hive（SQL on Hadoop）
+
 ```sql
 -- Hiveでのテーブル作成
 CREATE TABLE users (
@@ -324,6 +342,7 @@ ORDER BY login_count DESC;
 ```
 
 #### HBase（NoSQLデータベース）
+
 ```java
 // HBaseの基本操作例
 import org.apache.hadoop.hbase.HBaseConfiguration;
@@ -363,6 +382,7 @@ public class HBaseExample {
 ### クラスター管理
 
 #### クラスターの設定
+
 ```bash
 # core-site.xml（HDFS設定）
 <configuration>
@@ -402,6 +422,7 @@ public class HBaseExample {
 ```
 
 #### クラスターの起動・停止
+
 ```bash
 # HDFSの起動
 start-dfs.sh
@@ -421,6 +442,7 @@ stop-yarn.sh
 ```
 
 #### 監視とメンテナンス
+
 ```bash
 # クラスターの状態確認
 hdfs dfsadmin -report
@@ -441,6 +463,7 @@ hdfs dfsadmin -safemode get
 ### パフォーマンス最適化
 
 #### 設定の最適化
+
 ```bash
 # mapred-site.xml（MapReduce最適化）
 <configuration>
@@ -464,6 +487,7 @@ hdfs dfsadmin -safemode get
 ```
 
 #### データ最適化
+
 ```bash
 # ファイルの圧縮
 hdfs dfs -setrep -w 1 /user/hadoop/large_file.txt
@@ -486,6 +510,7 @@ hadoop jar hadoop-streaming.jar \
 ## まとめ
 
 ### 学んだことの振り返り
+
 - **Hadoop**: 大規模データ分散処理の基盤技術
 - **HDFS**: 分散ファイルシステムによるデータ保存
 - **YARN**: リソース管理とジョブスケジューリング
@@ -494,6 +519,7 @@ hadoop jar hadoop-streaming.jar \
 - **最適化**: パフォーマンスとリソース管理
 
 ### 次のステップへの提案
+
 1. **Apache Spark**: 高速分散処理フレームワーク
 2. **Apache Kafka**: リアルタイムデータストリーミング
 3. **Apache Hive**: SQL on Hadoop
@@ -501,4 +527,4 @@ hadoop jar hadoop-streaming.jar \
 5. **クラウドHadoop**: AWS EMR、Azure HDInsight
 6. **データパイプライン**: エンドツーエンドのデータ処理
 
-Apache Hadoopは、ビッグデータ処理の基盤となる重要な技術です。基本的な概念を理解した後は、実際のプロジェクトで活用することで、より実践的なスキルを身につけることができます。 
+Apache Hadoopは、ビッグデータ処理の基盤となる重要な技術です。基本的な概念を理解した後は、実際のプロジェクトで活用することで、より実践的なスキルを身につけることができます。

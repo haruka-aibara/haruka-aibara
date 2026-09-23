@@ -12,6 +12,7 @@ Grafanaの凡例（Legend）は、グラフやパネルに表示されるデー�
    - 「Legend」セクションで表示/非表示を切り替え
 
 2. **凡例の位置**
+
    ```yaml
    # 凡例の位置設定
    Legend:
@@ -41,6 +42,7 @@ Grafanaの凡例（Legend）は、グラフやパネルに表示されるデー�
 ### 系列名のカスタマイズ
 
 1. **ラベルの設定**
+
    ```yaml
    # ラベル設定の例
    Legend:
@@ -59,6 +61,7 @@ Grafanaの凡例（Legend）は、グラフやパネルに表示されるデー�
 ### 値の表示設定
 
 1. **値のフォーマット**
+
    ```yaml
    # 値の表示設定
    Legend:
@@ -143,4 +146,4 @@ Legend:
 - 凡例の表示はデータの可読性に影響します
 - 適切な表示モードを選択してください
 - 必要に応じて凡例を非表示にしてください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/legend/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/legend/)を参照してください

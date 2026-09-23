@@ -12,6 +12,7 @@ GrafanaのTableパネルは、データを表形式で表示するためのパ�
    - 「Table」を選択
 
 2. **データソースの設定**
+
    ```promql
    # 例：CPU使用率の一覧
    topk(10, rate(node_cpu_seconds_total{mode="idle"}[5m]))
@@ -39,6 +40,7 @@ GrafanaのTableパネルは、データを表形式で表示するためのパ�
 ### 列の設定
 
 1. **列のカスタマイズ**
+
    ```yaml
    # 列の設定例
    Columns:
@@ -145,4 +147,4 @@ Display:
 - 表示するデータ量を考慮してください
 - パフォーマンスに影響を与えないよう注意してください
 - 適切なページネーションを設定してください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/table/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/table/)を参照してください

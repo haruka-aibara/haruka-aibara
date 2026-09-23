@@ -377,7 +377,7 @@ await page.screenshot({ path: 'billing.png', fullPage: true });</code></pre>
 
 <div class="tw">
 <table>
-<thead><tr><th>書き方</th><th>指すもの</th><th>向いている場面</th></tr></thead>
+<thead><tr><th scope="col">書き方</th><th scope="col">指すもの</th><th scope="col">向いている場面</th></tr></thead>
 <tbody>
 <tr><td><code>getByRole('button', { name: '書き出し' })</code></td><td>役割＋表示名</td><td>第一候補。人が画面を説明するときの言い方に近い</td></tr>
 <tr><td><code>getByLabel('メールアドレス')</code></td><td>ラベル付きの入力欄</td><td>フォームの入力</td></tr>
@@ -530,7 +530,7 @@ export default {
 
 <div class="tw">
 <table>
-<thead><tr><th>作業</th><th>判断</th><th>理由</th></tr></thead>
+<thead><tr><th scope="col">作業</th><th scope="col">判断</th><th scope="col">理由</th></tr></thead>
 <tbody>
 <tr><td>画面を開いて証跡を取得・保存する</td><td>自動化する</td><td>手順が固定で、判断がない</td></tr>
 <tr><td>一覧を取得して差分を出す</td><td>自動化する</td><td>差分を出すところまでは機械の仕事</td></tr>

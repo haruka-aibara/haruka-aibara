@@ -105,6 +105,7 @@ git push -u origin main
    - バックアップ
 
 ### 予防するためのコツ
+
 - プロジェクトの規模に応じた選択
 - チームの習熟度を考慮
 - 将来の拡張性を検討
@@ -113,16 +114,19 @@ git push -u origin main
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 高度な機能の理解
 - 継続的インテグレーションとの連携
 - セキュリティ対策の実装
 
 ### おすすめの学習リソース
+
 - [Git vs. Other VCS: A Comparative Analysis](https://medium.com/@pascalchinedu2000/git-vs-other-vcs-a-comparative-analysis-5cb03ad58e0e)
 - [Git公式ドキュメント](https://git-scm.com/doc)
 - [SVN公式ドキュメント](https://subversion.apache.org/docs/)
 
 ### コミュニティ情報
+
 - Stack Overflowの`git`と`svn`タグ
 - GitHub Discussions
 - Apache Subversionフォーラム

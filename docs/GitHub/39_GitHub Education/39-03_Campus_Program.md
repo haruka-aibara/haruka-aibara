@@ -26,6 +26,7 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
 ## 実際の使い方
 
 ### よくある使用シーン
+
 1. **教育機関での活用**
    - 授業でのGitHub活用
    - プロジェクト管理
@@ -37,6 +38,7 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
    - オープンソースへの貢献
 
 ### 注意点
+
 - 申請時の書類準備が重要
 - 定期的な更新が必要
 - 利用規約の遵守
@@ -44,6 +46,7 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
 ## 手を動かしてみよう
 
 1. **申請準備**
+
    ```markdown
    # 必要な書類
    - 教育機関の認定証
@@ -64,6 +67,7 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
 ## 実践的なサンプル
 
 ### 教育機関での活用例
+
 ```markdown
 # 授業での活用方法
 1. リポジトリの作成
@@ -78,6 +82,7 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
 ```
 
 ### 学生の活用例
+
 ```markdown
 # ポートフォリオの作成
 1. プロジェクトの整理
@@ -94,6 +99,7 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. **申請関連**
    - 書類の不備
    - 承認の遅延
@@ -105,6 +111,7 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
    - チームの運営
 
 ### デバッグの手順
+
 1. GitHub Educationのサポートに問い合わせ
 2. ドキュメントの確認
 3. コミュニティフォーラムの活用
@@ -112,16 +119,19 @@ GitHub Campus Programは、教育機関と学生のための特別なプログ�
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - GitHub Classroomの活用
 - オープンソースへの貢献
 - インターンシップの探求
 
 ### おすすめの学習リソース
+
 - [GitHub Education公式サイト](https://education.github.com/)
 - [GitHub Classroom](https://classroom.github.com/)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Education Community
 - 大学のGitHubクラブ
 - 地域のGitHub Meetup

@@ -51,16 +51,19 @@ git reset --hardの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. 直前のコミットを取り消す
+
 ```bash
 git reset --hard HEAD~1
 ```
 
 2. 特定のコミットまで戻る
+
 ```bash
 git reset --hard <commit-hash>
 ```
 
 3. すべての変更を取り消す
+
 ```bash
 git reset --hard HEAD
 ```

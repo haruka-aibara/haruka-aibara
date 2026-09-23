@@ -1,9 +1,11 @@
 # Pythonコードスタイルガイド
 
 ## 概要
+
 Pythonにおけるコードスタイルは可読性と保守性を高め、チーム開発を円滑にするための重要な要素です。
 
 ## 主要概念
+
 Pythonコードスタイルは「PEP 8」というスタイルガイドに基づいており、コードの一貫性を保つために広く採用されています。
 
 ## コードスタイル検証ツールのインストール
@@ -64,6 +66,7 @@ flake8 bad_style.py
 ```
 
 **実行結果**:
+
 ```
 bad_style.py:1:17: E201 whitespace after '('
 bad_style.py:1:20: E231 missing whitespace after ','

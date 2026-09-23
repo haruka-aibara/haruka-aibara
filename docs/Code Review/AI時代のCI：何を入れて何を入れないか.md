@@ -146,6 +146,7 @@ AI は「動くが安全でないコード」を自信満々に生成する。Ve
 AI は存在しないパッケージを `import` する。これが Slopsquatting の温床だ。
 
 研究で明らかになった数字：
+
 - Python と JavaScript の AI 生成コードサンプル 57.6 万件のうち **約 20% に実在しないパッケージ参照**が含まれていた
 - GPT-4 でさえ約 5% の確率でパッケージ名を hallucinate する
 - 同じプロンプトを 10 回繰り返したとき、**43% の幻パッケージが毎回同じ名前で出現**した（攻撃者が事前に登録できる）
@@ -216,6 +217,7 @@ Trivy は CNCF のコンテナレジストリ Harbor のデフォルトスキャ
 2025 年 8 月、npm のサプライチェーン攻撃で **Claude Code・Cursor・VS Code Continue** などの AI コーディングツールが直接標的になった。
 
 攻撃の手口：
+
 1. 人気の npm パッケージ（Nx）の悪意あるバージョンを公開
 2. そのパッケージが Claude Code・Gemini・Amazon Q などの AI CLI ツールを検出
 3. AI ツールの MCP（Model Context Protocol）設定に不正なサーバーを注入

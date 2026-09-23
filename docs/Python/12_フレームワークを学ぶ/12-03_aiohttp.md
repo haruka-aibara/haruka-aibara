@@ -1,9 +1,11 @@
 # Python非同期通信ライブラリ「aiohttp」
 
 ## 概要
+
 aiohttpは、Python用の非同期HTTP通信ライブラリで、asyncioを活用した高性能なHTTPクライアントとサーバー機能を提供します。
 
 ## 主要概念
+
 aiohttpは「asyncio」を基盤とし、ノンブロッキングI/Oを使って複数のHTTPリクエストを効率的に処理できます。
 
 ## 実践編：step by step
@@ -52,6 +54,7 @@ asyncio.run(main())
 ```
 
 **解説**:
+
 - `aiohttp.ClientSession`を使用してHTTPセッションを作成します
 - `async with`文を使って、リソースを適切に管理します
 - `response.json()`はレスポンスの内容をJSONとして解析します
@@ -113,6 +116,7 @@ URL 5 のレスポンス長: 292 文字
 ```
 
 **解説**:
+
 - `asyncio.gather()`を使用して複数のタスクを並行実行します
 - 1つのセッションを共有することでTCPコネクションを再利用し、効率的に処理できます
 - 従来の同期処理と比較して、処理時間が大幅に短縮されます
@@ -170,6 +174,7 @@ asyncio.run(main())
 ```
 
 **解説**:
+
 - `headers`パラメータでHTTPヘッダーを設定できます
 - `params`パラメータでクエリパラメータを設定できます
 - 実際のリクエストURLには、指定したパラメータが追加されています
@@ -220,6 +225,7 @@ asyncio.run(main())
 ```
 
 **解説**:
+
 - `session.post()`メソッドでPOSTリクエストを送信します
 - `json`パラメータを使用すると、データを自動的にJSON形式に変換します
 - ステータスコード201は、リソースが正常に作成されたことを示します
@@ -289,6 +295,7 @@ asyncio.run(main())
 ```
 
 **解説**:
+
 - `try-except`ブロックでエラーを適切に処理します
 - `aiohttp.ClientConnectorError`は接続エラーを捕捉します
 - `asyncio.TimeoutError`はタイムアウトエラーを捕捉します
@@ -346,11 +353,13 @@ if __name__ == '__main__':
 ```
 
 ブラウザで以下のURLにアクセスして動作を確認できます：
+
 - http://localhost:8080/ - 「こんにちは、aiohttpサーバーへようこそ！」と表示
 - http://localhost:8080/json - JSONレスポンスを表示
 - http://localhost:8080/hello/Python - 「こんにちは、Pythonさん！」と表示
 
 **解説**:
+
 - `web.Application()`でアプリケーションインスタンスを作成します
 - `app.add_routes()`でルーティングを設定します
 - ハンドラ関数は非同期関数として定義し、`request`オブジェクトを受け取ります

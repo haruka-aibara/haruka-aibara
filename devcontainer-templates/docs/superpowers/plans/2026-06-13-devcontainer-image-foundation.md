@@ -40,10 +40,13 @@ git checkout -b feat/devcontainer-foundation
 - [ ] **Step 2: 必要 CLI の存在確認**
 
 Run:
+
 ```bash
 for c in docker shellcheck hadolint devcontainer; do command -v "$c" >/dev/null && echo "OK $c" || echo "MISSING $c"; done
 ```
+
 Expected: 4 つとも `OK`。`MISSING` があれば導入する:
+
 - devcontainer CLI: `npm install -g @devcontainers/cli`
 - hadolint: `docker pull hadolint/hadolint`(以降 `docker run --rm -i hadolint/hadolint < Dockerfile` で使う)
 - shellcheck: `sudo apt-get update && sudo apt-get install -y shellcheck`
@@ -53,6 +56,7 @@ Expected: 4 つとも `OK`。`MISSING` があれば導入する:
 ## Task 1: スモークテストスクリプトを作る(検証ハーネス)
 
 **Files:**
+
 - Create: `src/haruka-aibara-dev-env/.devcontainer/smoke-test.sh`
 
 - [ ] **Step 1: スモークテストを書く**
@@ -137,14 +141,17 @@ git commit -m "test: add container smoke-test for required toolset"
 ## Task 2: base イメージを digest ピン + マルチアーキ土台
 
 **Files:**
+
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/Dockerfile`
 
 - [ ] **Step 1: 現在の base イメージ digest を取得**
 
 Run:
+
 ```bash
 docker buildx imagetools inspect mcr.microsoft.com/devcontainers/base:ubuntu --format '{{.Manifest.Digest}}'
 ```
+
 Expected: `sha256:....` が表示される。この値を控える(以降 `<BASE_DIGEST>` と表記)。
 
 - [ ] **Step 2: Dockerfile の FROM を digest ピンに置換**
@@ -163,9 +170,11 @@ FROM ${BASE_IMAGE}
 - [ ] **Step 3: ビルドが通ることを確認**
 
 Run:
+
 ```bash
 docker build -t devcontainer-foundation:wip src/haruka-aibara-dev-env/.devcontainer
 ```
+
 Expected: digest ピンの base を pull してビルドが成功する(この時点では旧来のツール構成のまま)。
 
 - [ ] **Step 4: コミット**
@@ -180,6 +189,7 @@ git commit -m "build: pin base image by digest via BASE_IMAGE arg"
 ## Task 3: AWS CLI / kubectl・minikube・helm / Node / Python を Features へ移行
 
 **Files:**
+
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/Dockerfile`(該当インストールを削除)
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/devcontainer.json`(features 追加)
 
@@ -203,6 +213,7 @@ git commit -m "build: pin base image by digest via BASE_IMAGE arg"
 - [ ] **Step 2: Dockerfile から重複インストールを削除**
 
 `Dockerfile` から次を削除する:
+
 - builder ステージ: AWS CLI の install(`awscli-exe-linux-x86_64.zip` 一式)、minikube の install、kubectl の install
 - final ステージ: builder からの `COPY` のうち minikube/kubectl/aws 関連、apt の `npm`、AWS シンボリックリンク作成行
 
@@ -211,11 +222,13 @@ tenv の COPY は残す(Task 5 で扱う)。
 - [ ] **Step 3: devcontainer CLI でビルドし、スモークテストを実行**
 
 Run:
+
 ```bash
 devcontainer build --workspace-folder src/haruka-aibara-dev-env --image-name devcontainer-foundation:wip
 docker run --rm -v "$PWD/src/haruka-aibara-dev-env/.devcontainer/smoke-test.sh:/usr/local/share/smoke-test.sh" \
   devcontainer-foundation:wip bash /usr/local/share/smoke-test.sh
 ```
+
 Expected: `aws` `kubectl` `minikube` `helm` `node` `npm` `python3` が `OK`、`aws login` が `OK`。`tenv` `uv` `claude` `gcloud` `ansible` はまだ FAIL でも構わない(後続タスクで対応)。
 
 > 補足: `devcontainer build` は features をイメージに焼き込むため、Feature 由来のツールはこのイメージに含まれる。
@@ -232,52 +245,63 @@ git commit -m "build: migrate aws-cli/kubectl/node/python to official devcontain
 ## Task 4: gcloud と ansible の導入方法を確定
 
 **Files:**
+
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/devcontainer.json` または `Dockerfile`
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/post-create.sh`(ansible を uv 導入にする場合)
 
 - [ ] **Step 1: gcloud のコミュニティ Feature を調査**
 
 Run:
+
 ```bash
 # 例: 既知のコミュニティ Feature をリストで確認
 echo "candidates: ghcr.io/dhoeric/features/google-cloud-cli  ghcr.io/devcontainers-extra/features/..."
 ```
+
 判断基準: メンテされている(直近リリースがある)・スター/利用実績がある・digest 取得可能。良質な Feature があれば採用、無ければ Dockerfile にピン留め+SHA256 検証でフォールバックする。
 
 - [ ] **Step 2: gcloud を追加**
 
 採用する場合は `devcontainer.json` の features に追記(例):
+
 ```jsonc
 "ghcr.io/dhoeric/features/google-cloud-cli:1": {}
 ```
+
 フォールバックする場合は Dockerfile に、公式リポジトリ手順(apt source + keyring)をバージョン/keyring 検証付きで追加する(現状の gcloud 導入ロジックを builder→final に整理して残す)。
 
 - [ ] **Step 3: ansible を uv tool 導入に変更**
 
 apt の `ansible`/`ansible-lint` を Dockerfile から削除し、`post-create.sh` に追記:
+
 ```bash
 uv tool install ansible-core
 uv tool install ansible-lint
 ```
+
 (理由: apt 版より新しく保て、uv 管理に一元化できる。ADR-0002 に記録。)
 
 - [ ] **Step 4: ビルド + スモークテスト**
 
 Run:
+
 ```bash
 devcontainer build --workspace-folder src/haruka-aibara-dev-env --image-name devcontainer-foundation:wip
 docker run --rm -v "$PWD/src/haruka-aibara-dev-env/.devcontainer/smoke-test.sh:/usr/local/share/smoke-test.sh" \
   devcontainer-foundation:wip bash /usr/local/share/smoke-test.sh
 ```
+
 Expected: `gcloud` が `OK`。`ansible` は post-create 実行前のため、ここでは FAIL でも可(post-create は `devcontainer up` 時に走る。Step 5 で確認)。
 
 - [ ] **Step 5: post-create 込みで ansible を確認**
 
 Run:
+
 ```bash
 devcontainer up --workspace-folder src/haruka-aibara-dev-env
 devcontainer exec --workspace-folder src/haruka-aibara-dev-env ansible --version
 ```
+
 Expected: ansible のバージョンが表示される。
 
 - [ ] **Step 6: コミット**
@@ -292,22 +316,26 @@ git commit -m "build: add gcloud feature and move ansible to uv tool"
 ## Task 5: tenv / uv / Claude Code をピン留め + SHA256 検証 + $TARGETARCH
 
 **Files:**
+
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/Dockerfile`
 
 - [ ] **Step 1: tenv の対象バージョンと SHA256 を取得**
 
 Run:
+
 ```bash
 TENV_VER=$(curl -fsSL https://api.github.com/repos/tofuutils/tenv/releases/latest | jq -r .tag_name)
 echo "TENV_VER=$TENV_VER"
 curl -fsSL "https://github.com/tofuutils/tenv/releases/download/${TENV_VER}/tenv_${TENV_VER}_amd64.deb.sha256sum" || \
   echo "※ リリース資産の sha256 ファイル名を releases ページで確認すること"
 ```
+
 Expected: バージョン文字列と sha256 が得られる(資産名は releases ページで要確認)。amd64/arm64 両方の sha256 を控える。
 
 - [ ] **Step 2: Dockerfile の tenv 導入を ARG ピン + 検証 + arch 対応に書き換え**
 
 builder ステージの tenv 導入を置換:
+
 ```dockerfile
 ARG TENV_VERSION=<TENV_VER>
 ARG TENV_SHA256_AMD64=<sha256-amd64>
@@ -328,6 +356,7 @@ RUN set -eux; \
 - [ ] **Step 3: uv を検証付きインストールに変更**
 
 final ステージの `curl -LsSf https://astral.sh/uv/install.sh | sh` を、バージョンピン + チェックサム検証へ。astral の release 資産(`uv-x86_64-unknown-linux-gnu.tar.gz` 等)を使う:
+
 ```dockerfile
 ARG UV_VERSION=<uv-version>
 ARG UV_SHA256_AMD64=<sha256>
@@ -345,12 +374,14 @@ RUN set -eux; \
     install "uv-${triple}/uv" "uv-${triple}/uvx" /home/vscode/.local/bin/; \
     rm -rf uv.tar.gz "uv-${triple}"
 ```
+
 (`/home/vscode/.local/bin` は既存 ENV PATH に含まれる。ディレクトリが無ければ事前に `mkdir -p`。)
 各バージョン/SHA は `https://github.com/astral-sh/uv/releases` で確認して埋める。
 
 - [ ] **Step 4: Claude Code をバージョンピン + 検証に変更**
 
 `curl -fsSL https://claude.ai/install.sh | bash` を、固定バージョン指定 + インストール後の存在検証に変更する。公式インストーラがバージョン引数/チェックサムを公開している場合はそれを使用。最低限、インストール後に `claude --version` が成功することをビルド内で検証する:
+
 ```dockerfile
 ARG CLAUDE_VERSION=<version>
 RUN set -eux; \
@@ -359,24 +390,29 @@ RUN set -eux; \
     rm /tmp/claude-install.sh; \
     /home/vscode/.local/bin/claude --version
 ```
+
 > 注: 公式インストーラの引数仕様を実装時に確認すること。チェックサムが提供されていれば sha256 検証も追加する。
 
 - [ ] **Step 5: ビルド + スモークテスト(amd64)**
 
 Run:
+
 ```bash
 devcontainer build --workspace-folder src/haruka-aibara-dev-env --image-name devcontainer-foundation:wip
 docker run --rm -v "$PWD/src/haruka-aibara-dev-env/.devcontainer/smoke-test.sh:/usr/local/share/smoke-test.sh" \
   devcontainer-foundation:wip bash /usr/local/share/smoke-test.sh
 ```
+
 Expected: `tenv` `uv` `claude` が `OK`。`SMOKE TEST PASSED`(Marp 削除は次タスクだが、現状 Marp はまだ残っているので "forbidden absent" は FAIL のはず → 次タスクで解消)。
 
 - [ ] **Step 6: arm64 でもビルドできることを確認(クロスビルド)**
 
 Run:
+
 ```bash
 docker buildx build --platform linux/arm64 -t devcontainer-foundation:arm64 src/haruka-aibara-dev-env/.devcontainer
 ```
+
 Expected: arm64 でビルド成功(QEMU エミュレーション経由)。失敗する場合は arch 分岐/SHA を見直す。
 
 - [ ] **Step 7: コミット**
@@ -391,6 +427,7 @@ git commit -m "build: pin and checksum-verify tenv/uv/claude with multi-arch sup
 ## Task 6: Marp / GUI 依存を削除
 
 **Files:**
+
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/Dockerfile`
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/devcontainer.json`
 - Create: `docs/adr/0005-drop-marp-presentation-tools.md`
@@ -406,6 +443,7 @@ final ステージの apt インストールから `libreoffice-impress`、`font
 - [ ] **Step 3: ADR を書く**
 
 `docs/adr/0005-drop-marp-presentation-tools.md`:
+
 ```markdown
 # ADR-0005: Marp/プレゼンツールを devcontainer から廃止する
 
@@ -431,11 +469,13 @@ Marp 関連(Chrome / LibreOffice / CJK フォント / Marp 拡張 / Marp 設定)
 - [ ] **Step 4: ビルド + スモークテスト(今度は PASS するはず)**
 
 Run:
+
 ```bash
 devcontainer build --workspace-folder src/haruka-aibara-dev-env --image-name devcontainer-foundation:wip
 docker run --rm -v "$PWD/src/haruka-aibara-dev-env/.devcontainer/smoke-test.sh:/usr/local/share/smoke-test.sh" \
   devcontainer-foundation:wip bash /usr/local/share/smoke-test.sh
 ```
+
 Expected: `google-chrome absent` `libreoffice absent` が `OK`、全体が `SMOKE TEST PASSED`。
 
 - [ ] **Step 5: コミット**
@@ -450,6 +490,7 @@ git commit -m "build: drop Marp/Chrome/LibreOffice presentation deps (ADR-0005)"
 ## Task 7: 認証マウント廃止 + 認証 ADR
 
 **Files:**
+
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/devcontainer.json`
 - Create: `docs/adr/0004-auth-no-long-lived-secrets.md`
 
@@ -460,6 +501,7 @@ git commit -m "build: drop Marp/Chrome/LibreOffice presentation deps (ADR-0005)"
 - [ ] **Step 2: 認証 ADR を書く**
 
 `docs/adr/0004-auth-no-long-lived-secrets.md`:
+
 ```markdown
 # ADR-0004: 認証は長期シークレットを持たない方式に統一する
 
@@ -488,9 +530,11 @@ git commit -m "build: drop Marp/Chrome/LibreOffice presentation deps (ADR-0005)"
 - [ ] **Step 3: devcontainer.json が妥当か検証**
 
 Run:
+
 ```bash
 devcontainer read-configuration --workspace-folder src/haruka-aibara-dev-env >/dev/null && echo "config OK"
 ```
+
 Expected: `config OK`(JSON として妥当)。
 
 - [ ] **Step 4: コミット**
@@ -505,6 +549,7 @@ git commit -m "feat: remove host credential mounts; document auth (ADR-0004)"
 ## Task 8: post-create.sh の強化
 
 **Files:**
+
 - Modify: `src/haruka-aibara-dev-env/.devcontainer/post-create.sh`
 
 - [ ] **Step 1: エラーハンドリングを強化**
@@ -514,6 +559,7 @@ git commit -m "feat: remove host credential mounts; document auth (ADR-0004)"
 - [ ] **Step 2: ansible 導入行を追加(Task 4 で未追加なら)**
 
 Python ツール導入の節に追記(重複導入にならないよう確認):
+
 ```bash
 uv tool install ansible-core
 uv tool install ansible-lint
@@ -531,10 +577,12 @@ Expected: 出力なし。警告は修正する(`uv tool list` 等の動的コマ
 - [ ] **Step 5: post-create 込みで起動して全ツール確認**
 
 Run:
+
 ```bash
 devcontainer up --workspace-folder src/haruka-aibara-dev-env
 devcontainer exec --workspace-folder src/haruka-aibara-dev-env bash /workspaces/devcontainer-templates/src/haruka-aibara-dev-env/.devcontainer/smoke-test.sh
 ```
+
 Expected: `SMOKE TEST PASSED`、`ansible` も `OK`。
 
 - [ ] **Step 6: コミット**
@@ -549,11 +597,13 @@ git commit -m "chore: harden post-create.sh (set -euo pipefail, uv ansible)"
 ## Task 9: 残り ADR と最終検証
 
 **Files:**
+
 - Create: `docs/adr/0002-prefer-devcontainer-features.md`, `docs/adr/0007-multi-arch-support.md`
 
 - [ ] **Step 1: ADR-0002 を書く**
 
 `docs/adr/0002-prefer-devcontainer-features.md`:
+
 ```markdown
 # ADR-0002: 公式 devcontainer Features を優先し、Dockerfile を極薄化する
 
@@ -573,6 +623,7 @@ AWS CLI / kubectl / minikube / Node / Python 等を生の RUN で手組みして
 - [ ] **Step 2: ADR-0007 を書く**
 
 `docs/adr/0007-multi-arch-support.md`:
+
 ```markdown
 # ADR-0007: マルチアーキテクチャ(amd64 + arm64)対応
 
@@ -592,12 +643,14 @@ Dockerfile 内のアーキ依存ダウンロードを `$TARGETARCH` で分岐し
 - [ ] **Step 3: 全体最終ビルド + スモークテスト + lint**
 
 Run:
+
 ```bash
 docker run --rm -i hadolint/hadolint < src/haruka-aibara-dev-env/.devcontainer/Dockerfile
 shellcheck src/haruka-aibara-dev-env/.devcontainer/*.sh
 devcontainer up --workspace-folder src/haruka-aibara-dev-env
 devcontainer exec --workspace-folder src/haruka-aibara-dev-env bash /workspaces/devcontainer-templates/src/haruka-aibara-dev-env/.devcontainer/smoke-test.sh
 ```
+
 Expected: hadolint 重大指摘なし、shellcheck クリーン、`SMOKE TEST PASSED`。
 
 - [ ] **Step 4: コミット**
@@ -626,4 +679,5 @@ git commit -m "docs: add ADR-0002 (features) and ADR-0007 (multi-arch)"
 
 - **Plan B: CI・サプライチェーン** — ci.yaml 新設、release.yaml のプレビルド+Trivy+SBOM+cosign 署名+SLSA attestation+マルチアーキ publish、Actions の SHA ピン、最小権限。ADR-0003/0006。
 - **Plan C: Renovate + 残り ADR** — renovate.json5(base digest / Features / ピン留めツール / Actions SHA を追跡)、ADR-0001、ADR 一覧の README 整備。
+
 ```

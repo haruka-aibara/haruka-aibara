@@ -51,6 +51,7 @@ volumes:
 ```
 
 **ポイント:**
+
 - `depends_on` に `condition: service_healthy` を使うと、DB の healthcheck が通ってからアプリが起動する（単純な `depends_on` は「コンテナが起動した」だけを見るので DB の準備が整っていない）
 - ボリュームを名前付きにする（`postgres_data`）ことで `docker compose down` しても DB データが消えない
 - `restart: unless-stopped` で予期しない終了時に自動再起動

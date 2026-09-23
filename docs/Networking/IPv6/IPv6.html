@@ -81,11 +81,13 @@ a{color:var(--c1)}
 
 <h2>IPv4 で後付けしたものが標準機能になった</h2>
 <table>
-<tr><th></th><th>IPv4</th><th>IPv6</th></tr>
-<tr><th>アドレス設定</th><td>DHCP サーバが必要</td><td>ルータの広告だけで自動設定できる（SLAAC）</td></tr>
-<tr><th>MAC アドレス解決</th><td>ARP（L2 のブロードキャスト）</td><td>NDP（ICMPv6 のマルチキャスト）</td></tr>
-<tr><th>ブロードキャスト</th><td>あり</td><td>廃止（マルチキャストで代替）</td></tr>
-<tr><th>IPsec</th><td>オプション</td><td>仕様として組み込み</td></tr>
+<thead><tr><th scope="col"></th><th scope="col">IPv4</th><th scope="col">IPv6</th></tr></thead>
+<tbody>
+<tr><th scope="row">アドレス設定</th><td>DHCP サーバが必要</td><td>ルータの広告だけで自動設定できる（SLAAC）</td></tr>
+<tr><th scope="row">MAC アドレス解決</th><td>ARP（L2 のブロードキャスト）</td><td>NDP（ICMPv6 のマルチキャスト）</td></tr>
+<tr><th scope="row">ブロードキャスト</th><td>あり</td><td>廃止（マルチキャストで代替）</td></tr>
+<tr><th scope="row">IPsec</th><td>オプション</td><td>仕様として組み込み</td></tr>
+</tbody>
 </table>
 <p>ブロードキャストを廃止したのは、「全員宛て」が全端末に割り込みをかける負荷を避けるため。関心のある機器だけが受け取るマルチキャストに統一された。</p>
 

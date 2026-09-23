@@ -24,17 +24,20 @@
 ## 実際の使い方
 
 ### よくある使用シーン
+
 - オープンソースプロジェクトの支援
 - 開発者への直接支援
 - コミュニティの形成
 - プロジェクトの持続的な運営
 
 ### メリット
+
 - 直接的な支援
 - コミュニティの活性化
 - プロジェクトの継続性確保
 
 ### 注意点
+
 - 税務処理
 - 支援条件の設定
 - コミュニケーション管理
@@ -59,6 +62,7 @@
 ## 実践的なサンプル
 
 ### プロフィール設定の例
+
 ```markdown
 # 支援者向けプロフィール
 
@@ -74,6 +78,7 @@
 ```
 
 ### 支援条件の例
+
 ```markdown
 # 支援プラン
 
@@ -90,6 +95,7 @@
 ## 困ったときは
 
 ### よくあるトラブル
+
 1. 支払いの問題
    - 支払い方法の確認
    - カード情報の更新
@@ -101,6 +107,7 @@
    - 特典の提供
 
 ### デバッグの手順
+
 1. 設定の確認
 2. サポートへの連絡
 3. コミュニティへの相談
@@ -108,16 +115,19 @@
 ## もっと知りたい人へ
 
 ### 次のステップ
+
 - 支援プランの最適化
 - コミュニティの拡大
 - プロジェクトの成長
 
 ### おすすめの学習リソース
+
 - [GitHub Sponsors 公式ドキュメント](https://docs.github.com/ja/sponsors)
 - [GitHub Community Guidelines](https://docs.github.com/ja/site-policy/github-terms/github-community-guidelines)
 - [GitHub Skills](https://skills.github.com/)
 
 ### コミュニティ情報
+
 - GitHub Sponsors Community
 - Stack Overflow
 - GitHub Discussions

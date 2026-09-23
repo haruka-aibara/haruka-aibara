@@ -40,6 +40,7 @@ GitHubには依存関係の自動更新ツールとして、RenovateとDependabo
 #### どちらを選ぶべきか
 
 **Renovateが向いている場合：**
+
 - ✅ 複数のプラットフォーム（GitLab、Bitbucketなど）でも使用したい
 - ✅ PRをグループ化して、レビュー負荷を減らしたい
 - ✅ 更新スケジュールを細かく制御したい
@@ -48,6 +49,7 @@ GitHubには依存関係の自動更新ツールとして、RenovateとDependabo
 - ✅ プロジェクトごとに異なる更新戦略を持ちたい
 
 **Dependabotが向いている場合：**
+
 - ✅ GitHub専用のプロジェクト
 - ✅ シンプルな設定で運用したい
 - ✅ GitHubの標準機能として無料で使いたい（Renovateも無料だが、GitHub Appとして提供）
@@ -56,25 +58,30 @@ GitHubには依存関係の自動更新ツールとして、RenovateとDependabo
 #### 実例：PR作成の違い
 
 **Dependabotの場合：**
+
 ```
 PR #1: Bump aws-sdk from 2.1000.0 to 2.1001.0
 PR #2: Bump express from 4.18.0 to 4.18.1
 PR #3: Bump terraform-provider-aws from 5.0.0 to 5.1.0
 ```
+
 → 更新ごとに個別のPRが作成される
 
 **Renovateの場合（グループ化設定時）：**
+
 ```
 PR #1: Update dependencies (minor/patch updates)
   - aws-sdk: 2.1000.0 → 2.1001.0
   - express: 4.18.0 → 4.18.1
   - terraform-provider-aws: 5.0.0 → 5.1.0
 ```
+
 → 複数の更新を1つのPRにまとめられる
 
 #### 移行について
 
 DependabotからRenovateへの移行は簡単です：
+
 1. Renovate Appをインストール
 2. `renovate.json`で設定をカスタマイズ
 3. Dependabotの設定を無効化
@@ -358,6 +365,7 @@ terraform {
 ```
 
 この設定により：
+
 - **パッチ・マイナー更新**: 自動マージで迅速に適用
 - **メジャー更新**: 四半期ごとにグループ化してレビューしやすい形でPR作成
 - **AWS Provider/AWSCC Provider**: 個別にグループ化して管理しやすく
@@ -525,4 +533,3 @@ Renovateを導入することで、依存関係の管理が自動化され、開
   - インフラレベルの依存関係も自動的に最新状態を維持
 
 まずは基本的な設定から始めて、プロジェクトのニーズに合わせて徐々にカスタマイズしていくことをおすすめします。Terraformプロジェクトでは、Providerの更新を適切にグループ化し、パッチ・マイナー更新は自動マージ、メジャー更新はレビュー対象とする設定が効果的です。
-

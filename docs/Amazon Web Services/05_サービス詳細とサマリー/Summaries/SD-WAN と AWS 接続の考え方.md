@@ -91,6 +91,7 @@ SD-WAN のファイアウォール機能（ステートフル検査）を VPC �
 ### ECMP と帯域
 
 IPsec トンネルは 1 本あたり上限 1.25 Gbps。より大きな帯域が必要なら：
+
 - ECMP で複数トンネルを束ねる（TGW 側で `VpnEcmpSupport=enable`）
 - Direct Connect と VPN を併用する（DX をメイン、VPN をバックアップ）
 

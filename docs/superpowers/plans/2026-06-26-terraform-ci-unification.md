@@ -32,9 +32,11 @@
 CI ロジックの置き場となる public repo を `./modules/repository` で新設する。
 
 **Files:**
+
 - Modify: `main.tf`（末尾に module ブロック追加）
 
 **Interfaces:**
+
 - Consumes: `module "<name>" { source = "./modules/repository" ... }` パターン（`main.tf:6` 等）。
 - Produces: `module.github-actions.repository_name`（= `"github-actions"`）を Task 2 が参照する。
 
@@ -82,10 +84,12 @@ git commit -m "feat: add github-actions repository for shared CI workflows"
 `fmt` / `tflint` / `trivy` を実行する `workflow_call` ワークフローを作り、`github_repository_file` で github-actions repo に push する。
 
 **Files:**
+
 - Create: `ci/workflows/terraform-ci.yml`
 - Create: `terraform_ci.tf`
 
 **Interfaces:**
+
 - Consumes: `module.github-actions.repository_name`（Task 1）。
 - Produces: github-actions repo の `.github/workflows/terraform-ci.yml`（`workflow_call`、inputs: `working-directory` string default `"."`, `terraform-version` string default `""`）。Task 3 の caller がこのパスを `uses:` で参照する。
 
@@ -219,10 +223,12 @@ git commit -m "feat: add reusable terraform CI workflow and distribute to github
 caller workflow テンプレートを作り、まず 1 repo（`aws-cost-allocation-tags`）だけに配布して end-to-end を確認する。
 
 **Files:**
+
 - Create: `ci/templates/terraform-ci-caller.yml.tftpl`
 - Modify: `terraform_ci.tf`（locals + caller 用 `github_repository_file` を追加）
 
 **Interfaces:**
+
 - Consumes: github-actions repo の reusable workflow パス（Task 2）。
 - Produces: `local.terraform_ci_repos`（map: repo 名 → `{ working_directory = string }`）。Task 4 がこの map を拡張する。`github_repository_file.terraform_ci_caller`（`for_each`）。
 
@@ -303,6 +309,7 @@ git commit -m "feat: add terraform CI caller template and pilot rollout to aws-c
 
 PR を作成 → HCP Terraform の投機的 plan を確認 → main にマージ → HCP が apply。
 その後 `aws-cost-allocation-tags` repo を確認:
+
 - `.github/workflows/terraform-ci.yml` が配置されていること
 - push/PR をトリガーに `fmt` / `tflint` / `trivy` の 3 ジョブが実行され、成功（または妥当な失敗）すること
 
@@ -315,9 +322,11 @@ Expected: 3 ジョブが実行され、reusable workflow 経由で動作する�
 パイロット成功後、`local.terraform_ci_repos` に残りの Terraform repo を追加して一斉展開する。
 
 **Files:**
+
 - Modify: `terraform_ci.tf`（`local.terraform_ci_repos` を拡張）
 
 **Interfaces:**
+
 - Consumes: `local.terraform_ci_repos`（Task 3）、`github_repository_file.terraform_ci_caller`（Task 3）。
 
 - [ ] **Step 1: locals に残りの repo を追加する**

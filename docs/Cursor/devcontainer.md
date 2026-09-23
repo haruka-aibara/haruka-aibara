@@ -1,4 +1,4 @@
-# Development Environment Construction 
+# Development Environment Construction
 
 ***
 
@@ -6,9 +6,8 @@
 
 ### Reference Articles
 
- - [WSL を使用して Windows に Linux をインストールする方法](https://learn.microsoft.com/ja-jp/windows/wsl/install)
- - [WSL 開発環境を設定する](https://learn.microsoft.com/ja-jp/windows/wsl/setup/environment#set-up-your-linux-username-and-password)
-
+- [WSL を使用して Windows に Linux をインストールする方法](https://learn.microsoft.com/ja-jp/windows/wsl/install)
+- [WSL 開発環境を設定する](https://learn.microsoft.com/ja-jp/windows/wsl/setup/environment#set-up-your-linux-username-and-password)
 
 ```bash
 wsl --install
@@ -36,16 +35,14 @@ https://www.cursor.com/ja
 
 ### Reference Articles
 
- - https://qiita.com/haveAbook/items/0d0ae20a19214f65e7cd
- - https://docs.docker.com/engine/install/ubuntu/
-
+- https://qiita.com/haveAbook/items/0d0ae20a19214f65e7cd
+- https://docs.docker.com/engine/install/ubuntu/
 
 ### Uninstall old versions
 
 ```bash
 for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
 ```
-
 
 ### Install using the apt repository
 
@@ -72,6 +69,7 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 ```
 
 ### Test Docker
+
 ```bash
 sudo docker run hello-world
 ```
@@ -84,6 +82,7 @@ sudo docker image rm hello-world
 ```
 
 ### Add user to docker Groups
+
 ```bash
 sudo usermod -aG docker $USER
 ```
@@ -96,11 +95,14 @@ Before using this DevContainer template, ensure:
 
 1. WSL2 is installed and configured with Ubuntu
 2. Your AWS credentials are set up in your WSL2 Ubuntu home directory:
+
    ```
    ~/.aws/credentials
    ~/.aws/config
    ```
+
 3. Your Git configuration is set up in your WSL2 Ubuntu home directory:
+
    ```
    ~/.gitconfig
    ```
@@ -118,7 +120,7 @@ change the theme (Preferences: Color Theme) from Cursor Dark to Dark (Visual Stu
 cuz YAML syntax highlight not working correctly when `Cursor Dark`
 
 https://forum.cursor.com/t/yaml-syntax-highlighting-not-working/58659
- 
+
 Clone respository in container volume
 
 use this container image

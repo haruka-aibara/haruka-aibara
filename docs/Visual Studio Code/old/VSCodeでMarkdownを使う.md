@@ -18,6 +18,7 @@
 ### Settings.json を編集する
 
 #### マークダウンに画像を貼り付けた際の保存先ディレクトリを定義
+
 ```
 "markdown.copyFiles.destination": {
   "**/*.md": "assets/${documentBaseName}/"
@@ -30,9 +31,11 @@
 ### その他設定
 
 #### Mermaid プレビューで AWS アイコンを使えるようにする
+
 https://qiita.com/take_me/items/83769d32c35e99b85ec8
 
 ##### 手順
+
 コマンドパレットから
 
 Markdown Preview Enhanced: Customize Preview HTML Head (Global) を選択

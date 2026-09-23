@@ -51,16 +51,19 @@ git logオプションの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. シンプルな表示
+
 ```bash
 git log --oneline
 ```
 
 2. 詳細な表示
+
 ```bash
 git log --stat
 ```
 
 3. グラフィカルな表示
+
 ```bash
 git log --graph --oneline
 ```

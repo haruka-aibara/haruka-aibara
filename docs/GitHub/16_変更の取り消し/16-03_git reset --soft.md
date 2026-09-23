@@ -51,16 +51,19 @@ git reset --softの重要なポイントは以下の3つです：
 ### 基本的な使い方
 
 1. 直前のコミットを取り消す
+
 ```bash
 git reset --soft HEAD~1
 ```
 
 2. 特定のコミットまで取り消す
+
 ```bash
 git reset --soft <commit-hash>
 ```
 
 3. 複数のコミットを取り消す
+
 ```bash
 git reset --soft HEAD~3
 ```

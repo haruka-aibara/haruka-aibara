@@ -1,9 +1,11 @@
 # 【Linux講座】標準入出力とエラー出力
 
 ## 概要
+
 Linuxでの標準入力(stdin)、標準出力(stdout)、標準エラー出力(stderr)は、コマンドラインでのデータ処理の基盤となる重要な概念です。
 
 ## 理論的説明
+
 Linuxでプログラムが実行されると、標準入力(データの読み込み)、標準出力(通常の出力)、標準エラー出力(エラーメッセージ)の3つの標準ストリームが自動的に開かれます。
 
 ## 実践コマンド例
@@ -17,6 +19,7 @@ echo "Hello, Linux!"
 ```
 
 実行結果：
+
 ```
 Hello, Linux!
 ```
@@ -33,6 +36,7 @@ cat output.txt
 ```
 
 実行結果：
+
 ```
 This text will go to a file
 ```
@@ -48,6 +52,7 @@ ls /nonexistent_directory
 ```
 
 実行結果：
+
 ```
 ls: cannot access '/nonexistent_directory': No such file or directory
 ```
@@ -84,12 +89,14 @@ cat error.txt
 
 実行結果：
 output.txtの内容：
+
 ```
 /home:
 user1  user2  ...
 ```
 
 error.txtの内容：
+
 ```
 ls: cannot access '/nonexistent_directory': No such file or directory
 ```
@@ -106,6 +113,7 @@ cat all_output.txt
 ```
 
 実行結果：
+
 ```
 ls: cannot access '/nonexistent_directory': No such file or directory
 /home:
@@ -127,6 +135,7 @@ EOF
 ```
 
 実行結果：
+
 ```
 Line 1
 Line 2
@@ -145,6 +154,7 @@ sort < fruits.txt
 ```
 
 実行結果：
+
 ```
 apple
 banana
@@ -162,6 +172,7 @@ echo -e "cherry\napple\nbanana" | sort
 ```
 
 実行結果：
+
 ```
 apple
 banana
@@ -180,6 +191,7 @@ echo "この出力は表示されます"
 ```
 
 実行結果：
+
 ```
 この出力は表示されます
 ```

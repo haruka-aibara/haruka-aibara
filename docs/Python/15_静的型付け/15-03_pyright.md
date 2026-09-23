@@ -1,9 +1,11 @@
 # Pyright 入門
 
 ## 概要と重要性
+
 Pyrightは、Microsoftが開発した静的型チェックツールで、Pythonコードの品質向上と早期のバグ発見に役立ちます。
 
 ## 主要概念
+
 Pyrightは型ヒントを使用してコードを分析し、実行前に型関連のエラーを検出することができます。
 
 ## 実践ガイド
@@ -18,6 +20,7 @@ pip install pyright
 ```
 
 実行結果：
+
 ```
 Collecting pyright
   Downloading pyright-1.1.350-py3-none-any.whl (780 kB)
@@ -63,6 +66,7 @@ pyright type_check_example.py
 ```
 
 実行結果：
+
 ```
 No errors found.
 ```
@@ -81,6 +85,7 @@ pyright type_check_example.py
 ```
 
 実行結果：
+
 ```
 type_check_example.py:21:23 - error: Argument of type "int" cannot be assigned to parameter "name" of type "str" in function "greet" (reportGeneralTypeIssues)
 1 error, 0 warnings, 0 informations 
@@ -97,6 +102,7 @@ pyright --createconfig
 ```
 
 実行結果：
+
 ```
 Created pyright.json file.
 ```
@@ -157,6 +163,7 @@ pyright advanced_types.py
 ```
 
 実行結果：
+
 ```
 No errors found.
 ```
@@ -179,6 +186,7 @@ pyright advanced_types.py
 ```
 
 実行結果：
+
 ```
 advanced_types.py:35:11 - error: Expression of type "str" cannot be assigned to declared type "int" (reportGeneralTypeIssues)
 1 error, 0 warnings, 0 informations
@@ -206,6 +214,7 @@ pyright --strict advanced_types.py
 ```
 
 実行結果（エラーが増えることがあります）：
+
 ```
 advanced_types.py:5:1 - error: Type annotation is missing for variable "mixed_value" (reportMissingTypeArgument)
 advanced_types.py:28:1 - error: Type annotation is missing for variable "user" (reportMissingTypeArgument)

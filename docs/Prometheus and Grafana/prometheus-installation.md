@@ -85,4 +85,4 @@ http://localhost:9090
 
 - ファイアウォールを使用している場合は、ポート9090を開放する必要があります
 - 本番環境では、セキュリティ設定を適切に行ってください
-- 詳細な設定や使用方法については、[公式ドキュメント](https://prometheus.io/docs/introduction/overview/)を参照してください 
+- 詳細な設定や使用方法については、[公式ドキュメント](https://prometheus.io/docs/introduction/overview/)を参照してください

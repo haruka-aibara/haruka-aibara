@@ -85,13 +85,15 @@ a{color:var(--c1)}
 
 <h2>よく出てくるヘッダ</h2>
 <table>
-<tr><th>ヘッダ</th><th>方向</th><th>役割</th></tr>
+<thead><tr><th scope="col">ヘッダ</th><th scope="col">方向</th><th scope="col">役割</th></tr></thead>
+<tbody>
 <tr><td><code>Host</code></td><td>リクエスト</td><td>どのサイト宛てか（名前ベースのバーチャルホストの選別）</td></tr>
 <tr><td><code>User-Agent</code></td><td>リクエスト</td><td>ブラウザ・クライアントの自己申告</td></tr>
 <tr><td><code>Referer</code></td><td>リクエスト</td><td>どのページから遷移してきたか</td></tr>
 <tr><td><code>Content-Type</code></td><td>両方</td><td>ボディの形式（<code>text/html</code>、<code>application/json</code> など）</td></tr>
 <tr><td><code>Location</code></td><td>レスポンス</td><td>リダイレクト先（3xx とセット）</td></tr>
 <tr><td><code>Set-Cookie</code></td><td>レスポンス</td><td>ブラウザに Cookie を保存させる → <a href="Cookieの属性.html">Cookie の属性</a></td></tr>
+</tbody>
 </table>
 <p>セキュリティ関連のレスポンスヘッダ（<code>Strict-Transport-Security</code> など）はそれぞれ独立した仕組みなので、この表には含めていない。HSTS は<a href="../HSTS.html">別記事</a>にある。</p>
 

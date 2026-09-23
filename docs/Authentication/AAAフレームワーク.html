@@ -88,10 +88,12 @@ a{color:var(--c1)}
 
 <h2>実装はプロトコルや製品として存在する</h2>
 <table>
-<tr><th></th><th>RADIUS</th><th>TACACS+</th><th>Diameter</th></tr>
+<thead><tr><th scope="col"></th><th scope="col">RADIUS</th><th scope="col">TACACS+</th><th scope="col">Diameter</th></tr></thead>
+<tbody>
 <tr><td>主な用途</td><td>無線 LAN・VPN の利用者認証</td><td>ネットワーク機器の管理者ログイン</td><td>通信事業者網（RADIUS の後継として設計）</td></tr>
 <tr><td>3つの分離</td><td>認証と認可が一体</td><td>認証・認可・記録を個別に扱える</td><td>個別に扱える</td></tr>
 <tr><td>通信</td><td>UDP、パスワード部分のみ隠蔽</td><td>TCP、本体全体を暗号化</td><td>TCP／SCTP＋TLS</td></tr>
+</tbody>
 </table>
 <p>TACACS+ が「機器にログインして <code>show</code> は許すが <code>configure</code> は許さない」といったコマンド単位の制御に使われるのは、認可を認証と切り離して都度問い合わせられるため。用途で使い分ける。</p>
 

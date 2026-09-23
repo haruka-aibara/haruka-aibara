@@ -12,6 +12,7 @@ GrafanaのPie Chartパネルは、データを円グラフで表示するため�
    - 「Pie chart」を選択
 
 2. **データソースの設定**
+
    ```promql
    # 例：CPU使用率の分布
    sum by (mode) (rate(node_cpu_seconds_total[5m]))
@@ -39,6 +40,7 @@ GrafanaのPie Chartパネルは、データを円グラフで表示するため�
 ### データの表示設定
 
 1. **値のフォーマット**
+
    ```yaml
    # 表示設定の例
    Display:
@@ -58,6 +60,7 @@ GrafanaのPie Chartパネルは、データを円グラフで表示するため�
 ### 色とスタイル
 
 1. **色の設定**
+
    ```yaml
    # 色の設定例
    Colors:
@@ -148,8 +151,8 @@ Display:
 ## 注意事項
 
 - 表示するデータの種類を考慮してください
-   - 割合や分布の表示に適しています
-   - 時系列データには適していません
+  - 割合や分布の表示に適しています
+  - 時系列データには適していません
 - セグメント数が多すぎないようにしてください
 - 色の選択は視認性を考慮してください
-- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/pie-chart/)を参照してください 
+- より詳細な設定や使用方法については、[公式ドキュメント](https://grafana.com/docs/grafana/latest/panels/visualizations/pie-chart/)を参照してください
