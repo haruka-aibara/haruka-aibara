@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TiDB をゼロから理解する</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6; --wire:#a9a096;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a; --wire:#5f5a68;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h3{font-size:1.02rem;margin:1.8rem 0 .4rem}
+p{margin:.7rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--lane);border:1px solid var(--line);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;font-size:.87rem;line-height:1.65;margin:1rem 0}
+pre code{background:none;padding:0;font-size:1em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+blockquote{
+  margin:1.2rem 0;padding:1rem 1.2rem;background:var(--card);
+  border:1px solid var(--line);border-left:4px solid var(--c1);border-radius:0 10px 10px 0;
+}
+blockquote p{margin:.4rem 0}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+
+/* ---- 進捗ロードマップ ---- */
+.rm{margin:1.6rem 0 1.2rem}
+.rm ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.rm li{
+  flex:1 1 8rem;min-width:0;margin:0;padding:.4rem .6rem;border-radius:8px;font-size:.8rem;
+  line-height:1.45;border:1px solid var(--line);background:var(--lane);color:var(--muted);
+}
+.rm li .n{display:block;font-size:.72rem;letter-spacing:.04em}
+.rm li.done{border-color:var(--c3);color:var(--c3);background:transparent}
+.rm li.now{
+  border-color:var(--c1);border-width:2px;background:var(--c1);color:var(--on);font-weight:600;
+}
+.rm li.now .n,.rm li.done .n{font-weight:600}
+
+/* ---- 図 ---- */
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.dg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.1rem .9rem;margin:1.4rem 0}
+.dg .ttl{font-size:.86rem;font-weight:600;margin:0 0 .8rem;color:var(--ink)}
+.dg .cap{margin:.8rem 0 0;font-size:.84rem;color:var(--muted);line-height:1.7}
+.flow{display:flex;flex-direction:column;gap:.45rem}
+.flow div{
+  border:1px solid var(--line);border-left:3px solid var(--c1);border-radius:0 8px 8px 0;
+  padding:.45rem .7rem;font-size:.84rem;background:var(--card);
+}
+.flow div b{color:var(--c1);margin-right:.4rem}
+
+.tw{overflow-x:auto;margin:1.2rem 0}
+.tw table{margin:0}
+@media (max-width:640px){.tw table{min-width:30rem}}
+
+/* ---- 確認問題 ---- */
+.quiz{
+  margin:1.6rem 0;padding:1rem 1.1rem;border:1px solid var(--c3);border-radius:10px;
+  background:var(--card);
+}
+.quiz .q{margin:0;font-size:.95rem}
+.quiz .q b{color:var(--c3)}
+.quiz details{margin:.7rem 0 0}
+.quiz summary{
+  cursor:pointer;font-size:.86rem;color:var(--c1);width:fit-content;
+  padding:.25rem .7rem;border:1px solid var(--c1);border-radius:6px;list-style:none;
+}
+.quiz summary::-webkit-details-marker{display:none}
+.quiz summary::before{content:"▶ ";font-size:.7em}
+.quiz details[open] summary::before{content:"▼ "}
+.quiz .ans{margin-top:.7rem;padding-top:.7rem;border-top:1px dashed var(--line);font-size:.93rem}
+.quiz .ans p{margin:.4rem 0}
+</style>
+</head>
+<body>
+<main>
+<h1>TiDB をゼロから理解する</h1>
+<p class="lede">「MySQL 1 台では書き込みが受け止めきれなくなった」という手前の話から始め、5 ステップで TiDB の使いどころまでたどり着きます。</p>
+
+<h2>この記事の目的</h2>
+<p>TiDB の解説記事を読んで、途中で分からなくなった経験はありませんか。</p>
+<p>それは読解力の問題ではありません。多くの記事は「TiDB は MySQL 互換の分散 NewSQL で、Raft によるレプリケーションと HTAP を備えます」という、中級者向けの前提から始まるからです。<strong>その一語一語が、どの面倒を消すために出てきたのか</strong>が分からないまま、構成図のコンポーネント名だけが増えていきます。</p>
+<p>そこでこの記事は、あえて遠回りします。「データベース 1 台の限界」という、いちばん手前の話から始めて 5 ステップで進みます。ゴールはコンポーネント名を暗記することではなく、<strong>TiDB がどの手間をなくしたデータベースなのかを自分の言葉で説明できること</strong>です。</p>
+
+<div class="dg rmbox"><p class="ttl">この記事の道のり</p><nav class="rm" aria-label="全体のロードマップ"><ol>
+<li><span class="n">STEP 1</span>データベース 1 台の限界</li><li><span class="n">STEP 2</span>自前で分割すると何が起きるか</li><li><span class="n">STEP 3</span>小さく切って 3 つずつ持つ</li><li><span class="n">STEP 4</span>SQL の層と保存の層を分ける</li><li><span class="n">STEP 5</span>TiDB として組み立てる</li>
+</ol></nav><p class="cap">STEP 4 まではすべて前提知識です。本題の TiDB は STEP 5 だけですが、そこに至る 4 ステップがないと「分散」「Raft」「MySQL 互換」がばらばらの特徴の暗記になります。</p></div>
+
+<h2>STEP 1：データベース 1 台の限界</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="now"><span class="n">STEP 1</span>データベース 1 台の限界</li><li><span class="n">STEP 2</span>自前で分割すると何が起きるか</li><li><span class="n">STEP 3</span>小さく切って 3 つずつ持つ</li><li><span class="n">STEP 4</span>SQL の層と保存の層を分ける</li><li><span class="n">STEP 5</span>TiDB として組み立てる</li></ol></nav>
+<p>MySQL 1 台で動いている EC サイトがあります。会員が増え、注文テーブルは数十億行になりました。セールのたびに書き込みが詰まり、画面が固まります。</p>
+<p>最初に打てる手は 2 つです。1 つは<strong>スケールアップ</strong>、つまりマシンを大きくすること。もう 1 つは<strong>リードレプリカ</strong>、つまり読み取り専用のコピーを増やして参照を逃がすことです。どちらもアプリをほとんど変えずに済むので、まずはこれで粘ります。</p>
+<p>ところが、この 2 つには共通の天井があります。<strong>書き込みを受け付けるのは、結局 1 台だけ</strong>ということです。</p>
+<figure><svg viewBox="0 0 780 290" role="img" aria-labelledby="f1t f1d"><title id="f1t">スケールアップとリードレプリカの天井</title><desc id="f1d">左はマシンを大きくしても上限に当たる図、右は読み取りはレプリカに逃がせるが書き込みはプライマリ1台に集まる図</desc>
+<defs><marker id="am1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<line x1="390" y1="12" x2="390" y2="280" stroke="var(--line)" stroke-width="2"/>
+<text x="197" y="28" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">スケールアップ</text>
+<line x1="40" y1="62" x2="355" y2="62" stroke="var(--stop)" stroke-width="2.5" stroke-dasharray="6 4"/>
+<text x="355" y="54" text-anchor="end" fill="var(--stop)" font-size="12">買える最大のマシン</text>
+<rect x="60" y="200" width="60" height="50" rx="6" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+<rect x="150" y="150" width="80" height="100" rx="6" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5"/>
+<rect x="260" y="70" width="95" height="180" rx="6" fill="var(--lane)" stroke="var(--c2)" stroke-width="2"/>
+<g fill="var(--muted)" font-size="12" text-anchor="middle"><text x="90" y="270">4 コア</text><text x="190" y="270">32 コア</text><text x="307" y="270">その次がない</text></g>
+<text x="583" y="28" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">リードレプリカ</text>
+<rect x="508" y="48" width="150" height="34" rx="8" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/><text x="583" y="70" text-anchor="middle" fill="var(--ink)" font-size="13">アプリ</text>
+<rect x="420" y="150" width="120" height="50" rx="9" fill="var(--c2)"/><text x="480" y="180" text-anchor="middle" fill="var(--on)" font-size="13" font-weight="700">プライマリ</text>
+<g font-size="12" text-anchor="middle" fill="var(--ink)"><rect x="580" y="130" width="160" height="30" rx="7" fill="var(--lane)" stroke="var(--c3)"/><text x="660" y="150">レプリカ（読み取り）</text><rect x="580" y="168" width="160" height="30" rx="7" fill="var(--lane)" stroke="var(--c3)"/><text x="660" y="188">レプリカ（読み取り）</text><rect x="580" y="206" width="160" height="30" rx="7" fill="var(--lane)" stroke="var(--c3)"/><text x="660" y="226">レプリカ（読み取り）</text></g>
+<line x1="545" y1="84" x2="488" y2="146" stroke="var(--c2)" stroke-width="2.5" marker-end="url(#am1)"/><text x="480" y="222" text-anchor="middle" fill="var(--c2)" font-size="12">書き込みは全部ここ</text>
+<line x1="610" y1="84" x2="650" y2="126" stroke="var(--c3)" stroke-width="1.5" marker-end="url(#am1)"/><text x="700" y="108" fill="var(--c3)" font-size="12">参照は分散</text>
+<text x="583" y="268" text-anchor="middle" fill="var(--stop)" font-size="13">書き込みの天井は 1 台のまま</text>
+</svg><figcaption>Aurora のようにストレージ側を大きく作り直したサービスでも、書き込みを受け付けるインスタンスが 1 台という構造は同じです。容量の天井は上がっても、書き込み性能の天井は残ります。</figcaption></figure>
+<div class="quiz"><p class="q"><b>確認問題</b>　書き込み先が 1 台なのが問題なら、データを会員 ID で 4 つに分けて、4 台の MySQL に書けば解決するでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>書き込みの天井は上がります。代わりに別の仕事が大量に生まれます。</strong> 分けた瞬間から、どのデータがどの DB にあるかを誰かが管理しなければなりません。それを引き受けるのは多くの場合アプリです——これが次の話です。</p></div></details></div>
+
+<h2>STEP 2：自前で分割すると何が起きるか</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>データベース 1 台の限界</li><li class="now"><span class="n">STEP 2</span>自前で分割すると何が起きるか</li><li><span class="n">STEP 3</span>小さく切って 3 つずつ持つ</li><li><span class="n">STEP 4</span>SQL の層と保存の層を分ける</li><li><span class="n">STEP 5</span>TiDB として組み立てる</li></ol></nav>
+<p>データを何かのキーで分けて複数の DB に置くことを<strong>シャーディング</strong>と呼びます。分けた 1 つ 1 つがシャードです。書き込みは台数ぶん分散するので、STEP 1 の天井は確かに上がります。</p>
+<p>問題は、分けたことを<strong>アプリが知っていなければならない</strong>点です。「会員 ID が 1〜100 万ならシャード 1」という振り分けのコードを書き、すべてのクエリがそれを通るようにします。そして、1 台だったころは当たり前にできたことが、次々と難しくなります。</p>
+<figure><svg viewBox="0 0 780 300" role="img" aria-labelledby="f2t f2d"><title id="f2t">アプリ側シャーディングで増える仕事</title><desc id="f2d">アプリに振り分けロジックが入り、3つのシャードにまたがる結合・トランザクション・再分割が難しくなる図</desc>
+<defs><marker id="am2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="190" y="20" width="400" height="74" rx="10" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="390" y="46" text-anchor="middle" fill="var(--ink)" font-size="13">アプリ</text>
+<rect x="215" y="56" width="350" height="28" rx="6" fill="var(--warn-bg)" stroke="var(--warn-line)"/>
+<text x="390" y="75" text-anchor="middle" fill="var(--stop)" font-size="12.5">振り分けのコード（どの ID がどのシャードか）</text>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am2)"><line x1="280" y1="96" x2="150" y2="140"/><line x1="390" y1="96" x2="390" y2="140"/><line x1="500" y1="96" x2="630" y2="140"/></g>
+<g font-size="12.5" text-anchor="middle" fill="var(--ink)">
+<rect x="70" y="144" width="160" height="46" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/><text x="150" y="163">シャード 1</text><text x="150" y="181" fill="var(--muted)" font-size="11.5">会員 1〜100 万</text>
+<rect x="310" y="144" width="160" height="46" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/><text x="390" y="163">シャード 2</text><text x="390" y="181" fill="var(--muted)" font-size="11.5">会員 100〜200 万</text>
+<rect x="550" y="144" width="160" height="46" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/><text x="630" y="163">シャード 3</text><text x="630" y="181" fill="var(--muted)" font-size="11.5">会員 200〜300 万</text></g>
+<g font-size="12.5" fill="var(--stop)">
+<text x="40" y="228">✕ シャードをまたぐ JOIN・集計はアプリで組み合わせる</text>
+<text x="40" y="254">✕ 2 つのシャードを同時に更新するトランザクションが素直に書けない</text>
+<text x="40" y="280">✕ シャード 4 を足すと、振り分け表の書き換えとデータの引っ越しが要る</text></g>
+</svg><figcaption>Vitess のように振り分けをミドルウェアへ切り出す方法もあります。アプリのコードは減りますが、「何をキーに分けるか」を人が設計し、分け方が合わなくなったら直すという仕事は残ります。</figcaption></figure>
+<p>つまり欲しいのは、<strong>中では勝手に分かれていて、外からは 1 台の MySQL に見えるデータベース</strong>です。分けるのも、引っ越しも、またぐトランザクションも、データベース側がやってくれるもの。そのために必要な部品を、ここから 1 つずつ組み立てます。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　台数を増やしてデータを分けると、書き込み以外に新しく心配になることがあります。何でしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>どこか 1 台が壊れる確率が上がることです。</strong> 1 台なら年に一度の故障でも、30 台あればどれかが頻繁に壊れます。分けたデータの一部が消えたり読めなくなったりしては困るので、「分ける」と同時に「複製して持つ」仕組みが要ります。これが次のステップです。</p></div></details></div>
+
+<h2>STEP 3：小さく切って 3 つずつ持つ</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>データベース 1 台の限界</li><li class="done"><span class="n">STEP 2 ✓</span>自前で分割すると何が起きるか</li><li class="now"><span class="n">STEP 3</span>小さく切って 3 つずつ持つ</li><li><span class="n">STEP 4</span>SQL の層と保存の層を分ける</li><li><span class="n">STEP 5</span>TiDB として組み立てる</li></ol></nav>
+<p>STEP 2 の「会員 ID で 3 つ」は、人が決めた大きな分け方でした。これを逆にします。データ全体をキーの順に並べ、<strong>一定の大きさごとに自動で細かく切る</strong>のです。TiDB ではこの 1 切れを <strong>Region</strong> と呼びます。Region が大きくなれば自動で 2 つに割れ、偏れば別のマシンへ自動で移ります。人が分け方を設計する必要はありません。</p>
+<p>そして各 Region を、<strong>別々のマシンに 3 つずつ</strong>置きます。これが STEP 2 の確認問題への答えです。1 台が壊れても、残りの 2 か所にデータがあります。</p>
+<figure><svg viewBox="0 0 780 290" role="img" aria-labelledby="f3t f3d"><title id="f3t">データを Region に切り、3 台に分けて置く</title><desc id="f3d">キーの範囲で切った4つのRegionが、それぞれ3台のうち異なるマシンに3つずつ置かれ、各Regionに1つのリーダーがある図</desc>
+<text x="30" y="28" fill="var(--muted)" font-size="13" font-weight="700">キーの順に並べて切る</text>
+<g font-size="12" text-anchor="middle">
+<rect x="30" y="40" width="180" height="36" rx="7" fill="var(--c1)"/><text x="120" y="63" fill="var(--on)">Region A（〜 1000）</text>
+<rect x="210" y="40" width="180" height="36" rx="7" fill="var(--c2)"/><text x="300" y="63" fill="var(--on)">Region B（〜 2000）</text>
+<rect x="390" y="40" width="180" height="36" rx="7" fill="var(--c3)"/><text x="480" y="63" fill="var(--on)">Region C（〜 3000）</text>
+<rect x="570" y="40" width="180" height="36" rx="7" fill="var(--c4)"/><text x="660" y="63" fill="var(--on)">Region D（3000 〜）</text></g>
+<line x1="30" y1="100" x2="750" y2="100" stroke="var(--line)" stroke-width="1" stroke-dasharray="5 5"/>
+<text x="30" y="126" fill="var(--muted)" font-size="13" font-weight="700">各 Region を 3 台に 3 つずつ（太枠がリーダー）</text>
+<g font-size="12.5" text-anchor="middle" fill="var(--ink)">
+<rect x="30" y="140" width="220" height="118" rx="10" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><text x="140" y="160">マシン 1</text>
+<rect x="280" y="140" width="220" height="118" rx="10" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><text x="390" y="160">マシン 2</text>
+<rect x="530" y="140" width="220" height="118" rx="10" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/><text x="640" y="160">マシン 3</text></g>
+<g font-size="12" text-anchor="middle" fill="var(--on)">
+<rect x="45" y="172" width="90" height="34" rx="6" fill="var(--c1)" stroke="var(--ink)" stroke-width="2.5"/><text x="90" y="194">A</text>
+<rect x="145" y="172" width="90" height="34" rx="6" fill="var(--c2)"/><text x="190" y="194">B</text>
+<rect x="45" y="214" width="90" height="34" rx="6" fill="var(--c3)"/><text x="90" y="236">C</text>
+<rect x="145" y="214" width="90" height="34" rx="6" fill="var(--c4)" stroke="var(--ink)" stroke-width="2.5"/><text x="190" y="236">D</text>
+<rect x="295" y="172" width="90" height="34" rx="6" fill="var(--c1)"/><text x="340" y="194">A</text>
+<rect x="395" y="172" width="90" height="34" rx="6" fill="var(--c2)" stroke="var(--ink)" stroke-width="2.5"/><text x="440" y="194">B</text>
+<rect x="295" y="214" width="90" height="34" rx="6" fill="var(--c3)"/><text x="340" y="236">C</text>
+<rect x="395" y="214" width="90" height="34" rx="6" fill="var(--c4)"/><text x="440" y="236">D</text>
+<rect x="545" y="172" width="90" height="34" rx="6" fill="var(--c1)"/><text x="590" y="194">A</text>
+<rect x="645" y="172" width="90" height="34" rx="6" fill="var(--c2)"/><text x="690" y="194">B</text>
+<rect x="545" y="214" width="90" height="34" rx="6" fill="var(--c3)" stroke="var(--ink)" stroke-width="2.5"/><text x="590" y="236">C</text>
+<rect x="645" y="214" width="90" height="34" rx="6" fill="var(--c4)"/><text x="690" y="236">D</text></g>
+<text x="390" y="282" text-anchor="middle" fill="var(--c3)" font-size="13">リーダーが散らばるので、書き込みも 3 台に分散する</text>
+</svg><figcaption>Region の大きさは数百 MB 程度で、1 つのテーブルが数千・数万の Region に分かれるのが普通です。マシンを足すと、既存の Region の一部が新しいマシンへ自動で移ります。</figcaption></figure>
+<p>3 つのコピーの中身が食い違わないように、TiDB は <strong>Raft</strong> という合意の手順を使います。Region ごとに 1 つを<strong>リーダー</strong>とし、書き込みは必ずリーダーが受けます。リーダーは残り 2 つに内容を送り、<strong>自分を含めて過半数（3 つ中 2 つ）が書き終えたら確定</strong>とします。</p>
+<figure><svg viewBox="0 0 780 240" role="img" aria-labelledby="f4t f4d"><title id="f4t">過半数で確定する書き込み</title><desc id="f4d">左はリーダーと1つのフォロワーが書き込んだ時点で確定する図、右はリーダーのマシンが止まっても残り2つから新しいリーダーが選ばれる図</desc>
+<defs><marker id="am4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<line x1="390" y1="12" x2="390" y2="230" stroke="var(--line)" stroke-width="2"/>
+<text x="197" y="28" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">ふだんの書き込み</text>
+<rect x="132" y="46" width="130" height="42" rx="9" fill="var(--c1)" stroke="var(--ink)" stroke-width="2.5"/><text x="197" y="72" text-anchor="middle" fill="var(--on)" font-size="13" font-weight="700">リーダー ✓</text>
+<rect x="40" y="140" width="130" height="42" rx="9" fill="var(--c1)"/><text x="105" y="166" text-anchor="middle" fill="var(--on)" font-size="13">フォロワー ✓</text>
+<rect x="224" y="140" width="130" height="42" rx="9" fill="var(--lane)" stroke="var(--c1)" stroke-width="1.5" stroke-dasharray="5 4"/><text x="289" y="166" text-anchor="middle" fill="var(--muted)" font-size="13">フォロワー（遅延）</text>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)"><line x1="170" y1="90" x2="118" y2="136"/><line x1="224" y1="90" x2="276" y2="136"/></g>
+<text x="197" y="214" text-anchor="middle" fill="var(--c3)" font-size="13">2 / 3 そろった時点で確定を返す</text>
+<text x="583" y="28" text-anchor="middle" fill="var(--muted)" font-size="13" font-weight="700">リーダーのマシンが止まったら</text>
+<rect x="518" y="46" width="130" height="42" rx="9" fill="var(--warn-bg)" stroke="var(--stop)" stroke-width="2" stroke-dasharray="5 4"/><text x="583" y="72" text-anchor="middle" fill="var(--stop)" font-size="13">停止</text>
+<rect x="426" y="140" width="130" height="42" rx="9" fill="var(--c1)" stroke="var(--ink)" stroke-width="2.5"/><text x="491" y="166" text-anchor="middle" fill="var(--on)" font-size="13" font-weight="700">新リーダー</text>
+<rect x="610" y="140" width="130" height="42" rx="9" fill="var(--c1)"/><text x="675" y="166" text-anchor="middle" fill="var(--on)" font-size="13">フォロワー</text>
+<line x1="558" y1="161" x2="606" y2="161" stroke="var(--wire)" stroke-width="2" marker-end="url(#am4)"/>
+<text x="583" y="214" text-anchor="middle" fill="var(--c3)" font-size="13">残り 2 つで過半数。数秒で選び直して続行</text>
+</svg><figcaption>確定したデータは必ず過半数のマシンにあるので、1 台が消えても失われません。逆に 3 つ中 2 つが同時に止まると、その Region は書き込めなくなります。</figcaption></figure>
+<p>この「Region に切って、Raft で 3 つずつ持つ」保存の仕組みが <strong>TiKV</strong> です。中身は、キーと値の組を保存する分散ストア（キーバリューストア）です。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　TiKV が扱うのはキーと値の組だけです。では、アプリが送ってくる <code>SELECT ... JOIN ... WHERE ...</code> は誰が解釈するのでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>まだ誰もいません。</strong> 保存の仕組みはできましたが、SQL を受け取って「どのキーを読めばいいか」に翻訳する役がいない状態です。しかもその役は、Region がどのマシンにあるかを知っていなければなりません。この 2 つの役を足すのが次のステップです。</p></div></details></div>
+
+<h2>STEP 4：SQL の層と保存の層を分ける</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>データベース 1 台の限界</li><li class="done"><span class="n">STEP 2 ✓</span>自前で分割すると何が起きるか</li><li class="done"><span class="n">STEP 3 ✓</span>小さく切って 3 つずつ持つ</li><li class="now"><span class="n">STEP 4</span>SQL の層と保存の層を分ける</li><li><span class="n">STEP 5</span>TiDB として組み立てる</li></ol></nav>
+<p>MySQL 1 台の中では、「SQL を解釈する部分」と「データを保存する部分」が同じプロセスにいました。TiDB はこれを<strong>別々のサーバーに分けます</strong>。</p>
+<ul>
+<li><strong>TiDB サーバー</strong>：アプリから MySQL の通信手順で SQL を受け取り、実行計画を立て、TiKV に「このキー範囲を読め・書け」と指示する。<strong>データを持たない</strong>ので、何台並べても、どれに繋いでも同じ結果が返る</li>
+<li><strong>PD（Placement Driver）</strong>：どの Region がどのマシンにあり、どれがリーダーかを管理する地図係。Region の分割・移動の指示もここが出す</li>
+</ul>
+<figure><svg viewBox="0 0 780 330" role="img" aria-labelledby="f5t f5d"><title id="f5t">TiDB の 3 層構成</title><desc id="f5d">アプリがロードバランサー経由で複数のTiDBサーバーに接続し、TiDBサーバーがPDに場所を聞いてTiKVを読み書きする図</desc>
+<defs><marker id="am5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="160" y="16" width="360" height="40" rx="9" fill="var(--card)" stroke="var(--c1)" stroke-width="1.5"/>
+<text x="340" y="41" text-anchor="middle" fill="var(--ink)" font-size="13">アプリ（MySQL のドライバで接続）</text>
+<line x1="340" y1="58" x2="340" y2="88" stroke="var(--wire)" stroke-width="2" marker-end="url(#am5)"/>
+<text x="352" y="78" fill="var(--muted)" font-size="11.5">ロードバランサー</text>
+<text x="30" y="118" fill="var(--muted)" font-size="12" font-weight="700">SQL 層</text>
+<g font-size="12.5" text-anchor="middle" fill="var(--on)">
+<rect x="100" y="96" width="140" height="42" rx="9" fill="var(--c1)"/><text x="170" y="122">TiDB サーバー</text>
+<rect x="270" y="96" width="140" height="42" rx="9" fill="var(--c1)"/><text x="340" y="122">TiDB サーバー</text>
+<rect x="440" y="96" width="140" height="42" rx="9" fill="var(--c1)"/><text x="510" y="122">TiDB サーバー</text></g>
+<text x="340" y="160" text-anchor="middle" fill="var(--c3)" font-size="12">データを持たない。足せばそのまま SQL の処理量が増える</text>
+<g stroke="var(--wire)" stroke-width="2" marker-end="url(#am5)"><line x1="170" y1="140" x2="170" y2="206"/><line x1="340" y1="168" x2="340" y2="206"/><line x1="510" y1="140" x2="510" y2="206"/></g>
+<text x="30" y="236" fill="var(--muted)" font-size="12" font-weight="700">保存層</text>
+<rect x="95" y="212" width="490" height="84" rx="12" fill="none" stroke="var(--c2)" stroke-width="2" stroke-dasharray="7 5"/>
+<g font-size="12.5" text-anchor="middle" fill="var(--ink)">
+<rect x="110" y="226" width="140" height="54" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/><text x="180" y="249">TiKV</text><text x="180" y="268" fill="var(--muted)" font-size="11">Region A B C D</text>
+<rect x="270" y="226" width="140" height="54" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/><text x="340" y="249">TiKV</text><text x="340" y="268" fill="var(--muted)" font-size="11">Region A B C D</text>
+<rect x="430" y="226" width="140" height="54" rx="9" fill="var(--lane)" stroke="var(--c2)" stroke-width="1.5"/><text x="500" y="249">TiKV</text><text x="500" y="268" fill="var(--muted)" font-size="11">Region A B C D</text></g>
+<text x="340" y="318" text-anchor="middle" fill="var(--c2)" font-size="12">STEP 3 の仕組み。足せば容量と書き込み性能が増える</text>
+<rect x="625" y="140" width="130" height="80" rx="10" fill="var(--c4)"/>
+<text x="690" y="170" text-anchor="middle" fill="var(--on)" font-size="13" font-weight="700">PD</text>
+<text x="690" y="190" text-anchor="middle" fill="var(--on)" font-size="11">Region の地図</text>
+<text x="690" y="207" text-anchor="middle" fill="var(--on)" font-size="11">時刻の発行</text>
+<g stroke="var(--c4)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#am5)"><line x1="582" y1="117" x2="640" y2="136"/><line x1="640" y1="222" x2="585" y2="246"/></g>
+<text x="660" y="116" fill="var(--c4)" font-size="11">どこにある？</text>
+<text x="646" y="252" fill="var(--c4)" font-size="11">移動・分割の指示</text>
+</svg><figcaption>SQL 層と保存層は別々に増やせます。複雑な集計が増えたら TiDB サーバーを、データや書き込みが増えたら TiKV を足します。PD 自体も 3 台で冗長化します。</figcaption></figure>
+<p>最後の難題が、STEP 2 で諦めた<strong>複数の場所をまたぐトランザクション</strong>です。「在庫を減らす（Region A）」と「注文を作る（Region D）」を、両方成功か両方失敗かのどちらかにしたい。TiDB は 2 段階で確定させます。</p>
+<div class="flow">
+<div><b>1</b> PD から開始時刻の番号をもらう。読むのは「この番号の時点で確定していたデータ」だけにする</div>
+<div><b>2</b> 書き込む全キーに仮の値とロックを置く（1 つでも他のトランザクションとぶつかれば全部やめる）</div>
+<div><b>3</b> PD から確定時刻の番号をもらい、代表の 1 キーを確定させる。この瞬間に全体が確定したことになる</div>
+</div>
+<p>時刻の番号を PD の 1 か所で発行するのが要点です。マシンごとの時計のずれに関係なく、全トランザクションの前後関係が一列に決まります。アプリから見れば、いつもの <code>BEGIN</code> … <code>COMMIT</code> のままです。</p>
+<div class="quiz"><p class="q"><b>確認問題</b>　TiDB サーバーを 3 台並べたとき、アプリはどれに接続すればよいでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>どれでもかまいません。</strong> TiDB サーバーはデータを持たないので、どこに繋いでも同じ TiKV を見ています。前にロードバランサーを置いて振り分けるのが普通の構成です。1 台が落ちても接続し直すだけで済み、STEP 2 の「どの ID はどのシャードか」をアプリが知る必要はありません。</p></div></details></div>
+
+<h2>STEP 5：TiDB として組み立てる</h2>
+<nav class="rm" aria-label="進捗"><ol><li class="done"><span class="n">STEP 1 ✓</span>データベース 1 台の限界</li><li class="done"><span class="n">STEP 2 ✓</span>自前で分割すると何が起きるか</li><li class="done"><span class="n">STEP 3 ✓</span>小さく切って 3 つずつ持つ</li><li class="done"><span class="n">STEP 4 ✓</span>SQL の層と保存の層を分ける</li><li class="now"><span class="n">STEP 5</span>TiDB として組み立てる</li></ol></nav>
+<p>ここまでを重ねると TiDB の姿になります。<strong>データを自動で細かく切って 3 つずつ持ち（STEP 3）、SQL の層と保存の層を別々に増やせて、またぐトランザクションもそのまま書ける（STEP 4）</strong>。そのうえで外からは <strong>MySQL 互換</strong>、つまり MySQL のドライバ・クライアント・多くの ORM がそのまま繋がるデータベースです。PingCAP 社が開発するオープンソースで、自前で運用するほか、マネージドの TiDB Cloud も提供されています。</p>
+<p>もう 1 つ特徴があります。STEP 3・4 の TiKV は行単位の読み書きが得意な<strong>行指向</strong>です。そこへ<strong>列指向</strong>のコピーを持つ <strong>TiFlash</strong> を足せます。TiFlash は Raft の仕組みで TiKV から変更を受け取り続けるので、ほぼ最新のデータに対して集計クエリを投げられます。どちらを読むかは TiDB サーバーがクエリごとに選びます。</p>
+<figure><svg viewBox="0 0 780 260" role="img" aria-labelledby="f6t f6d"><title id="f6t">TiKV と TiFlash の使い分け</title><desc id="f6d">TiDBサーバーが1件の読み書きはTiKVへ、大量行の集計はTiFlashへ振り分け、TiFlashはTiKVから変更を受け取り続ける図</desc>
+<defs><marker id="am6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0L9 4.5L0 9Z" fill="var(--wire)"/></marker></defs>
+<rect x="240" y="20" width="300" height="46" rx="10" fill="var(--c1)"/>
+<text x="390" y="48" text-anchor="middle" fill="var(--on)" font-size="13.5" font-weight="700">TiDB サーバー（どちらを読むか選ぶ）</text>
+<line x1="320" y1="68" x2="200" y2="130" stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"/>
+<line x1="460" y1="68" x2="580" y2="130" stroke="var(--wire)" stroke-width="2" marker-end="url(#am6)"/>
+<text x="210" y="100" text-anchor="end" fill="var(--muted)" font-size="12">注文 1 件を読む・更新する</text>
+<text x="570" y="100" fill="var(--muted)" font-size="12">月別の売上を集計する</text>
+<rect x="80" y="134" width="240" height="60" rx="10" fill="var(--lane)" stroke="var(--c2)" stroke-width="2"/>
+<text x="200" y="160" text-anchor="middle" fill="var(--ink)" font-size="13.5" font-weight="700">TiKV</text>
+<text x="200" y="180" text-anchor="middle" fill="var(--muted)" font-size="12">行指向・書き込みの本体</text>
+<rect x="460" y="134" width="240" height="60" rx="10" fill="var(--lane)" stroke="var(--c3)" stroke-width="2"/>
+<text x="580" y="160" text-anchor="middle" fill="var(--ink)" font-size="13.5" font-weight="700">TiFlash</text>
+<text x="580" y="180" text-anchor="middle" fill="var(--muted)" font-size="12">列指向・集計用のコピー</text>
+<line x1="322" y1="164" x2="455" y2="164" stroke="var(--c3)" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#am6)"/>
+<text x="390" y="220" text-anchor="middle" fill="var(--c3)" font-size="12.5">変更を流し続けるので、夜間バッチで別の分析 DB に写す必要がない</text>
+<text x="390" y="244" text-anchor="middle" fill="var(--muted)" font-size="12">TiFlash はテーブル単位で「コピーを作る」と指定したときだけ使われる</text>
+</svg><figcaption>業務の読み書き（OLTP）と集計（OLAP）を 1 つのデータベースでこなすことを HTAP と呼びます。行指向と列指向の違いそのものは、DuckDB の記事の STEP 3 で図にしています。</figcaption></figure>
+<p>アプリから見た使い方は MySQL とほぼ同じです。既定のポートは 4000 番です。</p>
+<pre><code>mysql -h tidb.example.internal -P 4000 -u app -p
+
+-- 大きな集計テーブルに列指向のコピーを 2 つ作る
+ALTER TABLE orders SET TIFLASH REPLICA 2;</code></pre>
+<p>では、同じ悩みに対する他の選択肢と比べて、なぜ TiDB なのか。判断の軸は<strong>書き込みの天井を誰が上げるか</strong>です。</p>
+<div class="tw"><table>
+<thead><tr><th scope="col">選択肢</th><th scope="col">書き込みの天井</th><th scope="col">アプリ側の負担</th><th scope="col">向く場面</th></tr></thead>
+<tbody>
+<tr><td>MySQL・Aurora MySQL（1 台 + レプリカ）</td><td>書き込み 1 台で頭打ち</td><td>なし</td><td>書き込みが 1 台に収まるうちは、こちらのほうが素直で安い</td></tr>
+<tr><td>アプリ側シャーディング／Vitess</td><td>台数ぶん上がる</td><td>分け方の設計・またぐ処理の工夫が要る</td><td>分け方が自然に決まる（テナント単位など）システム</td></tr>
+<tr><td>TiDB</td><td>TiKV を足せば上がる</td><td>ほぼなし（MySQL 互換）</td><td>1 台に収まらず、分け方も決めにくい。集計も同じ DB でしたい</td></tr>
+</tbody>
+</table></div>
+<p>表の 1 行目が示すとおり、<strong>1 台で足りるなら TiDB を選ぶ理由は薄い</strong>です。最小でも TiDB・TiKV・PD の複数台構成になり、1 件の書き込みにもマシン間の往復が挟まるので、小さな規模では MySQL 1 台より遅く高くつきます。</p>
+<div class="note"><p><strong>「MySQL 互換」は「MySQL と同じ」ではない。</strong> ストアドプロシージャやトリガーなど一部の機能は使えず、<code>AUTO_INCREMENT</code> の値も連番になる保証がありません。移行するなら、アプリが使っている機能を互換性の一覧と突き合わせてからにします。</p></div>
+<div class="quiz"><p class="q"><b>確認問題</b>　注文 ID を 1, 2, 3 … と連番で振っているテーブルに、書き込みが殺到しました。TiKV を増やしても速くなりません。なぜでしょうか。</p><details><summary>答えを見る</summary><div class="ans"><p><strong>新しい行がすべて「いちばん後ろの Region」に入るからです。</strong> STEP 3 のとおり Region はキーの順に切られているので、連番の新規行は常に末尾の 1 Region に集中し、そのリーダー 1 台が STEP 1 と同じ天井になります。TiDB には、ID の上位ビットをばらけさせて Region を散らす <code>AUTO_RANDOM</code> という列属性が用意されています。</p></div></details></div>
+
+<h2>まとめ：そのまま使える説明テンプレート</h2>
+<h3>30 秒版</h3><blockquote><p>TiDB は、外からは MySQL に見える分散データベースです。MySQL は書き込みを受け付けるのが 1 台だけなので、そこが天井になります。自前でシャーディングすれば天井は上がりますが、分け方の管理やまたぐ処理をアプリが背負います。TiDB はデータを自動で細かく切って複数台に 3 つずつ持ち、分割も引っ越しもまたぐトランザクションもデータベース側でやります。アプリは MySQL のドライバで繋ぐだけです。</p></blockquote>
+<h3>2 分版（30 秒版に足す分）</h3><blockquote><p>中身は 3 種類のサーバーでできています。SQL を受け取る TiDB サーバーはデータを持たないので、何台でも並べられます。データを持つ TiKV は、キーの範囲で切った Region という単位を、Raft という手順で 3 台に複製します。3 つ中 2 つが書けたら確定なので、1 台壊れてもデータは消えず、止まりもしません。どの Region がどこにあるかと、トランザクションの時刻の番号は PD が管理します。</p><p>さらに列指向のコピーを持つ TiFlash を足すと、業務の読み書きと集計を同じデータベースでこなせます。</p><p>ただし、1 台の MySQL で足りる規模なら、構成が重いぶん遅く高くつきます。MySQL 互換も完全ではなく、ストアドプロシージャなど使えない機能があります。選ぶのは、書き込みが 1 台に収まらず、分け方も自分で決めにくいときです。</p></blockquote>
+
+<h2>よくある誤解</h2>
+<h3>「MySQL 互換だから、差し替えればそのまま速くなる」</h3><p>接続の手順と SQL の大部分が同じ、という意味です。小さなデータでは MySQL 1 台より遅いことも普通にあります。速くなるのは、1 台では受け止めきれない量を扱うときです。</p>
+<h3>「分散データベースは一貫性を犠牲にしている」</h3><p>TiDB は Raft で過半数に書けたものだけを確定とし、トランザクションも PD の時刻で順序を決めます。確定した書き込みが後から消えたり、読む場所によって古い値が見えたりはしない設計です。</p>
+<h3>「台数を増やせば、どんな負荷も分散される」</h3><p>分散されるのは Region 単位です。連番キーへの書き込みのように 1 つの Region に集中する負荷は、台数を増やしても散りません（STEP 5 の確認問題）。</p>
+
+<h2>次の一歩</h2>
+<p>この記事では全体像を優先し、次の話には意図的に踏み込みませんでした。</p>
+<ul>
+<li>楽観的トランザクションと悲観的トランザクションの違い、分離レベルの細部</li>
+<li>ホットスポットの見つけ方（Key Visualizer）と、<code>AUTO_RANDOM</code>・<code>SHARD_ROW_ID_BITS</code> による散らし方</li>
+<li>TiUP や TiDB Operator（Kubernetes）での構築、TiDB Cloud のプランの違い</li>
+<li>MySQL からの移行ツール（DM）と、変更を外へ流す TiCDC</li>
+<li>前提となる考え方：<a href="../Data Engineering/200_中級_OLTPとOLAP.md">OLTP と OLAP</a>、列指向の中身は <a href="../DuckDB/DuckDBをゼロから理解する.html">DuckDB をゼロから理解する</a></li>
+</ul>
+<p>次は手元で <code>tiup playground</code> を実行してみるのがおすすめです。TiDB・TiKV・PD・TiFlash が 1 台の上にまとめて立ち上がり、MySQL クライアントで 4000 番に繋ぐだけで、この記事の構成図を実物で確かめられます。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.pingcap.com/tidb/stable/overview/">TiDB Docs — TiDB Introduction</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tidb-architecture/">TiDB Docs — TiDB Architecture</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tidb-storage/">TiDB Docs — TiDB Storage</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tidb-scheduling/">TiDB Docs — TiDB Scheduling</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tidb-computing/">TiDB Docs — TiDB Computing</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/transaction-overview/">TiDB Docs — Transactions</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tiflash-overview/">TiDB Docs — TiFlash Overview</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/mysql-compatibility/">TiDB Docs — MySQL Compatibility</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/auto-random/">TiDB Docs — AUTO_RANDOM</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tiup-playground/">TiDB Docs — Quickly Deploy a Local TiDB Cluster (tiup playground)</a></li>
+<li><a href="https://github.com/pingcap/tidb">GitHub — pingcap/tidb</a></li>
+<li><a href="https://raft.github.io/">The Raft Consensus Algorithm</a></li>
+<li><a href="https://www.vldb.org/pvldb/vol13/p3072-huang.pdf">Huang et al. — TiDB: A Raft-based HTAP Database (VLDB 2020)</a></li>
+</ul>
+</main></body></html>
