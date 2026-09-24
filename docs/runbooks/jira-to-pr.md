@@ -1,6 +1,6 @@
 # Jira → PR 自動化
 
-Jira の `SCRUM` プロジェクトで課題を「AI 実装」に動かすと、Claude Code が実装して draft PR を作り、Slack の `#haru` に知らせる。設計の判断は [ADR-0003](../decisions/0003-jira-to-pr.md)。
+Jira の `SCRUM` プロジェクトで課題を「AI 実装」に動かすと、Claude Code が実装し、別の Claude がレビューして draft PR を作り、PR の CI が終わったら Slack の `#haru` に知らせる。設計の判断は [ADR-0003](../decisions/0003-jira-to-pr.md)。
 
 ## 流れ
 
@@ -8,10 +8,11 @@ Jira の `SCRUM` プロジェクトで課題を「AI 実装」に動かすと、
 Jira（SCRUM-12 を「AI 実装」へ）
   → Jira Automation が workflow_dispatch を送る
   → .github/workflows/jira-to-pr.yml
-      Claude Code（Bedrock, OIDC）が実装・検査・セルフレビュー
-      GitHub App のトークンで ai/SCRUM-12 を push し draft PR を作る
-  → PR の CI（Terraform / Python / Lint）が走る
-  → Slack #haru に通知
+      implement: Claude Code（Bedrock, OIDC）が実装・検査し、差分をパッチにする
+      review:    まっさらな環境で、別の Claude が読み取り専用でレビューする
+      publish:   まっさらな環境にパッチを当て、GitHub App のトークンで
+                 ai/SCRUM-12 を push し draft PR を作り、PR の CI が終わるまで待つ
+  → Slack #haru に通知（CI の結果とレビューの判定つき）
 ```
 
 Jira キーを branch（`ai/SCRUM-12`）と PR タイトル（`[SCRUM-12] …`）に入れるので、Jira の GitHub 連携（GitHub for Jira）を入れていれば課題に PR が自動でぶら下がる。
@@ -36,7 +37,7 @@ main へのマージで Terraform が AWS ロールと environment を作る。�
 
 Terraform 用の App は org の管理権限を持つので流用しない。専用に作る。
 
-- Repository permissions: **Contents: Read and write**、**Pull requests: Read and write**（Metadata は自動で Read）。**Workflows は付けない**。付けなければ、エージェントが `.github/workflows/` を書き換えても push が拒否される
+- Repository permissions: **Contents: Read and write**、**Pull requests: Read and write**、**Checks: Read-only**、**Commit statuses: Read-only**（Metadata は自動で Read）。Checks と Commit statuses は PR の CI を待つのに使う。**Workflows は付けない**。付けなければ、エージェントが `.github/workflows/` を書き換えても push が拒否される
 - Webhook は無効
 - org `haruka-aibara` の `works` にだけインストールする
 - Client ID と秘密鍵（PEM）を控える
@@ -84,14 +85,14 @@ GitHub の fine-grained PAT。
   "ref": "main",
   "inputs": {
     "issue_key": "{{issue.key}}",
-    "summary": {{issue.summary.asJsonString}},
-    "description": {{issue.description.text.asJsonString}},
+    "summary": "{{issue.summary.jsonEncode}}",
+    "description": "{{issue.description.jsonEncode}}",
     "issue_url": "{{issue.url}}"
   }
 }
 ```
 
-`{{issue.description.text}}` が空になる環境では `{{issue.description.asJsonString}}` に替える。成功すると 204 が返る。
+`jsonEncode` は引用符・改行を JSON 用にエスケープする。説明が空でも `""` になるので本文が壊れない。成功すると 204 が返る。
 
 ## チケットの書き方
 
@@ -105,7 +106,7 @@ GitHub の fine-grained PAT。
 ## 止め方
 
 - 一時停止: Jira Automation のルールを無効にする。または GitHub の Actions でワークフロー `Jira to PR` を Disable する
-- 完全停止: environment の `APP_PRIVATE_KEY` を消す。PR は作れなくなる（Claude の実行までは走る）
+- 完全停止: environment の `APP_PRIVATE_KEY` を消す。PR は作れなくなる（Claude の実装とレビューまでは走る）
 - 起動用 PAT が漏れた疑い: PAT を revoke する。できるのはワークフローの起動だけだが、Bedrock の料金はかかる
 
 ## うまくいかないとき
@@ -117,5 +118,6 @@ GitHub の fine-grained PAT。
 | `Validate issue` で失敗 | キーが `SCRUM-数字`、URL が `https://<site>.atlassian.net/browse/SCRUM-数字` か |
 | AWS の認証で `Not authorized to perform sts:AssumeRoleWithWebIdentity` | ジョブが environment `jira-to-pr` で走っているか（main 以外からは走れない） |
 | Bedrock で `AccessDeniedException` | モデルアクセスの有効化、IAM の対象モデル（`modules/jira-to-pr` の `bedrock_model_id`） |
-| push が `refusing to allow a GitHub App to create or update workflow` | エージェントが `.github/workflows/` を変えている。意図どおりの拒否 |
+| `Apply patch` で `the change touches .github/` | エージェントが `.github/` を変えている。意図どおりの拒否 |
+| `Wait for CI` が失敗する / Slack が「CI red」なのに PR の CI は緑 | App に Checks / Commit statuses の Read が付いているか |
 | Slack に来ない | ボットが `#haru` にいるか、`SLACK_CHANNEL_ID` が ID（名前ではない）か |

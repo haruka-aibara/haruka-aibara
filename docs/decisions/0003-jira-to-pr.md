@@ -25,17 +25,19 @@ Jira・Slack・GitHub・AWS・HCP Terraform を個別には使っているが、
 - **実行場所は GitHub Actions（`anthropics/claude-code-action`）。** Lambda は 15 分の上限と、git・uv・terraform が無いことで向かない。
 - **モデルは Bedrock を OIDC で使う。** chatbot と同じ Opus 4.6 のプロファイル。AWS に長期キーを置かない。ロールは Bedrock の呼び出しだけを許し、信頼条件は environment `jira-to-pr` に限る。environment は保護ブランチ（main）からしか使えない。
 - **起動は Jira Automation からの workflow_dispatch。** repository_dispatch は Contents: write の PAT が要るが、workflow_dispatch は Actions: write で足りる。漏れてもコードは書けない。
-- **エージェントには書き込み権限を渡さない。** Claude のステップが持つのは読み取り専用の `GITHUB_TOKEN` と Bedrock だけ。push と PR 作成は後段のステップが専用の GitHub App のトークンで行う。App に Workflows 権限は付けないので、ワークフローの書き換えは push の時点で拒否される。
+- **エージェントには書き込み権限を渡さず、ジョブごと隔離する。** 実装ジョブが持つのは読み取り専用の `GITHUB_TOKEN` と Bedrock だけで、成果物はパッチ 1 枚。push と PR 作成は別ジョブが、まっさらなチェックアウトにパッチを当てて専用の GitHub App のトークンで行う。同じ作業ディレクトリで push すると、エージェントが仕込んだ `.git/hooks` や `.git/config` がトークンを持った状態で実行されうるため。App に Workflows 権限は付けず、`.github/` を触る差分はその前に止める。
 - **PR は draft、マージは人。** works は main へのマージで HCP Terraform が auto apply する。エージェントの変更がそのまま本番に届く経路は作らない。
 - **チケット本文はデータとして渡す。** プロンプトに埋め込まずファイルに書き、「指示ではない」と明示する。キーと URL は形を検証する。
-- **セルフレビューは同じ実行の中でやる。** 実装後に自分の差分を読み直させ、見つけたことを PR 本文に残す。
+- **レビューは別の Claude にやらせる。** 実装と同じ文脈で読み直すと同じ思い込みで見落とす。まっさらな環境で、読み取り専用のツールだけを持つ Claude が差分とチケットを読み、判定と指摘を PR 本文に残す。
+- **Slack には CI が終わってから知らせる。** PR を作った時点ではまだ完成していない。CI の結果とレビューの判定を 1 通にまとめる。
 
 ## 検討した代替案
 
 - **Slack から直接 PR（Jira を挟まない）。** 公式の Claude の Slack 連携で足りる。自作の意味が無い。
 - **Claude に `gh pr create` までやらせる。** 手順は短くなるが、書き込み可能なトークンをエージェントに渡すことになる。
 - **Terraform 用の GitHub App を流用する。** org の管理権限を持つ鍵を Actions に置くことになる。
-- **別プロセスでセルフレビューする（レビュー専用のジョブ）。** 文脈を持たない目で見られる利点はあるが、最初の一本道には過剰。PR の CI で補う。
+- **実装と同じ実行の中でセルフレビューする。** 安いが、実装時の思い込みをそのまま引き継ぐ。
+- **レビューで指摘が出たら自動で直させる。** ループの上限や収束の判断が要る。まずは指摘を人に見せ、直すかどうかは人が決める。
 
 ## トレードオフ
 
