@@ -45,7 +45,7 @@ env:
   ISSUE_SUMMARY: ${{ inputs.summary }}
   ISSUE_DESCRIPTION: ${{ inputs.description }}
   ISSUE_URL: ${{ inputs.issue_url }}
-  MODEL: global.anthropic.claude-opus-4-6-v1
+  MODEL: global.anthropic.claude-opus-5-5
 
 jobs:
   implement:

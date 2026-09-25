@@ -12,5 +12,5 @@ variable "environment" {
 variable "bedrock_model_id" {
   description = "Bedrock system-defined inference profile id Claude Code runs on"
   type        = string
-  default     = "global.anthropic.claude-opus-4-6-v1"
+  default     = "global.anthropic.claude-opus-5-5"
 }

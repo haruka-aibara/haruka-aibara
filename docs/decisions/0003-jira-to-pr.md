@@ -23,7 +23,7 @@ Jira・Slack・GitHub・AWS・HCP Terraform を個別には使っているが、
 ## 決定
 
 - **実行場所は GitHub Actions（`anthropics/claude-code-action`）。** Lambda は 15 分の上限と、git・uv・terraform が無いことで向かない。
-- **モデルは Bedrock を OIDC で使う。** chatbot と同じ Opus 4.6 のプロファイル。AWS に長期キーを置かない。ロールは Bedrock の呼び出しだけを許し、信頼条件は environment `jira-to-pr` に限る。environment は保護ブランチ（main）からしか使えない。
+- **モデルは Bedrock を OIDC で使う。** Opus 5.5 の global 推論プロファイル（`global.anthropic.claude-opus-5-5`）。AWS に長期キーを置かない。ロールは Bedrock の呼び出しだけを許し、信頼条件は environment `jira-to-pr` に限る。environment は保護ブランチ（main）からしか使えない。
 - **起動は Jira Automation からの workflow_dispatch。** repository_dispatch は Contents: write の PAT が要るが、workflow_dispatch は Actions: write で足りる。漏れてもコードは書けない。
 - **入口は未開始の「AI 実装」スプリント。** 課題をそのスプリントに入れたら起動する。ステータスはワークフローの変更で、大きな組織では管理者への申請が要る。スプリントはプロジェクトの中で作れて、利用者の権限で完結する。開始しないので、バーンダウンやベロシティにも混ざらない。
 - **エージェントには書き込み権限を渡さず、ジョブごと隔離する。** 実装ジョブが持つのは読み取り専用の `GITHUB_TOKEN` と Bedrock だけで、成果物はパッチ 1 枚。push と PR 作成は別ジョブが、まっさらなチェックアウトにパッチを当てて専用の GitHub App のトークンで行う。同じ作業ディレクトリで push すると、エージェントが仕込んだ `.git/hooks` や `.git/config` がトークンを持った状態で実行されうるため。App に Workflows 権限は付けず、`.github/` を触る差分はその前に止める。
