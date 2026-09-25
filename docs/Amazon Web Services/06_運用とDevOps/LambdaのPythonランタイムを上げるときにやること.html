@@ -38,6 +38,7 @@ pre{background:var(--card);border:1px solid var(--line);border-radius:8px;paddin
 pre code{background:none;padding:0}
 ul,ol{padding-left:1.3rem}li{margin:.35rem 0}
 a{color:var(--c1)}
+.aside{font-size:.9rem;color:var(--muted);border-left:3px solid var(--line);padding-left:.8rem}
 </style>
 </head>
 <body>
@@ -129,6 +130,7 @@ aws lambda invoke --profile sandbox --function-name app \
   --cli-binary-format raw-in-base64-out --payload file://event.json out.json
 terraform destroy</code></pre>
 <p><code>event.json</code> は本番の CloudWatch Logs などから保存した本物のイベント。エラーが出なければ、本番の <code>runtime</code> を書き換えて apply する。</p>
+<p class="aside">補足：sandbox アカウントを用意できない場合は、AWS をまるごと真似るコンテナを手元で立てる LocalStack や Floci という手もある。ただし LocalStack は 2026年3月から、仕事で使うには有料プランが必要になった。Floci は無料だが、出てきたばかりのツールなので本物と挙動が違うことはあり得る。sandbox があるなら、そちらのほうが確実。</p>
 
 <div class="note">
 <p><strong>通知が来たら早めに始める</strong></p>
@@ -150,6 +152,8 @@ terraform destroy</code></pre>
 <li><a href="https://docs.astral.sh/uv/getting-started/installation/">uv - Installation</a></li>
 <li><a href="https://docs.astral.sh/uv/concepts/python-versions/">uv - Python versions</a></li>
 <li><a href="https://docs.aws.amazon.com/cli/latest/reference/lambda/invoke.html">AWS CLI - lambda invoke</a></li>
+<li><a href="https://docs.localstack.cloud/aws/licensing/">LocalStack - Plans</a></li>
+<li><a href="https://github.com/floci-io/floci">Floci（GitHub）</a></li>
 </ul>
 
 </main>
