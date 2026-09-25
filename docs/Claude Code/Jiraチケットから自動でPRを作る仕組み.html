@@ -30,6 +30,8 @@ h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid
 p{margin:.7rem 0}
 figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
 figure svg{display:block;width:100%;height:auto}
+/* 狭い画面では図を縮めず横スクロールにする。縮めると図中の文字が読めない大きさになる */
+@media (max-width:640px){figure{overflow-x:auto}figure svg{min-width:640px}}
 figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 .note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
 .note strong{color:var(--stop)}
@@ -45,6 +47,7 @@ a{color:var(--c1)}
 <main>
 
 <h1>Jira のチケットから自動で PR を作る仕組み</h1>
+<div class="note"><strong>この仕組みは撤去した。使わないこと。</strong> 実際に組んで動かしてみた結果、部品のほぼすべてに既製品（GitHub Copilot のクラウドエージェント、Atlassian Rovo Dev、GitHub for Jira など）があり、自作して保守し続ける理由が薄かった。同じことをしたいなら既製品を使うほうがよい。判断の経緯は <a href="チケットからPRを作るAIエージェントは自作すべきか.html">チケットから PR を作る AI エージェントは自作すべきか</a>。この記事は、仕組みの考え方（権限の分け方など）の記録として残している。以下のファイルへのリンクは撤去前のコミットを指す。</div>
 <p class="lede">チケットをスプリントに入れるだけで、Claude Code が実装し、別の Claude がレビューし、CI が終わった draft PR が Slack に届く。</p>
 
 <h2>どんな場面で困るか</h2>
@@ -193,9 +196,9 @@ a{color:var(--c1)}
 
 <h2>参考</h2>
 <ul>
-<li><a href="../decisions/0003-jira-to-pr.md">ADR-0003: Jira のチケットから Claude Code に draft PR を作らせる</a></li>
-<li><a href="../runbooks/jira-to-pr.md">ランブック: Jira → PR 自動化（初期設定・止め方・Bedrock への切り替え）</a></li>
-<li><a href="../../.github/workflows/jira-to-pr.yml">.github/workflows/jira-to-pr.yml</a></li>
+<li><a href="https://github.com/haruka-aibara/works/blob/6f12d05056edec543708b769b7465f692faf3fc2/docs/decisions/0003-jira-to-pr.md">ADR-0003: Jira のチケットから Claude Code に draft PR を作らせる</a></li>
+<li><a href="https://github.com/haruka-aibara/works/blob/6f12d05056edec543708b769b7465f692faf3fc2/docs/runbooks/jira-to-pr.md">ランブック: Jira → PR 自動化（初期設定・止め方・Bedrock への切り替え）</a></li>
+<li><a href="https://github.com/haruka-aibara/works/blob/6f12d05056edec543708b769b7465f692faf3fc2/.github/workflows/jira-to-pr.yml">.github/workflows/jira-to-pr.yml</a></li>
 <li><a href="https://github.com/anthropics/claude-code-action">anthropics/claude-code-action</a></li>
 <li><a href="https://code.claude.com/docs/ja/github-actions">Claude Code - GitHub Actions</a></li>
 <li><a href="https://docs.github.com/ja/rest/actions/workflows#create-a-workflow-dispatch-event">GitHub Docs - ワークフロー ディスパッチ イベントを作成する</a></li>
