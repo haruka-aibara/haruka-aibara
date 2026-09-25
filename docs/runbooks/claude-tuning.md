@@ -2,8 +2,9 @@
 
 **この文書を読むとき:** 新しい Claude モデルが出たとき。Claude Code の振る舞いや Slack ボットの答えに違和感があるとき。特に何もなくても月1くらいで見直すとき。
 
-**3行:**
+**要点:**
 
+- 定期の見直しは `/claude-tuning` で監査 → 反映 → 記録 → PR まで回る（下の §2 を一続きにしたスキル）
 - 指示ファイル・スキルは古いモデル向けの書き方が溜まる。`/claude-api prompt-audit` で洗い出す
 - Slack ボット（`modules/bedrock-slack-ai-chatbot`）はモデル ID が固定。新モデルが出たら `/claude-api migrate`
 - 許可プロンプトが多いと感じたら `/fewer-permission-prompts`
