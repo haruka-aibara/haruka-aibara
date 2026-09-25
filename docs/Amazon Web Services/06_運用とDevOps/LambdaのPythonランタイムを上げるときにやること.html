@@ -87,6 +87,7 @@ a{color:var(--c1)}
   "reportDeprecated": "warning"
 }</code></pre>
 <p>このファイルは pyright を実行するディレクトリ（Lambda の <code>.py</code> を置いているディレクトリ）に置く。<code>pyproject.toml</code> があるなら、同じ内容を <code>[tool.pyright]</code> に書いてもよい。</p>
+<p>コマンドは uv で動かす。uv は <code>curl -LsSf https://astral.sh/uv/install.sh | sh</code>（Mac なら <code>brew install uv</code> でも可）で入る。<code>--python 3.XX</code> で指定したバージョンの Python は uv が自動で取ってくるので、別に入れる必要はない。</p>
 <pre><code># 3.XX は上げる先のバージョン。boto3 は Lambda に最初から入っているものの代わり
 uv run --python 3.XX --with pyright --with boto3 pyright .</code></pre>
 <pre><code>error: Import "cgi" could not be resolved
@@ -143,6 +144,7 @@ terraform destroy</code></pre>
 <li><a href="https://microsoft.github.io/pyright/#/configuration">Pyright - Configuration</a></li>
 <li><a href="https://docs.astral.sh/ruff/rules/#pyupgrade-up">Ruff - pyupgrade (UP) rules</a></li>
 <li><a href="https://docs.python.org/3/whatsnew/index.html">Python - What's New in Python</a></li>
+<li><a href="https://docs.astral.sh/uv/getting-started/installation/">uv - Installation</a></li>
 <li><a href="https://docs.astral.sh/uv/concepts/python-versions/">uv - Python versions</a></li>
 <li><a href="https://docs.aws.amazon.com/cli/latest/reference/lambda/invoke.html">AWS CLI - lambda invoke</a></li>
 </ul>
