@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>チケットから PR を作る AI エージェントは自作すべきか</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+/* 狭い画面では図を縮めず横スクロールにする。縮めると図中の文字が読めない大きさになる */
+@media (max-width:640px){figure{overflow-x:auto}figure svg{min-width:640px}}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>チケットから PR を作る AI エージェントは自作すべきか</h1>
+<p class="lede">Jira のチケットを置くと AI が実装して draft PR を作り、Slack に知らせる。この流れを自前で組んで動かしてみたら、部品のほぼすべてに既製品があった。</p>
+
+<h2>自作したくなる場面</h2>
+<p>チケット管理は Jira、コードは GitHub、連絡は Slack。どれも使っているのにつながっていない。AI にコードを書かせられるようになった今、「チケットを置いたら PR まで勝手にできる流れ」を GitHub Actions と Claude Code で組みたくなる。</p>
+<p>実際に組むと、Jira Automation から GitHub Actions を起動し、Claude が実装、別の Claude がレビュー、CI を待って Slack に知らせる、までは数日で動く。問題はその後で、「なぜこれを自作するのか」に答えられなくなる。</p>
+
+<h2>部品ごとに既製品と並べる</h2>
+<figure>
+<svg viewBox="0 0 725 372" role="img" aria-label="自作した部品と、それに相当する既製品の対応">
+  <text x="10" y="20" font-size="12.5" font-weight="600" fill="var(--muted)">自作した部品</text>
+  <text x="330" y="20" font-size="12.5" font-weight="600" fill="var(--muted)">既製品では</text>
+
+  <rect x="10" y="32" width="300" height="44" rx="7" fill="var(--c1)"/>
+  <text x="24" y="59" font-size="13" fill="var(--on)">チケットから起動する</text>
+  <rect x="320" y="32" width="395" height="44" rx="7" fill="var(--lane)"/>
+  <text x="334" y="51" font-size="12" fill="var(--ink)">Rovo Dev：Jira Automation の Generate code</text>
+  <text x="334" y="68" font-size="12" fill="var(--ink)">Copilot：Issue の担当者に Copilot を入れる</text>
+
+  <rect x="10" y="84" width="300" height="44" rx="7" fill="var(--c1)"/>
+  <text x="24" y="111" font-size="13" fill="var(--on)">実装して draft PR を作る</text>
+  <rect x="320" y="84" width="395" height="44" rx="7" fill="var(--lane)"/>
+  <text x="334" y="111" font-size="12" fill="var(--ink)">同上。どちらも draft PR まで作り、マージは人に返す</text>
+
+  <rect x="10" y="136" width="300" height="44" rx="7" fill="var(--c1)"/>
+  <text x="24" y="163" font-size="13" fill="var(--on)">Jira・Confluence の文脈を読む</text>
+  <rect x="320" y="136" width="395" height="44" rx="7" fill="var(--lane)"/>
+  <text x="334" y="155" font-size="12" fill="var(--ink)">Rovo Dev は標準で読む</text>
+  <text x="334" y="172" font-size="12" fill="var(--ink)">他のエージェントは Atlassian Rovo MCP Server で読める</text>
+
+  <rect x="10" y="188" width="300" height="44" rx="7" fill="var(--c1)"/>
+  <text x="24" y="215" font-size="13" fill="var(--on)">PR を Jira の課題に紐づける</text>
+  <rect x="320" y="188" width="395" height="44" rx="7" fill="var(--lane)"/>
+  <text x="334" y="215" font-size="12" fill="var(--ink)">GitHub for Jira：課題キーをブランチ名か PR タイトルに入れるだけ</text>
+
+  <rect x="10" y="240" width="300" height="44" rx="7" fill="var(--c1)"/>
+  <text x="24" y="267" font-size="13" fill="var(--on)">Slack に知らせる</text>
+  <rect x="320" y="240" width="395" height="44" rx="7" fill="var(--lane)"/>
+  <text x="334" y="267" font-size="12" fill="var(--ink)">各製品の通知、GitHub の Slack アプリ</text>
+
+  <rect x="10" y="304" width="300" height="56" rx="7" fill="var(--c2)"/>
+  <text x="24" y="328" font-size="13" font-weight="600" fill="var(--on)">どの変更なら人を通さないか</text>
+  <text x="24" y="348" font-size="11.5" fill="var(--on)">自動マージの条件、plan を読んで止める条件</text>
+  <rect x="320" y="304" width="395" height="56" rx="7" fill="none" stroke="var(--c2)" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="334" y="328" font-size="12.5" font-weight="600" fill="var(--c2)">製品は決めない</text>
+  <text x="334" y="348" font-size="12" fill="var(--ink)">マージ後に何が起きるかは環境ごとに違う</text>
+</svg>
+<figcaption>Copilot のクラウドエージェントも Rovo Dev も、作るのは draft PR まででマージしない。どこまで人を通さずに進めてよいかは、マージした後に何が起きるか（自動デプロイされるか等）で変わるので、汎用の製品は踏み込まない。</figcaption>
+</figure>
+
+<h2>比べるのは「できるか」ではなく「保守する量」</h2>
+<p>自作すれば何でもできる。だから「既製品ではできない」は理由にならない。比べるべきは、同じことを自分で組んだときに<strong>何を持ち続けることになるか</strong>だ。</p>
+<figure>
+<svg viewBox="0 0 725 250" role="img" aria-label="動くまでに踏んだものと、動かし続けるために持つもの">
+  <rect x="10" y="10" width="345" height="230" rx="10" fill="var(--card)" stroke="var(--line)"/>
+  <rect x="10" y="10" width="345" height="38" rx="10" fill="var(--c4)"/>
+  <text x="182" y="35" font-size="13.5" font-weight="600" fill="var(--on)" text-anchor="middle">動くまでに踏んだもの</text>
+  <text x="26" y="78" font-size="12" fill="var(--ink)">● OIDC トークンの sub の形式が想定と違い、</text>
+  <text x="40" y="96" font-size="12" fill="var(--ink)">AWS のロールを引き受けられない</text>
+  <text x="26" y="124" font-size="12" fill="var(--ink)">● PR 作成用の GitHub App の入れ忘れ</text>
+  <text x="26" y="152" font-size="12" fill="var(--ink)">● Jira からの Web リクエストの認証ヘッダー</text>
+  <text x="26" y="180" font-size="12" fill="var(--ink)">● 新しいモデルに切り替えたら、Action が</text>
+  <text x="40" y="198" font-size="12" fill="var(--ink)">入れる Claude Code が古くて動かない</text>
+
+  <rect x="370" y="10" width="345" height="230" rx="10" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+  <rect x="370" y="10" width="345" height="38" rx="10" fill="var(--c2)"/>
+  <text x="542" y="35" font-size="13.5" font-weight="600" fill="var(--on)" text-anchor="middle">動かし続けるために持つもの</text>
+  <text x="386" y="78" font-size="12" fill="var(--ink)">● 起動用トークンの定期更新（90 日）</text>
+  <text x="386" y="106" font-size="12" fill="var(--ink)">● AI の資格情報の更新と漏えい時の差し替え</text>
+  <text x="386" y="134" font-size="12" fill="var(--ink)">● Action とモデルの版上げへの追従</text>
+  <text x="386" y="162" font-size="12" fill="var(--ink)">● GitHub App・Jira Automation・Slack の</text>
+  <text x="400" y="180" font-size="12" fill="var(--ink)">手作業の設定と、その手順書</text>
+  <text x="386" y="208" font-size="12" fill="var(--ink)">● 権限を分ける仕組みそのものの保守</text>
+</svg>
+<figcaption>左はどれも一度直せば終わりだが、右は動かしている限り続く。既製品を使えば右の大半はベンダーが持つ。</figcaption>
+</figure>
+
+<h2>「Slack からマージできる」も理由にならない</h2>
+<p>既製品に無さそうな機能を足せば、自作する理由になるか。たとえば Slack のボタンでマージできるようにする。だが人が判断して押すなら、差分と CI が並んでいる GitHub で押すほうがいい。押す場所を変えても、判断する人の手間は減らない。</p>
+
+<h2>自作が意味を持つ条件</h2>
+<p>残る問いは 1 つだけ。</p>
+<div class="note"><strong>既製品が決めてくれない、自分の環境固有の判断を自動化しているか。</strong></div>
+<p>たとえば「ドキュメントだけの変更は、CI と AI のレビューが通れば人を通さずマージする」「Terraform の変更は plan に削除が含まれていたら止める」。これは、マージすると何が起きるかを知っている自分にしか決められない。こうした判断を持たないなら、既製品を使うほうが素直だ。</p>
+
+<h2>それでも作って残るもの</h2>
+<p>自作した経験は、既製品を選ぶときの見る目になる。</p>
+<table>
+<tr><th>確かめること</th><th>なぜ</th></tr>
+<tr><td>AI が動く場所に、書き込めるトークンがあるか</td><td>チケットは第三者が書ける。本文に紛れた指示に AI が乗せられても、書けなければ被害が出ない</td></tr>
+<tr><td>CI やワークフローの設定を AI が変えられるか</td><td>変えられると、検査そのものを外せてしまう</td></tr>
+<tr><td>チケットの本文を指示として読むか、データとして読むか</td><td>上と同じく、紛れ込んだ指示への耐性</td></tr>
+<tr><td>いつ知らせるか</td><td>PR ができた時点ではまだ完成していない。CI が終わってから知らせてほしい</td></tr>
+</table>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.github.com/en/copilot/concepts/agents/cloud-agent/about-cloud-agent">GitHub Docs - About GitHub Copilot cloud agent</a></li>
+<li><a href="https://docs.github.com/en/copilot/using-github-copilot/coding-agent/using-copilot-to-work-on-an-issue">GitHub Docs - Asking GitHub Copilot to create a pull request</a></li>
+<li><a href="https://support.atlassian.com/rovo/docs/work-with-rovo-dev-in-jira/">Atlassian Support - What is the Jira Coding Agent?</a></li>
+<li><a href="https://support.atlassian.com/rovo/docs/work-with-rovo-dev-in-automations/">Atlassian Support - Work with Rovo Dev in automations</a></li>
+<li><a href="https://www.atlassian.com/platform/remote-mcp-server">Atlassian - Extend Atlassian into any AI assistant using MCP</a></li>
+<li><a href="https://support.atlassian.com/jira-cloud-administration/docs/use-the-github-for-jira-app/">Atlassian Support - Link GitHub development information to Jira work items</a></li>
+<li><a href="https://github.com/anthropics/claude-code-action">anthropics/claude-code-action</a></li>
+<li><a href="https://github.com/haruka-aibara/works/pull/72">実際に組んだ仕組みの PR（haruka-aibara/works#72）</a></li>
+</ul>
+
+</main>
+</body>
+</html>

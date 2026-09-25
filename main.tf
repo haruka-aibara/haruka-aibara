@@ -46,15 +46,6 @@ module "bedrock_slack_ai_chatbot_infra" {
   slack_signing_secret = var.bedrock_slack_ai_chatbot_slack_signing_secret
 }
 
-# Jira チケットから Claude Code (Bedrock) に実装させ、draft PR と Slack 通知を出す。
-# ワークフロー本体は .github/workflows/jira-to-pr.yml、仕組みと初期設定は
-# docs/runbooks/jira-to-pr.md。
-module "jira_to_pr" {
-  source = "./modules/jira-to-pr"
-
-  repository = module.haruka-aibara.repository_name
-}
-
 # Multi-turn Bedrock AI Agent
 module "bedrock-slack-ai-agent" {
   source = "./modules/repository"
