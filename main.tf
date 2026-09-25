@@ -89,6 +89,14 @@ module "terraform-aws-budget-slack-notifier" {
 #   budgets_limit_amount_daily = var.budget_limit_amount_daily
 # }
 
+# AWS Cost Allocation Tags — infrastructure.
+# Absorbed from the standalone aws-cost-allocation-tags repository with its
+# history (git log -- modules/aws-cost-allocation-tags). Not needed right now,
+# so the call is commented out. To enable it, uncomment this block.
+# module "aws_cost_allocation_tags" {
+#   source = "./modules/aws-cost-allocation-tags"
+# }
+
 # AWS Cost Management
 module "aws-cost-allocation-tags" {
   source = "./modules/repository"
