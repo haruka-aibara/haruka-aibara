@@ -4,7 +4,7 @@
 
 **要点:**
 
-- 定期の見直しは `/claude-tuning` で監査 → 反映 → 記録 → PR まで回る（下の §2 を一続きにしたスキル）
+- 定期の見直しは `/claude-tuning` で監査 → 反映 → PR まで回る（下の §2 を一続きにしたスキル）。過去の回は PR タイトル `Claude 定期調整:` で検索する
 - 指示ファイル・スキルは古いモデル向けの書き方が溜まる。`/claude-api prompt-audit` で洗い出す
 - Slack ボット（`modules/bedrock-slack-ai-chatbot`）はモデル ID が固定。新モデルが出たら `/claude-api migrate`
 - 許可プロンプトが多いと感じたら `/fewer-permission-prompts`
@@ -44,9 +44,3 @@
 ## 4. 自動で回したいとき
 
 Claude Code on the web なら Routine（定期実行）にできる。セッションで「毎月1日に prompt-audit を回してレポートだけ出すようにして」と頼む。反映は結果を見てから手で頼む。
-
-## 5. 記録
-
-| 日付 | やったこと |
-|---|---|
-| 2026-09-25 | 初回の prompt-audit。3件修正（`AGENTS.md` の話し方、article-writing の前置き、モジュール CLAUDE.md の CI 表）。flag 2件は未対応（story-breakdown の番号重複、Slack ボットの `maxTokens` 1000 と打ち切り未検知） |
