@@ -87,8 +87,8 @@ a{color:var(--c1)}
   "reportAttributeAccessIssue": "error",
   "reportDeprecated": "warning"
 }</code></pre>
-<pre><code># 3.XX は上げる先のバージョン
-uv run --python 3.XX --with pyright --with-requirements requirements.txt pyright .</code></pre>
+<pre><code># 3.XX は上げる先のバージョン。boto3 は Lambda に最初から入っているものの代わり
+uv run --python 3.XX --with pyright --with boto3 pyright .</code></pre>
 <pre><code>error: Import "cgi" could not be resolved
 error: "coroutine" is not a known attribute of module "asyncio"
 warning: The method "utcnow" in class "datetime" is deprecated</code></pre>
@@ -96,7 +96,11 @@ warning: The method "utcnow" in class "datetime" is deprecated</code></pre>
 <li><strong>error</strong>：直さないと動かない。これは必ず直す</li>
 <li><strong>warning</strong>：今は動くが、いずれ消える。余裕があれば直す</li>
 </ul>
-<p>このコマンドは依存ライブラリも新しい Python で入れ直すので、<strong>インストールに失敗したライブラリ</strong>もここで分かる。それだけバージョンを上げる。</p>
+<p>boto3 以外のライブラリを使っているときは、それも読めるようにする。</p>
+<ul>
+<li><strong>requirements.txt がある</strong>：コマンドに <code>--with-requirements requirements.txt</code> を足す。新しい Python でインストールに失敗したライブラリも、ここで分かる。失敗したものだけバージョンを上げる</li>
+<li><strong>Layer のディレクトリに直接置いている</strong>：<code>pyrightconfig.json</code> に <code>"extraPaths": ["layer/python"]</code> のようにその場所を足す</li>
+</ul>
 
 <h2>2. 挙動の変化は AI に照合させる</h2>
 <p>pyright が見つけられないのは「関数はあるが、結果が変わった」ものだけ。これは Python 公式の What's New の「Porting to Python 3.X」節に一覧がある。飛ばしたバージョン分のその節とコードを AI に渡して、<strong>「このコードで該当する箇所だけ挙げて」</strong>と頼む。該当するのはたいてい 0〜数件で済む。</p>
