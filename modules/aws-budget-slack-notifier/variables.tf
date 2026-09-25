@@ -1,7 +1,7 @@
-variable "env" {
-  description = "environment"
+variable "name" {
   type        = string
-  default     = "production"
+  description = "Prefix for resource names (IAM role/policy, SNS topic, KMS alias, Chatbot configuration)"
+  default     = "terraform-aws-budget-slack-notifier"
 }
 
 variable "slack_channel_id" {
