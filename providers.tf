@@ -27,3 +27,11 @@ provider "aws" {
     tags = local.bedrock_slack_ai_chatbot_default_tags
   }
 }
+
+# For module "aws_budget_slack_notifier" in main.tf, which is commented out for
+# now. AWS Budgets is a us-east-1 service, so its SNS topic and KMS key live
+# there. Uncomment together with that module.
+# provider "aws" {
+#   alias  = "us-east-1"
+#   region = "us-east-1"
+# }
