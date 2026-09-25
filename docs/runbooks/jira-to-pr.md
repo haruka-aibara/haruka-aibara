@@ -8,7 +8,7 @@ Jira の `SCRUM` プロジェクトで課題を「AI 実装」スプリントに
 Jira（SCRUM-12 を「AI 実装」スプリントへ）
   → Jira Automation が workflow_dispatch を送る
   → .github/workflows/jira-to-pr.yml
-      implement: Claude Code（Bedrock, OIDC）が実装・検査し、差分をパッチにする
+      implement: Claude Code（Claude のサブスク）が実装・検査し、差分をパッチにする
       review:    まっさらな環境で、別の Claude が読み取り専用でレビューする
       publish:   まっさらな環境にパッチを当て、GitHub App のトークンで
                  ai/SCRUM-12 を push し draft PR を作り、PR の CI が終わるまで待つ
@@ -21,10 +21,10 @@ Jira キーを branch（`ai/SCRUM-12`）と PR タイトル（`[SCRUM-12] …`�
 
 | もの | 置き場所 | 管理 |
 |---|---|---|
-| AWS の OIDC プロバイダと IAM ロール `jira-to-pr-github-actions` | `modules/jira-to-pr/` | Terraform |
+| AWS の OIDC プロバイダと IAM ロール `jira-to-pr-github-actions`（Bedrock で動かすときだけ使う） | `modules/jira-to-pr/` | Terraform |
 | GitHub environment `jira-to-pr`（main からのみ実行可） | `modules/jira-to-pr/` | Terraform |
 | environment の変数 `AWS_ROLE_ARN` / `APP_CLIENT_ID` / `SLACK_CHANNEL_ID` | GitHub UI | 手作業 |
-| environment の secret `APP_PRIVATE_KEY` / `SLACK_BOT_TOKEN` | GitHub UI | 手作業 |
+| environment の secret `CLAUDE_CODE_OAUTH_TOKEN` / `APP_PRIVATE_KEY` / `SLACK_BOT_TOKEN` | GitHub UI | 手作業 |
 | PR 作成用の GitHub App | GitHub UI | 手作業 |
 | 起動用の fine-grained PAT | Jira Automation のルール内 | 手作業 |
 | Jira Automation のルール | Jira UI | 手作業 |
@@ -50,9 +50,10 @@ Settings → Environments → `jira-to-pr`：
 
 | 種類 | 名前 | 値 |
 |---|---|---|
-| Variable | `AWS_ROLE_ARN` | `terraform output` の `module.jira_to_pr.role_arn`（`arn:aws:iam::<account>:role/jira-to-pr-github-actions`） |
+| Variable | `AWS_ROLE_ARN` | Bedrock で動かすときだけ使う。`terraform output` の `module.jira_to_pr.role_arn`（`arn:aws:iam::<account>:role/jira-to-pr-github-actions`） |
 | Variable | `APP_CLIENT_ID` | 手順 1 の Client ID |
 | Variable | `SLACK_CHANNEL_ID` | `#haru` のチャンネル ID（チャンネル名を右クリック → リンクをコピー の末尾 `C…`） |
+| Secret | `CLAUDE_CODE_OAUTH_TOKEN` | 手元で `claude setup-token` を実行して出るトークン（Claude のサブスクに紐づく。有効期限は約 1 年） |
 | Secret | `APP_PRIVATE_KEY` | 手順 1 の PEM |
 | Secret | `SLACK_BOT_TOKEN` | chatbot と同じ Bot User OAuth Token |
 
@@ -116,7 +117,8 @@ GitHub の fine-grained PAT。
 
 - 一時停止: Jira Automation のルールを無効にする。または GitHub の Actions でワークフロー `Jira to PR` を Disable する
 - 完全停止: environment の `APP_PRIVATE_KEY` を消す。PR は作れなくなる（Claude の実装とレビューまでは走る）
-- 起動用 PAT が漏れた疑い: PAT を revoke する。できるのはワークフローの起動だけだが、Bedrock の料金はかかる
+- 起動用 PAT が漏れた疑い: PAT を revoke する。できるのはワークフローの起動だけだが、サブスクの利用枠は減る
+- `CLAUDE_CODE_OAUTH_TOKEN` が漏れた疑い: claude.ai の設定で該当のトークンを revoke し、`claude setup-token` で作り直して secret を差し替える。Claude のプロセスにはこのトークンが渡るので、読まれうる前提で扱う
 
 ## うまくいかないとき
 
@@ -125,8 +127,38 @@ GitHub の fine-grained PAT。
 | Automation の監査ログで 401 / 403 | PAT の期限・権限（Actions: write）・対象リポジトリ |
 | 422 `Unexpected inputs` | 本文の `inputs` のキー名がワークフローの inputs と一致しているか |
 | `Validate issue` で失敗 | キーが `SCRUM-数字`、URL が `https://<site>.atlassian.net/browse/SCRUM-数字` か |
-| AWS の認証で `Not authorized to perform sts:AssumeRoleWithWebIdentity` | 東京リージョンの CloudTrail で失敗した `AssumeRoleWithWebIdentity` の `userName`（トークンの sub）を見る。この org の sub は `repo:haruka-aibara@<org id>/works@<repo id>:environment:jira-to-pr` の形で、ロールの信頼条件と一致している必要がある。ジョブが environment `jira-to-pr` で走っているか（main 以外からは走れない）も確認 |
-| Bedrock で `AccessDeniedException` | モデルアクセスの有効化、IAM の対象モデル（`modules/jira-to-pr` の `bedrock_model_id`） |
+| Claude のステップで認証エラー | `CLAUDE_CODE_OAUTH_TOKEN` の期限切れ・revoke。`claude setup-token` で作り直す |
+| Claude のステップで利用上限（rate limit / usage limit） | サブスクの枠を手元の Claude Code と共有している。時間を置いて「Re-run failed jobs」するか、下の「Bedrock で動かす」に切り替える |
+| （Bedrock 利用時）AWS の認証で `Not authorized to perform sts:AssumeRoleWithWebIdentity` | 東京リージョンの CloudTrail で失敗した `AssumeRoleWithWebIdentity` の `userName`（トークンの sub）を見る。この org の sub は `repo:haruka-aibara@<org id>/works@<repo id>:environment:jira-to-pr` の形で、ロールの信頼条件と一致している必要がある。ジョブが environment `jira-to-pr` で走っているか（main 以外からは走れない）も確認 |
+| （Bedrock 利用時）`AccessDeniedException` | モデルアクセスの有効化、IAM の対象モデル（`modules/jira-to-pr` の `bedrock_model_id`） |
 | `Apply patch` で `the change touches .github/` | エージェントが `.github/` を変えている。意図どおりの拒否 |
 | `Wait for CI` が失敗する / Slack が「CI red」なのに PR の CI は緑 | App に Checks / Commit statuses の Read が付いているか |
 | Slack に来ない | ボットが `#haru` にいるか、`SLACK_CHANNEL_ID` が ID（名前ではない）か |
+
+## Bedrock で動かす
+
+既定は Claude のサブスクだが、Amazon Bedrock（従量課金）でも動く。サブスクの枠が足りないとき、長期のトークンを GitHub に置きたくないときに切り替える。AWS 側の OIDC プロバイダと IAM ロールは Terraform で作ってあり、そのまま使える。ロールが許可しているのは `modules/jira-to-pr` の `bedrock_model_id`（既定 `global.anthropic.claude-opus-5-5`）の呼び出しだけ。
+
+`.github/workflows/jira-to-pr.yml` の `implement` と `review` の両方で次のように変える。
+
+1. `MODEL` を `global.anthropic.claude-opus-5-5` にする（東京リージョンの `aws bedrock list-inference-profiles` で ID を確認できる）
+2. ジョブの `permissions` に `id-token: write` を足す
+3. Claude のステップの前に AWS の認証を入れる
+
+    ```yaml
+    - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
+      with:
+        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+        aws-region: ap-northeast-1
+    ```
+
+4. Claude のステップの `claude_code_oauth_token` を `use_bedrock: "true"` に替え、背景処理用の小さいモデルも同じものにする（IAM で許可しているのはこのモデルだけ）
+
+    ```yaml
+    env:
+      ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ env.MODEL }}
+    with:
+      use_bedrock: "true"
+    ```
+
+environment の変数 `AWS_ROLE_ARN` が入っていることを確認する。モデルを替えるときは `bedrock_model_id` も同じ ID にする。

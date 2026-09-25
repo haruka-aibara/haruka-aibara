@@ -1,14 +1,17 @@
-# Jira のチケットを Claude Code（Bedrock）に実装させ、別の Claude にレビューさせ、draft PR を作り、
+# Jira のチケットを Claude Code（Claude のサブスク）に実装させ、別の Claude にレビューさせ、draft PR を作り、
 # PR の CI が終わったら Slack に知らせる。Jira Automation が workflow_dispatch で起動する。
 # 仕組み・初期設定・止め方は docs/runbooks/jira-to-pr.md。
 # Terraform 管理外（workflow-dist/ からの配布物ではない）なので、このファイルは直接編集してよい。
 #
 # ジョブを 3 つに分けているのは、書き込み権限をエージェントから隔離するため。
-#   implement: Claude が実装する。持つのは読み取り専用の GITHUB_TOKEN と Bedrock だけ。成果物はパッチ 1 枚
+#   implement: Claude が実装する。持つのは読み取り専用の GITHUB_TOKEN と Claude の OAuth トークンだけ。成果物はパッチ 1 枚
 #   review:    まっさらなチェックアウトにパッチを当て、文脈を持たない別の Claude が読み取り専用で見る
 #   publish:   まっさらなチェックアウトにパッチを当てて push / PR / CI 待ち / Slack。エージェントは動かない
 # 同じ作業ディレクトリで push すると、エージェントが仕込んだ .git/hooks や .git/config が
 # App のトークンを持った状態で実行されうる。ジョブを分ければランナーごと別になる。
+#
+# Claude はサブスク（claude setup-token で発行した OAuth トークン）で動かす。Bedrock に切り替える
+# 手順は docs/runbooks/jira-to-pr.md の「Bedrock で動かす」。AWS 側のロールは残してある。
 name: Jira to PR
 
 on:
@@ -45,17 +48,16 @@ env:
   ISSUE_SUMMARY: ${{ inputs.summary }}
   ISSUE_DESCRIPTION: ${{ inputs.description }}
   ISSUE_URL: ${{ inputs.issue_url }}
-  MODEL: global.anthropic.claude-opus-4-6-v1
+  MODEL: claude-opus-5-5
 
 jobs:
   implement:
     runs-on: ubuntu-latest
-    # AWS ロールの信頼条件はこの environment に限っている。
+    # Claude の OAuth トークンはこの environment の secret で、このワークフローのジョブにしか見えない。
     environment: jira-to-pr
     timeout-minutes: 45
     permissions:
       contents: read
-      id-token: write
     outputs:
       changed: ${{ steps.patch.outputs.changed }}
       result: ${{ steps.claude.outputs.structured_output }}
@@ -89,21 +91,14 @@ jobs:
           printf '# %s: %s\n\n%s\n' "$ISSUE_KEY" "$ISSUE_SUMMARY" "$ISSUE_DESCRIPTION" > .jira-to-pr/ticket.md
           echo ".jira-to-pr/" >> .git/info/exclude
 
-      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ap-northeast-1
-
       # allowedTools は行儀の指定であって境界ではない（uv run で何でも実行できる）。
       # 境界はジョブの分離: このジョブには書き込めるトークンも Slack の秘密情報も無い。
+      # Claude の OAuth トークンは Claude 自身のプロセスに渡るので、読まれうる前提で扱う（漏れたら revoke）。
       - name: Implement with Claude Code
         id: claude
         uses: anthropics/claude-code-action@c3d45e8e941e1b2ad7b278c57482d9c5bf1f35b3 # v1.0.99
-        env:
-          # 背景処理用の小さいモデルも同じものを使う。IAM で許可しているのはこのモデルだけ。
-          ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ env.MODEL }}
         with:
-          use_bedrock: "true"
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
           prompt: |
             あなたはこのリポジトリで Jira のチケットを実装するエージェントです。
@@ -160,7 +155,6 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
-      id-token: write
     outputs:
       result: ${{ steps.claude.outputs.structured_output }}
     steps:
@@ -180,18 +174,11 @@ jobs:
           printf '# %s: %s\n\n%s\n' "$ISSUE_KEY" "$ISSUE_SUMMARY" "$ISSUE_DESCRIPTION" > .jira-to-pr/ticket.md
           echo ".jira-to-pr/" >> .git/info/exclude
 
-      - uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0
-        with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ap-northeast-1
-
       - name: Review with Claude Code
         id: claude
         uses: anthropics/claude-code-action@c3d45e8e941e1b2ad7b278c57482d9c5bf1f35b3 # v1.0.99
-        env:
-          ANTHROPIC_DEFAULT_HAIKU_MODEL: ${{ env.MODEL }}
         with:
-          use_bedrock: "true"
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
           prompt: |
             あなたはこのリポジトリのレビュアーです。別のエージェントが Jira のチケットを実装し、
