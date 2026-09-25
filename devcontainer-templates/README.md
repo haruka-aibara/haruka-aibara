@@ -1,87 +1,88 @@
-# Haruka Aibara Development Environment
+# devcontainer-templates
 
-A DevContainer template for cloud infrastructure development. Provides a consistent, secure environment for AWS, Terraform, Ansible, Docker, and Python projects.
+VS Code の devcontainer テンプレート。旧 `haruka-aibara/devcontainer-templates` リポジトリをこのモノレポに統合したもの。
 
-## Pre-installed Tools
+## 使い方
 
-### Infrastructure as Code
-- **Terraform** — managed by [tenv](https://github.com/tofuutils/tenv)
-- **AWS CLI v2** — with `aws login` support (no long-lived keys required)
-- **Google Cloud SDK** — gcloud CLI
-- **Ansible & Ansible Lint** — via uv tool
+1. VS Code でコマンドパレット（`Ctrl+Shift+P`）を開く
+2. **Dev Containers: Clone Repository in Container Volume...** を選ぶ
+3. テンプレート ID を入力する
 
-### Container & Orchestration
-- Docker-in-Docker
-- kubectl, Helm, minikube
-
-### Development Tools
-- **Python** with [uv](https://github.com/astral-sh/uv) (package/env manager)
-- pylint, flake8, pyre-check, pytest
-- Node.js / npm
-- **GitHub CLI** (`gh`)
-- **Claude Code** (`claude`)
-
-### Utilities
-- jq, curl, wget, htop, tree, zip/tar
-- Git (SSH agent forwarding enabled)
-
-## Security Design
-
-- Runs as non-root user (`vscode`)
-- No long-lived credentials — host credential mounts are intentionally absent
-- Base image pinned by digest; tenv/uv/claude pinned by version + SHA256
-- devcontainer Features pinned by digest via `devcontainer-lock.json`
-
-## Authentication
-
-Credentials are **not** mounted from the host. Log in inside the container after first open:
-
-**AWS**
-```bash
-aws login
-# Opens browser — no IAM long-lived keys needed (AWS CLI 2.32+)
+```
+ghcr.io/haruka-aibara/works/haruka-aibara-dev-env:latest
 ```
 
-**Google Cloud**
-```bash
-gcloud auth login
-gcloud auth application-default login
+## 構成
+
+```
+devcontainer-templates/
+  README.md                          # このファイル
+  scripts/update-checksums.sh        # Dockerfile の CLAUDE_SHA256_* をバージョンに合わせて書き換える
+  docs/adr/                          # 設計判断の記録
+  docs/superpowers/                  # 初期設計時の plan / spec
+  src/haruka-aibara-dev-env/
+    devcontainer-template.json       # テンプレートのメタ情報（version は CI が管理）
+    .devcontainer/
+      Dockerfile                     # ベースイメージとツールのピン
+      devcontainer.json              # 拡張機能・設定・features
+      devcontainer-lock.json         # features の digest ピン
+      post-create.sh                 # コンテナ作成後のセットアップ
+      smoke-test.sh                  # 必須ツールの存在確認
 ```
 
-**Git / SSH**  
-SSH agent forwarding is enabled by default in Dev Containers. Run `ssh-add` on the host before opening the container.
+`.gitignore` はルート直下の `/.devcontainer` だけを無視する。テンプレート配下の `.devcontainer/` は追跡対象なので、無指定の `.devcontainer` に戻さないこと。
 
-**GitHub CLI**
-```bash
-gh auth login
-```
+## 含まれるツール
 
-## Requirements
+| 入れ方 | ツール |
+|---|---|
+| devcontainer Features | aws-cli, github-cli, kubectl / helm / minikube, node, python, docker-in-docker |
+| Dockerfile | gcloud（Google 公式 apt リポジトリ）, tenv / uv（公式イメージから COPY）, Claude Code, jq / curl / wget / htop / tree / zip / tar |
+| post-create.sh | flake8, pylint, pyre-check, pytest, ansible-core, ansible-lint（uv tool）, Terraform 最新安定版（tenv）, Mermaid の AWS アイコン設定 |
 
-- Docker
-- Visual Studio Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+公式 Feature があるものは Feature に寄せ、無いものだけ Dockerfile にバージョンピン + SHA256 検証で残す方針。理由は [`docs/adr/0002-prefer-devcontainer-features.md`](docs/adr/0002-prefer-devcontainer-features.md)。
 
-## Usage
+## ハッシュの自動更新
 
-1. Open VS Code
-2. Open Command Palette (`Ctrl+Shift+P`)
-3. Select **Dev Containers: Clone Repository in Container Volume...**
-4. Enter the template ID when prompted:
-   ```
-   ghcr.io/haruka-aibara/devcontainer-templates/haruka-aibara-dev-env:latest
-   ```
+| 対象 | 更新するもの |
+|---|---|
+| `Dockerfile` の `BASE_IMAGE` digest | Renovate（`renovate.json` の customManagers）。`# renovate:` コメントの `tag=ubuntu-24.04` の digest を追う |
+| `Dockerfile` の tenv / uv | Renovate（標準の dockerfile マネージャー）。公式イメージを `COPY --from=<image>:<tag>@<digest>` で取り込んでいる |
+| `Dockerfile` の `CLAUDE_VERSION` | Renovate（公式プリセット `customManagers:dockerfileVersions`）。週 1 回・公開から 3 日経ったものだけ |
+| `Dockerfile` の `CLAUDE_SHA256_*` | Renovate では計算できないので、`renovate/**` ブランチで `.github/workflows/devcontainer-checksums.yaml` が `scripts/update-checksums.sh` を実行して追いコミットする |
+| `devcontainer.json` / `devcontainer-lock.json` の features | Dependabot（`.github/dependabot.yml`）。Renovate は lock を更新できないので、Renovate の devcontainer マネージャーは無効 |
 
-> **Note**
-> Versions published before this repository moved to the `haruka-aibara` organization live
-> under the old namespace `ghcr.io/haruka-aibara-dev/devcontainer-templates/haruka-aibara-dev-env`
-> and are no longer updated. Use the namespace above.
+ホストの認証情報はマウントしない。コンテナ内で `aws login` / `gcloud auth login` / `gh auth login` する（[`docs/adr/0004-auth-no-long-lived-secrets.md`](docs/adr/0004-auth-no-long-lived-secrets.md)）。
 
-## Customization
+## リリースフロー
 
-- **Add tools**: prefer adding a devcontainer Feature in `.devcontainer/devcontainer.json` first; use the Dockerfile only for tools without an official Feature
-- **VS Code extensions/settings**: `.devcontainer/devcontainer.json`
-- **Post-create setup**: `.devcontainer/post-create.sh`
+`.github/workflows/devcontainer-release.yaml` が担当する。`workflow-dist/` から配布される CI とは別で、Terraform 管理外なので直接編集してよい。
 
-## License
+- `devcontainer-templates/src/**` または当該ワークフローへの push（main）で自動実行
+- CI が直前のコミットメッセージを見て `devcontainer-template.json` の version を bump し、main に push
+- そのあと `devcontainers/action@v1` が ghcr に publish
+- Actions タブから `workflow_dispatch` で手動実行もできる（`skip_version_bump: true` なら bump せず同じバージョンで再 publish）
 
-MIT
+### バージョン bump ルール
+
+| コミットメッセージ | 変化 |
+|---|---|
+| `feat: ...` | minor bump（1.4.x → 1.5.0）|
+| `fix: ...` / その他 | patch bump（1.4.12 → 1.4.13）|
+| `BREAKING ...` | major bump（1.4.x → 2.0.0）|
+
+- `version` は CI が書くので手で変えない。ファイルに入っている番号は「前回 CI が書いた番号」で、publish されるのは +1 した番号
+- bump コミットには `[skip ci]` が付く。GitHub Actions だけでなく HCP Terraform の VCS 連携もこれを見るので、`auto_apply = true` の `works` ワークスペースで無駄な apply が走らない。消さないこと
+- CI が bump を push したあとは、手元で `git pull` してから作業する
+
+### publish 先
+
+`devcontainers/action@v1` は `ghcr.io/<owner>/<repo>/<template id>` に publish する。リポジトリが変われば publish 先も変わる。
+
+| いつ | publish 先 |
+|---|---|
+| 現在（`haruka-aibara/works`） | `ghcr.io/haruka-aibara/works/haruka-aibara-dev-env` |
+| 統合前（`haruka-aibara/devcontainer-templates`） | `ghcr.io/haruka-aibara/devcontainer-templates/haruka-aibara-dev-env`（〜1.3.1、更新停止）|
+| org 移動前（個人アカウント） | `ghcr.io/haruka-aibara-dev/devcontainer-templates/haruka-aibara-dev-env`（〜1.3.0、更新停止）|
+
+package はリポジトリを移しても付いてこないので、publish し直しが要る。統合後の初回 publish でやる手作業は [`docs/runbooks/devcontainer-template-monorepo-migration.md`](../docs/runbooks/devcontainer-template-monorepo-migration.md) を見ること。
