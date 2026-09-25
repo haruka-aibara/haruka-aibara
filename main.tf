@@ -698,34 +698,3 @@ module "tfe_team_token_rotation" {
   blue_serial  = 1
   green_serial = 1
 }
-
-# =========================================
-# Retired repositories / workspaces
-# =========================================
-# Absorbed into this repository with their history, so Terraform stops managing
-# them without destroying anything. The repositories and the workspace are then
-# deleted by hand. Drop these blocks once the apply has run.
-
-removed {
-  from = module.devcontainer-templates
-
-  lifecycle {
-    destroy = false
-  }
-}
-
-removed {
-  from = module.terraform-aws-budget-slack-notifier
-
-  lifecycle {
-    destroy = false
-  }
-}
-
-removed {
-  from = tfe_workspace.terraform-aws-budget-slack-notifier
-
-  lifecycle {
-    destroy = false
-  }
-}

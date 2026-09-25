@@ -63,7 +63,7 @@ bash .devcontainer/smoke-test.sh
 しか入っていなかった。#86 で main の全 118 コミットを取り込み直したので、旧リポジトリを消しても
 履歴は失われない（#56 分と重複して 2 系統入っている）。
 
-2026-09-25 に Terraform の管理から外した（`removed { destroy = false }`）。リポジトリは apply 後に GitHub 上で手動で削除する。
+2026-09-25 に旧リポジトリを Terraform で destroy した（`prevent_destroy` を 1 apply だけ外すやり方）。
 
 ただし**既定の `git log` / `git blame` は取り込んだコミットではなく #47 を指す**。#47 が先に
 同じ内容を main 本線へ入れてしまい、マージの第1親（main 側）と内容が同じになるため、git の
