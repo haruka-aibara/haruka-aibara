@@ -24,3 +24,20 @@ variable "buffer_minutes" {
   description = "Overrides module.tfe_team_token_rotation's buffer_minutes. Leave unset outside the short-cycle verification."
   default     = null
 }
+
+# For module "aws_budget_slack_notifier" in main.tf, which is commented out for
+# now. Uncomment together with that module.
+# variable "budget_slack_channel_id" {
+#   type        = string
+#   description = "Slack channel ID that receives AWS Budgets notifications"
+# }
+#
+# variable "budget_slack_workspace_id" {
+#   type        = string
+#   description = "Slack workspace ID authorized in AWS Chatbot"
+# }
+#
+# variable "budget_limit_amount_daily" {
+#   type        = number
+#   description = "Daily cost (USD) above which AWS Budgets notifies Slack"
+# }

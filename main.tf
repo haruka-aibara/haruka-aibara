@@ -70,6 +70,25 @@ module "terraform-aws-budget-slack-notifier" {
   topics = ["terraform", "aws", "budget", "slack"]
 }
 
+# AWS Budget Slack Notifications — infrastructure.
+# Absorbed from the standalone terraform-aws-budget-slack-notifier repository
+# with its history (git log -- modules/aws-budget-slack-notifier). Not needed
+# right now, so the call is commented out. To enable it, uncomment this block,
+# the aws.us-east-1 provider in providers.tf and the budget_* variables in
+# variables.tf, then set the variables on the works workspace.
+# module "aws_budget_slack_notifier" {
+#   source = "./modules/aws-budget-slack-notifier"
+#
+#   providers = {
+#     aws           = aws
+#     aws.us-east-1 = aws.us-east-1
+#   }
+#
+#   slack_channel_id           = var.budget_slack_channel_id
+#   slack_workspace_id         = var.budget_slack_workspace_id
+#   budgets_limit_amount_daily = var.budget_limit_amount_daily
+# }
+
 # AWS Cost Management
 module "aws-cost-allocation-tags" {
   source = "./modules/repository"
