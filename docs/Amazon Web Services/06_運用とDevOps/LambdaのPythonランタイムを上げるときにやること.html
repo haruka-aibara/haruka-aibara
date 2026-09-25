@@ -52,28 +52,27 @@ a{color:var(--c1)}
 <p>そこで、動かす前に機械で探して、見つかったところだけ直す。</p>
 
 <figure>
-<svg viewBox="0 0 700 150" role="img" aria-label="やることの4ステップ">
+<svg viewBox="0 0 700 135" role="img" aria-label="やることの4ステップ">
   <g font-size="12.5" text-anchor="middle">
     <rect x="5" y="10" width="160" height="90" rx="8" fill="var(--c1)"/>
     <text x="85" y="40" fill="var(--on)" font-weight="600">1. pyright</text>
     <text x="85" y="62" fill="var(--on)">動かなくなる所を</text>
     <text x="85" y="80" fill="var(--on)">探して直す</text>
-    <rect x="182" y="10" width="160" height="90" rx="8" fill="var(--c4)"/>
-    <text x="262" y="40" fill="var(--on)" font-weight="600">2. AI</text>
-    <text x="262" y="62" fill="var(--on)">挙動の変化に</text>
-    <text x="262" y="80" fill="var(--on)">当たるか照合</text>
-    <rect x="359" y="10" width="160" height="90" rx="8" fill="var(--c3)"/>
-    <text x="439" y="40" fill="var(--on)" font-weight="600">3. ruff</text>
-    <text x="439" y="62" fill="var(--on)">古い書き方を</text>
-    <text x="439" y="80" fill="var(--on)">新しくする</text>
+    <rect x="182" y="10" width="160" height="90" rx="8" fill="var(--c3)"/>
+    <text x="262" y="40" fill="var(--on)" font-weight="600">2. ruff</text>
+    <text x="262" y="62" fill="var(--on)">古い書き方を</text>
+    <text x="262" y="80" fill="var(--on)">新しくする</text>
+    <rect x="359" y="10" width="160" height="90" rx="8" fill="var(--c4)"/>
+    <text x="439" y="40" fill="var(--on)" font-weight="600">3. AI</text>
+    <text x="439" y="62" fill="var(--on)">挙動の変化に</text>
+    <text x="439" y="80" fill="var(--on)">当たるか照合</text>
     <rect x="536" y="10" width="160" height="90" rx="8" fill="var(--c2)"/>
     <text x="616" y="40" fill="var(--on)" font-weight="600">4. sandbox</text>
     <text x="616" y="62" fill="var(--on)">本物のイベントを</text>
     <text x="616" y="80" fill="var(--on)">1回流す</text>
   </g>
   <g stroke="var(--muted)" stroke-width="2"><line x1="167" y1="55" x2="180" y2="55"/><line x1="344" y1="55" x2="357" y2="55"/><line x1="521" y1="55" x2="534" y2="55"/></g>
-  <text x="5" y="125" font-size="11.5" fill="var(--muted)">1〜2 が上げるために必要な修正。3 は任意で、別のコミットに分ける。</text>
-  <text x="5" y="143" font-size="11.5" fill="var(--muted)">壊れたときに、どちらの変更が原因かすぐ分かるようにするため。</text>
+  <text x="5" y="125" font-size="11.5" fill="var(--muted)">1・3 が上げるために必要な修正。2 は必須ではないが、基本的にやっておく（別のコミットに分ける）。</text>
 </svg>
 </figure>
 
@@ -102,13 +101,13 @@ warning: The method "utcnow" in class "datetime" is deprecated</code></pre>
 <li><strong>Layer のディレクトリに直接置いている</strong>：<code>pyrightconfig.json</code> に <code>"extraPaths": ["layer/python"]</code> のようにその場所を足す</li>
 </ul>
 
-<h2>2. 挙動の変化は AI に照合させる</h2>
-<p>pyright が見つけられないのは「関数はあるが、結果が変わった」ものだけ。これは Python 公式の What's New の「Porting to Python 3.X」節に一覧がある。飛ばしたバージョン分のその節とコードを AI に渡して、<strong>「このコードで該当する箇所だけ挙げて」</strong>と頼む。該当するのはたいてい 0〜数件で済む。</p>
-
-<h2>3. ruff で古い書き方を新しくする</h2>
-<p>ruff は、動くけれど古い書き方（<code>typing.List</code> → <code>list</code> など）を新しい書き方に自動で直す。上げる先のバージョンを指定して実行する。</p>
+<h2>2. ruff で古い書き方を新しくする</h2>
+<p>ruff は、動くけれど古い書き方（<code>typing.List</code> → <code>list</code> など）を新しい書き方に自動で直す。必須ではないが、上げるついでに基本的にやっておく。上げる先のバージョンを指定して実行する。</p>
 <pre><code>uvx ruff check --target-version py3XX --select UP --fix .</code></pre>
-<p>1・2 の修正とは別のコミットにしておく。</p>
+<p>1 の修正とは別のコミットにしておく。壊れたときに、どちらの変更が原因かすぐ分かる。</p>
+
+<h2>3. 挙動の変化は AI に照合させる</h2>
+<p>pyright が見つけられないのは「関数はあるが、結果が変わった」ものだけ。これは Python 公式の What's New の「Porting to Python 3.X」節に一覧がある。飛ばしたバージョン分のその節とコードを AI に渡して、<strong>「このコードで該当する箇所だけ挙げて」</strong>と頼む。該当するのはたいてい 0〜数件で済む。</p>
 
 <h2>4. sandbox で1回だけ動かす</h2>
 <p>dev も本番と同じように使っているなら、dev では試せない。本番とつながっていない sandbox アカウントに同じ関数を作って、そこで流す。</p>
