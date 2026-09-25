@@ -103,6 +103,23 @@ GitHub の fine-grained PAT。
 
 `jsonEncode` は引用符・改行を JSON 用にエスケープする。説明が空でも `""` になるので本文が壊れない。成功すると 204 が返る。
 
+### 6. GitHub から手動で試す
+
+Jira を通さずにワークフローを直接起動して動作確認できる。初期設定の検証や障害の切り分けに使う。
+
+Actions → Jira to PR → **Run workflow** を開き、以下を入力する。
+
+| 入力 | 値 |
+|---|---|
+| `issue_key` | `SCRUM-<番号>`（既存の課題でも、テスト用に作った課題でもよい） |
+| `summary` | 課題のタイトル |
+| `description` | 課題の説明文（空でもよい） |
+| `issue_url` | `https://<site>.atlassian.net/browse/SCRUM-<番号>`。この形式でないと Validate issue で止まる |
+
+成功すると `ai/SCRUM-<番号>` ブランチに draft PR ができ、`#haru` に通知が届く。確認が済んだら PR を Close してブランチを削除する。
+
+publish だけが失敗した場合は、ワークフローの実行画面で **Re-run failed jobs** を使えば Claude の実装・レビューを再実行せずに publish からやり直せる。
+
 ## チケットの書き方
 
 エージェントはチケットの説明文しか読まない。[AI エージェント時代のチケット管理](../Scrum/AIエージェント時代のチケット管理.md) の 4 点を書く。
