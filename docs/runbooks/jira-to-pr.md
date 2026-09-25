@@ -116,7 +116,7 @@ GitHub の fine-grained PAT。
 | Automation の監査ログで 401 / 403 | PAT の期限・権限（Actions: write）・対象リポジトリ |
 | 422 `Unexpected inputs` | 本文の `inputs` のキー名がワークフローの inputs と一致しているか |
 | `Validate issue` で失敗 | キーが `SCRUM-数字`、URL が `https://<site>.atlassian.net/browse/SCRUM-数字` か |
-| AWS の認証で `Not authorized to perform sts:AssumeRoleWithWebIdentity` | ジョブが environment `jira-to-pr` で走っているか（main 以外からは走れない） |
+| AWS の認証で `Not authorized to perform sts:AssumeRoleWithWebIdentity` | 東京リージョンの CloudTrail で失敗した `AssumeRoleWithWebIdentity` の `userName`（トークンの sub）を見る。この org の sub は `repo:haruka-aibara@<org id>/works@<repo id>:environment:jira-to-pr` の形で、ロールの信頼条件と一致している必要がある。ジョブが environment `jira-to-pr` で走っているか（main 以外からは走れない）も確認 |
 | Bedrock で `AccessDeniedException` | モデルアクセスの有効化、IAM の対象モデル（`modules/jira-to-pr` の `bedrock_model_id`） |
 | `Apply patch` で `the change touches .github/` | エージェントが `.github/` を変えている。意図どおりの拒否 |
 | `Wait for CI` が失敗する / Slack が「CI red」なのに PR の CI は緑 | App に Checks / Commit statuses の Read が付いているか |
