@@ -60,16 +60,6 @@ module "bedrock-slack-ai-agent" {
 # My AWS Projects
 # =========================================
 
-# AWS Budget Slack Notifications
-module "terraform-aws-budget-slack-notifier" {
-  source = "./modules/repository"
-
-  repository_name = "terraform-aws-budget-slack-notifier"
-  description     = "Send AWS Budget notifications to Slack"
-
-  topics = ["terraform", "aws", "budget", "slack"]
-}
-
 # AWS Budget Slack Notifications — infrastructure.
 # Absorbed from the standalone terraform-aws-budget-slack-notifier repository
 # with its history (git log -- modules/aws-budget-slack-notifier). Not needed
@@ -135,23 +125,6 @@ module "deploy-hcp-vault-dedicated-with-terraform" {
   description     = "Deploy HashiCorp Cloud Platform (HCP) Vault Dedicated cluster using Terraform"
 
   topics = ["terraform", "vault", "hcp", "hashicorp"]
-}
-
-# =========================================
-# My Development Environment Repositories   
-# =========================================
-
-# VS Code DevContainer Templates
-# テンプレートの定義とリリースは devcontainer-templates/ に移した。このリポジトリは
-# ロールバック先兼、旧 ghcr package の置き場として残してある。畳む手順は
-# docs/runbooks/devcontainer-template-monorepo-migration.md。
-module "devcontainer-templates" {
-  source = "./modules/repository"
-
-  repository_name = "devcontainer-templates"
-  description     = "DevContainer templates for development environments"
-
-  topics = ["devcontainer", "vscode", "development"]
 }
 
 # =========================================
@@ -590,24 +563,6 @@ resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
   }
 }
 
-# Terraform AWS Budget Slack Notifier Workspace
-resource "tfe_workspace" "terraform-aws-budget-slack-notifier" {
-  name                          = "terraform-aws-budget-slack-notifier"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/terraform-aws-budget-slack-notifier"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
-}
-
 # Google Cloud Hands-on Workspace
 resource "tfe_workspace" "google-cloud-hands-on" {
   name                          = "google-cloud-hands-on"
@@ -742,4 +697,35 @@ module "tfe_team_token_rotation" {
   # Bump one to rotate that colour now -- only ever the one NOT in use.
   blue_serial  = 1
   green_serial = 1
+}
+
+# =========================================
+# Retired repositories / workspaces
+# =========================================
+# Absorbed into this repository with their history, so Terraform stops managing
+# them without destroying anything. The repositories and the workspace are then
+# deleted by hand. Drop these blocks once the apply has run.
+
+removed {
+  from = module.devcontainer-templates
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = module.terraform-aws-budget-slack-notifier
+
+  lifecycle {
+    destroy = false
+  }
+}
+
+removed {
+  from = tfe_workspace.terraform-aws-budget-slack-notifier
+
+  lifecycle {
+    destroy = false
+  }
 }

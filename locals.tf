@@ -30,7 +30,6 @@ locals {
     "generate-dev-io-summary"                   = { working_directory = "." }
     "works"                                     = { working_directory = "." }
     "iam-access-analyzer-policy-generate"       = { working_directory = "." }
-    "terraform-aws-budget-slack-notifier"       = { working_directory = "." }
     "google-cloud-hands-on"                     = { working_directory = "." }
   }
 

@@ -59,7 +59,12 @@ bash .devcontainer/smoke-test.sh
    - `works` ワークスペースは `auto_apply = true`。main にマージした時点で apply が走るので、plan は PR の speculative run で確認する
 3. GitHub 上でリポジトリを archive または delete する
 
-旧リポジトリの 72 コミットは #56 で取り込み済みなので、旧リポジトリを消しても履歴は失われない。
+旧リポジトリの履歴は #56 で取り込んだが、shallow clone から取り込んだため 72 コミット（2025-05-04 以降）
+しか入っていなかった。#86 で main の全 118 コミットを取り込み直したので、旧リポジトリを消しても
+履歴は失われない（#56 分と重複して 2 系統入っている）。
+
+2026-09-25 に Terraform の管理から外した（`removed { destroy = false }`）。リポジトリは apply 後に GitHub 上で手動で削除する。
+
 ただし**既定の `git log` / `git blame` は取り込んだコミットではなく #47 を指す**。#47 が先に
 同じ内容を main 本線へ入れてしまい、マージの第1親（main 側）と内容が同じになるため、git の
 history simplification が第2親（取り込んだ履歴）に降りないため。元のコミットを見るとき:
