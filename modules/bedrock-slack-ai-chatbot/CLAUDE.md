@@ -9,8 +9,8 @@ PR / push で以下の CI が走る。コードを書いたら必ず通ること
 | Terraform fmt | `terraform fmt -recursive -check` | 差分があると exit 1 |
 | tflint | `tflint -f compact` | warning でも exit 2 |
 | Trivy | `trivy config .` | HIGH/CRITICAL で exit 1 |
-| ruff | `uvx ruff check .` | Python Test 以外は再利用ワークフロー呼び出し |
-| pytest | `uv run pytest` | `.github/workflows/python-test.yml` |
+| ruff | `uvx ruff check .` | `python-ci.yml`（配布元 `workflow-dist/reusable/python-ci.yml`） |
+| pytest | `uv run pytest` | 同上 |
 
 CI は works ルートの `workflow-dist/` を単一ソースとして `github_repository_file` で works 自身の `.github/workflows/` に配布される(このディレクトリの `.github/workflows/` ではない。GitHub Actions はリポジトリルートのワークフローしか読まない)。配布元は直接編集しない。
 
