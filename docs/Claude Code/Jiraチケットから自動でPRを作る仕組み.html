@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Jira のチケットから自動で PR を作る仕組み</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1.25rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+/* 狭い画面では図を縮めず横スクロールにする。縮めると図中の文字が読めない大きさになる */
+@media (max-width:640px){figure{overflow-x:auto}figure svg{min-width:640px}}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;font-size:.93rem}
+th,td{border:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{background:var(--lane);font-weight:600}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Jira のチケットから自動で PR を作る仕組み</h1>
+<div class="note"><strong>この仕組みは撤去した。使わないこと。</strong> 実際に組んで動かしてみた結果、部品のほぼすべてに既製品（GitHub Copilot のクラウドエージェント、Atlassian Rovo Dev、GitHub for Jira など）があり、自作して保守し続ける理由が薄かった。同じことをしたいなら既製品を使うほうがよい。判断の経緯は <a href="チケットからPRを作るAIエージェントは自作すべきか.html">チケットから PR を作る AI エージェントは自作すべきか</a>。この記事は、仕組みの考え方（権限の分け方など）の記録として残している。以下のファイルへのリンクは撤去前のコミットを指す。</div>
+<p class="lede">チケットをスプリントに入れるだけで、Claude Code が実装し、別の Claude がレビューし、CI が終わった draft PR が Slack に届く。</p>
+
+<h2>どんな場面で困るか</h2>
+<p>いまは Claude Code のアプリに頼めば PR は作れる。困るのはその手前と後ろだ。チケットを切っても実装は別の場所で始まり、チケットの状態は人が手で動かし、PR ができたかどうかは自分で見に行く。Jira・GitHub・Slack を個別には使っているのに、つながっていない。</p>
+<p>欲しいのは「AI に頼む手間」を減らすことではなく、<strong>チケットを置いたら、あとは判断が要る場面だけ人に回ってくる</strong>流れ。自分から頼む作業を自動化しても価値は薄い。</p>
+
+<h2>全体の流れ</h2>
+<figure>
+<svg viewBox="0 0 725 300" role="img" aria-label="Jira から Slack までの全体の流れ">
+  <defs>
+    <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <!-- 1 段目: 起動まで -->
+  <rect x="10" y="20" width="160" height="58" rx="8" fill="var(--c1)"/>
+  <text x="90" y="44" font-size="13" font-weight="600" fill="var(--on)" text-anchor="middle">Jira</text>
+  <text x="90" y="64" font-size="11" fill="var(--on)" text-anchor="middle">未開始スプリントに入れる</text>
+  <line x1="172" y1="49" x2="208" y2="49" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="210" y="20" width="170" height="58" rx="8" fill="var(--c1)"/>
+  <text x="295" y="44" font-size="13" font-weight="600" fill="var(--on)" text-anchor="middle">Jira Automation</text>
+  <text x="295" y="64" font-size="11" fill="var(--on)" text-anchor="middle">workflow_dispatch を送る</text>
+  <line x1="382" y1="49" x2="418" y2="49" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="420" y="20" width="295" height="58" rx="8" fill="var(--c2)"/>
+  <text x="567" y="44" font-size="13" font-weight="600" fill="var(--on)" text-anchor="middle">GitHub Actions</text>
+  <text x="567" y="64" font-size="11" fill="var(--on)" text-anchor="middle">jira-to-pr.yml が 3 つのジョブを順に動かす</text>
+
+  <!-- Actions の中身 -->
+  <rect x="5" y="110" width="715" height="96" rx="10" fill="none" stroke="var(--c2)" stroke-dasharray="5 4"/>
+  <line x1="567" y1="80" x2="567" y2="108" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a1)"/>
+
+  <rect x="15" y="126" width="125" height="64" rx="8" fill="var(--c3)"/>
+  <text x="77" y="150" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">実装</text>
+  <text x="77" y="170" font-size="10.5" fill="var(--on)" text-anchor="middle">Claude → パッチ 1 枚</text>
+  <line x1="142" y1="158" x2="156" y2="158" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="158" y="126" width="125" height="64" rx="8" fill="var(--c3)"/>
+  <text x="220" y="150" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">レビュー</text>
+  <text x="220" y="170" font-size="10.5" fill="var(--on)" text-anchor="middle">別の Claude が判定</text>
+  <line x1="285" y1="158" x2="299" y2="158" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="301" y="126" width="125" height="64" rx="8" fill="var(--c2)"/>
+  <text x="363" y="150" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">draft PR</text>
+  <text x="363" y="170" font-size="10.5" fill="var(--on)" text-anchor="middle">push して PR を作る</text>
+  <line x1="428" y1="158" x2="442" y2="158" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="444" y="126" width="125" height="64" rx="8" fill="var(--c2)"/>
+  <text x="506" y="150" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">CI</text>
+  <text x="506" y="170" font-size="10.5" fill="var(--on)" text-anchor="middle">終わるまで待つ</text>
+  <line x1="571" y1="158" x2="585" y2="158" stroke="var(--muted)" stroke-width="1.6" marker-end="url(#a1)"/>
+  <rect x="587" y="126" width="125" height="64" rx="8" fill="var(--c4)"/>
+  <text x="649" y="150" font-size="12.5" font-weight="600" fill="var(--on)" text-anchor="middle">Slack</text>
+  <text x="649" y="170" font-size="10.5" fill="var(--on)" text-anchor="middle">CI 結果＋判定を 1 通</text>
+
+  <!-- 相関 ID -->
+  <text x="10" y="238" font-size="12" font-weight="600" fill="var(--ink)">Jira キー（例: SCRUM-12）がすべてに入る</text>
+  <rect x="10" y="250" width="160" height="30" rx="6" fill="var(--lane)"/>
+  <text x="90" y="270" font-size="11.5" fill="var(--ink)" text-anchor="middle">ブランチ ai/SCRUM-12</text>
+  <rect x="180" y="250" width="180" height="30" rx="6" fill="var(--lane)"/>
+  <text x="270" y="270" font-size="11.5" fill="var(--ink)" text-anchor="middle">PR タイトル [SCRUM-12] …</text>
+  <rect x="370" y="250" width="160" height="30" rx="6" fill="var(--lane)"/>
+  <text x="450" y="270" font-size="11.5" fill="var(--ink)" text-anchor="middle">PR 本文の課題リンク</text>
+  <rect x="540" y="250" width="175" height="30" rx="6" fill="var(--lane)"/>
+  <text x="627" y="270" font-size="11.5" fill="var(--ink)" text-anchor="middle">Slack の課題リンク</text>
+</svg>
+<figcaption>Slack に知らせるのは PR を作った時点ではなく CI が出揃ってから。作った直後の PR はまだ「完成」していないため。CI の待ち時間は 25 分で打ち切る。</figcaption>
+</figure>
+
+<h2>各サービスの役割と、Jira キーでつなぐ考え方</h2>
+<p>サービスごとに役割を 1 つずつだけ持たせる。</p>
+<table>
+<tr><th>サービス</th><th>役割</th></tr>
+<tr><td>Jira</td><td>状態の唯一の置き場所</td></tr>
+<tr><td>GitHub</td><td>コード・PR・CI と、エージェントの実行場所（GitHub Actions ＋ <code>anthropics/claude-code-action</code>）</td></tr>
+<tr><td>Slack</td><td>人への通知と、判断の入口</td></tr>
+</table>
+<p>サービスをまたいで同じ作業を追えるように、Jira キーを<strong>相関 ID</strong> として図の下段のすべてに埋める。GitHub for Jira を入れていれば、ブランチ名と PR タイトルのキーを見て課題に PR が自動でぶら下がる。つなぎ用のデータベースは要らない。</p>
+
+<h2>エージェントに書き込み権限を渡さない</h2>
+<p>いちばん手軽なのは Claude に <code>gh pr create</code> までやらせることだが、それは書き込めるトークンをエージェントに渡すことになる。チケットは第三者が書けるので、本文に紛れた指示にエージェントが乗せられる前提で組む。そこでワークフローを 3 つのジョブに分け、ジョブの間で渡すのは<strong>パッチ 1 枚</strong>だけにする。</p>
+<figure>
+<svg viewBox="0 0 725 330" role="img" aria-label="implement・review・publish の 3 ジョブが持つもの">
+  <defs>
+    <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="var(--muted)"/>
+    </marker>
+  </defs>
+  <!-- implement -->
+  <rect x="10" y="10" width="215" height="250" rx="10" fill="var(--card)" stroke="var(--line)"/>
+  <rect x="10" y="10" width="215" height="40" rx="10" fill="var(--c3)"/>
+  <text x="117" y="36" font-size="13.5" font-weight="600" fill="var(--on)" text-anchor="middle">implement</text>
+  <text x="24" y="76" font-size="12" fill="var(--ink)">● Claude（実装する）</text>
+  <text x="24" y="102" font-size="12" fill="var(--ink)">● 読み取り専用の GITHUB_TOKEN</text>
+  <text x="24" y="128" font-size="12" fill="var(--ink)">● Claude の資格情報</text>
+  <text x="24" y="160" font-size="12" fill="var(--stop)">✕ 書き込めるトークン</text>
+  <text x="24" y="186" font-size="12" fill="var(--stop)">✕ Slack の秘密情報</text>
+  <rect x="40" y="210" width="155" height="34" rx="6" fill="var(--c1)"/>
+  <text x="117" y="232" font-size="12" font-weight="600" fill="var(--on)" text-anchor="middle">パッチ 1 枚</text>
+
+  <!-- review -->
+  <rect x="255" y="10" width="215" height="250" rx="10" fill="var(--card)" stroke="var(--line)"/>
+  <rect x="255" y="10" width="215" height="40" rx="10" fill="var(--c3)"/>
+  <text x="362" y="36" font-size="13.5" font-weight="600" fill="var(--on)" text-anchor="middle">review</text>
+  <text x="269" y="76" font-size="12" fill="var(--ink)">● まっさらなチェックアウト</text>
+  <text x="269" y="102" font-size="12" fill="var(--ink)">● 別の Claude（読むだけ）</text>
+  <text x="269" y="128" font-size="12" fill="var(--ink)">● 読み取り専用の GITHUB_TOKEN</text>
+  <text x="269" y="160" font-size="12" fill="var(--stop)">✕ 書き込めるトークン</text>
+  <text x="269" y="186" font-size="12" fill="var(--stop)">✕ 実装時の文脈</text>
+  <rect x="285" y="210" width="155" height="34" rx="6" fill="var(--lane)"/>
+  <text x="362" y="232" font-size="12" fill="var(--ink)" text-anchor="middle">判定と指摘</text>
+
+  <!-- publish -->
+  <rect x="500" y="10" width="215" height="250" rx="10" fill="var(--card)" stroke="var(--c2)" stroke-width="1.5"/>
+  <rect x="500" y="10" width="215" height="40" rx="10" fill="var(--c2)"/>
+  <text x="607" y="36" font-size="13.5" font-weight="600" fill="var(--on)" text-anchor="middle">publish</text>
+  <text x="514" y="76" font-size="12" fill="var(--ink)">● まっさらなチェックアウト</text>
+  <text x="514" y="102" font-size="12" fill="var(--ink)">● GitHub App のトークン</text>
+  <text x="528" y="120" font-size="10.5" fill="var(--muted)">Contents / PR に書ける</text>
+  <text x="514" y="146" font-size="12" fill="var(--ink)">● Slack のトークン</text>
+  <text x="514" y="178" font-size="12" fill="var(--stop)">✕ エージェント</text>
+  <text x="514" y="204" font-size="12" fill="var(--stop)">✕ Workflows 権限</text>
+  <rect x="530" y="218" width="155" height="34" rx="6" fill="var(--lane)"/>
+  <text x="607" y="240" font-size="11.5" fill="var(--ink)" text-anchor="middle">push・draft PR・Slack</text>
+
+  <!-- パッチの受け渡し -->
+  <path d="M117 246 V295 H362 V262" fill="none" stroke="var(--c1)" stroke-width="1.8" marker-end="url(#a2)"/>
+  <path d="M362 295 H607 V262" fill="none" stroke="var(--c1)" stroke-width="1.8" marker-end="url(#a2)"/>
+  <text x="362" y="318" font-size="11.5" fill="var(--c1)" text-anchor="middle">渡すのはパッチだけ。ジョブごとにランナーも別になる</text>
+</svg>
+<figcaption>書き込めるトークンがあるジョブではエージェントを動かさず、エージェントが動くジョブには書き込めるトークンを置かない。publish は <code>.github/</code> を触るパッチを当てた時点で止め、App に Workflows 権限を付けないことで push 側でも拒否される。</figcaption>
+</figure>
+<p>わざわざジョブを分けるのは、同じ作業ディレクトリで push すると、エージェントが仕込んだ <code>.git/hooks</code> や <code>.git/config</code> がトークンを持った状態で実行されうるから。パッチなら中身は差分だけで、まっさらなチェックアウトに当て直せる。</p>
+<p>起動側も同じ考え方で、Jira Automation に置く PAT は <strong>Actions: write だけ</strong>。workflow_dispatch はこれで足りるので、漏れてもワークフローを起動できるだけでコードは書けない。PR は draft で作り、マージは人がする。</p>
+
+<h2>入口はステータスではなく未開始スプリント</h2>
+<p>「AI 実装」というステータスに移したら起動、が素直に見える。ただステータスの追加は Jira のワークフロー変更で、大きな組織では管理者への申請が要る。スプリントならプロジェクトの中で利用者の権限だけで作れる。</p>
+<p>そのスプリントは<strong>開始しない</strong>。未開始ならバーンダウンやベロシティに混ざらない。Automation は「スプリント」欄の変更をトリガーにし、JQL でスプリント ID が一致するときだけ起動する（名前は変えられるうえ重複しうるので ID で見る）。</p>
+
+<h2>サブスクで動かすか、Bedrock で動かすか</h2>
+<table>
+<tr><th></th><th>Claude のサブスク（既定）</th><th>Amazon Bedrock</th></tr>
+<tr><td>課金</td><td>定額の範囲に収まる</td><td>従量課金</td></tr>
+<tr><td>資格情報</td><td><code>claude setup-token</code> の OAuth トークン（約 1 年有効）を secret に置く</td><td>OIDC で IAM ロールを引き受ける。長期のキーを置かない</td></tr>
+<tr><td>注意</td><td>利用上限を手元の Claude Code と共有する</td><td>使うモデルだけを IAM で許可する</td></tr>
+</table>
+<p>個人で回すならサブスクが安い。枠が足りないときや、長期のトークンを GitHub に置きたくないときに Bedrock へ切り替える。</p>
+
+<div class="note"><strong>チケットの質がそのまま PR の質になる。</strong> エージェントが読むのはチケットの説明文だけ。触る場所・やること / やらないこと・検証できる受け入れ条件を書かないと、それらしいが的外れな PR が届く。</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://github.com/haruka-aibara/works/blob/6f12d05056edec543708b769b7465f692faf3fc2/docs/decisions/0003-jira-to-pr.md">ADR-0003: Jira のチケットから Claude Code に draft PR を作らせる</a></li>
+<li><a href="https://github.com/haruka-aibara/works/blob/6f12d05056edec543708b769b7465f692faf3fc2/docs/runbooks/jira-to-pr.md">ランブック: Jira → PR 自動化（初期設定・止め方・Bedrock への切り替え）</a></li>
+<li><a href="https://github.com/haruka-aibara/works/blob/6f12d05056edec543708b769b7465f692faf3fc2/.github/workflows/jira-to-pr.yml">.github/workflows/jira-to-pr.yml</a></li>
+<li><a href="https://github.com/anthropics/claude-code-action">anthropics/claude-code-action</a></li>
+<li><a href="https://code.claude.com/docs/ja/github-actions">Claude Code - GitHub Actions</a></li>
+<li><a href="https://docs.github.com/ja/rest/actions/workflows#create-a-workflow-dispatch-event">GitHub Docs - ワークフロー ディスパッチ イベントを作成する</a></li>
+<li><a href="https://docs.github.com/ja/actions/security-for-github-actions/security-guides/automatic-token-authentication">GitHub Docs - 自動トークン認証（GITHUB_TOKEN）</a></li>
+<li><a href="https://github.com/actions/create-github-app-token">actions/create-github-app-token</a></li>
+</ul>
+
+</main>
+</body>
+</html>
