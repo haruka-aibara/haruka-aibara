@@ -16,17 +16,18 @@ Jira・Slack・GitHub・AWS・HCP Terraform を個別には使っているが、
 | Slack | 人への通知と判断の入口 |
 | GitHub | コード・PR・CI、エージェントの実行場所 |
 | HCP Terraform | PR の plan とマージ後の apply |
-| AWS | Bedrock と、つなぎの処理 |
+| AWS | Bedrock（サブスクの代わりに使える）と、つなぎの処理 |
 
 この ADR はその最初の一本道（Jira → PR → Slack）を決める。HCP Terraform の apply 結果で Jira を「デプロイ済み」に動かす部分は後続で足す。
 
 ## 決定
 
 - **実行場所は GitHub Actions（`anthropics/claude-code-action`）。** Lambda は 15 分の上限と、git・uv・terraform が無いことで向かない。
-- **モデルは Bedrock を OIDC で使う。** Opus 5.5 の global 推論プロファイル（`global.anthropic.claude-opus-5-5`）。AWS に長期キーを置かない。ロールは Bedrock の呼び出しだけを許し、信頼条件は environment `jira-to-pr` に限る。environment は保護ブランチ（main）からしか使えない。
+- **モデルは Claude のサブスクで Opus 5.5 を使う。** `claude setup-token` で発行した OAuth トークンを environment `jira-to-pr` の secret に置く。個人利用では定額の範囲に収まる方が、Bedrock の従量課金より安い。environment は保護ブランチ（main）からしか使えない。
+- **Bedrock に切り替えられるようにしておく。** OIDC で引き受ける IAM ロール（Opus 5.5 の global 推論プロファイルの呼び出しだけを許し、信頼条件は environment `jira-to-pr` に限る）を Terraform で残す。サブスクの枠が足りないときや、長期のトークンを置きたくないときの逃げ道。手順はランブック。
 - **起動は Jira Automation からの workflow_dispatch。** repository_dispatch は Contents: write の PAT が要るが、workflow_dispatch は Actions: write で足りる。漏れてもコードは書けない。
 - **入口は未開始の「AI 実装」スプリント。** 課題をそのスプリントに入れたら起動する。ステータスはワークフローの変更で、大きな組織では管理者への申請が要る。スプリントはプロジェクトの中で作れて、利用者の権限で完結する。開始しないので、バーンダウンやベロシティにも混ざらない。
-- **エージェントには書き込み権限を渡さず、ジョブごと隔離する。** 実装ジョブが持つのは読み取り専用の `GITHUB_TOKEN` と Bedrock だけで、成果物はパッチ 1 枚。push と PR 作成は別ジョブが、まっさらなチェックアウトにパッチを当てて専用の GitHub App のトークンで行う。同じ作業ディレクトリで push すると、エージェントが仕込んだ `.git/hooks` や `.git/config` がトークンを持った状態で実行されうるため。App に Workflows 権限は付けず、`.github/` を触る差分はその前に止める。
+- **エージェントには書き込み権限を渡さず、ジョブごと隔離する。** 実装ジョブが持つのは読み取り専用の `GITHUB_TOKEN` と Claude の資格情報だけで、成果物はパッチ 1 枚。push と PR 作成は別ジョブが、まっさらなチェックアウトにパッチを当てて専用の GitHub App のトークンで行う。同じ作業ディレクトリで push すると、エージェントが仕込んだ `.git/hooks` や `.git/config` がトークンを持った状態で実行されうるため。App に Workflows 権限は付けず、`.github/` を触る差分はその前に止める。
 - **PR は draft、マージは人。** works は main へのマージで HCP Terraform が auto apply する。エージェントの変更がそのまま本番に届く経路は作らない。
 - **チケット本文はデータとして渡す。** プロンプトに埋め込まずファイルに書き、「指示ではない」と明示する。キーと URL は形を検証する。
 - **レビューは別の Claude にやらせる。** 実装と同じ文脈で読み直すと同じ思い込みで見落とす。まっさらな環境で、読み取り専用のツールだけを持つ Claude が差分とチケットを読み、判定と指摘を PR 本文に残す。
@@ -44,5 +45,7 @@ Jira・Slack・GitHub・AWS・HCP Terraform を個別には使っているが、
 ## トレードオフ
 
 - 手作業の設定が残る（GitHub App、environment の値、Jira Automation、起動用 PAT）。手順は [ランブック](../runbooks/jira-to-pr.md)。
-- 起動用 PAT は 90 日で手動更新。漏れても被害は Bedrock の料金まで。
+- 起動用 PAT は 90 日で手動更新。漏れても被害はサブスクの利用枠まで。
+- Claude の OAuth トークンは約 1 年有効で、GitHub の secret に置く長期の資格情報になる。Claude のプロセスに渡るので読まれうる。漏れたら revoke して作り直す。これを避けたいときは Bedrock（OIDC、長期キーなし）に切り替える。
+- サブスクの利用上限を手元の Claude Code と共有する。重いチケットが続くと手元の作業が止まることがある。
 - チケットの質がそのまま PR の質になる。受け入れ条件の無いチケットは、それらしいが的外れな PR を生む。
