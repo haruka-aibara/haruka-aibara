@@ -44,7 +44,7 @@ a{color:var(--c1)}
 <main>
 
 <h1>Lambda の Python ランタイムを上げるときにやること</h1>
-<p class="lede">直すところは機械に探させる。直すのはそこだけ。最後に1回だけ本物で動かす。</p>
+<p class="lede">直すところは機械に探させる。直すのはそこだけ。最後に sandbox で1回だけ動かす。</p>
 
 <h2>何が問題なのか</h2>
 <p>AWS から「このランタイムのサポートを終了します」と通知が来る。Terraform の <code>runtime = "python3.X"</code> を書き換えるのは1行で済む。</p>
@@ -67,9 +67,9 @@ a{color:var(--c1)}
     <text x="439" y="62" fill="var(--on)">古い書き方を</text>
     <text x="439" y="80" fill="var(--on)">新しくする</text>
     <rect x="536" y="10" width="160" height="90" rx="8" fill="var(--c2)"/>
-    <text x="616" y="40" fill="var(--on)" font-weight="600">4. 1回動かす</text>
-    <text x="616" y="62" fill="var(--on)">試し用の関数に</text>
-    <text x="616" y="80" fill="var(--on)">本物のイベント</text>
+    <text x="616" y="40" fill="var(--on)" font-weight="600">4. sandbox</text>
+    <text x="616" y="62" fill="var(--on)">本物のイベントを</text>
+    <text x="616" y="80" fill="var(--on)">1回流す</text>
   </g>
   <g stroke="var(--muted)" stroke-width="2"><line x1="167" y1="55" x2="180" y2="55"/><line x1="344" y1="55" x2="357" y2="55"/><line x1="521" y1="55" x2="534" y2="55"/></g>
   <text x="5" y="125" font-size="11.5" fill="var(--muted)">1〜2 が上げるために必要な修正。3 は任意で、別のコミットに分ける。</text>
@@ -106,27 +106,32 @@ warning: The method "utcnow" in class "datetime" is deprecated</code></pre>
 <pre><code>uvx ruff check --target-version py3XX --select UP --fix .</code></pre>
 <p>1・2 の修正とは別のコミットにしておく。</p>
 
-<h2>4. 最後に1回だけ本物で動かす</h2>
-<p>本番の関数には触らず、<strong>トリガーを付けていない試し用の関数</strong>を横に作る。コードと IAM ロールは本番と同じにして、ランタイムだけを新しくする。</p>
-<pre><code>resource "aws_lambda_function" "app_next" {
-  function_name    = "app-next"          # 試す間だけ置く
-  runtime          = "python3.XX"
-  role             = aws_lambda_function.app.role
-  handler          = aws_lambda_function.app.handler
-  filename         = data.archive_file.app.output_path
-  source_code_hash = data.archive_file.app.output_base64sha256
+<h2>4. sandbox で1回だけ動かす</h2>
+<p>dev も本番と同じように使っているなら、dev では試せない。本番とつながっていない sandbox アカウントに同じ関数を作って、そこで流す。</p>
+<p>これを軽くやるための条件は1つだけ。<strong>Lambda を Terraform のモジュールにして、ランタイムと外部の送り先（Slack など）を変数で渡せるようにしておく</strong>こと。そうすれば、sandbox 用の小さな設定から同じモジュールを呼ぶだけで済む。</p>
+<pre><code># sandbox/main.tf
+provider "aws" {
+  profile = "sandbox"
+}
+
+module "app" {
+  source         = "../modules/app"
+  python_runtime = "python3.XX"                 # 上げる先
+  slack_webhook  = "https://hooks.slack.com/..." # テスト用チャンネル
 }</code></pre>
-<ol>
-<li>apply する。トリガーがないので勝手には動かない</li>
-<li>コンソールの「テスト」ボタンで、本物のイベント（CloudWatch Logs などから保存したもの）を流す</li>
-<li>動いたら、本番の <code>runtime</code> を書き換えて apply し、試し用の関数を消す</li>
-</ol>
-<p>試し用の関数も本物の AWS を操作する。Slack への通知やリソースの書き換えが起きる関数は、環境変数で送り先をテスト用に向けてから流す。</p>
+<pre><code>terraform apply
+aws lambda invoke --profile sandbox --function-name app \
+  --cli-binary-format raw-in-base64-out --payload file://event.json out.json
+terraform destroy</code></pre>
+<p><code>event.json</code> は本番の CloudWatch Logs などから保存した本物のイベント。エラーが出なければ、本番の <code>runtime</code> を書き換えて apply する。</p>
 
 <div class="note">
 <p><strong>通知が来たら早めに始める</strong></p>
 <p>Lambda はサポート終了後しばらくすると、そのランタイムの関数を更新できなくなる。そうなると、問題が出たときに古いバージョンへ戻すこともできない。</p>
 </div>
+
+<h2>次の一歩</h2>
+<p>sandbox で流す作業に慣れたら、同じ確認を pytest と moto で手元だけで回せるようにする。偽の AWS の上で関数を呼ぶテストを1本書いておけば、sandbox を作らなくてもコマンド1つで確かめられる。考え方は <a href="../../Python/18_テスト/pytestとmotoをゼロから理解する.html">pytest と moto をゼロから理解する</a> にある。</p>
 
 <h2>参考</h2>
 <ul>
@@ -135,6 +140,7 @@ warning: The method "utcnow" in class "datetime" is deprecated</code></pre>
 <li><a href="https://docs.astral.sh/ruff/rules/#pyupgrade-up">Ruff - pyupgrade (UP) rules</a></li>
 <li><a href="https://docs.python.org/3/whatsnew/index.html">Python - What's New in Python</a></li>
 <li><a href="https://docs.astral.sh/uv/concepts/python-versions/">uv - Python versions</a></li>
+<li><a href="https://docs.aws.amazon.com/cli/latest/reference/lambda/invoke.html">AWS CLI - lambda invoke</a></li>
 </ul>
 
 </main>
