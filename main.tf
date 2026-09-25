@@ -121,6 +121,15 @@ module "iam-access-analyzer-policy-generate" {
   topics = ["aws", "iam", "access-analyzer", "policy"]
 }
 
+# IAM Access Analyzer Policy Generate — infrastructure.
+# Absorbed from the standalone iam-access-analyzer-policy-generate repository
+# with its history (git log -- modules/iam-access-analyzer-policy-generate).
+# Not needed right now, so the call is commented out. To enable it, uncomment
+# this block.
+# module "iam_access_analyzer_policy_generate" {
+#   source = "./modules/iam-access-analyzer-policy-generate"
+# }
+
 # =========================================
 # My HCP Vault Learning Repositories
 # =========================================
