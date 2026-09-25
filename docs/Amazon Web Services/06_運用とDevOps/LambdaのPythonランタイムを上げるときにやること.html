@@ -135,8 +135,9 @@ terraform destroy</code></pre>
 <p>Lambda はサポート終了後しばらくすると、そのランタイムの関数を更新できなくなる。そうなると、問題が出たときに古いバージョンへ戻すこともできない。</p>
 </div>
 
-<h2>次の一歩</h2>
-<p>sandbox で流す作業に慣れたら、同じ確認を pytest と moto で手元だけで回せるようにする。偽の AWS の上で関数を呼ぶテストを1本書いておけば、sandbox を作らなくてもコマンド1つで確かめられる。考え方は <a href="../../Python/18_テスト/pytestとmotoをゼロから理解する.html">pytest と moto をゼロから理解する</a> にある。</p>
+<h2>次の一歩：sandbox も省く</h2>
+<p>関数が何本もあると、1本ごとに apply して invoke して destroy するのは正直面倒になる。やっているのは結局「本物のイベントを渡して、エラーなく動くかを見る」だけだ。</p>
+<p>それなら、AWS 側を偽物（moto）に差し替えて、手元で関数を呼べばいい。pytest でそのテストを1本書いておけば、sandbox を作らずに <code>uv run --python 3.XX pytest</code> の1コマンドで同じ確認ができ、次にバージョンを上げるときもそのまま使える。書き方は <a href="../../Python/18_テスト/pytestとmotoをゼロから理解する.html">pytest と moto をゼロから理解する</a> にある。</p>
 
 <h2>参考</h2>
 <ul>
