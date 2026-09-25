@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lambda の Python ランタイムを上げるときにやること</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.85rem;line-height:1.6}
+pre code{background:none;padding:0}
+ul{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Lambda の Python ランタイムを上げるときにやること</h1>
+<p class="lede">やることは3つ。機械に探させる、手元で動かす、dev で動かす。</p>
+
+<h2>何が問題なのか</h2>
+<p>AWS から「このランタイムのサポートを終了します」と通知が来る。Terraform の <code>runtime = "python3.X"</code> を書き換えるのは1行で済む。</p>
+<p>困るのは、<strong>新しい Python で自分のコードが動くかどうかは、動かしてみないと分からない</strong>こと。Python は新しいバージョンで古い機能を削除することがあり、それを使っていると動かなくなる。かといって、本番でいきなり試すわけにはいかない。</p>
+
+<figure>
+<svg viewBox="0 0 700 120" role="img" aria-label="やることの3ステップ">
+  <g font-size="13" text-anchor="middle">
+    <rect x="10" y="10" width="210" height="76" rx="8" fill="var(--c1)"/>
+    <text x="115" y="40" fill="var(--on)" font-weight="600">1. 機械に探させる</text>
+    <text x="115" y="64" fill="var(--on)">消えた機能を使っていないか</text>
+    <rect x="245" y="10" width="210" height="76" rx="8" fill="var(--c3)"/>
+    <text x="350" y="40" fill="var(--on)" font-weight="600">2. 手元で動かす</text>
+    <text x="350" y="64" fill="var(--on)">新しい Python で1回実行</text>
+    <rect x="480" y="10" width="210" height="76" rx="8" fill="var(--c2)"/>
+    <text x="585" y="40" fill="var(--on)" font-weight="600">3. dev で動かす</text>
+    <text x="585" y="64" fill="var(--on)">本物の Lambda で確認</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="2"><line x1="222" y1="48" x2="243" y2="48"/><line x1="457" y1="48" x2="478" y2="48"/></g>
+  <text x="10" y="110" font-size="11.5" fill="var(--muted)">1 と 2 で見つかったものを直す。3 で問題がなければ本番に反映する。</text>
+</svg>
+</figure>
+
+<h2>1. 機械に探させる</h2>
+<p>pyright というツールは、コードを実行せずに読むだけで「存在しないものを import している行」を見つけてくれる。これを<strong>上げる先の Python の上で</strong>動かすと、新しいバージョンで消えた機能を使っている行が一覧で出る。</p>
+<pre><code># 3.XX は上げる先のバージョン。--with にはコードが使うライブラリも並べる
+uv run --python 3.XX --with pyright --with boto3 pyright .</code></pre>
+<pre><code>lambda_function.py:1:8 - error: Import "cgi" could not be resolved</code></pre>
+<p>出てきた行を直す。直し方が分からなければ、エラー文をそのまま検索するか AI に渡せばよい。使っているライブラリを <code>--with</code> に入れ忘れると、そのライブラリも「見つからない」と出るので、それは無視してよい。</p>
+
+<h2>2. 手元で動かす（テスト）</h2>
+<p>1 で見つかるのは「消えた機能」だけ。実際に動くかは、動かしてみるしかない。</p>
+<p>そこで、<strong>Lambda の関数を自動で呼び出して、結果が期待どおりか確かめる小さなプログラム</strong>を書く。これがテスト。本物の AWS には触れたくないので、moto というライブラリで偽の AWS を用意する。</p>
+<figure>
+<svg viewBox="0 0 700 170" role="img" aria-label="本番とテストの違い">
+  <g font-size="12.5">
+    <text x="10" y="20" font-weight="600" fill="var(--ink)">本番</text>
+    <rect x="10" y="30" width="160" height="40" rx="6" fill="var(--lane)"/>
+    <text x="90" y="55" fill="var(--ink)" text-anchor="middle">本物のイベント</text>
+    <rect x="270" y="30" width="160" height="40" rx="6" fill="var(--c1)"/>
+    <text x="350" y="55" fill="var(--on)" text-anchor="middle">自分のコード</text>
+    <rect x="530" y="30" width="160" height="40" rx="6" fill="var(--c2)"/>
+    <text x="610" y="55" fill="var(--on)" text-anchor="middle">本物の DynamoDB</text>
+
+    <text x="10" y="108" font-weight="600" fill="var(--ink)">テスト</text>
+    <rect x="10" y="118" width="160" height="40" rx="6" fill="var(--lane)"/>
+    <text x="90" y="143" fill="var(--ink)" text-anchor="middle">保存したイベント</text>
+    <rect x="270" y="118" width="160" height="40" rx="6" fill="var(--c1)"/>
+    <text x="350" y="143" fill="var(--on)" text-anchor="middle">同じコード</text>
+    <rect x="530" y="118" width="160" height="40" rx="6" fill="var(--c3)"/>
+    <text x="610" y="143" fill="var(--on)" text-anchor="middle">偽の DynamoDB（moto）</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="2">
+    <line x1="172" y1="50" x2="268" y2="50"/><line x1="432" y1="50" x2="528" y2="50"/>
+    <line x1="172" y1="138" x2="268" y2="138"/><line x1="432" y1="138" x2="528" y2="138"/>
+  </g>
+</svg>
+<figcaption>コードは本番と同じものを使い、入口と出口だけを差し替える。イベントは CloudWatch Logs やコンソールのテストイベントから JSON で保存しておく。</figcaption>
+</figure>
+<p>たとえば「受け取ったメッセージを DynamoDB に書く」Lambda なら、テストはこうなる。</p>
+<pre><code># test_lambda.py
+import json
+import boto3
+from moto import mock_aws
+
+
+@mock_aws
+def test_lambda(monkeypatch):
+    monkeypatch.setenv("AWS_DEFAULT_REGION", "ap-northeast-1")
+
+    # 偽の DynamoDB にテーブルを作る
+    db = boto3.client("dynamodb")
+    db.create_table(
+        TableName="messages",
+        KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
+        AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
+        BillingMode="PAY_PER_REQUEST",
+    )
+
+    # 保存しておいたイベントで、Lambda の関数を呼ぶ
+    import lambda_function
+    event = json.load(open("event.json"))
+    lambda_function.lambda_handler(event, None)
+
+    # DynamoDB に書かれたか確かめる
+    assert db.scan(TableName="messages")["Count"] == 1</code></pre>
+<p>これを上げる先の Python で実行する。<code>passed</code> と出れば動いている。</p>
+<pre><code>uv run --python 3.XX --with pytest --with moto --with boto3 pytest</code></pre>
+<p>1本書いておけば、次にバージョンを上げるときも同じコマンドで確かめられる。pytest と moto の考え方は <a href="../../Python/18_テスト/pytestとmotoをゼロから理解する.html">pytest と moto をゼロから理解する</a> にある。</p>
+
+<h2>3. dev で動かす</h2>
+<p>手元では再現しない違い（Lambda に最初から入っている boto3 のバージョンなど）もあるので、最後は本物の Lambda で動かす。</p>
+<ul>
+<li>Terraform の <code>runtime</code> を書き換えて、dev 環境に apply する</li>
+<li>コンソールの「テスト」ボタンで、2 と同じイベントを流す</li>
+<li>エラーが出なければ、本番に apply する</li>
+</ul>
+
+<div class="note">
+<p><strong>通知が来たら早めに始める</strong></p>
+<p>Lambda はサポート終了後しばらくすると、そのランタイムの関数を更新できなくなる。そうなると、問題が出たときに古いバージョンへ戻すこともできない。</p>
+</div>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html">AWS Lambda - Lambda runtimes（サポート終了のスケジュール）</a></li>
+<li><a href="https://microsoft.github.io/pyright/#/command-line">Pyright - Command-Line Interface</a></li>
+<li><a href="https://docs.pytest.org/en/stable/getting-started.html">pytest - Get Started</a></li>
+<li><a href="https://docs.getmoto.org/en/latest/docs/getting_started.html">moto - Getting Started</a></li>
+<li><a href="https://docs.astral.sh/uv/guides/scripts/">uv - Running scripts</a></li>
+</ul>
+
+</main>
+</body>
+</html>
