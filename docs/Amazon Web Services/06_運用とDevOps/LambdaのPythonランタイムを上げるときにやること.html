@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lambda の Python ランタイムを上げるときにやること</title>
+<style>
+:root{
+  --bg:#fbfaf8; --card:#fff; --ink:#23201d; --muted:#6b645c; --line:#e3ded6;
+  --lane:#eeeae4; --warn-bg:#fdf3f1; --warn-line:#e0b4ac;
+  --c1:#3d6b9c; --c2:#b8562f; --c3:#5f8248; --c4:#7a63a0; --stop:#c2453a; --on:#fff;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#17161a; --card:#1e1d22; --ink:#e8e4dd; --muted:#9d968c; --line:#34323a;
+    --lane:#2a2830; --warn-bg:#2a1e1d; --warn-line:#6b3b35;
+    --c1:#5c8cc0; --c2:#cf6c42; --c3:#77a05c; --c4:#9680bd; --stop:#d75b4f; --on:#15141a;
+  }
+}
+*{box-sizing:border-box}
+body{
+  margin:0;padding:2.5rem 1rem 5rem;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;
+  line-height:1.85;font-size:16px;
+}
+main{max-width:52rem;margin:0 auto}
+h1{font-size:1.9rem;line-height:1.35;margin:0 0 .4rem}
+.lede{color:var(--muted);margin:0 0 2.5rem;font-size:1.02rem}
+h2{font-size:1.25rem;margin:3rem 0 .6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+p{margin:.7rem 0}
+figure{margin:1.4rem 0;padding:1.1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
+figure svg{display:block;width:100%;height:auto}
+figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
+.note{background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:10px;padding:.9rem 1.1rem;margin:1.4rem 0}
+.note strong{color:var(--stop)}
+code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
+pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.85rem;line-height:1.6}
+pre code{background:none;padding:0}
+ul,ol{padding-left:1.3rem}li{margin:.35rem 0}
+a{color:var(--c1)}
+.aside{font-size:.9rem;color:var(--muted);border-left:3px solid var(--line);padding-left:.8rem}
+</style>
+</head>
+<body>
+<main>
+
+<h1>Lambda の Python ランタイムを上げるときにやること</h1>
+<p class="lede">直すところは機械に探させる。直すのはそこだけ。最後に sandbox で1回だけ動かす。</p>
+
+<h2>何が問題なのか</h2>
+<p>AWS から「このランタイムのサポートを終了します」と通知が来る。Terraform の <code>runtime = "python3.X"</code> を書き換えるのは1行で済む。</p>
+<p>困るのは、<strong>新しい Python でコードのどこが動かなくなるかが分からない</strong>こと。Python は新しいバージョンで古い機能を削除するので、それを使っている行は動かなくなる。一方で、本番で動いているものを「試しに上げてみる」ことはできない。壊れていたら、その間は機能が止まるからだ。</p>
+<p>そこで、動かす前に機械で探して、見つかったところだけ直す。</p>
+
+<figure>
+<svg viewBox="0 0 700 135" role="img" aria-label="やることの4ステップ">
+  <g font-size="12.5" text-anchor="middle">
+    <rect x="5" y="10" width="160" height="90" rx="8" fill="var(--c1)"/>
+    <text x="85" y="40" fill="var(--on)" font-weight="600">1. pyright</text>
+    <text x="85" y="62" fill="var(--on)">動かなくなる所を</text>
+    <text x="85" y="80" fill="var(--on)">探して直す</text>
+    <rect x="182" y="10" width="160" height="90" rx="8" fill="var(--c3)"/>
+    <text x="262" y="40" fill="var(--on)" font-weight="600">2. ruff</text>
+    <text x="262" y="62" fill="var(--on)">古い書き方を</text>
+    <text x="262" y="80" fill="var(--on)">新しくする</text>
+    <rect x="359" y="10" width="160" height="90" rx="8" fill="var(--c4)"/>
+    <text x="439" y="40" fill="var(--on)" font-weight="600">3. AI</text>
+    <text x="439" y="62" fill="var(--on)">挙動の変化に</text>
+    <text x="439" y="80" fill="var(--on)">当たるか照合</text>
+    <rect x="536" y="10" width="160" height="90" rx="8" fill="var(--c2)"/>
+    <text x="616" y="40" fill="var(--on)" font-weight="600">4. sandbox</text>
+    <text x="616" y="62" fill="var(--on)">本物のイベントを</text>
+    <text x="616" y="80" fill="var(--on)">1回流す</text>
+  </g>
+  <g stroke="var(--muted)" stroke-width="2"><line x1="167" y1="55" x2="180" y2="55"/><line x1="344" y1="55" x2="357" y2="55"/><line x1="521" y1="55" x2="534" y2="55"/></g>
+  <text x="5" y="125" font-size="11.5" fill="var(--muted)">1・3 が上げるために必要な修正。2 は必須ではないが、基本的にやっておく（別のコミットに分ける）。</text>
+</svg>
+</figure>
+
+<h2>1. pyright で動かなくなる所を探す</h2>
+<p>pyright は、コードを実行せずに読むだけで「存在しないものを使っている行」を見つけるツール。<strong>上げる先の Python の上で動かす</strong>と、そのバージョンで消えた機能を使っている行が分かる。関数のすべての分岐を読むので、めったに通らない分岐も漏れない。</p>
+<p>古いコードにそのままかけると型の細かい指摘が大量に出るので、「消えたもの」と「非推奨」だけを出す設定にする。</p>
+<pre><code>// pyrightconfig.json
+{
+  "typeCheckingMode": "off",
+  "reportMissingImports": "error",
+  "reportAttributeAccessIssue": "error",
+  "reportDeprecated": "warning"
+}</code></pre>
+<p>このファイルは pyright を実行するディレクトリ（Lambda の <code>.py</code> を置いているディレクトリ）に置く。<code>pyproject.toml</code> があるなら、同じ内容を <code>[tool.pyright]</code> に書いてもよい。</p>
+<p>コマンドは uv で動かす。uv は <code>curl -LsSf https://astral.sh/uv/install.sh | sh</code>（Mac なら <code>brew install uv</code> でも可）で入る。<code>--python 3.XX</code> で指定したバージョンの Python は uv が自動で取ってくるので、別に入れる必要はない。</p>
+<pre><code># 3.XX は上げる先のバージョン。boto3 は Lambda に最初から入っているものの代わり
+uv run --python 3.XX --with pyright --with boto3 pyright .</code></pre>
+<pre><code>error: Import "cgi" could not be resolved
+error: "coroutine" is not a known attribute of module "asyncio"
+warning: The method "utcnow" in class "datetime" is deprecated</code></pre>
+<ul>
+<li><strong>error</strong>：直さないと動かない。これは必ず直す</li>
+<li><strong>warning</strong>：今は動くが、いずれ消える。余裕があれば直す</li>
+</ul>
+<p>boto3 以外のライブラリを使っているときは、それも読めるようにする。</p>
+<ul>
+<li><strong>requirements.txt がある</strong>：コマンドに <code>--with-requirements requirements.txt</code> を足す。新しい Python でインストールに失敗したライブラリも、ここで分かる。失敗したものだけバージョンを上げる</li>
+<li><strong>Layer のディレクトリに直接置いている</strong>：<code>pyrightconfig.json</code> に <code>"extraPaths": ["layer/python"]</code> のようにその場所を足す</li>
+</ul>
+
+<h2>2. ruff で古い書き方を新しくする</h2>
+<p>ruff は、動くけれど古い書き方（<code>typing.List</code> → <code>list</code> など）を新しい書き方に自動で直す。必須ではないが、上げるついでに基本的にやっておく。上げる先のバージョンを指定して実行する。</p>
+<pre><code>uvx ruff check --target-version py3XX --select UP --fix .</code></pre>
+<p>1 の修正とは別のコミットにしておく。壊れたときに、どちらの変更が原因かすぐ分かる。</p>
+
+<h2>3. 挙動の変化は AI に照合させる</h2>
+<p>pyright が見つけられないのは「関数はあるが、結果が変わった」ものだけ。これは Python 公式の What's New の「Porting to Python 3.X」節に一覧がある。飛ばしたバージョン分のその節とコードを AI に渡して、<strong>「このコードで該当する箇所だけ挙げて」</strong>と頼む。該当するのはたいてい 0〜数件で済む。</p>
+
+<h2>4. sandbox で1回だけ動かす</h2>
+<p>dev も本番と同じように使っているなら、dev では試せない。本番とつながっていない sandbox アカウントに同じ関数を作って、そこで流す。</p>
+<p>これを軽くやるための条件は1つだけ。<strong>Lambda を Terraform のモジュールにして、ランタイムと外部の送り先（Slack など）を変数で渡せるようにしておく</strong>こと。そうすれば、sandbox 用の小さな設定から同じモジュールを呼ぶだけで済む。</p>
+<pre><code># sandbox/main.tf
+provider "aws" {
+  profile = "sandbox"
+}
+
+module "app" {
+  source         = "../modules/app"
+  python_runtime = "python3.XX"                 # 上げる先
+  slack_webhook  = "https://hooks.slack.com/..." # テスト用チャンネル
+}</code></pre>
+<pre><code>terraform apply
+aws lambda invoke --profile sandbox --function-name app \
+  --cli-binary-format raw-in-base64-out --payload file://event.json out.json
+terraform destroy</code></pre>
+<p><code>event.json</code> は本番の CloudWatch Logs などから保存した本物のイベント。エラーが出なければ、本番の <code>runtime</code> を書き換えて apply する。</p>
+<p class="aside">補足：sandbox アカウントを用意できない場合は、AWS をまるごと真似るコンテナを手元で立てる LocalStack や Floci という手もある。ただし LocalStack は 2026年3月から、仕事で使うには有料プランが必要になった。Floci は無料だが、出てきたばかりのツールなので本物と挙動が違うことはあり得る。sandbox があるなら、そちらのほうが確実。</p>
+
+<div class="note">
+<p><strong>通知が来たら早めに始める</strong></p>
+<p>Lambda はサポート終了後しばらくすると、そのランタイムの関数を更新できなくなる。そうなると、問題が出たときに古いバージョンへ戻すこともできない。</p>
+</div>
+
+<h2>次の一歩：sandbox も省く</h2>
+<p>関数が何本もあると、1本ごとに apply して invoke して destroy するのは正直面倒になる。やっているのは結局「本物のイベントを渡して、エラーなく動くかを見る」だけだ。</p>
+<p>実はこれ、AWS に置かなくても手元のパソコンでできる。関数の中で S3 や DynamoDB を触っている部分だけを、<strong>パソコンの中で動く「なりきり AWS」</strong>に置き換えれば、関数をそのまま呼び出して確かめられる。</p>
+<p>この「なりきり AWS」を用意してくれるのが moto、関数を呼び出して結果を確かめる手順を自動でやってくれるのが pytest というツール。一度書いておけば、次にバージョンを上げるときもコマンド1つで同じ確認ができる。</p>
+<p>「そのコードを書くのが大変そう」と思うかもしれないが、今は AI に <strong>「この Lambda のテストコードを moto で作って」</strong> と頼めば終わる。自分でやるのは、保存しておいたイベントを渡して、それが動くのを見るだけ。仕組みを知りたくなったら <a href="../../Python/18_テスト/pytestとmotoをゼロから理解する.html">pytest と moto をゼロから理解する</a> を読めばいい。</p>
+<p>そのうち、確かめるたびに手元でコマンドを打つのも面倒になる。そこで、<strong>GitHub などに変更を出すたびに、このテストを自動で動かす</strong>ようにする。これが CI と呼ばれる仕組みだ。一番の効き目は手間が減ることより、確かめ忘れがなくなること。こうしておけば、次のバージョンアップは「<code>runtime</code> と CI の Python のバージョンを書き換えて出すだけ」になり、動くかどうかは CI が教えてくれる。</p>
+
+<h2>参考</h2>
+<ul>
+<li><a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html">AWS Lambda - Lambda runtimes（サポート終了のスケジュール）</a></li>
+<li><a href="https://microsoft.github.io/pyright/#/configuration">Pyright - Configuration</a></li>
+<li><a href="https://docs.astral.sh/ruff/rules/#pyupgrade-up">Ruff - pyupgrade (UP) rules</a></li>
+<li><a href="https://docs.python.org/3/whatsnew/index.html">Python - What's New in Python</a></li>
+<li><a href="https://docs.astral.sh/uv/getting-started/installation/">uv - Installation</a></li>
+<li><a href="https://docs.astral.sh/uv/concepts/python-versions/">uv - Python versions</a></li>
+<li><a href="https://docs.aws.amazon.com/cli/latest/reference/lambda/invoke.html">AWS CLI - lambda invoke</a></li>
+<li><a href="https://docs.localstack.cloud/aws/licensing/">LocalStack - Plans</a></li>
+<li><a href="https://github.com/floci-io/floci">Floci（GitHub）</a></li>
+</ul>
+
+</main>
+</body>
+</html>
