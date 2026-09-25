@@ -36,7 +36,7 @@ figcaption{margin-top:.7rem;font-size:.86rem;color:var(--muted);line-height:1.7}
 code{background:var(--lane);padding:.1em .4em;border-radius:4px;font-size:.9em}
 pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:.9rem 1rem;overflow-x:auto;font-size:.85rem;line-height:1.6}
 pre code{background:none;padding:0}
-ul{padding-left:1.3rem}li{margin:.35rem 0}
+ul,ol{padding-left:1.3rem}li{margin:.35rem 0}
 a{color:var(--c1)}
 </style>
 </head>
@@ -44,104 +44,84 @@ a{color:var(--c1)}
 <main>
 
 <h1>Lambda の Python ランタイムを上げるときにやること</h1>
-<p class="lede">やることは3つ。機械に探させる、手元で動かす、dev で動かす。</p>
+<p class="lede">直すところは機械に探させる。直すのはそこだけ。最後に1回だけ本物で動かす。</p>
 
 <h2>何が問題なのか</h2>
 <p>AWS から「このランタイムのサポートを終了します」と通知が来る。Terraform の <code>runtime = "python3.X"</code> を書き換えるのは1行で済む。</p>
-<p>困るのは、<strong>新しい Python で自分のコードが動くかどうかは、動かしてみないと分からない</strong>こと。Python は新しいバージョンで古い機能を削除することがあり、それを使っていると動かなくなる。かといって、本番でいきなり試すわけにはいかない。</p>
+<p>困るのは、<strong>新しい Python でコードのどこが動かなくなるかが分からない</strong>こと。Python は新しいバージョンで古い機能を削除するので、それを使っている行は動かなくなる。一方で、本番で動いているものを「試しに上げてみる」ことはできない。壊れていたら、その間は機能が止まるからだ。</p>
+<p>そこで、動かす前に機械で探して、見つかったところだけ直す。</p>
 
 <figure>
-<svg viewBox="0 0 700 120" role="img" aria-label="やることの3ステップ">
-  <g font-size="13" text-anchor="middle">
-    <rect x="10" y="10" width="210" height="76" rx="8" fill="var(--c1)"/>
-    <text x="115" y="40" fill="var(--on)" font-weight="600">1. 機械に探させる</text>
-    <text x="115" y="64" fill="var(--on)">消えた機能を使っていないか</text>
-    <rect x="245" y="10" width="210" height="76" rx="8" fill="var(--c3)"/>
-    <text x="350" y="40" fill="var(--on)" font-weight="600">2. 手元で動かす</text>
-    <text x="350" y="64" fill="var(--on)">新しい Python で1回実行</text>
-    <rect x="480" y="10" width="210" height="76" rx="8" fill="var(--c2)"/>
-    <text x="585" y="40" fill="var(--on)" font-weight="600">3. dev で動かす</text>
-    <text x="585" y="64" fill="var(--on)">本物の Lambda で確認</text>
+<svg viewBox="0 0 700 150" role="img" aria-label="やることの4ステップ">
+  <g font-size="12.5" text-anchor="middle">
+    <rect x="5" y="10" width="160" height="90" rx="8" fill="var(--c1)"/>
+    <text x="85" y="40" fill="var(--on)" font-weight="600">1. pyright</text>
+    <text x="85" y="62" fill="var(--on)">動かなくなる所を</text>
+    <text x="85" y="80" fill="var(--on)">探して直す</text>
+    <rect x="182" y="10" width="160" height="90" rx="8" fill="var(--c4)"/>
+    <text x="262" y="40" fill="var(--on)" font-weight="600">2. AI</text>
+    <text x="262" y="62" fill="var(--on)">挙動の変化に</text>
+    <text x="262" y="80" fill="var(--on)">当たるか照合</text>
+    <rect x="359" y="10" width="160" height="90" rx="8" fill="var(--c3)"/>
+    <text x="439" y="40" fill="var(--on)" font-weight="600">3. ruff</text>
+    <text x="439" y="62" fill="var(--on)">古い書き方を</text>
+    <text x="439" y="80" fill="var(--on)">新しくする</text>
+    <rect x="536" y="10" width="160" height="90" rx="8" fill="var(--c2)"/>
+    <text x="616" y="40" fill="var(--on)" font-weight="600">4. 1回動かす</text>
+    <text x="616" y="62" fill="var(--on)">試し用の関数に</text>
+    <text x="616" y="80" fill="var(--on)">本物のイベント</text>
   </g>
-  <g stroke="var(--muted)" stroke-width="2"><line x1="222" y1="48" x2="243" y2="48"/><line x1="457" y1="48" x2="478" y2="48"/></g>
-  <text x="10" y="110" font-size="11.5" fill="var(--muted)">1 と 2 で見つかったものを直す。3 で問題がなければ本番に反映する。</text>
+  <g stroke="var(--muted)" stroke-width="2"><line x1="167" y1="55" x2="180" y2="55"/><line x1="344" y1="55" x2="357" y2="55"/><line x1="521" y1="55" x2="534" y2="55"/></g>
+  <text x="5" y="125" font-size="11.5" fill="var(--muted)">1〜2 が上げるために必要な修正。3 は任意で、別のコミットに分ける。</text>
+  <text x="5" y="143" font-size="11.5" fill="var(--muted)">壊れたときに、どちらの変更が原因かすぐ分かるようにするため。</text>
 </svg>
 </figure>
 
-<h2>1. 機械に探させる</h2>
-<p>pyright というツールは、コードを実行せずに読むだけで「存在しないものを import している行」を見つけてくれる。これを<strong>上げる先の Python の上で</strong>動かすと、新しいバージョンで消えた機能を使っている行が一覧で出る。</p>
-<pre><code># 3.XX は上げる先のバージョン。--with にはコードが使うライブラリも並べる
-uv run --python 3.XX --with pyright --with boto3 pyright .</code></pre>
-<pre><code>lambda_function.py:1:8 - error: Import "cgi" could not be resolved</code></pre>
-<p>出てきた行を直す。直し方が分からなければ、エラー文をそのまま検索するか AI に渡せばよい。使っているライブラリを <code>--with</code> に入れ忘れると、そのライブラリも「見つからない」と出るので、それは無視してよい。</p>
-
-<h2>2. 手元で動かす（テスト）</h2>
-<p>1 で見つかるのは「消えた機能」だけ。実際に動くかは、動かしてみるしかない。</p>
-<p>そこで、<strong>Lambda の関数を自動で呼び出して、結果が期待どおりか確かめる小さなプログラム</strong>を書く。これがテスト。本物の AWS には触れたくないので、moto というライブラリで偽の AWS を用意する。</p>
-<figure>
-<svg viewBox="0 0 700 170" role="img" aria-label="本番とテストの違い">
-  <g font-size="12.5">
-    <text x="10" y="20" font-weight="600" fill="var(--ink)">本番</text>
-    <rect x="10" y="30" width="160" height="40" rx="6" fill="var(--lane)"/>
-    <text x="90" y="55" fill="var(--ink)" text-anchor="middle">本物のイベント</text>
-    <rect x="270" y="30" width="160" height="40" rx="6" fill="var(--c1)"/>
-    <text x="350" y="55" fill="var(--on)" text-anchor="middle">自分のコード</text>
-    <rect x="530" y="30" width="160" height="40" rx="6" fill="var(--c2)"/>
-    <text x="610" y="55" fill="var(--on)" text-anchor="middle">本物の DynamoDB</text>
-
-    <text x="10" y="108" font-weight="600" fill="var(--ink)">テスト</text>
-    <rect x="10" y="118" width="160" height="40" rx="6" fill="var(--lane)"/>
-    <text x="90" y="143" fill="var(--ink)" text-anchor="middle">保存したイベント</text>
-    <rect x="270" y="118" width="160" height="40" rx="6" fill="var(--c1)"/>
-    <text x="350" y="143" fill="var(--on)" text-anchor="middle">同じコード</text>
-    <rect x="530" y="118" width="160" height="40" rx="6" fill="var(--c3)"/>
-    <text x="610" y="143" fill="var(--on)" text-anchor="middle">偽の DynamoDB（moto）</text>
-  </g>
-  <g stroke="var(--muted)" stroke-width="2">
-    <line x1="172" y1="50" x2="268" y2="50"/><line x1="432" y1="50" x2="528" y2="50"/>
-    <line x1="172" y1="138" x2="268" y2="138"/><line x1="432" y1="138" x2="528" y2="138"/>
-  </g>
-</svg>
-<figcaption>コードは本番と同じものを使い、入口と出口だけを差し替える。イベントは CloudWatch Logs やコンソールのテストイベントから JSON で保存しておく。</figcaption>
-</figure>
-<p>たとえば「受け取ったメッセージを DynamoDB に書く」Lambda なら、テストはこうなる。</p>
-<pre><code># test_lambda.py
-import json
-import boto3
-from moto import mock_aws
-
-
-@mock_aws
-def test_lambda(monkeypatch):
-    monkeypatch.setenv("AWS_DEFAULT_REGION", "ap-northeast-1")
-
-    # 偽の DynamoDB にテーブルを作る
-    db = boto3.client("dynamodb")
-    db.create_table(
-        TableName="messages",
-        KeySchema=[{"AttributeName": "id", "KeyType": "HASH"}],
-        AttributeDefinitions=[{"AttributeName": "id", "AttributeType": "S"}],
-        BillingMode="PAY_PER_REQUEST",
-    )
-
-    # 保存しておいたイベントで、Lambda の関数を呼ぶ
-    import lambda_function
-    event = json.load(open("event.json"))
-    lambda_function.lambda_handler(event, None)
-
-    # DynamoDB に書かれたか確かめる
-    assert db.scan(TableName="messages")["Count"] == 1</code></pre>
-<p>これを上げる先の Python で実行する。<code>passed</code> と出れば動いている。</p>
-<pre><code>uv run --python 3.XX --with pytest --with moto --with boto3 pytest</code></pre>
-<p>1本書いておけば、次にバージョンを上げるときも同じコマンドで確かめられる。pytest と moto の考え方は <a href="../../Python/18_テスト/pytestとmotoをゼロから理解する.html">pytest と moto をゼロから理解する</a> にある。</p>
-
-<h2>3. dev で動かす</h2>
-<p>手元では再現しない違い（Lambda に最初から入っている boto3 のバージョンなど）もあるので、最後は本物の Lambda で動かす。</p>
+<h2>1. pyright で動かなくなる所を探す</h2>
+<p>pyright は、コードを実行せずに読むだけで「存在しないものを使っている行」を見つけるツール。<strong>上げる先の Python の上で動かす</strong>と、そのバージョンで消えた機能を使っている行が分かる。関数のすべての分岐を読むので、めったに通らない分岐も漏れない。</p>
+<p>古いコードにそのままかけると型の細かい指摘が大量に出るので、「消えたもの」と「非推奨」だけを出す設定にする。</p>
+<pre><code>// pyrightconfig.json
+{
+  "typeCheckingMode": "off",
+  "reportMissingImports": "error",
+  "reportAttributeAccessIssue": "error",
+  "reportDeprecated": "warning"
+}</code></pre>
+<pre><code># 3.XX は上げる先のバージョン
+uv run --python 3.XX --with pyright --with-requirements requirements.txt pyright .</code></pre>
+<pre><code>error: Import "cgi" could not be resolved
+error: "coroutine" is not a known attribute of module "asyncio"
+warning: The method "utcnow" in class "datetime" is deprecated</code></pre>
 <ul>
-<li>Terraform の <code>runtime</code> を書き換えて、dev 環境に apply する</li>
-<li>コンソールの「テスト」ボタンで、2 と同じイベントを流す</li>
-<li>エラーが出なければ、本番に apply する</li>
+<li><strong>error</strong>：直さないと動かない。これは必ず直す</li>
+<li><strong>warning</strong>：今は動くが、いずれ消える。余裕があれば直す</li>
 </ul>
+<p>このコマンドは依存ライブラリも新しい Python で入れ直すので、<strong>インストールに失敗したライブラリ</strong>もここで分かる。それだけバージョンを上げる。</p>
+
+<h2>2. 挙動の変化は AI に照合させる</h2>
+<p>pyright が見つけられないのは「関数はあるが、結果が変わった」ものだけ。これは Python 公式の What's New の「Porting to Python 3.X」節に一覧がある。飛ばしたバージョン分のその節とコードを AI に渡して、<strong>「このコードで該当する箇所だけ挙げて」</strong>と頼む。該当するのはたいてい 0〜数件で済む。</p>
+
+<h2>3. ruff で古い書き方を新しくする</h2>
+<p>ruff は、動くけれど古い書き方（<code>typing.List</code> → <code>list</code> など）を新しい書き方に自動で直す。上げる先のバージョンを指定して実行する。</p>
+<pre><code>uvx ruff check --target-version py3XX --select UP --fix .</code></pre>
+<p>1・2 の修正とは別のコミットにしておく。</p>
+
+<h2>4. 最後に1回だけ本物で動かす</h2>
+<p>本番の関数には触らず、<strong>トリガーを付けていない試し用の関数</strong>を横に作る。コードと IAM ロールは本番と同じにして、ランタイムだけを新しくする。</p>
+<pre><code>resource "aws_lambda_function" "app_next" {
+  function_name    = "app-next"          # 試す間だけ置く
+  runtime          = "python3.XX"
+  role             = aws_lambda_function.app.role
+  handler          = aws_lambda_function.app.handler
+  filename         = data.archive_file.app.output_path
+  source_code_hash = data.archive_file.app.output_base64sha256
+}</code></pre>
+<ol>
+<li>apply する。トリガーがないので勝手には動かない</li>
+<li>コンソールの「テスト」ボタンで、本物のイベント（CloudWatch Logs などから保存したもの）を流す</li>
+<li>動いたら、本番の <code>runtime</code> を書き換えて apply し、試し用の関数を消す</li>
+</ol>
+<p>試し用の関数も本物の AWS を操作する。Slack への通知やリソースの書き換えが起きる関数は、環境変数で送り先をテスト用に向けてから流す。</p>
 
 <div class="note">
 <p><strong>通知が来たら早めに始める</strong></p>
@@ -151,10 +131,10 @@ def test_lambda(monkeypatch):
 <h2>参考</h2>
 <ul>
 <li><a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html">AWS Lambda - Lambda runtimes（サポート終了のスケジュール）</a></li>
-<li><a href="https://microsoft.github.io/pyright/#/command-line">Pyright - Command-Line Interface</a></li>
-<li><a href="https://docs.pytest.org/en/stable/getting-started.html">pytest - Get Started</a></li>
-<li><a href="https://docs.getmoto.org/en/latest/docs/getting_started.html">moto - Getting Started</a></li>
-<li><a href="https://docs.astral.sh/uv/guides/scripts/">uv - Running scripts</a></li>
+<li><a href="https://microsoft.github.io/pyright/#/configuration">Pyright - Configuration</a></li>
+<li><a href="https://docs.astral.sh/ruff/rules/#pyupgrade-up">Ruff - pyupgrade (UP) rules</a></li>
+<li><a href="https://docs.python.org/3/whatsnew/index.html">Python - What's New in Python</a></li>
+<li><a href="https://docs.astral.sh/uv/concepts/python-versions/">uv - Python versions</a></li>
 </ul>
 
 </main>
