@@ -11,3 +11,4 @@
 - [Jira → PR 自動化](jira-to-pr.md) — 初期設定、止め方、動かないとき
   - 設計の判断は [ADR-0003](../decisions/0003-jira-to-pr.md)
 - lint CI（yamllint / actionlint / zizmor / markdownlint）— なぜ入れたか、どこまで見るかは [ADR-0002](../decisions/0002-lint-ci-for-docs-and-config.md)
+- テスト
