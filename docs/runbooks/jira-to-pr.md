@@ -1,11 +1,11 @@
 # Jira → PR 自動化
 
-Jira の `SCRUM` プロジェクトで課題を「AI 実装」に動かすと、Claude Code が実装し、別の Claude がレビューして draft PR を作り、PR の CI が終わったら Slack の `#haru` に知らせる。設計の判断は [ADR-0003](../decisions/0003-jira-to-pr.md)。
+Jira の `SCRUM` プロジェクトで課題を「AI 実装」スプリントに入れると、Claude Code が実装し、別の Claude がレビューして draft PR を作り、PR の CI が終わったら Slack の `#haru` に知らせる。設計の判断は [ADR-0003](../decisions/0003-jira-to-pr.md)。
 
 ## 流れ
 
 ```text
-Jira（SCRUM-12 を「AI 実装」へ）
+Jira（SCRUM-12 を「AI 実装」スプリントへ）
   → Jira Automation が workflow_dispatch を送る
   → .github/workflows/jira-to-pr.yml
       implement: Claude Code（Bedrock, OIDC）が実装・検査し、差分をパッチにする
@@ -70,9 +70,18 @@ GitHub の fine-grained PAT。
 
 ### 5. Jira Automation のルールを作る
 
-プロジェクト `SCRUM` → 自動化 → ルールを作成：
+入口は「AI 実装」という名前のスプリントにする。ステータスの追加はワークフローの変更で、大きな組織では Jira 管理者への申請が要ることが多い。スプリントはプロジェクトの中で作れるので、手続きなしで済む。
 
-- **トリガー**: 課題のトランジション → 遷移先ステータス「AI 実装」（ワークフローに無ければ追加する。ラベル `ai` の付与をトリガーにしてもよい）
+まず入れ物のスプリントを作る。
+
+- バックログで「スプリントを作成」し、名前を `AI実装（開始しない）` にする
+- **開始しない**。未開始のスプリントはバーンダウンやベロシティに入らず、完了操作で課題が別のスプリントへ移ることもない
+- スプリント ID を控える（スプリント名のメニュー → 編集の URL や、課題の「スプリント」欄のリンクに出る数字）。名前は変えられるうえ重複もしうるので、判定には ID を使う
+
+次にルールを作る。プロジェクト `SCRUM` → 自動化 → ルールを作成：
+
+- **トリガー**: フィールド値の変更時 → フィールド「スプリント」
+- **条件**: 課題が条件に一致 → JQL `sprint = <控えたスプリント ID>`。スプリントから外したときには動かない
 - **条件**（推奨）: 実行者が自分であること。第三者が起票したチケットをそのまま流さない
 - **アクション**: Web リクエストを送信
   - URL: `https://api.github.com/repos/haruka-aibara/works/actions/workflows/jira-to-pr.yml/dispatches`

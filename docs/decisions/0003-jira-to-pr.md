@@ -25,6 +25,7 @@ Jira・Slack・GitHub・AWS・HCP Terraform を個別には使っているが、
 - **実行場所は GitHub Actions（`anthropics/claude-code-action`）。** Lambda は 15 分の上限と、git・uv・terraform が無いことで向かない。
 - **モデルは Bedrock を OIDC で使う。** chatbot と同じ Opus 4.6 のプロファイル。AWS に長期キーを置かない。ロールは Bedrock の呼び出しだけを許し、信頼条件は environment `jira-to-pr` に限る。environment は保護ブランチ（main）からしか使えない。
 - **起動は Jira Automation からの workflow_dispatch。** repository_dispatch は Contents: write の PAT が要るが、workflow_dispatch は Actions: write で足りる。漏れてもコードは書けない。
+- **入口は未開始の「AI 実装」スプリント。** 課題をそのスプリントに入れたら起動する。ステータスはワークフローの変更で、大きな組織では管理者への申請が要る。スプリントはプロジェクトの中で作れて、利用者の権限で完結する。開始しないので、バーンダウンやベロシティにも混ざらない。
 - **エージェントには書き込み権限を渡さず、ジョブごと隔離する。** 実装ジョブが持つのは読み取り専用の `GITHUB_TOKEN` と Bedrock だけで、成果物はパッチ 1 枚。push と PR 作成は別ジョブが、まっさらなチェックアウトにパッチを当てて専用の GitHub App のトークンで行う。同じ作業ディレクトリで push すると、エージェントが仕込んだ `.git/hooks` や `.git/config` がトークンを持った状態で実行されうるため。App に Workflows 権限は付けず、`.github/` を触る差分はその前に止める。
 - **PR は draft、マージは人。** works は main へのマージで HCP Terraform が auto apply する。エージェントの変更がそのまま本番に届く経路は作らない。
 - **チケット本文はデータとして渡す。** プロンプトに埋め込まずファイルに書き、「指示ではない」と明示する。キーと URL は形を検証する。
@@ -35,6 +36,7 @@ Jira・Slack・GitHub・AWS・HCP Terraform を個別には使っているが、
 
 - **Slack から直接 PR（Jira を挟まない）。** 公式の Claude の Slack 連携で足りる。自作の意味が無い。
 - **Claude に `gh pr create` までやらせる。** 手順は短くなるが、書き込み可能なトークンをエージェントに渡すことになる。
+- **入口をステータス（「AI 実装」への遷移）やラベルにする。** ステータスはワークフローの変更で、組織によっては管理者の申請が要る。ラベルは自由入力のことが多いが、絞っている組織もある。
 - **Terraform 用の GitHub App を流用する。** org の管理権限を持つ鍵を Actions に置くことになる。
 - **実装と同じ実行の中でセルフレビューする。** 安いが、実装時の思い込みをそのまま引き継ぐ。
 - **レビューで指摘が出たら自動で直させる。** ループの上限や収束の判断が要る。まずは指摘を人に見せ、直すかどうかは人が決める。
