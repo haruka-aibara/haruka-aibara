@@ -86,6 +86,7 @@ a{color:var(--c1)}
   "reportAttributeAccessIssue": "error",
   "reportDeprecated": "warning"
 }</code></pre>
+<p>このファイルは pyright を実行するディレクトリ（Lambda の <code>.py</code> を置いているディレクトリ）に置く。<code>pyproject.toml</code> があるなら、同じ内容を <code>[tool.pyright]</code> に書いてもよい。</p>
 <pre><code># 3.XX は上げる先のバージョン。boto3 は Lambda に最初から入っているものの代わり
 uv run --python 3.XX --with pyright --with boto3 pyright .</code></pre>
 <pre><code>error: Import "cgi" could not be resolved
