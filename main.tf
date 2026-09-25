@@ -87,16 +87,6 @@ module "bedrock-slack-ai-agent" {
 #   source = "./modules/aws-cost-allocation-tags"
 # }
 
-# AWS Cost Management
-module "aws-cost-allocation-tags" {
-  source = "./modules/repository"
-
-  repository_name = "aws-cost-allocation-tags"
-  description     = "Manage AWS Cost Allocation Tags"
-
-  topics = ["terraform", "aws", "cost", "tags"]
-}
-
 # =========================================
 # My AWS Learning Repositories
 # =========================================
@@ -109,16 +99,6 @@ module "aws-custom-lambda-config-rules" {
   description     = "Customize AWS Config Rules using Lambda"
 
   topics = ["terraform", "aws", "lambda", "config"]
-}
-
-# IAM Policy Analysis
-module "iam-access-analyzer-policy-generate" {
-  source = "./modules/repository"
-
-  repository_name = "iam-access-analyzer-policy-generate"
-  description     = "Experiment with IAM Access Analyzer policy generation"
-
-  topics = ["aws", "iam", "access-analyzer", "policy"]
 }
 
 # IAM Access Analyzer Policy Generate — infrastructure.
@@ -470,25 +450,6 @@ data "tfe_oauth_client" "this" {
   service_provider = "github"
 }
 
-# AWS Cost Allocation Tags Workspace
-resource "tfe_workspace" "aws-cost-allocation-tags" {
-  name                          = "aws-cost-allocation-tags"
-  organization                  = local.tfe_organization
-  description                   = "aws cost allocation tags"
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/aws-cost-allocation-tags"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
-}
-
 # Bedrock Slack AI Agent Workspace
 resource "tfe_workspace" "bedrock-slack-ai-agent" {
   name                          = "bedrock-slack-ai-agent"
@@ -557,24 +518,6 @@ resource "tfe_workspace" "works" {
 
   vcs_repo {
     identifier         = "${local.github_owner}/works"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
-}
-
-# IAM Access Analyzer Policy Generate Workspace
-resource "tfe_workspace" "iam-access-analyzer-policy-generate" {
-  name                          = "iam-access-analyzer-policy-generate"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/iam-access-analyzer-policy-generate"
     oauth_token_id     = local.oauth_token_id
     ingress_submodules = false
   }
