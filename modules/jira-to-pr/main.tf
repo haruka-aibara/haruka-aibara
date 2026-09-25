@@ -11,6 +11,13 @@ data "github_repository" "this" {
   name = var.repository
 }
 
+# The organization's numeric id goes into the OIDC subject (see below).
+# summary_only skips listing every member and repository.
+data "github_organization" "this" {
+  name         = split("/", data.github_repository.this.full_name)[0]
+  summary_only = true
+}
+
 locals {
   name = "jira-to-pr"
 
@@ -19,6 +26,17 @@ locals {
   tags = {
     Project = local.name
   }
+
+  # The organization issues OIDC subjects with immutable ids after each name
+  # (owner@id/repo@id), so a repository deleted and recreated under the same
+  # name cannot inherit this trust.
+  oidc_repository = format(
+    "%s@%s/%s@%s",
+    data.github_organization.this.login,
+    data.github_organization.this.id,
+    data.github_repository.this.name,
+    data.github_repository.this.repo_id,
+  )
 
   # The system-defined profile's id is the model id with a geography prefix.
   foundation_model = trimprefix(var.bedrock_model_id, "global.")
@@ -54,7 +72,7 @@ data "aws_iam_policy_document" "assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${data.github_repository.this.full_name}:environment:${var.environment}"]
+      values   = ["repo:${local.oidc_repository}:environment:${var.environment}"]
     }
   }
 }
