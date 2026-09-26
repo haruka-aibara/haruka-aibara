@@ -42,15 +42,13 @@ resource "aws_lambda_function" "slack_bolt_app_bedrock_backend" {
   source_code_hash = data.archive_file.lambda_bedrock_code.output_base64sha256
   role             = aws_iam_role.bedrock_backend.arn
   layers           = [aws_lambda_layer_version.slack_ai_chatbot.arn]
-  # Claude Opus 5.5 always thinks before answering, so a reply takes longer than it did
-  # on Opus 4.6. Stays under the queue's 180s visibility timeout.
-  timeout = 120
+  timeout          = 30
 
   environment {
     variables = {
       SLACK_BOT_TOKEN = var.slack_bot_token
       # BEDROCK_MODEL_ID         = var.bedrock_model_id
-      BEDROCK_MODEL_ID    = aws_bedrock_inference_profile.claude_opus_5_5.arn
+      BEDROCK_MODEL_ID    = aws_bedrock_inference_profile.claude_opus_4_6.arn
       BEDROCK_MAX_TOKENS  = var.bedrock_max_tokens
       DYNAMODB_TABLE_NAME = aws_dynamodb_table.idempotency.name
     }

@@ -11,9 +11,7 @@ variable "slack_signing_secret" {
 }
 
 variable "bedrock_max_tokens" {
-  # Claude Opus 5.5 cannot turn thinking off, and thinking counts against this limit.
-  # Too low a value leaves nothing for the answer itself.
-  description = "Maximum number of tokens Bedrock may generate per response, thinking included"
+  description = "Maximum number of tokens to generate in Bedrock responses"
   type        = number
-  default     = 16000
+  default     = 1000
 }
