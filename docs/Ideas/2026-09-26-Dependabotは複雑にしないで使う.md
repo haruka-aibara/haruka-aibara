@@ -2,10 +2,10 @@ tags: github, dependabot, security, operations
 
 # Dependabot は複雑にしないで使う
 
-Settings → Code security で Dependency graph・Dependabot alerts・Dependabot security updates（修正 PR を自動で出す）を ON にするだけにする。`dependabot.yml` は最初は書かない。
+Settings → Code security で Dependency graph・Dependabot alerts・Dependabot security updates（修正 PR を自動で出す）を ON にするだけ。`dependabot.yml` は最初は書かない。
 
-version updates は PR が一気に増えるので、欲しくなってから `dependabot.yml` を足す。
-足すときも `interval: weekly` と `groups`（`patterns: ["*"]`）で週1本にまとめる。
+version updates は PR が増えるので、欲しくなってから `dependabot.yml` を weekly と `groups` で週1本にまとめて足す。
+自動マージまでは [Dependabot](../GitHub/42_Dependabot/README.md) に書いた。
 このリポジトリの更新は [Renovate](../GitHub/41_Renovate/README.md) 主体で、Dependabot は devcontainer だけ。
 
 ## アラートを自分で閉じないといけない問題
@@ -14,7 +14,7 @@ version updates は PR が一気に増えるので、欲しくなってから `d
 手で閉じる羽目になるのは次のどれか。
 
 - security updates の PR を merge せずに閉じた
-- 直す版がない、または間接依存でロックファイルが上がっていない
+- 直す版がない、または間接依存が上がっていない
 - 実害がない（開発用の依存だけ等）ので直さない → Dismiss するしかない
 
 最後は Dependabot rules（自動トリアージ）で自動 Dismiss できる。
