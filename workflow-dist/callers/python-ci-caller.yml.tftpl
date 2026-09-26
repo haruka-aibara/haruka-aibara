@@ -11,6 +11,7 @@ on:
       - "**/pyproject.toml"
       - "**/uv.lock"
       - ".github/workflows/python-ci.yml"
+      - ".github/workflows/reusable-python-ci.yml"
   push:
     branches: [main]
     paths: *python-paths
@@ -20,6 +21,6 @@ permissions:
 
 jobs:
   ci:
-    uses: haruka-aibara/github-actions/.github/workflows/python-ci.yml@main
+    uses: ${reusable}
     with:
       working-directory: "${working_directory}"

@@ -391,7 +391,7 @@ resource "github_repository_file" "reusable_terraform_ci" {
   repository          = module.github-actions.repository_name
   branch              = "main"
   file                = ".github/workflows/terraform-ci.yml"
-  content             = file("${path.module}/workflow-dist/reusable/terraform-ci.yml")
+  content             = file("${path.module}/.github/workflows/reusable-terraform-ci.yml")
   commit_message      = "Update reusable Terraform CI workflow (managed by Terraform)"
   overwrite_on_create = true
 
@@ -411,6 +411,8 @@ resource "github_repository_file" "terraform_ci_caller" {
   file       = ".github/workflows/terraform-ci.yml"
   content = templatefile("${path.module}/workflow-dist/callers/terraform-ci-caller.yml.tftpl", {
     working_directory = each.value.working_directory
+    # works 自身は同じコミットの reusable を使う（PR 上でも変更後の中身で走る）。
+    reusable = each.key == "works" ? "./.github/workflows/reusable-terraform-ci.yml" : "${local.github_owner}/works/.github/workflows/reusable-terraform-ci.yml@main"
   })
   commit_message      = "Add Terraform CI caller workflow (managed by Terraform)"
   overwrite_on_create = true
@@ -431,7 +433,7 @@ resource "github_repository_file" "reusable_python_ci" {
   repository          = module.github-actions.repository_name
   branch              = "main"
   file                = ".github/workflows/python-ci.yml"
-  content             = file("${path.module}/workflow-dist/reusable/python-ci.yml")
+  content             = file("${path.module}/.github/workflows/reusable-python-ci.yml")
   commit_message      = "Update reusable Python CI workflow (managed by Terraform)"
   overwrite_on_create = true
 
@@ -451,6 +453,8 @@ resource "github_repository_file" "python_ci_caller" {
   file       = ".github/workflows/python-ci.yml"
   content = templatefile("${path.module}/workflow-dist/callers/python-ci-caller.yml.tftpl", {
     working_directory = each.value.working_directory
+    # works 自身は同じコミットの reusable を使う（PR 上でも変更後の中身で走る）。
+    reusable = each.key == "works" ? "./.github/workflows/reusable-python-ci.yml" : "${local.github_owner}/works/.github/workflows/reusable-python-ci.yml@main"
   })
   commit_message      = "Add Python CI caller workflow (managed by Terraform)"
   overwrite_on_create = true
