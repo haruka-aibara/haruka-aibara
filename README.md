@@ -1,14 +1,16 @@
 # works
 
-Terraform コードと学習メモが同居する個人のモノレポ。
+管理対象を全部集約する個人のモノレポ。Terraform コード・CI 配布・実装コード（Lambda など）・学習メモが同居する。
 
 ## 中身
 
 | 場所 | 中身 |
 |---|---|
-| ルートの `*.tf` / `modules/` | GitHub リポジトリと HCP Terraform ワークスペースの管理 |
+| ルートの `*.tf` | GitHub リポジトリ・HCP Terraform ワークスペース・AWS リソースの管理（HCP Terraform の `works` ワークスペースで apply） |
+| `modules/repository` | GitHub リポジトリ1つ分の設定をまとめたモジュール |
+| `modules/` のその他 | 旧単独リポジトリを履歴ごと取り込んだインフラ／アプリ（Bedrock の Slack ボット、AWS 予算通知、HCP Vault、Google Cloud など）と `TFE_TOKEN` の自己ローテーション。使っていないものは `main.tf` で呼び出しをコメントアウトしてある |
 | `workflow-dist/` | 各リポジトリに配布する CI の単一ソース。`reusable/` は github-actions リポジトリに置く reusable workflow 本体、`callers/` は各リポジトリの `.github/workflows/` に置く呼び出し側テンプレート |
-| `docs/` | 学習メモ・技術記事（1000本超）。旧 `docs` リポジトリを統合したもの |
+| `docs/` | 学習メモ・技術記事（1000本超）。旧 `docs` リポジトリを統合したもので、GitHub Pages（<https://haruka-aibara.github.io/works/>）で公開 |
 | `devcontainer-templates/` | ghcr に publish する devcontainer テンプレート。旧 `devcontainer-templates` リポジトリを統合したもの |
 
 ## Terraform

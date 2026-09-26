@@ -9,10 +9,10 @@ module "haruka-aibara" {
   source = "./modules/repository"
 
   repository_name = "works"
-  description     = "Personal monorepo: Terraform for GitHub repos and HCP Terraform workspaces, shared CI, learning notes/articles, and devcontainer templates"
+  description     = "Personal monorepo: Terraform for GitHub repos, HCP Terraform and AWS (Slack/Bedrock bots etc.), shared CI, 1000+ learning notes on GitHub Pages, and devcontainer templates"
   homepage_url    = "https://haruka-aibara.github.io/works/"
 
-  topics = ["terraform", "github", "iac"]
+  topics = ["terraform", "github", "iac", "aws", "github-actions", "devcontainer"]
 
   # docs/ absorbed the old standalone "docs" repository, .nojekyll included, so
   # Pages now publishes straight from this branch/folder instead of a separate repo.
@@ -482,7 +482,7 @@ data "tfe_oauth_client" "this" {
 resource "tfe_workspace" "works" {
   name                          = "works"
   organization                  = local.tfe_organization
-  description                   = "Terraform-managed GitHub repositories and HCP Terraform workspaces"
+  description                   = "Terraform-managed GitHub repositories, HCP Terraform workspaces, and AWS resources"
   auto_apply                    = true
   auto_apply_run_trigger        = false
   file_triggers_enabled         = false
