@@ -61,16 +61,6 @@ module "bedrock_slack_ai_chatbot_infra" {
 #   slack_channel_id = var.bedrock_agent_slack_channel_id
 # }
 
-# Multi-turn Bedrock AI Agent
-module "bedrock-slack-ai-agent" {
-  source = "./modules/repository"
-
-  repository_name = "bedrock-slack-ai-agent"
-  description     = "A Slack AI agent using Amazon Bedrock with continuous conversation history"
-
-  topics = ["aws", "bedrock", "slack", "generative-ai", "chatbot"]
-}
-
 # =========================================
 # My AWS Projects
 # =========================================
@@ -463,24 +453,6 @@ resource "github_repository_file" "python_ci_caller" {
 data "tfe_oauth_client" "this" {
   organization     = local.tfe_organization
   service_provider = "github"
-}
-
-# Bedrock Slack AI Agent Workspace
-resource "tfe_workspace" "bedrock-slack-ai-agent" {
-  name                          = "bedrock-slack-ai-agent"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/bedrock-slack-ai-agent"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
 }
 
 # Deploy HCP Vault Dedicated with Terraform Workspace
