@@ -7,11 +7,12 @@ them onto SQS for the Bedrock backend.
 import json
 import time
 from types import ModuleType
+from typing import Any
 from unittest import mock
 
 import pytest
 
-from conftest import FRONTEND_ENV
+from conftest import FRONTEND_ENV, load_frontend
 
 
 def mention_event(text: str, **overrides: str) -> dict[str, str]:
@@ -31,17 +32,31 @@ def slack_body(event_id: str = "Ev0000000001") -> dict[str, str]:
     return {"type": "event_callback", "event_id": event_id, "team_id": "T0000000001"}
 
 
-def sent_body(frontend: ModuleType) -> dict[str, str]:
+def queued_bodies(frontend: ModuleType) -> list[dict[str, Any]]:
+    """Drain the backend queue and decode every message body found on it."""
+    response = frontend.sqs.receive_message(QueueUrl=frontend.sqs_queue_url, MaxNumberOfMessages=10)
+    return [json.loads(message["Body"]) for message in response.get("Messages", [])]
+
+
+def sent_body(frontend: ModuleType) -> dict[str, Any]:
     """Decode the JSON body of the single message pushed to SQS."""
-    frontend.sqs.send_message.assert_called_once()
-    return json.loads(frontend.sqs.send_message.call_args.kwargs["MessageBody"])
+    bodies = queued_bodies(frontend)
+    assert len(bodies) == 1
+    return bodies[0]
 
 
 class TestHandleAppMentionEvents:
     def test_sends_message_to_the_configured_queue(self, frontend: ModuleType) -> None:
         frontend.handle_app_mention_events(mention_event("<@U0BOT> hello"), body=slack_body(), say=mock.Mock())
 
-        assert frontend.sqs.send_message.call_args.kwargs["QueueUrl"] == FRONTEND_ENV["BACKEND_QUEUE_URL"]
+        assert frontend.sqs_queue_url == FRONTEND_ENV["BACKEND_QUEUE_URL"]
+        assert sent_body(frontend)["input_text"] == "hello"
+
+    def test_enqueues_one_message_per_mention(self, frontend: ModuleType) -> None:
+        frontend.handle_app_mention_events(mention_event("<@U0BOT> one"), body=slack_body("Ev1"), say=mock.Mock())
+        frontend.handle_app_mention_events(mention_event("<@U0BOT> two"), body=slack_body("Ev2"), say=mock.Mock())
+
+        assert sorted(body["event_id"] for body in queued_bodies(frontend)) == ["Ev1", "Ev2"]
 
     def test_forwards_channel_thread_and_text(self, frontend: ModuleType) -> None:
         event = mention_event("<@U0BOT> Pythonのリスト内包表記って何？")
@@ -165,7 +180,7 @@ class TestLambdaHandler:
 
         assert result["statusCode"] == 200
         handler_cls.assert_not_called()
-        frontend.sqs.send_message.assert_not_called()
+        assert queued_bodies(frontend) == []
 
     def test_handles_a_request_that_carries_no_headers(self, frontend: ModuleType) -> None:
         with mock.patch.object(frontend, "SlackRequestHandler") as handler_cls:
@@ -177,17 +192,11 @@ class TestLambdaHandler:
 
 
 class TestConfiguration:
-    def test_queue_url_defaults_to_empty_when_unset(self, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_queue_url_defaults_to_empty_when_unset(self, frontend_env: None, aws: None, monkeypatch: pytest.MonkeyPatch) -> None:
         # Documents the current fallback: a missing queue URL surfaces as an SQS
         # error at send time rather than as an import-time failure.
-        from conftest import FRONTEND_DIR, load_lambda_module
-
-        for key, value in FRONTEND_ENV.items():
-            monkeypatch.setenv(key, value)
         monkeypatch.delenv("BACKEND_QUEUE_URL")
 
-        with mock.patch("boto3.client"), mock.patch("slack_bolt.App") as app_cls:
-            app_cls.return_value.event.return_value = lambda handler: handler
-            module = load_lambda_module("frontend_lambda_function_no_queue", FRONTEND_DIR)
+        module = load_frontend("frontend_lambda_function_no_queue")
 
         assert module.sqs_queue_url == ""
