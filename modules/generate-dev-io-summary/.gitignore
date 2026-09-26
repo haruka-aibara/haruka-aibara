@@ -1,0 +1,4 @@
+# archive_file が作る zip
+lambda_functions/lambda_layer/lambda_layer.zip
+lambda_functions/scraper/lambda_function.zip
+lambda_functions/summarizer/lambda_function.zip
