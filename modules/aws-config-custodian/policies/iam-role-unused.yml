@@ -1,0 +1,26 @@
+# 90 日以上使われていない IAM ロールを NON_COMPLIANT にする。
+# 一度も使われていないロールは、作成から 90 日を過ぎたら対象。
+# AWS が管理するサービスリンクロールは消せないので除外する。
+description: 90 日以上使われていない IAM ロール
+resource: aws.iam-role
+filters:
+  - not:
+      - type: value
+        key: Path
+        op: glob
+        value: /aws-service-role/*
+  - or:
+      - type: value
+        key: RoleLastUsed.LastUsedDate
+        value_type: age
+        op: gt
+        value: 90
+      - and:
+          - type: value
+            key: RoleLastUsed.LastUsedDate
+            value: absent
+          - type: value
+            key: CreateDate
+            value_type: age
+            op: gt
+            value: 90

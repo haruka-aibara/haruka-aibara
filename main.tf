@@ -109,6 +109,14 @@ module "aws-custom-lambda-config-rules" {
   topics = ["terraform", "aws", "lambda", "config"]
 }
 
+# AWS Config rules backed by Cloud Custodian — infrastructure.
+# Each YAML file under modules/aws-config-custodian/policies becomes one Config
+# rule. The module also creates the region's Config recorder, recording only a
+# resource type the account doesn't have so it records (and bills) nothing.
+module "aws_config_custodian" {
+  source = "./modules/aws-config-custodian"
+}
+
 # IAM Access Analyzer Policy Generate — infrastructure.
 # Absorbed from the standalone iam-access-analyzer-policy-generate repository
 # with its history (git log -- modules/iam-access-analyzer-policy-generate).
