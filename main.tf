@@ -114,6 +114,21 @@ module "aws-custom-lambda-config-rules" {
 # My HCP Vault Learning Repositories
 # =========================================
 
+# HCP Vault Dedicated — infrastructure.
+# Absorbed from the standalone deploy-hcp-vault-dedicated-with-terraform
+# repository with its history (git log -- modules/hcp-vault). Not needed right
+# now, so the call is commented out. To enable it, uncomment this block and the
+# aws.us-west-2 / hcp providers in providers.tf, add hashicorp/hcp to
+# required_providers in terraform.tf, then set HCP_CLIENT_ID /
+# HCP_CLIENT_SECRET on the works workspace.
+# module "hcp_vault" {
+#   source = "./modules/hcp-vault"
+#
+#   providers = {
+#     aws = aws.us-west-2
+#   }
+# }
+
 # HCP Vault Deployment
 module "deploy-hcp-vault-dedicated-with-terraform" {
   source = "./modules/repository"
