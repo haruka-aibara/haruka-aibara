@@ -46,15 +46,20 @@ module "bedrock_slack_ai_chatbot_infra" {
   slack_signing_secret = var.bedrock_slack_ai_chatbot_slack_signing_secret
 }
 
-# Multi-turn Bedrock AI Agent
-module "bedrock-slack-ai-agent" {
-  source = "./modules/repository"
-
-  repository_name = "bedrock-slack-ai-agent"
-  description     = "A Slack AI agent using Amazon Bedrock with continuous conversation history"
-
-  topics = ["aws", "bedrock", "slack", "generative-ai", "chatbot"]
-}
+# Multi-turn Bedrock AI Agent — infrastructure.
+# Absorbed from the standalone bedrock-slack-ai-agent repository with its
+# history (git log -- modules/bedrock-agent-classic-slack). Built on Amazon
+# Bedrock Agents, which became "Bedrock Agents Classic" and entered maintenance
+# mode on 2026-07-30 (closed to new customers, no new features or models), so
+# the call is commented out. To enable it, uncomment this block and the
+# bedrock_agent_slack_* variables in variables.tf, then set the variables on
+# the works workspace.
+# module "bedrock_agent_classic_slack" {
+#   source = "./modules/bedrock-agent-classic-slack"
+#
+#   slack_team_id    = var.bedrock_agent_slack_team_id
+#   slack_channel_id = var.bedrock_agent_slack_channel_id
+# }
 
 # =========================================
 # My AWS Projects
@@ -453,24 +458,6 @@ resource "github_repository_file" "python_ci_caller" {
 data "tfe_oauth_client" "this" {
   organization     = local.tfe_organization
   service_provider = "github"
-}
-
-# Bedrock Slack AI Agent Workspace
-resource "tfe_workspace" "bedrock-slack-ai-agent" {
-  name                          = "bedrock-slack-ai-agent"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/bedrock-slack-ai-agent"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
 }
 
 # Generate Dev IO Summary Workspace
