@@ -65,3 +65,15 @@ variable "buffer_minutes" {
 #   type        = string
 #   description = "Slack workspace ID authorized in AWS Chatbot"
 # }
+
+# For module "google_cloud_hands_on" in main.tf, which is commented out for
+# now. Uncomment together with that module.
+# variable "google_cloud_hands_on_project_id" {
+#   type        = string
+#   description = "Google Cloud project ID that gets the budget alert"
+# }
+#
+# variable "google_cloud_hands_on_billing_account_id" {
+#   type        = string
+#   description = "Google Cloud billing account ID the budget belongs to"
+# }

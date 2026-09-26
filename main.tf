@@ -348,6 +348,20 @@ module "google-cloud-hands-on" {
   topics = ["google-cloud", "gcloud", "hands-on", "learning", "cloud"]
 }
 
+# Google Cloud Hands-on — infrastructure (budget alert).
+# Absorbed from the standalone google-cloud-hands-on repository with its
+# history (git log -- modules/google-cloud-hands-on). Not needed right now, so
+# the call is commented out. To enable it, uncomment this block, the google
+# provider in providers.tf and the google_cloud_hands_on_* variables in
+# variables.tf, add hashicorp/google to required_providers in terraform.tf,
+# then set GOOGLE_CREDENTIALS and the variables on the works workspace.
+# module "google_cloud_hands_on" {
+#   source = "./modules/google-cloud-hands-on"
+#
+#   project_id         = var.google_cloud_hands_on_project_id
+#   billing_account_id = var.google_cloud_hands_on_billing_account_id
+# }
+
 # =========================================
 # Python
 # =========================================
