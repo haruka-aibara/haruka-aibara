@@ -45,3 +45,11 @@ provider "aws" {
 # }
 #
 # provider "hcp" {}
+
+# For module "google_cloud_hands_on" in main.tf, which is commented out for
+# now. Credentials come from the GOOGLE_CREDENTIALS environment variable on the
+# works workspace. Uncomment together with that module.
+# provider "google" {
+#   project = var.google_cloud_hands_on_project_id
+#   region  = "asia-northeast1"
+# }
