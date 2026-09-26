@@ -1,5 +1,3 @@
-tags: aws, rds, config, cloud-custodian
-
 # RDS パラメータの監視は再起動待ちまでは追えない
 
 RDS のパラメータを Config ルール（`modules/aws-config-custodian`、c7n の `db-parameter` フィルタ）で監視するとき、見えるのはパラメータグループの値まで。実際に DB で効いている値ではない。
