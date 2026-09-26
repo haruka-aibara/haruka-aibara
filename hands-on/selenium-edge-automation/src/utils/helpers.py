@@ -8,7 +8,7 @@ def take_screenshot(driver, name=None):
     if not os.path.exists("screenshots"):
         os.makedirs("screenshots")
 
-    timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    timestamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
     screenshot_name = f"{name}_{timestamp}.png" if name else f"screenshot_{timestamp}.png"
     screenshot_path = os.path.join("screenshots", screenshot_name)
 

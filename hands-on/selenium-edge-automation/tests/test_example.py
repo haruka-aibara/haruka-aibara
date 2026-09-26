@@ -1,5 +1,6 @@
-from config.settings import BASE_URL
 from selenium.webdriver.common.by import By
+
+from config.settings import BASE_URL
 from src.utils.helpers import take_screenshot
 
 

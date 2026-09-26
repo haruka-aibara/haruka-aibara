@@ -1,6 +1,7 @@
-from config.settings import TIMEOUT
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+
+from config.settings import TIMEOUT
 
 
 class BasePage:

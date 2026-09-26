@@ -1,7 +1,8 @@
-from config.settings import EDGE_OPTIONS
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
+from config.settings import EDGE_OPTIONS
 
 
 class Browser:
