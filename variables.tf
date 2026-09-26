@@ -41,3 +41,15 @@ variable "buffer_minutes" {
 #   type        = number
 #   description = "Daily cost (USD) above which AWS Budgets notifies Slack"
 # }
+
+# For module "generate_dev_io_summary" in main.tf, which is commented out for
+# now. Uncomment together with that module.
+# variable "generate_dev_io_summary_slack_channel_id" {
+#   type        = string
+#   description = "Slack channel ID that receives the DevelopersIO summaries"
+# }
+#
+# variable "generate_dev_io_summary_slack_workspace_id" {
+#   type        = string
+#   description = "Slack workspace ID authorized in AWS Chatbot"
+# }

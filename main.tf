@@ -36,6 +36,19 @@ module "generate-dev-io-summary" {
   topics = ["terraform", "aws", "generative-ai"]
 }
 
+# DevelopersIO Article Summarizer — infrastructure.
+# Absorbed from the standalone generate-dev-io-summary repository with its
+# history (git log -- modules/generate-dev-io-summary). Not needed right now,
+# so the call is commented out. To enable it, uncomment this block and the
+# generate_dev_io_summary_* variables in variables.tf, then set the variables
+# on the works workspace.
+# module "generate_dev_io_summary" {
+#   source = "./modules/generate-dev-io-summary"
+#
+#   slack_channel_id   = var.generate_dev_io_summary_slack_channel_id
+#   slack_workspace_id = var.generate_dev_io_summary_slack_workspace_id
+# }
+
 # Thread-aware Bedrock Chatbot — application infrastructure.
 # Absorbed from the standalone bedrock-slack-ai-chatbot repository/workspace;
 # see docs/runbooks/bedrock-slack-ai-chatbot-state-merge.md for the migration.
