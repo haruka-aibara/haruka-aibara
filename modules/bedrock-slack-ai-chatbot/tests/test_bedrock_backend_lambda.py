@@ -7,16 +7,14 @@ Amazon Bedrock and replies in that thread.
 import time
 from types import ModuleType
 from typing import Any
-from unittest import mock
 
 import pytest
+from botocore.exceptions import ClientError
 
 from conftest import (
-    BACKEND_DIR,
     BACKEND_ENV,
     bedrock_response,
-    conditional_check_failed,
-    load_lambda_module,
+    load_backend,
     sqs_event,
 )
 
@@ -81,27 +79,15 @@ def mention(
     )
 
 
-class FakeIdempotencyTable:
-    """In-memory stand-in for the DynamoDB table, including its conditional write."""
+def claim(table: Any, event_id: str = EVENT_ID) -> dict[str, Any] | None:
+    """Read the claim record for ``event_id`` back out of the idempotency table."""
+    return table.get_item(Key={"event_id": event_id}).get("Item")
 
-    def __init__(self) -> None:
-        self.items: dict[str, dict[str, Any]] = {}
 
-    def put_item(
-        self,
-        Item: dict[str, Any],  # noqa: N803 - boto3 spelling
-        ConditionExpression: str | None = None,  # noqa: N803
-        ExpressionAttributeValues: dict[str, Any] | None = None,  # noqa: N803
-    ) -> None:
-        key = str(Item["event_id"])
-        existing = self.items.get(key)
-        values = ExpressionAttributeValues or {}
-        if ConditionExpression and existing is not None and existing.get("claim_expires_at", 0) >= values[":now"]:
-            raise conditional_check_failed("PutItem")
-        self.items[key] = Item
-
-    def delete_item(self, Key: dict[str, str]) -> None:  # noqa: N803 - boto3 spelling
-        self.items.pop(Key["event_id"], None)
+def hold_claim(table: Any, event_id: str = EVENT_ID, expires_in: int = 60) -> None:
+    """Plant a claim as if another invocation had taken it ``expires_in`` seconds ago."""
+    now = int(time.time())
+    table.put_item(Item={"event_id": event_id, "claim_expires_at": now + expires_in, "expires_at": now + 86400})
 
 
 class TestFetchThreadMessages:
@@ -216,44 +202,53 @@ class TestEventClaims:
     def test_claims_an_event_nobody_holds(self, backend: ModuleType) -> None:
         assert backend.claim_event(EVENT_ID) is True
 
-    def test_keys_the_claim_by_event_id(self, backend: ModuleType) -> None:
+    def test_keys_the_claim_by_event_id(self, backend: ModuleType, idempotency_table: Any) -> None:
         backend.claim_event(EVENT_ID)
 
-        assert backend.idempotency_table.put_item.call_args.kwargs["Item"]["event_id"] == EVENT_ID
+        assert claim(idempotency_table) is not None
 
     def test_refuses_an_event_another_invocation_already_claimed(self, backend: ModuleType) -> None:
-        backend.idempotency_table.put_item.side_effect = conditional_check_failed("PutItem")
+        assert backend.claim_event(EVENT_ID) is True
 
         assert backend.claim_event(EVENT_ID) is False
 
-    def test_lets_a_claim_be_retaken_once_it_has_expired(self, backend: ModuleType) -> None:
+    def test_lets_a_claim_be_retaken_once_it_has_expired(self, backend: ModuleType, idempotency_table: Any) -> None:
         # The condition only rejects a claim that is still live, so an invocation
         # killed mid-flight cannot swallow the question forever.
-        backend.claim_event(EVENT_ID)
+        hold_claim(idempotency_table, expires_in=-1)
 
-        kwargs = backend.idempotency_table.put_item.call_args.kwargs
-        assert "claim_expires_at < :now" in kwargs["ConditionExpression"]
-        assert kwargs["ExpressionAttributeValues"][":now"] <= int(time.time())
+        assert backend.claim_event(EVENT_ID) is True
 
-    def test_claim_expiry_matches_the_queue_visibility_timeout(self, backend: ModuleType) -> None:
+    def test_claim_expiry_matches_the_queue_visibility_timeout(self, backend: ModuleType, idempotency_table: Any) -> None:
         assert backend.CLAIM_TTL_SECONDS == 180
 
         before = int(time.time())
         backend.claim_event(EVENT_ID)
 
-        expires = backend.idempotency_table.put_item.call_args.kwargs["Item"]["claim_expires_at"]
-        assert expires >= before + backend.CLAIM_TTL_SECONDS
+        item = claim(idempotency_table)
+        assert item is not None
+        assert item["claim_expires_at"] >= before + backend.CLAIM_TTL_SECONDS
 
-    def test_propagates_errors_that_are_not_a_failed_condition(self, backend: ModuleType) -> None:
-        backend.idempotency_table.put_item.side_effect = RuntimeError("boom")
+    def test_sets_a_ttl_so_dynamodb_cleans_up_old_claims(self, backend: ModuleType, idempotency_table: Any) -> None:
+        before = int(time.time())
+        backend.claim_event(EVENT_ID)
 
-        with pytest.raises(RuntimeError):
+        item = claim(idempotency_table)
+        assert item is not None
+        assert item["expires_at"] >= before + backend.CLAIM_ITEM_TTL_SECONDS
+
+    def test_propagates_errors_that_are_not_a_failed_condition(self, backend: ModuleType, idempotency_table: Any) -> None:
+        idempotency_table.delete()
+
+        with pytest.raises(ClientError, match="ResourceNotFoundException"):
             backend.claim_event(EVENT_ID)
 
-    def test_releasing_a_claim_deletes_it(self, backend: ModuleType) -> None:
+    def test_releasing_a_claim_deletes_it(self, backend: ModuleType, idempotency_table: Any) -> None:
+        backend.claim_event(EVENT_ID)
+
         backend.release_event_claim(EVENT_ID)
 
-        backend.idempotency_table.delete_item.assert_called_once_with(Key={"event_id": EVENT_ID})
+        assert claim(idempotency_table) is None
 
 
 class TestTrimHistory:
@@ -427,15 +422,16 @@ class TestLambdaHandlerAnswersFromTheThread:
         assert result["statusCode"] == 200
         assert sent_conversation(backend) == [{"role": "user", "content": "これどう？"}]
 
-    def test_no_longer_writes_conversation_state(self, backend: ModuleType) -> None:
+    def test_no_longer_writes_conversation_state(self, backend: ModuleType, idempotency_table: Any) -> None:
         # Slack is the only store of the conversation; DynamoDB holds claims alone.
         set_thread(backend, human("<@U0BOT> どうおもう？", ts=MESSAGE_TS))
+        backend.bedrock_runtime.converse.return_value = bedrock_response("answer")
 
         backend.lambda_handler(mention(), None)
 
-        written = [call.kwargs["Item"] for call in backend.idempotency_table.put_item.call_args_list]
-        assert all("messages" not in item for item in written)
+        written = idempotency_table.scan()["Items"]
         assert [item["event_id"] for item in written] == [EVENT_ID]
+        assert all(set(item) == {"event_id", "claim_expires_at", "expires_at"} for item in written)
 
 
 class TestLambdaHandlerWithNothingToAnswer:
@@ -466,13 +462,17 @@ class TestLambdaHandlerDeduplicates:
         set_thread(backend, human("<@U0BOT> どうおもう？", ts=MESSAGE_TS))
         backend.bedrock_runtime.converse.return_value = bedrock_response("answer")
 
-    def test_claims_the_event_before_doing_any_work(self, backend: ModuleType) -> None:
-        backend.lambda_handler(mention(), None)
+    def test_claims_the_event_before_doing_any_work(self, backend: ModuleType, idempotency_table: Any) -> None:
+        def converse(**_: Any) -> dict[str, Any]:
+            assert claim(idempotency_table) is not None
+            return bedrock_response("answer")
 
-        assert backend.idempotency_table.put_item.call_args_list[0].kwargs["Item"]["event_id"] == EVENT_ID
+        backend.bedrock_runtime.converse.side_effect = converse
 
-    def test_skips_an_event_another_invocation_already_claimed(self, backend: ModuleType) -> None:
-        backend.idempotency_table.put_item.side_effect = conditional_check_failed("PutItem")
+        assert backend.lambda_handler(mention(), None)["statusCode"] == 200
+
+    def test_skips_an_event_another_invocation_already_claimed(self, backend: ModuleType, idempotency_table: Any) -> None:
+        hold_claim(idempotency_table)
 
         result = backend.lambda_handler(mention(), None)
 
@@ -481,33 +481,28 @@ class TestLambdaHandlerDeduplicates:
         backend.slack_client.chat_postMessage.assert_not_called()
 
     def test_a_redelivered_message_is_answered_only_once(self, backend: ModuleType) -> None:
-        backend.idempotency_table = FakeIdempotencyTable()
-
         backend.lambda_handler(mention(), None)
         backend.lambda_handler(mention(), None)
 
         assert backend.slack_client.chat_postMessage.call_count == 1
 
     def test_a_different_question_in_the_same_thread_is_still_answered(self, backend: ModuleType) -> None:
-        backend.idempotency_table = FakeIdempotencyTable()
-
         backend.lambda_handler(mention("one", event_id="Ev1"), None)
         backend.lambda_handler(mention("two", event_id="Ev2"), None)
 
         assert backend.slack_client.chat_postMessage.call_count == 2
 
-    def test_releases_the_claim_when_bedrock_fails_so_sqs_can_retry(self, backend: ModuleType) -> None:
-        table = FakeIdempotencyTable()
-        backend.idempotency_table = table
+    def test_releases_the_claim_when_bedrock_fails_so_sqs_can_retry(
+        self, backend: ModuleType, idempotency_table: Any
+    ) -> None:
         backend.bedrock_runtime.converse.side_effect = RuntimeError("ThrottlingException")
 
         with pytest.raises(RuntimeError):
             backend.lambda_handler(mention(), None)
 
-        assert EVENT_ID not in table.items
+        assert claim(idempotency_table) is None
 
     def test_the_retry_after_a_failure_goes_through(self, backend: ModuleType) -> None:
-        backend.idempotency_table = FakeIdempotencyTable()
         backend.bedrock_runtime.converse.side_effect = [RuntimeError("throttled"), bedrock_response("answer")]
 
         with pytest.raises(RuntimeError):
@@ -517,15 +512,13 @@ class TestLambdaHandlerDeduplicates:
         assert result["statusCode"] == 200
         assert backend.slack_client.chat_postMessage.call_count == 1
 
-    def test_releases_the_claim_when_the_slack_post_fails(self, backend: ModuleType) -> None:
-        table = FakeIdempotencyTable()
-        backend.idempotency_table = table
+    def test_releases_the_claim_when_the_slack_post_fails(self, backend: ModuleType, idempotency_table: Any) -> None:
         backend.slack_client.chat_postMessage.side_effect = RuntimeError("slack down")
 
         with pytest.raises(RuntimeError):
             backend.lambda_handler(mention(), None)
 
-        assert EVENT_ID not in table.items
+        assert claim(idempotency_table) is None
 
     def test_still_works_for_a_message_without_an_event_id(self, backend: ModuleType) -> None:
         event = sqs_event({"channel_id": CHANNEL_ID, "thread_ts": THREAD_TS, "input_text": "hi"})
@@ -642,17 +635,13 @@ class TestLambdaHandlerTrimsLongThreads:
         assert len(sent) <= backend.MAX_HISTORY_MESSAGES
 
 
+@pytest.mark.usefixtures("aws")
 class TestImportTimeConfiguration:
     def _load_without(self, monkeypatch: pytest.MonkeyPatch, missing: str, name: str) -> ModuleType:
         for key, value in BACKEND_ENV.items():
             monkeypatch.setenv(key, value)
         monkeypatch.delenv(missing)
-        with (
-            mock.patch("boto3.client"),
-            mock.patch("boto3.resource"),
-            mock.patch("slack_sdk.WebClient"),
-        ):
-            return load_lambda_module(name, BACKEND_DIR)
+        return load_backend(name)
 
     def test_refuses_to_start_without_a_model_id(self, monkeypatch: pytest.MonkeyPatch) -> None:
         with pytest.raises(ValueError, match="BEDROCK_MODEL_ID"):

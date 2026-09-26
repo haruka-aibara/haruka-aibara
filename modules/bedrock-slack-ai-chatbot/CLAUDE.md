@@ -21,7 +21,7 @@ uv run pytest
 uvx ruff check .
 ```
 
-テストは `tests/` に置く。Lambda のソースディレクトリ (`lambda_function_*/`) は `data.archive_file` で zip 化されるので、テストファイルを混ぜない。混ぜると `source_code_hash` が変わって無関係な再デプロイが走る。
+テストは `tests/` に置く。SQS・DynamoDB は moto（`tests/conftest.py` の `aws` fixture）でエミュレートし、呼び出し引数ではなくキューやテーブルの中身で検証する。moto が Converse API を持たない Bedrock Runtime と Slack だけ mock にする。Lambda のソースディレクトリ (`lambda_function_*/`) は `data.archive_file` で zip 化されるので、テストファイルを混ぜない。混ぜると `source_code_hash` が変わって無関係な再デプロイが走る。
 
 ### Terraform ファイルを変更したら必ずやること
 

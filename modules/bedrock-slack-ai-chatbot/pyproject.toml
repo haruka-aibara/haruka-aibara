@@ -15,6 +15,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "moto[dynamodb,sqs]>=5.2.3",
     "pytest>=8.4.2",
 ]
 
@@ -48,3 +49,7 @@ known-first-party = ["boto3_utils", "conftest"]
 # Only collect our own tests — the vendored layer directories must never be imported.
 testpaths = ["tests"]
 addopts = "-q --strict-markers --strict-config"
+filterwarnings = [
+    # botocore still calls datetime.utcnow(); not ours to fix.
+    "ignore:datetime.datetime.utcnow:DeprecationWarning:botocore",
+]
