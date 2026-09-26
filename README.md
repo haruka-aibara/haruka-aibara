@@ -1,17 +1,15 @@
 # works
 
-管理対象を全部集約する個人のモノレポ。Terraform コード・CI 配布・実装コード（Lambda など）・学習メモが同居する。
+作るもの・管理するものを、別リポジトリを切らずに全部ここへ集める個人のモノレポ。
 
-## 中身
+## 方針
 
-| 場所 | 中身 |
-|---|---|
-| ルートの `*.tf` | GitHub リポジトリ・HCP Terraform ワークスペース・AWS リソースの管理（HCP Terraform の `works` ワークスペースで apply） |
-| `modules/repository` | GitHub リポジトリ1つ分の設定をまとめたモジュール |
-| `modules/` のその他 | インフラ／アプリ（Bedrock の Slack ボット、AWS 予算通知、HCP Vault、Google Cloud など）と `TFE_TOKEN` の自己ローテーション。使っていないものは `main.tf` で呼び出しをコメントアウトしてある |
-| `workflow-dist/` | 各リポジトリに配布する CI の単一ソース。`reusable/` は github-actions リポジトリに置く reusable workflow 本体、`callers/` は各リポジトリの `.github/workflows/` に置く呼び出し側テンプレート |
-| `docs/` | 学習メモ・技術記事（1000本超）。GitHub Pages（<https://haruka-aibara.github.io/works/>）で公開 |
-| `devcontainer-templates/` | ghcr に publish する devcontainer テンプレート |
+- **インフラは Terraform で持つ。** 手で作らず、このリポジトリから HCP Terraform 経由で apply する（ルートの `*.tf` / `modules/`）
+- **アプリのコードは、それを動かすインフラと同じモジュールに置く。** Lambda なども `modules/` の中
+- **他リポジトリに配るものは、ここを単一ソースにする。** CI などは Terraform で配布し、配布先は直接編集しない（`workflow-dist/`）
+- **学んだこと・調べたことは記事にして公開する。** `docs/` に書き、GitHub Pages（<https://haruka-aibara.github.io/works/>）で読めるようにする
+- **開発環境も配布物として持つ。** devcontainer テンプレートをここから ghcr に publish する（`devcontainer-templates/`）
+- **使わなくなったものは消さずに止める。** モジュールは残し、`main.tf` の呼び出しをコメントアウトしておく
 
 ## Terraform
 
