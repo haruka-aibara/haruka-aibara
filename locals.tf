@@ -29,8 +29,9 @@ locals {
   }
 
   # Python repositories that should receive the CI caller workflow.
-  # Add a line here to onboard a new repo.
+  # Add a line here to onboard a new repo. working_directory is searched for every
+  # directory with a pyproject.toml, so a new Lambda inside it needs no change here.
   python_ci_repos = {
-    "works" = { working_directory = "modules/bedrock-slack-ai-chatbot" }
+    "works" = { working_directory = "." }
   }
 }
