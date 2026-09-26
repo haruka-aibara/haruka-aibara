@@ -8,7 +8,6 @@ tags: aws, cloudtrail, s3, terraform, audit
 
 - `force_destroy = true` のまま `terraform destroy`、またはリソース名の変更で `moved` ブロックを書き忘れて作り直しになる。中身ごと消える
 - `lifecycle { prevent_destroy = true }` は、リソースブロックがコードに残っている間しか効かない。ブロックごと消す・モジュールを外すと素通りする
-- `force_destroy = false`（デフォルト）なら空でないバケットの削除は失敗するので最低限のガードにはなるが、中のオブジェクトを消す操作は防げない
 
 ## Object Lock で何が変わるか
 
@@ -17,7 +16,7 @@ tags: aws, cloudtrail, s3, terraform, audit
 
 ## 気をつけること
 
-- コンプライアンスモードは、設定を間違えても保持期間が終わるまで消せない。保持期間 × 容量の費用がそのままかかる。最初は短い期間で試す
+- コンプライアンスモードは、間違えても保持期間が終わるまで消せず費用もかかる。最初は短い期間で試す
 - バージョニングが必須
 
 関連：[CloudTrail ログファイル検証を定期実行する](./2026-09-26-CloudTrailログファイル検証を定期実行する.md)
