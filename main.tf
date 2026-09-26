@@ -26,16 +26,6 @@ module "haruka-aibara" {
 # My Slack AI Integration Projects
 # =========================================
 
-# DevelopersIO Article Summarizer with Slack Notifications
-module "generate-dev-io-summary" {
-  source = "./modules/repository"
-
-  repository_name = "generate-dev-io-summary"
-  description     = "Summarize new articles posted on DevelopersIO and send email notifications"
-
-  topics = ["terraform", "aws", "generative-ai"]
-}
-
 # DevelopersIO Article Summarizer — infrastructure.
 # Absorbed from the standalone generate-dev-io-summary repository with its
 # history (git log -- modules/generate-dev-io-summary). Not needed right now,
@@ -494,24 +484,6 @@ resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
 
   vcs_repo {
     identifier         = "${local.github_owner}/deploy-hcp-vault-dedicated-with-terraform"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
-}
-
-# Generate Dev IO Summary Workspace
-resource "tfe_workspace" "generate-dev-io-summary" {
-  name                          = "generate-dev-io-summary"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/generate-dev-io-summary"
     oauth_token_id     = local.oauth_token_id
     ingress_submodules = false
   }
