@@ -19,6 +19,6 @@ module "generate_dev_io_summary" {
 
 Slack ワークスペースは事前に AWS Chatbot のコンソールで認可しておく必要がある。
 
-Lambda Layer の中身（`requirements.txt` の requests / beautifulsoup4）は `lambda_functions/lambda_layer/python` にコミット済み。`requirements.txt` を変えたら `pip install -r requirements.txt -t lambda_functions/lambda_layer/python` で入れ直す。
+Lambda Layer の中身（`requirements.txt` の requests / beautifulsoup4）はコミットしない。plan のたびに `build_layer.py` が `requirements.txt` から pip で `.build/lambda_layer` に作るので、バージョンを変えるときは `requirements.txt` だけを直す。
 
 参考記事: https://dev.classmethod.jp/articles/generate-dev-io-summary/

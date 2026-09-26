@@ -29,7 +29,6 @@
   },
   "ignores": [
     "**/node_modules/**",
-    "modules/*/lambda_layer_*/**",
     // Markdown の書き方の見本（* と - の両方の書き方を並べている）なので対象外。
     "docs/Markdown/cheatsheet.md",
     // Marp のスライド（1枚ごとに H1 を置く）なので対象外。

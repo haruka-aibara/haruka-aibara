@@ -45,3 +45,6 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .ruff_cache/
+
+# archive_file が plan/apply のたびに作る Lambda の zip
+.build/
