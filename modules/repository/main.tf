@@ -36,10 +36,11 @@ resource "github_repository" "this" {
   # prevent_destroy is lifted so that repositories absorbed into this monorepo
   # with their history (devcontainer-templates,
   # terraform-aws-budget-slack-notifier, aws-cost-allocation-tags,
-  # iam-access-analyzer-policy-generate and generate-dev-io-summary) could be
-  # destroyed for real. It stays false for now. This affects every repository
-  # this module manages, so removing a module call destroys that repository
-  # on the next apply.
+  # iam-access-analyzer-policy-generate,
+  # deploy-hcp-vault-dedicated-with-terraform, bedrock-slack-ai-agent and
+  # generate-dev-io-summary) could be destroyed for real. It stays false for
+  # now. This affects every repository this module manages, so removing a
+  # module call destroys that repository on the next apply.
   lifecycle {
     prevent_destroy = false
   }

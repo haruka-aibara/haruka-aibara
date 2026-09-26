@@ -42,6 +42,18 @@ variable "buffer_minutes" {
 #   description = "Daily cost (USD) above which AWS Budgets notifies Slack"
 # }
 
+# For module "bedrock_agent_classic_slack" in main.tf, which is commented out
+# for now. Uncomment together with that module.
+# variable "bedrock_agent_slack_team_id" {
+#   type        = string
+#   description = "Slack workspace ID authorized in Amazon Q Developer in chat applications (formerly AWS Chatbot)"
+# }
+#
+# variable "bedrock_agent_slack_channel_id" {
+#   type        = string
+#   description = "Slack channel ID where the Bedrock agent connector is used"
+# }
+
 # For module "generate_dev_io_summary" in main.tf, which is commented out for
 # now. Uncomment together with that module.
 # variable "generate_dev_io_summary_slack_channel_id" {
