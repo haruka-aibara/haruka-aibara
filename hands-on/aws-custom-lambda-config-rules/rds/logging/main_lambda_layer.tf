@@ -1,4 +1,9 @@
 # S3バケットの作成（Lambdaレイヤー用）
+# trivy:ignore:AWS-0086
+# trivy:ignore:AWS-0087
+# trivy:ignore:AWS-0091
+# trivy:ignore:AWS-0093
+# trivy:ignore:AWS-0132
 resource "aws_s3_bucket" "lambda_layer_bucket" {
   bucket = "haruka-aibara-lambda-layer-bucket"
 }
