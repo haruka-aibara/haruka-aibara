@@ -7,3 +7,7 @@ rules:
         "haruka-aibara/*": ref-pin
         # それ以外の action はコミットハッシュで固定する。
         "*": hash-pin
+  # works 自身の caller は同じリポジトリの reusable を `./.github/...` で呼ぶ。
+  # 新しい `$/...` 記法は actionlint（1.7.12）が解釈できずエラーになるので、この指摘は見ない。
+  self-repository:
+    disable: true

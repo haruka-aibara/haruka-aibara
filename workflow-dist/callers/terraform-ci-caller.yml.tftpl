@@ -11,6 +11,6 @@ permissions:
 
 jobs:
   ci:
-    uses: haruka-aibara/github-actions/.github/workflows/terraform-ci.yml@main
+    uses: ${reusable}
     with:
       working-directory: "${working_directory}"
