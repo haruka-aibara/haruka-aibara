@@ -99,16 +99,6 @@ module "bedrock_slack_ai_chatbot_infra" {
 # My AWS Learning Repositories
 # =========================================
 
-# AWS Config Custom Rules
-module "aws-custom-lambda-config-rules" {
-  source = "./modules/repository"
-
-  repository_name = "aws-custom-lambda-config-rules"
-  description     = "Customize AWS Config Rules using Lambda"
-
-  topics = ["terraform", "aws", "lambda", "config"]
-}
-
 # AWS Config rules backed by Cloud Custodian — infrastructure.
 # Each YAML file under modules/aws-config-custodian/policies becomes one Config
 # rule. The module also creates the region's Config recorder, recording only a
@@ -149,192 +139,6 @@ module "aws-custom-lambda-config-rules" {
 # }
 
 # =========================================
-# My Docker Learning Repositories
-# =========================================
-
-# Docker CI/CD sample Example
-module "docker-simple-cicd-demo" {
-  source = "./modules/repository"
-
-  repository_name = "docker-simple-cicd-demo"
-  description     = "Simple CI/CD demo using Docker"
-
-  topics = ["docker", "cicd", "devops"]
-}
-
-# Docker Hello World Example
-module "docker-hello-world" {
-  source = "./modules/repository"
-
-  repository_name = "docker-hello-world"
-  description     = "A simple Docker Hello World example demonstrating basic Docker concepts"
-
-  topics = ["docker", "hello-world", "getting-started"]
-}
-
-# =========================================
-# My GitHub Actions Learning Repositories
-# =========================================
-
-# Basic GitHub Actions Testing
-module "github-actions-test" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test"
-  description     = "GitHub Actions testing"
-
-  topics = ["github-actions", "ci", "cd"]
-}
-
-# Jobs, Artifacts, and Outputs
-module "github-actions-test-jobs-artifacts-outputs" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-jobs-artifacts-outputs"
-  description     = "Testing GitHub Actions jobs, artifacts, and outputs"
-
-  topics = ["github-actions", "ci", "cd", "jobs", "artifacts", "outputs"]
-}
-
-# GitHub Actions Events
-module "github-actions-test-events-deep-dive" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-events-deep-dive"
-  description     = "Deep dive into GitHub Actions events"
-
-  topics = ["github-actions", "ci", "cd", "events"]
-}
-
-# CI/CD Pipeline Testing
-module "github-actions-test-lint-test-deploy-build" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-lint-test-deploy-build"
-  description     = "GitHub Actions lint, test, deploy, and build testing"
-
-  topics = ["github-actions", "ci", "cd", "lint", "test", "deploy"]
-}
-
-# React Application CI/CD
-module "github-actions-test-react-demo" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-react-demo"
-  description     = "GitHub Actions React demo"
-
-  topics = ["github-actions", "react", "ci", "cd"]
-}
-
-# GitHub Actions Environment Variables
-module "github-actions-test-env-vars" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-env-vars"
-  description     = "Testing GitHub Actions environment variables and secrets"
-
-  topics = ["github-actions", "ci", "cd", "environment-variables", "secrets"]
-}
-
-# GitHub Actions Workflow Controls
-module "github-actions-test-workflow-controls" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-workflow-controls"
-  description     = "Testing GitHub Actions workflow controls including conditional jobs and steps"
-
-  topics = ["github-actions", "ci", "cd", "workflow", "conditional-jobs", "conditional-steps"]
-}
-
-# GitHub Actions Container Jobs
-module "github-actions-test-container-jobs" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-container-jobs"
-  description     = "Testing GitHub Actions jobs running in containers"
-
-  topics = ["github-actions", "ci", "cd", "containers", "docker"]
-}
-
-# GitHub Actions Custom Actions
-module "github-actions-test-custom-actions" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-custom-actions"
-  description     = "Testing GitHub Actions custom actions development and usage"
-
-  topics = ["github-actions", "ci", "cd", "custom-actions", "reusable-workflows"]
-}
-
-# GitHub Actions Security
-module "github-actions-test-security" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions-test-security"
-  description     = "Testing GitHub Actions security features, permissions, and best practices"
-
-  topics = ["github-actions", "ci", "cd", "security", "permissions", "best-practices"]
-}
-
-# =========================================
-# My Monitoring Learning Repositories
-# =========================================
-
-# Grafana and Prometheus Monitoring Hands-on
-module "grafana-prometheus-monitoring-hands-on" {
-  source = "./modules/repository"
-
-  repository_name = "grafana-prometheus-monitoring-hands-on"
-  description     = "Hands-on practice repository for monitoring with Grafana and Prometheus"
-
-  topics = ["monitoring", "grafana", "prometheus", "observability", "metrics"]
-}
-
-# =========================================
-# Terraform
-# =========================================
-
-# Terraform Modules Hands-on
-module "terraform-modules-hands-on" {
-  source = "./modules/repository"
-
-  repository_name = "terraform-modules-hands-on"
-  description     = "Hands-on practice repository for learning Terraform modules with practical examples"
-
-  topics = ["terraform", "modules", "infrastructure-as-code", "iac", "hands-on", "learning"]
-}
-
-# Terraform Hands-on Practice
-module "terraform-hands-on" {
-  source = "./modules/repository"
-
-  repository_name = "terraform-hands-on"
-  description     = "General Terraform hands-on practice repository with various examples and use cases"
-
-  topics = ["terraform", "infrastructure-as-code", "iac", "hands-on", "aws", "azure", "gcp"]
-}
-
-# Terraform IAM User Hands-on
-module "terraform-iam-user-hands-on" {
-  source = "./modules/repository"
-
-  repository_name = "terraform-iam-user-hands-on"
-  description     = "Hands-on practice repository for managing IAM users with Terraform"
-
-  topics = ["terraform", "aws", "iam", "user-management", "hands-on", "learning"]
-}
-
-# Terraform fmt CI
-module "terraform-fmt-github-actions-ci" {
-  source = "./modules/repository"
-
-  repository_name = "terraform-fmt-github-actions-ci"
-  description     = "GitHub Actions workflow YAML for terraform fmt ci"
-
-  topics = ["terraform", "fmt", "github-actions", "ci", "automation"]
-}
-
-# =========================================
 # My Google Cloud Learning Repositories
 # =========================================
 
@@ -353,58 +157,14 @@ module "terraform-fmt-github-actions-ci" {
 # }
 
 # =========================================
-# Python
-# =========================================
-
-# Selenium Edge Automation
-module "selenium-edge-automation" {
-  source = "./modules/repository"
-
-  repository_name = "selenium-edge-automation"
-  description     = "Python automation testing with Selenium and Microsoft Edge"
-
-  topics = ["python", "selenium", "edge", "automation", "testing", "webdriver"]
-}
-
-# =========================================
-# Shared CI / GitHub Actions
-# =========================================
-
-# Reusable GitHub Actions workflows (Terraform CI logic single source)
-module "github-actions" {
-  source = "./modules/repository"
-
-  repository_name = "github-actions"
-  description     = "Shared reusable GitHub Actions workflows (Terraform CI etc.)"
-
-  topics = ["github-actions", "ci", "terraform"]
-}
-
-# =========================================
 # Terraform CI distribution
-# Reusable workflow body + per-repo caller files,
-# all managed from this repo as the single source.
+# The reusable workflow body lives in .github/workflows/reusable-terraform-ci.yml;
+# only the thin caller files are distributed from here.
 # =========================================
-
-# Push the reusable workflow body into the github-actions repo.
-resource "github_repository_file" "reusable_terraform_ci" {
-  repository          = module.github-actions.repository_name
-  branch              = "main"
-  file                = ".github/workflows/terraform-ci.yml"
-  content             = file("${path.module}/.github/workflows/reusable-terraform-ci.yml")
-  commit_message      = "Update reusable Terraform CI workflow (managed by Terraform)"
-  overwrite_on_create = true
-
-  lifecycle {
-    ignore_changes = [commit_author, commit_email]
-  }
-}
 
 # Distribute the thin caller workflow to each Terraform repository.
 resource "github_repository_file" "terraform_ci_caller" {
   for_each = local.terraform_ci_repos
-
-  depends_on = [github_repository_file.reusable_terraform_ci]
 
   repository = each.key
   branch     = "main"
@@ -424,29 +184,13 @@ resource "github_repository_file" "terraform_ci_caller" {
 
 # =========================================
 # Python CI distribution
-# Reusable workflow body + per-repo caller files,
-# all managed from this repo as the single source.
+# The reusable workflow body lives in .github/workflows/reusable-python-ci.yml;
+# only the thin caller files are distributed from here.
 # =========================================
-
-# Push the reusable workflow body into the github-actions repo.
-resource "github_repository_file" "reusable_python_ci" {
-  repository          = module.github-actions.repository_name
-  branch              = "main"
-  file                = ".github/workflows/python-ci.yml"
-  content             = file("${path.module}/.github/workflows/reusable-python-ci.yml")
-  commit_message      = "Update reusable Python CI workflow (managed by Terraform)"
-  overwrite_on_create = true
-
-  lifecycle {
-    ignore_changes = [commit_author, commit_email]
-  }
-}
 
 # Distribute the thin caller workflow to each Python repository.
 resource "github_repository_file" "python_ci_caller" {
   for_each = local.python_ci_repos
-
-  depends_on = [github_repository_file.reusable_python_ci]
 
   repository = each.key
   branch     = "main"

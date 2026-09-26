@@ -38,10 +38,10 @@ resource "github_repository" "this" {
   # terraform-aws-budget-slack-notifier, aws-cost-allocation-tags,
   # iam-access-analyzer-policy-generate,
   # deploy-hcp-vault-dedicated-with-terraform, bedrock-slack-ai-agent,
-  # generate-dev-io-summary and google-cloud-hands-on) could be destroyed for
-  # real. It stays false for
-  # now. This affects every repository this module manages, so removing a
-  # module call destroys that repository on the next apply.
+  # generate-dev-io-summary, google-cloud-hands-on, the hands-on repositories
+  # under hands-on/ and github-actions) could be destroyed for real. It stays
+  # false for now. This affects every repository this module manages, so
+  # removing a module call destroys that repository on the next apply.
   lifecycle {
     prevent_destroy = false
   }
