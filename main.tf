@@ -338,16 +338,6 @@ module "terraform-fmt-github-actions-ci" {
 # My Google Cloud Learning Repositories
 # =========================================
 
-# Google Cloud Hands-on Practice
-module "google-cloud-hands-on" {
-  source = "./modules/repository"
-
-  repository_name = "google-cloud-hands-on"
-  description     = "Hands-on practice repository for learning Google Cloud with gcloud CLI and various Google Cloud services"
-
-  topics = ["google-cloud", "gcloud", "hands-on", "learning", "cloud"]
-}
-
 # Google Cloud Hands-on — infrastructure (budget alert).
 # Absorbed from the standalone google-cloud-hands-on repository with its
 # history (git log -- modules/google-cloud-hands-on). Not needed right now, so
@@ -502,24 +492,6 @@ resource "tfe_workspace" "works" {
 
   vcs_repo {
     identifier         = "${local.github_owner}/works"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
-}
-
-# Google Cloud Hands-on Workspace
-resource "tfe_workspace" "google-cloud-hands-on" {
-  name                          = "google-cloud-hands-on"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/google-cloud-hands-on"
     oauth_token_id     = local.oauth_token_id
     ingress_submodules = false
   }
