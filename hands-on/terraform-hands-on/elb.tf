@@ -1,8 +1,10 @@
 # ------------------------
 # ALB
 # ------------------------
+# trivy:ignore:AWS-0052
 resource "aws_lb" "alb" {
-  name               = "${var.project}-${var.environment}-app-alb"
+  name = "${var.project}-${var.environment}-app-alb"
+  # trivy:ignore:AWS-0053
   internal           = false
   load_balancer_type = "application"
   security_groups = [
@@ -14,6 +16,7 @@ resource "aws_lb" "alb" {
   ]
 }
 
+# trivy:ignore:AWS-0054
 resource "aws_lb_listener" "alb_listner_http" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 80
@@ -29,8 +32,9 @@ resource "aws_lb_listener" "alb_listner_https" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate.tokyo_cert.arn
+  # trivy:ignore:AWS-0047
+  ssl_policy      = "ELBSecurityPolicy-2016-08"
+  certificate_arn = aws_acm_certificate.tokyo_cert.arn
 
   default_action {
     type             = "forward"

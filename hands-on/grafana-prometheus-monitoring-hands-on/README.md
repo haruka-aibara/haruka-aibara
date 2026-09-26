@@ -19,17 +19,20 @@
 ## 使用方法
 
 1. リポジトリをクローン
+
 ```bash
 git clone https://github.com/haruka-aibara/grafana-prometheus-monitoring-hands-on.git
 cd grafana-prometheus-monitoring-hands-on
 ```
 
 2. Terraformの初期化
+
 ```bash
 terraform init
 ```
 
 3. インフラのデプロイ
+
 ```bash
 terraform apply
 ```
@@ -39,19 +42,24 @@ terraform apply
 デプロイ完了後、以下のURLで各コンポーネントにアクセスできます：
 
 ### Grafana
+
 ```
 http://<Grafana-Public-IP>:3000
 ```
+
 デフォルトのログイン情報：
+
 - ユーザー名: admin
 - パスワード: admin（初回ログイン時に変更が必要）
 
 ### Prometheus
+
 ```
 http://<Prometheus-Public-IP>:9090
 ```
 
 ### Node Exporter
+
 ```
 http://<Node-Exporter-Public-IP>:9100
 ```

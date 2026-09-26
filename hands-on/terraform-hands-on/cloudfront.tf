@@ -1,6 +1,7 @@
 # ------------------------
 # CloudFront cache distribution
 # ------------------------
+# trivy:ignore:AWS-0011
 resource "aws_cloudfront_distribution" "cf" {
   enabled         = true
   is_ipv6_enabled = true
@@ -73,7 +74,8 @@ resource "aws_cloudfront_distribution" "cf" {
   aliases = ["dev.${var.domain}"]
 
   viewer_certificate {
-    acm_certificate_arn      = aws_acm_certificate.virginia_cert.arn
+    acm_certificate_arn = aws_acm_certificate.virginia_cert.arn
+    # trivy:ignore:AWS-0013
     minimum_protocol_version = "TLSv1.2_2019"
     ssl_support_method       = "sni-only"
   }

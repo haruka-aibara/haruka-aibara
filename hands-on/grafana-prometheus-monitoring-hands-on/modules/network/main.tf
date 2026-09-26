@@ -11,9 +11,10 @@ resource "aws_vpc" "main" {
 
 # パブリックサブネット
 resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidr
-  availability_zone       = var.availability_zone
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.public_subnet_cidr
+  availability_zone = var.availability_zone
+  # trivy:ignore:AWS-0164
   map_public_ip_on_launch = true
 
   tags = {

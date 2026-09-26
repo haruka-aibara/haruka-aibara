@@ -2,7 +2,7 @@ version: '3.9'
 services:
   api:
     container_name: api
-    build: 
+    build:
       context: ./api
       target: base
     ports:
@@ -13,7 +13,7 @@ services:
 
   web:
     container_name: web
-    build: 
+    build:
       context: ./web
       target: base
     ports:

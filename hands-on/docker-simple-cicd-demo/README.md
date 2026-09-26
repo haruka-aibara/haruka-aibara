@@ -105,6 +105,7 @@ docker-compose up
 ```
 
 This will start:
+
 - API server at http://localhost:8080
 - Web server at http://localhost:3000
 

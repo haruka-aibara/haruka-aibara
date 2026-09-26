@@ -9,6 +9,7 @@ https://book.st-hakky.com/hakky/check-terraform-fmt-by-github-actions/
 ## 最新の terraform version で terraform fmt -check -recursive を行う github-actions を作成する手順
 
 1. .github/workflows/任意の名前.yml がなければリポジトリ内に作成し、以下の内容を入れる。
+
 ```yml
 name: Terraform fmt checker
 

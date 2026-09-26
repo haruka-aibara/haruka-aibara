@@ -8,7 +8,7 @@ This is a simple Docker project that demonstrates how to containerize a Python F
 chmod +x build_and_run.sh
 ```
 
-then 
+then
 
 ```
 ./build_and_run.sh

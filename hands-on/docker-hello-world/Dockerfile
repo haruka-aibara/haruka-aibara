@@ -8,4 +8,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 COPY app.py .
 
+USER nobody
+
 CMD ["python", "app.py"]

@@ -8,7 +8,9 @@ WORKDIR /workspace
 ARG REACT_APP_API_SERVER
 RUN npm ci && npm run test && npm run build
 
-# Hosting in nginx
-FROM nginx:latest AS production
+# Hosting in nginx (non-root). Port 80 needs net.ipv4.ip_unprivileged_port_start=0,
+# which Docker sets by default and .aws/task-definition.json sets on ECS.
+FROM nginxinc/nginx-unprivileged:latest AS production
 COPY --from=test-and-build /workspace/build /var/www
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+USER 101

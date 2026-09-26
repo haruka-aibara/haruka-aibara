@@ -6,4 +6,4 @@ output "public_ip" {
 output "grafana_url" {
   description = "URL to access Grafana"
   value       = "http://${aws_instance.grafana.public_ip}:3000"
-} 
+}

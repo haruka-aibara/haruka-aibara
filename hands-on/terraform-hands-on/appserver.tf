@@ -73,6 +73,7 @@ resource "aws_instance" "app_server" {
 # ------------------------
 # launch template
 # ------------------------
+# trivy:ignore:AWS-0130
 resource "aws_launch_template" "app_lt" {
   update_default_version = true
 
@@ -110,10 +111,10 @@ resource "aws_launch_template" "app_lt" {
 # auto scaling group
 # ------------------------
 resource "aws_autoscaling_group" "app_asg" {
-  name  = "${var.project}-${var.environment}-app-asg"
+  name = "${var.project}-${var.environment}-app-asg"
 
-  max_size               = 1
-  min_size               = 1
+  max_size         = 1
+  min_size         = 1
   desired_capacity = 1
 
   health_check_grace_period = 300
@@ -121,19 +122,19 @@ resource "aws_autoscaling_group" "app_asg" {
   health_check_type = "ELB"
 
   vpc_zone_identifier = [
-  aws_subnet.public_subnet_1a.id,
+    aws_subnet.public_subnet_1a.id,
     aws_subnet.public_subnet_1c.id
   ]
 
   target_group_arns = [
-  aws_lb_target_group.alb_target_group.arn
+    aws_lb_target_group.alb_target_group.arn
   ]
 
   mixed_instances_policy {
     launch_template {
       launch_template_specification {
         launch_template_id = aws_launch_template.app_lt.id
-        version = "$Latest"
+        version            = "$Latest"
       }
       override {
         instance_type = "t2.micro"

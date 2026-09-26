@@ -19,9 +19,10 @@ resource "aws_vpc" "vpc" {
 # Subnet
 # ------------------------
 resource "aws_subnet" "public_subnet_1a" {
-  vpc_id                  = aws_vpc.vpc.id
-  availability_zone       = "ap-northeast-1a"
-  cidr_block              = "192.168.1.0/24"
+  vpc_id            = aws_vpc.vpc.id
+  availability_zone = "ap-northeast-1a"
+  cidr_block        = "192.168.1.0/24"
+  # trivy:ignore:AWS-0164
   map_public_ip_on_launch = true
 
   tags = {
@@ -33,9 +34,10 @@ resource "aws_subnet" "public_subnet_1a" {
 }
 
 resource "aws_subnet" "public_subnet_1c" {
-  vpc_id                  = aws_vpc.vpc.id
-  availability_zone       = "ap-northeast-1c"
-  cidr_block              = "192.168.2.0/24"
+  vpc_id            = aws_vpc.vpc.id
+  availability_zone = "ap-northeast-1c"
+  cidr_block        = "192.168.2.0/24"
+  # trivy:ignore:AWS-0164
   map_public_ip_on_launch = true
 
   tags = {

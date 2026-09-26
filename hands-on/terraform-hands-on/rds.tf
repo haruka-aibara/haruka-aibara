@@ -63,7 +63,8 @@ resource "aws_db_instance" "mysql_standalone" {
   allocated_storage     = 20
   max_allocated_storage = 50
   storage_type          = "gp2"
-  storage_encrypted     = false
+  # trivy:ignore:AWS-0080
+  storage_encrypted = false
 
   multi_az               = false
   availability_zone      = "ap-northeast-1a"

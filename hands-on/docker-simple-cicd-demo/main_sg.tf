@@ -12,9 +12,10 @@ resource "aws_security_group" "ecs_sg" {
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    # trivy:ignore:AWS-0104
     cidr_blocks = ["0.0.0.0/0"]
   }
 

@@ -11,6 +11,7 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
+# trivy:ignore:AWS-0132
 resource "aws_s3_bucket" "gha_security_hosting_demo" {
   bucket = "gha-security-hosting-demo-${random_string.suffix.result}"
 }
@@ -55,8 +56,12 @@ resource "aws_s3_bucket_policy" "allow_public_read" {
 resource "aws_s3_bucket_public_access_block" "public_access_block" {
   bucket = aws_s3_bucket.gha_security_hosting_demo.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
+  # trivy:ignore:AWS-0086
+  block_public_acls = false
+  # trivy:ignore:AWS-0087
+  block_public_policy = false
+  # trivy:ignore:AWS-0091
+  ignore_public_acls = false
+  # trivy:ignore:AWS-0093
   restrict_public_buckets = false
 }

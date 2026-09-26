@@ -1,0 +1,7 @@
+# trivy（Terraform CI の IaC misconfig）で、ファイル単位で見送るもの。
+# trivy.yaml から ignorefile として読む。
+misconfigurations:
+  - id: DS-0002
+    paths:
+      - hands-on/github-actions-test-custom-actions/.github/actions/deploy-s3-docker/Dockerfile
+    statement: Docker コンテナアクションは root で動かす前提（GitHub の仕様で USER を置けない）

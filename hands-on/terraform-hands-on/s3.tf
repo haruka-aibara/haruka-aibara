@@ -9,6 +9,7 @@ resource "random_string" "s3_unique_key" {
 # ------------------------
 # S3 static bucket
 # ------------------------
+# trivy:ignore:AWS-0132
 resource "aws_s3_bucket" "s3_static_bucket" {
   bucket = "${var.project}-${var.environment}-static-bucket-${random_string.s3_unique_key.result}"
 }
@@ -52,6 +53,7 @@ data "aws_iam_policy_document" "s3_static_bucket" {
 # ------------------------
 # S3 deploy bucket
 # ------------------------
+# trivy:ignore:AWS-0132
 resource "aws_s3_bucket" "s3_deploy_bucket" {
   bucket = "${var.project}-${var.environment}-deploy-bucket-${random_string.s3_unique_key.result}"
 }

@@ -109,7 +109,8 @@ resource "aws_security_group_rule" "opmng_in_ssh" {
   protocol          = "tcp"
   from_port         = 22
   to_port           = 22
-  cidr_blocks       = ["0.0.0.0/0"]
+  # trivy:ignore:AWS-0107
+  cidr_blocks = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "opmng_in_tcp3000" {
@@ -127,7 +128,8 @@ resource "aws_security_group_rule" "opmng_out_http" {
   protocol          = "tcp"
   from_port         = 80
   to_port           = 80
-  cidr_blocks       = ["0.0.0.0/0"]
+  # trivy:ignore:AWS-0104
+  cidr_blocks = ["0.0.0.0/0"]
 }
 
 resource "aws_security_group_rule" "opmng_out_https" {
@@ -136,7 +138,8 @@ resource "aws_security_group_rule" "opmng_out_https" {
   protocol          = "tcp"
   from_port         = 443
   to_port           = 443
-  cidr_blocks       = ["0.0.0.0/0"]
+  # trivy:ignore:AWS-0104
+  cidr_blocks = ["0.0.0.0/0"]
 }
 
 # db security group

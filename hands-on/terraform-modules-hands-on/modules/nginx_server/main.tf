@@ -1,3 +1,5 @@
+# trivy:ignore:AWS-0028
+# trivy:ignore:AWS-0131
 resource "aws_instance" "server" {
   ami           = "ami-0c1de55b79f5aff9b"
   instance_type = var.instance_type

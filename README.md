@@ -12,6 +12,7 @@
 | `workflow-dist/` | 各リポジトリに配布する CI の単一ソース。`reusable/` は github-actions リポジトリに置く reusable workflow 本体、`callers/` は各リポジトリの `.github/workflows/` に置く呼び出し側テンプレート |
 | `docs/` | 学習メモ・技術記事（1000本超）。旧 `docs` リポジトリを統合したもので、GitHub Pages（<https://haruka-aibara.github.io/works/>）で公開 |
 | `devcontainer-templates/` | ghcr に publish する devcontainer テンプレート。旧 `devcontainer-templates` リポジトリを統合したもの |
+| `hands-on/` | 過去にハンズオンをやっただけの旧単独リポジトリ（Docker・GitHub Actions・Terraform・Selenium など）を履歴ごと取り込んだもの。1リポジトリ1ディレクトリで、`git log -- hands-on/<名前>` で当時のコミットを辿れる。apply もデプロイもしない |
 
 ## Terraform
 

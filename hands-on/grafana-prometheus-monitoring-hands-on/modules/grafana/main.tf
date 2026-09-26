@@ -22,33 +22,37 @@ resource "aws_security_group" "grafana" {
 
   # アウトバウンドトラフィック
   egress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
+    # trivy:ignore:AWS-0104
     cidr_blocks = ["0.0.0.0/0"]
     description = "Allow HTTPS outbound traffic for Session Manager"
   }
 
   egress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    from_port = 80
+    to_port   = 80
+    protocol  = "tcp"
+    # trivy:ignore:AWS-0104
     cidr_blocks = ["0.0.0.0/0"]
     description = "Allow HTTP outbound traffic for package updates"
   }
 
   egress {
-    from_port   = 9100
-    to_port     = 9100
-    protocol    = "tcp"
+    from_port = 9100
+    to_port   = 9100
+    protocol  = "tcp"
+    # trivy:ignore:AWS-0104
     cidr_blocks = ["0.0.0.0/0"]
     description = "Allow HTTP outbound traffic for node_exporter"
   }
 
   egress {
-    from_port   = 9090
-    to_port     = 9090
-    protocol    = "tcp"
+    from_port = 9090
+    to_port   = 9090
+    protocol  = "tcp"
+    # trivy:ignore:AWS-0104
     cidr_blocks = ["0.0.0.0/0"]
     description = "Allow HTTP outbound traffic for prometheus"
   }
@@ -88,6 +92,11 @@ resource "aws_iam_instance_profile" "grafana" {
 }
 
 # S3バケットの作成
+# trivy:ignore:AWS-0086
+# trivy:ignore:AWS-0087
+# trivy:ignore:AWS-0091
+# trivy:ignore:AWS-0093
+# trivy:ignore:AWS-0132
 resource "aws_s3_bucket" "config" {
   bucket = "${var.name_prefix}-config-${random_string.suffix.result}"
 }
@@ -169,6 +178,8 @@ EOF
 
 
 # EC2インスタンス
+# trivy:ignore:AWS-0028
+# trivy:ignore:AWS-0131
 resource "aws_instance" "grafana" {
   ami           = var.ami_id
   instance_type = var.instance_type
