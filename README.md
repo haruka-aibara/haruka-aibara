@@ -15,7 +15,3 @@
 
 - **HCP Terraform が apply する。** ワークスペース `works` は `auto_apply = true` なので、plan を確認する段階がなくそのまま反映される。ローカルでやるのは検証まで
 - `devcontainer-templates/src/**` を変えていれば、version を bump して publish する
-
-## Lambda を足すとき
-
-`pyproject.toml`・`uv.lock`・`tests/` を持つディレクトリを置けば、CI が見つけて `ruff` と `pytest` を回す。CI 側の設定は触らない。
