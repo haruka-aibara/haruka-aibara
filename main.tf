@@ -113,9 +113,12 @@ module "aws-custom-lambda-config-rules" {
 # Each YAML file under modules/aws-config-custodian/policies becomes one Config
 # rule. The module also creates the region's Config recorder, recording only a
 # resource type the account doesn't have so it records (and bills) nothing.
-module "aws_config_custodian" {
-  source = "./modules/aws-config-custodian"
-}
+# Tried once; not needed right now, so the call is commented out (see
+# docs/Ideas/2026-09-26-Cloud_CustodianでConfigルールを作ってみた.md). To enable
+# it, uncomment this block.
+# module "aws_config_custodian" {
+#   source = "./modules/aws-config-custodian"
+# }
 
 # IAM Access Analyzer Policy Generate — infrastructure.
 # Absorbed from the standalone iam-access-analyzer-policy-generate repository
