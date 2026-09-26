@@ -22,10 +22,6 @@ dev = [
 [tool.ruff]
 line-length = 120
 target-version = "py313"
-# Vendored third-party code shipped as Lambda layers — not ours to lint.
-exclude = [
-    "lambda_layer",
-]
 
 [tool.ruff.lint]
 select = [

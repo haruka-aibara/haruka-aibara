@@ -11,5 +11,9 @@ terraform {
       source  = "hashicorp/archive"
       version = "~> 2.6.0"
     }
+    external = {
+      source  = "hashicorp/external"
+      version = "~> 2.3"
+    }
   }
 }

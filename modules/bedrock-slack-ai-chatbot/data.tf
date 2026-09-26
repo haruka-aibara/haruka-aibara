@@ -11,9 +11,15 @@ data "aws_region" "current" {}
 # path.module で明示的にアンカーする。ベタの相対パスだと works ルートからの
 # CWD 基準で解決され、子モジュール化した現在は解決先が存在しないディレクトリに
 # なってしまう(単体ルートモジュールだった頃は CWD == path.module で偶然一致していた)。
+#
+# layer の中身はコミットせず、requirements.txt から plan のたびに pip で作る。
+data "external" "lambda_layer" {
+  program = ["python3", "${path.module}/build_layer.py"]
+}
+
 data "archive_file" "lambda_layer_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/lambda_layer"
+  source_dir  = data.external.lambda_layer.result.dir
   output_path = "${path.module}/.build/lambda_layer.zip"
 }
 
