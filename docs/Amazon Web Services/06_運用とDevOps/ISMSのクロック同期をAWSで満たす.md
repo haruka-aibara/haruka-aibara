@@ -1,6 +1,8 @@
 # ISMS のクロック同期を AWS で満たす
 
-ISO 27002 8.17。対象は自分で時計を持っているところだけ。
+ISO 27002 8.17。
+
+**結論：EC2 全台に Run Command を流し、Amazon Time Sync を向いているか確認する。コマンドは OS ごとに変える。**
 
 | 主体 | やること |
 |---|---|
@@ -13,20 +15,20 @@ Amazon Time Sync は AWS の NTP サーバ。VPC 内から直接届く。うる�
 ## EC2 の初期設定
 
 - Amazon Linux・Bottlerocket・EKS 最適化 AMI・AWS 提供の Windows：最初から向いている
-- Ubuntu・RHEL：パッケージの初期設定は `ntp.ubuntu.com`・`2.rhel.pool.ntp.org`。AWS 向け AMI で上書きされているかは未確認。されていないと、NAT の無いサブネットでは同期しない
+- Ubuntu・RHEL：初期設定は `ntp.ubuntu.com`・`2.rhel.pool.ntp.org`。AWS 向け AMI で上書きされているかは未確認
 
 外れていたら AMI のビルドか SSM State Manager で `server 169.254.169.123 prefer iburst` に差し替える。
 
-## 確認
+## 確認（OS ごと）
 
 ```sh
 timedatectl show -p NTPSynchronized --value   # yes なら同期済み
 chronyc tracking                              # Reference ID が 169.254.169.123 か
 ```
 
-Windows は `w32tm /query /status`。ポートの疎通は見なくてよい（塞がっていれば未同期と出る）。
+Windows は `w32tm /query /status`。ポートの疎通は見なくてよい。
 
-定期確認は SSM State Manager で全台に流し、結果を S3 に残す。SSM 未登録の台は確認できない（同期はされる）ので、EC2 の台数と突き合わせる。
+定期的に回すなら State Manager に登録し、結果を S3 に残す。SSM 未登録の台は確認できないので、EC2 の台数と突き合わせる。
 
 ## タイムゾーン
 
