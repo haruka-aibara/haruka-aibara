@@ -1,19 +1,14 @@
-# AWS プロバイダーは実装時のメジャーバージョンの最新以上を使用するよう定義
 terraform {
-
-  cloud {
-    organization = "haruka-aibara"
-    workspaces {
-      name = "generate-dev-io-summary"
-    }
-  }
-
   required_version = ">= 1.9.6"
 
   required_providers {
+    archive = {
+      source  = "hashicorp/archive"
+      version = ">= 2.0"
+    }
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.65.0"
+      version = ">= 6.0"
     }
   }
 }

@@ -15,7 +15,7 @@ resource "aws_lambda_function" "scraper" {
   runtime          = "python3.12"
   timeout          = 30
   layers           = [aws_lambda_layer_version.scraper.arn]
-  source_code_hash = filebase64sha256(data.archive_file.lambda_scraper.output_path)
+  source_code_hash = data.archive_file.lambda_scraper.output_base64sha256
   filename         = data.archive_file.lambda_scraper.output_path
   environment {
     variables = {
@@ -42,7 +42,7 @@ resource "aws_lambda_function" "summarizer" {
   runtime          = "python3.12"
   timeout          = 300
   layers           = [aws_lambda_layer_version.summarizer.arn]
-  source_code_hash = filebase64sha256(data.archive_file.lambda_summarizer.output_path)
+  source_code_hash = data.archive_file.lambda_summarizer.output_base64sha256
   filename         = data.archive_file.lambda_summarizer.output_path
   environment {
     variables = {
