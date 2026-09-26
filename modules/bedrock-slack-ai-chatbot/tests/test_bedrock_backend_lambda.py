@@ -654,4 +654,4 @@ class TestImportTimeConfiguration:
     def test_falls_back_to_a_default_token_budget(self, monkeypatch: pytest.MonkeyPatch) -> None:
         module = self._load_without(monkeypatch, "BEDROCK_MAX_TOKENS", "backend_default_tokens")
 
-        assert module.MAX_TOKENS == 16000
+        assert module.MAX_TOKENS == 1000

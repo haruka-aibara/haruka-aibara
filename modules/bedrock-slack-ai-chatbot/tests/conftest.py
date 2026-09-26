@@ -53,7 +53,7 @@ FRONTEND_ENV = {
 BACKEND_ENV = {
     "SLACK_BOT_TOKEN": "xoxb-test-token",
     "BEDROCK_MODEL_ID": "arn:aws:bedrock:ap-northeast-1:123456789012:inference-profile/test",
-    "BEDROCK_MAX_TOKENS": "16000",
+    "BEDROCK_MAX_TOKENS": "1000",
     "DYNAMODB_TABLE_NAME": TABLE_NAME,
 }
 

@@ -39,7 +39,7 @@ if not _model_id:
 MODEL_ID: str = _model_id
 
 # Get max tokens from environment variable with default fallback
-MAX_TOKENS = int(os.environ.get("BEDROCK_MAX_TOKENS", "16000"))
+MAX_TOKENS = int(os.environ.get("BEDROCK_MAX_TOKENS", "1000"))
 
 # DynamoDB table holding idempotency claims. It stores no conversation state; Slack does.
 _table_name = os.environ.get("DYNAMODB_TABLE_NAME")
