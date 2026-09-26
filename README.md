@@ -23,6 +23,8 @@ terraform fmt -check -recursive
 
 CI では `terraform fmt` / `tflint` / `trivy`（IaC misconfig）が走る。
 
+Python は `pyproject.toml` を持つディレクトリ（Lambda 1つにつき1つ）を CI が自動で見つけ、ディレクトリごとに `ruff` と `pytest` を並列で回す。PR では変更のあったディレクトリだけが対象になる。Lambda を足すときは、`pyproject.toml`・`uv.lock`・`tests/` を持つディレクトリを置けばよく、CI 側の設定は触らない。
+
 ## docs
 
 書き方・置き場所のルールは [`docs/reference/README.md`](docs/reference/README.md) に集約している。
