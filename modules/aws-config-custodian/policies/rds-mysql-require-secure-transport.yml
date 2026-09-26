@@ -1,5 +1,6 @@
-# RDS for MySQL のパラメータグループで require_secure_transport が ON（1）なら COMPLIANT、
-# それ以外（OFF、または未設定でエンジンのデフォルト値のまま）なら NON_COMPLIANT にする。
+# RDS for MySQL で、実際に効いている require_secure_transport が ON（1）なら COMPLIANT、OFF なら NON_COMPLIANT。
+# RDS のデフォルトで ON になっている場合は DescribeDBParameters が値 "1" を返すので COMPLIANT になる。
+# 値が返らないのは RDS が何も設定しておらず MySQL 本体の既定値（OFF）で動いている場合なので NON_COMPLIANT。
 # MySQL 以外のエンジンのインスタンスはフィルタに一致しないので COMPLIANT として扱われる。
 description: RDS for MySQL で require_secure_transport が ON になっていない
 resource: aws.rds
