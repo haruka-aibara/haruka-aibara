@@ -111,8 +111,8 @@ module "aws-custom-lambda-config-rules" {
 
 # AWS Config rules backed by Cloud Custodian — infrastructure.
 # Each YAML file under modules/aws-config-custodian/policies becomes one Config
-# rule. Needs an AWS Config recorder running in the region, so the call is
-# commented out. To enable it, uncomment this block.
+# rule. The module also creates the region's Config recorder, recording only a
+# resource type the account doesn't have so it records (and bills) nothing.
 module "aws_config_custodian" {
   source = "./modules/aws-config-custodian"
 }

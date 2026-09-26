@@ -1,4 +1,3 @@
-# 前提: このリージョンで AWS Config のレコーダーが動いていること。
 resource "aws_config_config_rule" "policy" {
   for_each = local.policies
 
@@ -16,5 +15,8 @@ resource "aws_config_config_rule" "policy" {
     }
   }
 
-  depends_on = [aws_lambda_permission.config]
+  depends_on = [
+    aws_lambda_permission.config,
+    aws_config_configuration_recorder_status.this,
+  ]
 }

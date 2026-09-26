@@ -13,10 +13,11 @@
 | Config ルール `custodian-<ファイル名>` | ポリシーごと | 定期実行（既定は 24 時間ごと）。フィルタに一致したリソースを NON_COMPLIANT、それ以外を COMPLIANT にする |
 | ロググループ、Lambda の実行許可 | ポリシーごと | |
 | IAM ロール `cloud-custodian-config-rule` | 1 | 読み取りは `SecurityAudit`。このアカウントの中だけで完結する |
+| Config レコーダー、配信先 S3 バケット、レコーダー用 IAM ロール | 1 | Config ルールを作るための前提。記録料金がかからないよう、記録対象は個人アカウントにまず存在しないタイプ 1 つに絞っている |
 
 Lambda の中身は、c7n の CLI（`custodian run`）が `config-poll-rule` モードでデプロイするものと同じ形にしてある。違いは、c7n 本体を関数の zip に入れずに layer に分けている点だけ。
 
-前提として、このリージョンで AWS Config のレコーダーが動いている必要がある。
+Config のレコーダーはリージョンに 1 つしか作れない。既にあるアカウントで使う場合は `main_config_recorder.tf` を消し、`main_config.tf` の `depends_on` から外す。
 
 ## ポリシーを足す
 
