@@ -46,7 +46,7 @@ flowchart TD
 | Resource | Notes |
 |---|---|
 | API Gateway (HTTP API) | `POST /slack/events`, access logging enabled |
-| Lambda x2 + layer x2 | the Slack-facing frontend and the Bedrock backend |
+| Lambda x2 + layer x1 | the Slack-facing frontend and the Bedrock backend |
 | SQS queue + dead letter queue | the async handoff between them |
 | DynamoDB table | idempotency claims only, no conversation state |
 | Bedrock inference profile | Claude, referenced by the backend Lambda |

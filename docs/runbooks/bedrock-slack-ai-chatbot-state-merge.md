@@ -100,9 +100,11 @@
 
   **つまずいた点(1回目のplanで発生・修正済み)**: `model_source`(inference profile)と `filename`/`skip_destroy`(layer version)は AWS 側から読み返せない作成時専用の属性で、import直後は state 上 null になる。コード側の値と比較すると「新規追加」に見えて `-/+` (destroy & recreate) が誘発された。本番で使用中のリソースなので、`lifecycle { ignore_changes = [...] }` で該当属性を一時的に無視する修正を入れている。
 
-- [ ] **C-2a. (フォローアップ、別PR) `ignore_changes` を外す**
+- [x] **C-2a. (フォローアップ、別PR) `ignore_changes` を外す**
 
   import が安定してから、`main_bedrock.tf` の `aws_bedrock_inference_profile.claude_opus_4_6` と `main_lambda.tf` の `aws_lambda_layer_version` ×2 に付けた `lifecycle { ignore_changes = [...] }` を削除する PR を出す。外さないままだと、将来モデルや Lambda layer のコードを本当に変更しても apply に反映されない。
+
+  外した PR で、同じ中身だった layer ×2 を 1 つにまとめた。apply では inference profile と layer が作り直され(`-/+`)、backend 用の layer(`aws_lambda_layer_version.bedrock`)は destroy される。
 
 - [x] **C-3. 問題なければ merge して apply を確認する**
 
