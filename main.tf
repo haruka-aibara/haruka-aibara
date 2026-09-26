@@ -129,16 +129,6 @@ module "aws-custom-lambda-config-rules" {
 #   }
 # }
 
-# HCP Vault Deployment
-module "deploy-hcp-vault-dedicated-with-terraform" {
-  source = "./modules/repository"
-
-  repository_name = "deploy-hcp-vault-dedicated-with-terraform"
-  description     = "Deploy HashiCorp Cloud Platform (HCP) Vault Dedicated cluster using Terraform"
-
-  topics = ["terraform", "vault", "hcp", "hashicorp"]
-}
-
 # =========================================
 # My Docker Learning Repositories
 # =========================================
@@ -478,24 +468,6 @@ resource "tfe_workspace" "bedrock-slack-ai-agent" {
 
   vcs_repo {
     identifier         = "${local.github_owner}/bedrock-slack-ai-agent"
-    oauth_token_id     = local.oauth_token_id
-    ingress_submodules = false
-  }
-}
-
-# Deploy HCP Vault Dedicated with Terraform Workspace
-resource "tfe_workspace" "deploy-hcp-vault-dedicated-with-terraform" {
-  name                          = "deploy-hcp-vault-dedicated-with-terraform"
-  organization                  = local.tfe_organization
-  auto_apply                    = false
-  auto_apply_run_trigger        = false
-  file_triggers_enabled         = false
-  queue_all_runs                = false
-  structured_run_output_enabled = false
-  terraform_version             = "1.16.3"
-
-  vcs_repo {
-    identifier         = "${local.github_owner}/deploy-hcp-vault-dedicated-with-terraform"
     oauth_token_id     = local.oauth_token_id
     ingress_submodules = false
   }

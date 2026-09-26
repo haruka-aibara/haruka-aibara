@@ -24,11 +24,10 @@ locals {
   # Terraform repositories that should receive the CI caller workflow.
   # Add a line here to onboard a new repo.
   terraform_ci_repos = {
-    "bedrock-slack-ai-agent"                    = { working_directory = "." }
-    "deploy-hcp-vault-dedicated-with-terraform" = { working_directory = "." }
-    "generate-dev-io-summary"                   = { working_directory = "." }
-    "works"                                     = { working_directory = "." }
-    "google-cloud-hands-on"                     = { working_directory = "." }
+    "bedrock-slack-ai-agent"  = { working_directory = "." }
+    "generate-dev-io-summary" = { working_directory = "." }
+    "works"                   = { working_directory = "." }
+    "google-cloud-hands-on"   = { working_directory = "." }
   }
 
   # Python repositories that should receive the CI caller workflow.
