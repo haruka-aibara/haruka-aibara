@@ -95,8 +95,8 @@ data "aws_iam_policy_document" "bedrock_backend" {
       # the foundation model it routes to, so the model ARN has to be listed as well.
       # The profile copies a global one, which may route to any region, hence the region
       # wildcard on an ARN that is otherwise pinned to this single model.
-      aws_bedrock_inference_profile.claude_opus_4_6.arn,
-      "arn:aws:bedrock:*::foundation-model/anthropic.claude-opus-4-6-v1",
+      aws_bedrock_inference_profile.claude_opus_5_5.arn,
+      "arn:aws:bedrock:*::foundation-model/${local.claude_opus_5_5_model_id}",
     ]
   }
 
