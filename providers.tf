@@ -35,3 +35,13 @@ provider "aws" {
 #   alias  = "us-east-1"
 #   region = "us-east-1"
 # }
+
+# For module "hcp_vault" in main.tf, which is commented out for now. The HVN
+# and the peer VPC must share a region, and the module's default is us-west-2.
+# Uncomment together with that module.
+# provider "aws" {
+#   alias  = "us-west-2"
+#   region = "us-west-2"
+# }
+#
+# provider "hcp" {}
