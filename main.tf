@@ -46,6 +46,21 @@ module "bedrock_slack_ai_chatbot_infra" {
   slack_signing_secret = var.bedrock_slack_ai_chatbot_slack_signing_secret
 }
 
+# Multi-turn Bedrock AI Agent — infrastructure.
+# Absorbed from the standalone bedrock-slack-ai-agent repository with its
+# history (git log -- modules/bedrock-agent-classic-slack). Built on Amazon
+# Bedrock Agents, which became "Bedrock Agents Classic" and entered maintenance
+# mode on 2026-07-30 (closed to new customers, no new features or models), so
+# the call is commented out. To enable it, uncomment this block and the
+# bedrock_agent_slack_* variables in variables.tf, then set the variables on
+# the works workspace.
+# module "bedrock_agent_classic_slack" {
+#   source = "./modules/bedrock-agent-classic-slack"
+#
+#   slack_team_id    = var.bedrock_agent_slack_team_id
+#   slack_channel_id = var.bedrock_agent_slack_channel_id
+# }
+
 # Multi-turn Bedrock AI Agent
 module "bedrock-slack-ai-agent" {
   source = "./modules/repository"

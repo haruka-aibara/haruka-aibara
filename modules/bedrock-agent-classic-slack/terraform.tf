@@ -1,15 +1,12 @@
-# AWS プロバイダーは実装時のメジャーバージョンの最新以上を使用するよう定義
 terraform {
-  cloud {
-    organization = "haruka-aibara"
-    workspaces {
-      name = "bedrock-slack-ai-agent"
-    }
-  }
+  # works のルートモジュールから呼ぶ子モジュール。backend と provider の設定は
+  # ルート（../../terraform.tf, ../../providers.tf）にだけ置く。
+  required_version = ">= 1.9.6"
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "= 5.95.0"
+      version = ">= 6.0"
     }
   }
 }

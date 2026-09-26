@@ -1,19 +1,9 @@
-variable "env" {
-  type    = string
-  default = "haruka-aibara"
-}
-
-variable "region" {
-  type    = string
-  default = "ap-northeast-1"
-}
-
-variable "slack_channel_id" {
-  description = "(Required) ID of the Slack channel. For example, C07EZ1ABC23."
+variable "slack_team_id" {
+  description = "Amazon Q Developer in chat applications（旧 AWS Chatbot）で認可済みの Slack ワークスペース ID。例: T07EA123LEP"
   type        = string
 }
 
-variable "slack_team_id" {
-  description = "(Required) ID of the Slack workspace authorized with AWS Chatbot. For example, T07EA123LEP."
+variable "slack_channel_id" {
+  description = "エージェントと会話する Slack チャンネルの ID。例: C07EZ1ABC23"
   type        = string
 }
