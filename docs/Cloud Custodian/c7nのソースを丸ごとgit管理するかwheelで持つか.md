@@ -1,5 +1,3 @@
-tags: aws, config, cloud-custodian, terraform
-
 # c7n のソースを丸ごと git 管理するか wheel で持つか
 
 `modules/aws-config-custodian` は、c7n を PyPI の wheel のまま `vendor/` に置き、判定は YAML のポリシーで書いている。判定ロジックの Python コードも git で持ちたくなったときに、c7n のソースを丸ごと持ってくるとどうなるか。
